@@ -4,7 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-package communication;
+package com.cnk.communication;
 
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
@@ -39,13 +39,13 @@ public class Server {
 
   public interface Iface {
 
-    public int ping(communication.HelloMsg msg) throws org.apache.thrift.TException;
+    public int ping(com.cnk.communication.HelloMsg msg) throws org.apache.thrift.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void ping(communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void ping(com.cnk.communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -69,13 +69,13 @@ public class Server {
       super(iprot, oprot);
     }
 
-    public int ping(communication.HelloMsg msg) throws org.apache.thrift.TException
+    public int ping(com.cnk.communication.HelloMsg msg) throws org.apache.thrift.TException
     {
       send_ping(msg);
       return recv_ping();
     }
 
-    public void send_ping(communication.HelloMsg msg) throws org.apache.thrift.TException
+    public void send_ping(com.cnk.communication.HelloMsg msg) throws org.apache.thrift.TException
     {
       ping_args args = new ping_args();
       args.setMsg(msg);
@@ -110,7 +110,7 @@ public class Server {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void ping(communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void ping(com.cnk.communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
       ping_call method_call = new ping_call(msg, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
@@ -118,8 +118,8 @@ public class Server {
     }
 
     public static class ping_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private communication.HelloMsg msg;
-      public ping_call(communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private com.cnk.communication.HelloMsg msg;
+      public ping_call(com.cnk.communication.HelloMsg msg, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.msg = msg;
       }
@@ -262,7 +262,7 @@ public class Server {
       schemes.put(TupleScheme.class, new ping_argsTupleSchemeFactory());
     }
 
-    public communication.HelloMsg msg; // required
+    public com.cnk.communication.HelloMsg msg; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -327,7 +327,7 @@ public class Server {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.MSG, new org.apache.thrift.meta_data.FieldMetaData("msg", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, communication.HelloMsg.class)));
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, com.cnk.communication.HelloMsg.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ping_args.class, metaDataMap);
     }
@@ -336,7 +336,7 @@ public class Server {
     }
 
     public ping_args(
-      communication.HelloMsg msg)
+      com.cnk.communication.HelloMsg msg)
     {
       this();
       this.msg = msg;
@@ -347,7 +347,7 @@ public class Server {
      */
     public ping_args(ping_args other) {
       if (other.isSetMsg()) {
-        this.msg = new communication.HelloMsg(other.msg);
+        this.msg = new com.cnk.communication.HelloMsg(other.msg);
       }
     }
 
@@ -360,11 +360,11 @@ public class Server {
       this.msg = null;
     }
 
-    public communication.HelloMsg getMsg() {
+    public com.cnk.communication.HelloMsg getMsg() {
       return this.msg;
     }
 
-    public ping_args setMsg(communication.HelloMsg msg) {
+    public ping_args setMsg(com.cnk.communication.HelloMsg msg) {
       this.msg = msg;
       return this;
     }
@@ -390,7 +390,7 @@ public class Server {
         if (value == null) {
           unsetMsg();
         } else {
-          setMsg((communication.HelloMsg)value);
+          setMsg((com.cnk.communication.HelloMsg)value);
         }
         break;
 
@@ -549,7 +549,7 @@ public class Server {
           switch (schemeField.id) {
             case 1: // MSG
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-                struct.msg = new communication.HelloMsg();
+                struct.msg = new com.cnk.communication.HelloMsg();
                 struct.msg.read(iprot);
                 struct.setMsgIsSet(true);
               } else { 
@@ -608,7 +608,7 @@ public class Server {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.msg = new communication.HelloMsg();
+          struct.msg = new com.cnk.communication.HelloMsg();
           struct.msg.read(iprot);
           struct.setMsgIsSet(true);
         }
