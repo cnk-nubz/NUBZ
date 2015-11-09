@@ -1,0 +1,61 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:2:1-23:12
+	xmlns:android
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:2:11-69
+	package
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:3:5-22
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+uses-permission#android.permission.INTERNET
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:5:22-64
+application
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:6:5-21:19
+MERGED from [com.android.support:appcompat-v7:22.2.1] /Users/maciek/Studia/ZPP/zpp/android/prj/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/AndroidManifest.xml:22:5-20
+MERGED from [com.android.support:support-v4:22.2.1] /Users/maciek/Studia/ZPP/zpp/android/prj/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.2.1/AndroidManifest.xml:22:5-20
+	android:supportsRtl
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:10:9-35
+	android:label
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:9:9-41
+	android:allowBackup
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:7:9-35
+	android:icon
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:8:9-43
+	android:theme
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:11:9-40
+activity#com.cnk.StartScreen
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:12:9-18:20
+	android:name
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:12:19-46
+intent-filter#android.intent.action.MAIN+android.intent.category.LAUNCHER
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:13:13-17:29
+action#android.intent.action.MAIN
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:14:17-69
+	android:name
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:14:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:16:17-77
+	android:name
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:16:27-74
+service#com.cnk.communication.RaportUploader
+ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:19:9-20:19
+	android:name
+		ADDED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml:19:18-69
+uses-sdk
+INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml reason: use-sdk injection requested
+MERGED from [com.android.support:appcompat-v7:22.2.1] /Users/maciek/Studia/ZPP/zpp/android/prj/app/build/intermediates/exploded-aar/com.android.support/appcompat-v7/22.2.1/AndroidManifest.xml:20:5-43
+MERGED from [com.android.support:support-v4:22.2.1] /Users/maciek/Studia/ZPP/zpp/android/prj/app/build/intermediates/exploded-aar/com.android.support/support-v4/22.2.1/AndroidManifest.xml:20:5-43
+	android:targetSdkVersion
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
+		INJECTED from /Users/maciek/Studia/ZPP/zpp/android/prj/app/src/main/AndroidManifest.xml
