@@ -21,6 +21,7 @@ namespace communication {
 class ServerIf {
  public:
   virtual ~ServerIf() {}
+  virtual void shutdown() = 0;
   virtual int32_t ping(const  ::communication::HelloMsg& msg) = 0;
 };
 
@@ -51,10 +52,87 @@ class ServerIfSingletonFactory : virtual public ServerIfFactory {
 class ServerNull : virtual public ServerIf {
  public:
   virtual ~ServerNull() {}
+  void shutdown() {
+    return;
+  }
   int32_t ping(const  ::communication::HelloMsg& /* msg */) {
     int32_t _return = 0;
     return _return;
   }
+};
+
+
+class Server_shutdown_args {
+ public:
+
+  Server_shutdown_args(const Server_shutdown_args&);
+  Server_shutdown_args& operator=(const Server_shutdown_args&);
+  Server_shutdown_args() {
+  }
+
+  virtual ~Server_shutdown_args() throw();
+
+  bool operator == (const Server_shutdown_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const Server_shutdown_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_shutdown_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_shutdown_pargs {
+ public:
+
+
+  virtual ~Server_shutdown_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_shutdown_result {
+ public:
+
+  Server_shutdown_result(const Server_shutdown_result&);
+  Server_shutdown_result& operator=(const Server_shutdown_result&);
+  Server_shutdown_result() {
+  }
+
+  virtual ~Server_shutdown_result() throw();
+
+  bool operator == (const Server_shutdown_result & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const Server_shutdown_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_shutdown_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_shutdown_presult {
+ public:
+
+
+  virtual ~Server_shutdown_presult() throw();
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
 };
 
 typedef struct _Server_ping_args__isset {
@@ -186,6 +264,9 @@ class ServerClient : virtual public ServerIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void shutdown();
+  void send_shutdown();
+  void recv_shutdown();
   int32_t ping(const  ::communication::HelloMsg& msg);
   void send_ping(const  ::communication::HelloMsg& msg);
   int32_t recv_ping();
@@ -204,10 +285,12 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
   typedef  void (ServerProcessor::*ProcessFunction)(int32_t, ::apache::thrift::protocol::TProtocol*, ::apache::thrift::protocol::TProtocol*, void*);
   typedef std::map<std::string, ProcessFunction> ProcessMap;
   ProcessMap processMap_;
+  void process_shutdown(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServerProcessor(boost::shared_ptr<ServerIf> iface) :
     iface_(iface) {
+    processMap_["shutdown"] = &ServerProcessor::process_shutdown;
     processMap_["ping"] = &ServerProcessor::process_ping;
   }
 
@@ -237,6 +320,15 @@ class ServerMultiface : virtual public ServerIf {
     ifaces_.push_back(iface);
   }
  public:
+  void shutdown() {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->shutdown();
+    }
+    ifaces_[i]->shutdown();
+  }
+
   int32_t ping(const  ::communication::HelloMsg& msg) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -276,6 +368,9 @@ class ServerConcurrentClient : virtual public ServerIf {
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> getOutputProtocol() {
     return poprot_;
   }
+  void shutdown();
+  int32_t send_shutdown();
+  void recv_shutdown(const int32_t seqid);
   int32_t ping(const  ::communication::HelloMsg& msg);
   int32_t send_ping(const  ::communication::HelloMsg& msg);
   int32_t recv_ping(const int32_t seqid);
