@@ -1,0 +1,57 @@
+{% load compress %}
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+
+svg {
+  float: left;
+  border-bottom: solid 1px #ccc;
+  border-right: solid 1px #ccc;
+  margin-right: -1px;
+  margin-bottom: -1px;
+}
+
+</style>
+
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<body>
+{% compress js %}
+<script type="text/coffeescript">
+		disco = ['red', 'green', 'blue']
+		
+		dragme = d3.behavior.drag()
+        .on("drag", 
+			(d, _) -> 
+		        d.x += d3.event.dx
+		        d.y += d3.event.dy
+		        d3.select(this).attr("transform", (d, i) -> "translate(" + [ d.x,d.y ] + ")").attr("fill", disco[Math.floor(Math.random()*3)])
+			
+     	).on("dragstart", (d) -> d3.select(event.target).attr("r", 30))
+		.on("dragend", (d) -> d3.select(event.target).attr("r", 30))
+
+		board = d3.select("body").append("svg:svg").attr({
+            width: 1000,
+            height: 1000
+        })
+
+		wrap = board.selectAll("rect")
+            .data([{
+            x: 100,
+            y: 100
+        }, {x: 200, y: 200}]).enter()
+		.append("svg:rect")
+			.attr({
+			"transform": (d) -> "translate(" + [d.x, d.y] + ")",
+			"width": 100,
+			"height": 100,
+			"fill": "gray",
+			"stroke": "pink",
+			"stroke-width": 5
+			})
+		d3.selectAll("rect").call(dragme)
+
+</script>
+{% endcompress %}
+</body>
+</html>
