@@ -119,4 +119,328 @@ void HelloMsg::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+MapImagesRequest::~MapImagesRequest() throw() {
+}
+
+
+void MapImagesRequest::__set_acquiredLevel(const int32_t val) {
+  this->acquiredLevel = val;
+__isset.acquiredLevel = true;
+}
+
+uint32_t MapImagesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->acquiredLevel);
+          this->__isset.acquiredLevel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MapImagesRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MapImagesRequest");
+
+  if (this->__isset.acquiredLevel) {
+    xfer += oprot->writeFieldBegin("acquiredLevel", ::apache::thrift::protocol::T_I32, 1);
+    xfer += oprot->writeI32(this->acquiredLevel);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MapImagesRequest &a, MapImagesRequest &b) {
+  using ::std::swap;
+  swap(a.acquiredLevel, b.acquiredLevel);
+  swap(a.__isset, b.__isset);
+}
+
+MapImagesRequest::MapImagesRequest(const MapImagesRequest& other2) {
+  acquiredLevel = other2.acquiredLevel;
+  __isset = other2.__isset;
+}
+MapImagesRequest& MapImagesRequest::operator=(const MapImagesRequest& other3) {
+  acquiredLevel = other3.acquiredLevel;
+  __isset = other3.__isset;
+  return *this;
+}
+void MapImagesRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MapImagesRequest(";
+  out << "acquiredLevel="; (__isset.acquiredLevel ? (out << to_string(acquiredLevel)) : (out << "<null>"));
+  out << ")";
+}
+
+
+MapImagesResponse::~MapImagesResponse() throw() {
+}
+
+
+void MapImagesResponse::__set_version(const int32_t val) {
+  this->version = val;
+}
+
+void MapImagesResponse::__set_levelImageUrls(const std::map<int32_t, std::string> & val) {
+  this->levelImageUrls = val;
+}
+
+uint32_t MapImagesResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->version);
+          this->__isset.version = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_MAP) {
+          {
+            this->levelImageUrls.clear();
+            uint32_t _size4;
+            ::apache::thrift::protocol::TType _ktype5;
+            ::apache::thrift::protocol::TType _vtype6;
+            xfer += iprot->readMapBegin(_ktype5, _vtype6, _size4);
+            uint32_t _i8;
+            for (_i8 = 0; _i8 < _size4; ++_i8)
+            {
+              int32_t _key9;
+              xfer += iprot->readI32(_key9);
+              std::string& _val10 = this->levelImageUrls[_key9];
+              xfer += iprot->readString(_val10);
+            }
+            xfer += iprot->readMapEnd();
+          }
+          this->__isset.levelImageUrls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MapImagesResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MapImagesResponse");
+
+  xfer += oprot->writeFieldBegin("version", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->version);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("levelImageUrls", ::apache::thrift::protocol::T_MAP, 2);
+  {
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I32, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->levelImageUrls.size()));
+    std::map<int32_t, std::string> ::const_iterator _iter11;
+    for (_iter11 = this->levelImageUrls.begin(); _iter11 != this->levelImageUrls.end(); ++_iter11)
+    {
+      xfer += oprot->writeI32(_iter11->first);
+      xfer += oprot->writeString(_iter11->second);
+    }
+    xfer += oprot->writeMapEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MapImagesResponse &a, MapImagesResponse &b) {
+  using ::std::swap;
+  swap(a.version, b.version);
+  swap(a.levelImageUrls, b.levelImageUrls);
+  swap(a.__isset, b.__isset);
+}
+
+MapImagesResponse::MapImagesResponse(const MapImagesResponse& other12) {
+  version = other12.version;
+  levelImageUrls = other12.levelImageUrls;
+  __isset = other12.__isset;
+}
+MapImagesResponse& MapImagesResponse::operator=(const MapImagesResponse& other13) {
+  version = other13.version;
+  levelImageUrls = other13.levelImageUrls;
+  __isset = other13.__isset;
+  return *this;
+}
+void MapImagesResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MapImagesResponse(";
+  out << "version=" << to_string(version);
+  out << ", " << "levelImageUrls=" << to_string(levelImageUrls);
+  out << ")";
+}
+
+
+SetMapImageRequest::~SetMapImageRequest() throw() {
+}
+
+
+void SetMapImageRequest::__set_level(const int32_t val) {
+  this->level = val;
+}
+
+void SetMapImageRequest::__set_filename(const std::string& val) {
+  this->filename = val;
+}
+
+uint32_t SetMapImageRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->level);
+          this->__isset.level = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->filename);
+          this->__isset.filename = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t SetMapImageRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("SetMapImageRequest");
+
+  xfer += oprot->writeFieldBegin("level", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->level);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("filename", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->filename);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(SetMapImageRequest &a, SetMapImageRequest &b) {
+  using ::std::swap;
+  swap(a.level, b.level);
+  swap(a.filename, b.filename);
+  swap(a.__isset, b.__isset);
+}
+
+SetMapImageRequest::SetMapImageRequest(const SetMapImageRequest& other14) {
+  level = other14.level;
+  filename = other14.filename;
+  __isset = other14.__isset;
+}
+SetMapImageRequest& SetMapImageRequest::operator=(const SetMapImageRequest& other15) {
+  level = other15.level;
+  filename = other15.filename;
+  __isset = other15.__isset;
+  return *this;
+}
+void SetMapImageRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "SetMapImageRequest(";
+  out << "level=" << to_string(level);
+  out << ", " << "filename=" << to_string(filename);
+  out << ")";
+}
+
 } // namespace
