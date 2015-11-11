@@ -91,7 +91,7 @@ LOGGING = {
 		'file': {
 			'level': 'INFO',
 			'class': 'logging.FileHandler',
-			'filename': os.path.join(BASE_DIR, 'logs/dumplog.log'),
+			'filename': os.path.join(BASE_DIR, 'dumplog.log'),
 		},
 	},
 	'loggers': {
