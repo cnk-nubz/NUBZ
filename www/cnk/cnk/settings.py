@@ -84,6 +84,25 @@ DATABASES = {
     }
 }
 
+LOGGING = {
+	'version': 1,
+	'disable_existing_loggers': False,
+	'handlers': {
+		'file': {
+			'level': 'INFO',
+			'class': 'logging.FileHandler',
+			'filename': os.path.join(BASE_DIR, 'logs/dumplog.log'),
+		},
+	},
+	'loggers': {
+		'django.request': {
+			'handlers': ['file'],
+			'level': 'INFO',
+			'propagate': True,
+		},
+	},
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/
@@ -101,14 +120,17 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+	'compressor.finders.CompressorFinder',
+]
+STATIC_URL = '/static/'
+STATIC_ROOT = ''
+STATICFILES_DIRS = ( os.path.join('static'), )
+MEDIA_URL = os.path.join(BASE_DIR, 'strona/media/')
 
-STATIC_URL = '/strona/static/'
-
-COMPRESS_ROOT = BASE_DIR + '/TMPCOFFEE/'
-
-STATICFILES_FINDERS = (
-    'compressor.finders.CompressorFinder',
-)
+COMPRESS_ROOT = os.path.join(BASE_DIR, 'TMPCOFFEE/')
 
 COMPRESS_PRECOMPILERS = (
     ('text/coffeescript', 'coffee --compile --stdio'),
