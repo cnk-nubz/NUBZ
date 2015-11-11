@@ -37,3 +37,22 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
 
     return output;
 }
+
+void CommandHandler::getMapImages(communication::MapImagesResponse &response, const communication::MapImagesRequest &request) {
+    LOG(INFO) << "getMapImages start";
+    LOG(INFO) << "input: " << request;
+    
+    LOG(INFO) << "not implemented";
+    
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getMapImages end";
+}
+
+void CommandHandler::setMapImage(const communication::SetMapImageRequest &request) {
+    LOG(INFO) << "setMapImage start";
+    LOG(INFO) << "input: " << request;
+    
+    LOG(INFO) << "not implemented";
+    
+    LOG(INFO) << "setMapImage end";
+}

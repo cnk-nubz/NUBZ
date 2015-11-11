@@ -26,6 +26,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Functions:')
   print('  void shutdown()')
   print('  i32 ping(HelloMsg msg)')
+  print('  MapImagesResponse getMapImages(MapImagesRequest request)')
+  print('  void setMapImage(SetMapImageRequest request)')
   print('')
   sys.exit(0)
 
@@ -93,6 +95,18 @@ elif cmd == 'ping':
     print('ping requires 1 args')
     sys.exit(1)
   pp.pprint(client.ping(eval(args[0]),))
+
+elif cmd == 'getMapImages':
+  if len(args) != 1:
+    print('getMapImages requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.getMapImages(eval(args[0]),))
+
+elif cmd == 'setMapImage':
+  if len(args) != 1:
+    print('setMapImage requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.setMapImage(eval(args[0]),))
 
 else:
   print('Unrecognized method %s' % cmd)
