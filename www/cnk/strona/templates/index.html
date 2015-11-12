@@ -4,8 +4,9 @@
 {% block content %}
 <h1>  </h1>
 <script type="text/javascript" src="{% static "js/d3.v3.min.js" %}"></script>
-<svg width=600 height=600>
-    <svg x="10" y="10" width="50" height="50">
+<svg id="main_window" width=100% height=100% viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet" xmlns="http://www.w3.org/2000/svg" version="1.1">
+<image width="900" height="900" x="50%" y="50%" preserveAspectRatio="xMinYMin" xlink:href="{% static "floorplan.jpg" %}" transform="translate(-450, -450)"/>
+<svg x="10" y="10" width="50" height="50">
         <g id="pluszoom" class="zoomer">
         <rect x="0" y="0" rx="15" ry="15" height="50" width="50" fill="lightblue" />
         <text class="disable-select" x="50%" y="50%" font-size="32" text-anchor="middle" transform="translate(0, 8)">+</text>
@@ -18,27 +19,47 @@
         <text class="disable-select" x="50%" y="50%" font-size="32" text-anchor="middle" transform="translate(0, 8)">-</text>
         </g>
     </svg>
-<image width="500" height="500" x="50%" y="50%" xlink:href="{% static "floorplan.jpg" %}" transform="translate(-250, -250)"/>
 </svg>
 {% compress js %}
 
 <script type="text/coffeescript">
-    d3.select("#minuszoom").on("click", 
-        () ->
-            w = +d3.select("image").attr("width")
-            w = w - (if w > 100 then 50 else 0)
-            h = +d3.select("image").attr("height")
-            h = h - (if h > 100 then 50 else 0)
-            d3.select("image").attr("height", h).attr("width", w).attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
-    )
-    d3.select("#pluszoom").on("click",
-        () ->
-            w = +d3.select("image").attr("width")
-            w = w + (if w < 500 then 50 else 0)
-            h = +d3.select("image").attr("height")
-            h = h + (if h < 500 then 50 else 0)
-            d3.select("image").attr("height", h).attr("width", w).attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
-    )
+	min_h = 350
+	min_w = 350
+	max_h = 1000
+	max_w = 1000
+	step = 50
+	d3.select("#minuszoom").on("click", 
+		() -> #minus zooming button
+			w = +d3.select("image").attr("width")
+			h = +d3.select("image").attr("height")
+			if h - step > min_h and w - step > min_w
+				h -= step
+				w -= step
+				d3.select("#pluszoom").attr("opacity", "100").classed("zoomer", true).classed("no-zoomer", false)
+				
+			d3.select("image").attr("height", h).attr("width", w).attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
+			
+			if h - step <= min_h or w - step <= min_w 
+				d3.select("#minuszoom").attr("opacity", "0").classed("zoomer", false).classed("no-zoomer", true)
+	)
+	d3.select("#pluszoom").on("click",
+		() -> #plus zooming button
+			vb = d3.select("#main_window").attr("viewBox").split(/\s+|,/)
+			main_w = +vb[2] - (+vb[0])
+			main_h = +vb[3] - (+vb[1])
+			w = +d3.select("image").attr("width")
+			h = +d3.select("image").attr("height")
+			if h + step < main_h and w + step < main_w
+				h += step
+				w += step
+				d3.select("#minuszoom").attr("opacity", "100").classed("zoomer", true).classed("no-zoomer", false)
+				
+			d3.select("image").attr("height", h).attr("width", w).attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
+			
+			if h + step >= main_h or w + step >= main_w
+				d3.select("#pluszoom").attr("opacity", "0").classed("zoomer", false).classed("no-zoomer", true)
+	)
 </script>
 {% endcompress %}
 {% endblock %}
+<p>HEHEHEHEHHE</p>
