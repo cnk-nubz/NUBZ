@@ -3,6 +3,7 @@
     package="com.cnk" >
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,7 +17,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name="com.cnk.communication.RaportUploader">
+
+        <service android:name=".communication.RaportUploader" >
+        </service>
+        <service
+            android:name=".communication.MapDownloader"
+            android:exported="false" >
         </service>
     </application>
 

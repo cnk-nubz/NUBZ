@@ -4,6 +4,7 @@ import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
+import com.cnk.data.DataHandler;
 import com.cnk.utilities.Util;
 
 import org.apache.thrift.TException;
@@ -12,15 +13,20 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-public class RaportUploader extends IntentService {
-    private static final String LOG_TAG = "ReportUploader";
-    private static final long DELAY = 30000;
+import java.io.IOException;
+import java.util.Map;
+
+public class MapDownloader extends IntentService {
+
+    private static final String LOG_TAG = "MapDownlaoder";
+    private static DataHandler dataHandler;
     private static String SEND_ADDRESS = "";
     private static int SEND_PORT = 0;
+    private static long DELAY = 30000;
     private TTransport socket;
 
-    public RaportUploader() {
-        super("RaportUploader");
+    public MapDownloader() {
+        super("MapDownloader");
     }
 
     public static void setEndpoint(String address, int port) {
@@ -28,12 +34,13 @@ public class RaportUploader extends IntentService {
         SEND_PORT = port;
     }
 
+    public static void setDataHandler(DataHandler dataHandler) {
+        MapDownloader.dataHandler = dataHandler;
+    }
+
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (intent != null) {
-            //TODO extract data from intent
-            sendData(/* data */);
-        }
+        checkMapsUpdate();
     }
 
     private void openSocket() {
@@ -50,33 +57,37 @@ public class RaportUploader extends IntentService {
                 Util.waitDelay(DELAY);
             }
         }
-
     }
 
-    private void sendData(/* data */) {
+    private void checkMapsUpdate() {
         Log.i(LOG_TAG, "sending");
-
         openSocket();
-        boolean succeeded = false;
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
-
-        HelloMsg msg = new HelloMsg();
-        msg.msg = "test";
-        msg.num = 123;
-
-        while (!succeeded) {
+        MapImagesRequest request = new MapImagesRequest();
+        request.acquiredLevel = dataHandler.getMapVersion();
+        MapImagesResponse response = null;
+        boolean succeeded = false;
+        while(!succeeded) {
             try {
-                client.ping(msg);
+                response = client.getMapImages(request);
                 succeeded = true;
                 Log.i(LOG_TAG, "sent");
-            } catch (TException e1) {
+            } catch (TException e) {
                 Log.e(LOG_TAG, "sending failed");
+                e.printStackTrace();
                 Util.waitDelay(DELAY);
             }
         }
-        socket.close();
-        socket = null;
+        dataHandler.setMapVersion(response.version);
+        for (Map.Entry<Integer, String> entry : response.levelImageUrls.entrySet()) {
+            try {
+                dataHandler.setMapFloor(entry.getKey(), entry.getValue());
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "cant set floor");
+                e.printStackTrace();
+            }
+        }
     }
 
 }
