@@ -1,21 +1,10 @@
-body {
-  padding-top: 50px;
-}
-.starter-template {
-  padding: 10px 15px;
-  text-align: center;
+.dot circle {
+  fill: lightsteelblue;
+  stroke: steelblue;
+  stroke-width: 1.5px;
 }
 
-.disable-select {
-  -webkit-user-select: none;  
-  -moz-user-select: none;    
-  -ms-user-select: none;      
-  user-select: none;
-}
-
-.zoomer {
-    cursor: pointer;
-}
-.no-zoomer {
-    cursor: default;
+.dot circle.dragging {
+  fill: red;
+  stroke: brown;
 }

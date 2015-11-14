@@ -1,85 +1,103 @@
-{% extends 'base.html' %}
-{% load staticfiles %}
+<!DOCTYPE html>
+<html>
 {% load compress %}
-{% block content %}
-<h1>  </h1>
-<script type="text/javascript" src="{% static "js/d3.v3.min.js" %}"></script>
-<svg id="main_window" width=100% height=100% viewBox="0 0 1000 1000" preserveAspectRatio="xMinYMin meet" xmlns="http://www.w3.org/2000/svg" version="1.1">
+{% load staticfiles %}
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="{%static "favicon.ico" %}">
+  <link href="{% static "css/base.css" %}" rel="stylesheet">
+  <title>Tajny Projekt NUBZ</title>
+</head>
 
-	<image width="900" height="900" x="50%" y="50%" preserveAspectRatio="xMinYMin" xlink:href="{% static "floorplan.jpg" %}" transform="translate(-450, -450)"/>
-
-	<svg x="10" y="10" width="50" height="50">
-		<g id="pluszoom" class="zoomer">
-		<rect x="0" y="0" rx="15" ry="15" height="50" width="50" fill="lightblue" />
-		<text class="disable-select" x="50%" y="50%" font-size="32" text-anchor="middle" transform="translate(0, 8)">+</text>
-		</g>
-	</svg>
-		
-	<svg x="10" y="75" width="50" height="50">
-		<g id="minuszoom" class="zoomer">
-		<rect x="0" y="0" rx="15" ry="15" height="50" width="50" fill="lightblue" />
-		<text class="disable-select" x="50%" y="50%" font-size="32" text-anchor="middle" transform="translate(0, 8)">-</text>
-		</g>
-	</svg>
-</svg>
+<body>
+<script src="{% static "js/d3.v3.min.js" %}"></script>
 {% compress js %}
-
 <script type="text/coffeescript">
-	min_h = 350
-	min_w = 350
-	max_h = 1000
-	max_w = 1000
-	step = 50
-	d3.select("#minuszoom").on("click", 
-		() -> #minus zooming button
-			w = +d3.select("image").attr("width")
-			h = +d3.select("image").attr("height")
-			if h - step > min_h and w - step > min_w
-				h -= step
-				w -= step
-				d3.select("#pluszoom")
-					.attr("opacity", "100")
-					.classed("zoomer", true)
-					.classed("no-zoomer", false)
-				
-			d3.select("image")
-				.attr("height", h)
-				.attr("width", w)
-				.attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
-			
-			if h - step <= min_h or w - step <= min_w 
-				d3.select("#minuszoom")
-					.attr("opacity", "0")
-					.classed("zoomer", false)
-					.classed("no-zoomer", true)
-	)
-	d3.select("#pluszoom").on("click",
-		() -> #plus zooming button
-			vb = d3.select("#main_window").attr("viewBox").split(/\s+|,/)
-			main_w = +vb[2] - (+vb[0])
-			main_h = +vb[3] - (+vb[1])
-			w = +d3.select("image").attr("width")
-			h = +d3.select("image").attr("height")
-			
-			if h + step < main_h and w + step < main_w
-				h += step
-				w += step
-				d3.select("#minuszoom")
-					.attr("opacity", "100")
-					.classed("zoomer", true)
-					.classed("no-zoomer", false)
-				
-			d3.select("image")
-				.attr("height", h)
-				.attr("width", w)
-				.attr("transform", "translate(-" +w/2 + ", -" + h/2 +")")
-			
-			if h + step >= main_h or w + step >= main_w
-				d3.select("#pluszoom")
-					.attr("opacity", "0")
-					.classed("zoomer", false
-					.classed("no-zoomer", true)
-	)
+
+  margin = {top: -5, right: -5, bottom: -5, left: -5}
+  width = 900 - margin.left - margin.right
+  height = 900 - margin.top - margin.bottom
+
+  dottype = (d) ->
+    d.x = +d.x
+    d.y = +d.y
+    return d
+
+  zoomed = ->
+    container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
+
+  dragstarted = (d) ->
+    d3.event.sourceEvent.stopPropagation()
+    d3.select(this).classed("dragging", true)
+
+  dragged = (d) ->
+    d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y)
+
+  dragended = (d) ->
+    d3.select(this).classed("dragging", false)
+
+
+  zoom = d3.behavior.zoom()
+    .scaleExtent([1, 10])
+    .on("zoom", zoomed)
+
+  drag = d3.behavior.drag()
+    .origin((d) -> d)
+    .on("dragstart", dragstarted)
+    .on("drag", dragged)
+    .on("dragend", dragended)
+
+  svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.right + ")")
+    .call(zoom)
+
+  svg.append("defs")
+  	.append("pattern")
+    .attr({
+      "id": "bg",
+      "patternUnits": "userSpaceOnUse",
+      "width": width,
+      "height": height,
+      "preserveAspectRatio": "xMinYMin meet",
+      })
+  	.append("image")
+  	.attr({
+  		"width": width,
+  		"height": height,
+  		"x": "0",
+  		"y": "0",
+  		"xlink:href": "{% static "floorplan.jpg" %}",
+  	})
+
+
+  container = svg.append("g")
+
+  container.append("rect")
+    .attr({
+      "width": width,
+      "height": height,
+      })
+    .style("fill", "url(#bg)")
+
+  #EXAMPLE STRUCTURES TO DRAG
+  datum = [
+      {x: 100, y: 100, r: 23},
+      {x: 200, y: 200, r: 10},
+      {x: 300, y: 300, r: 15},
+    ];
+  dot = container.append("g")
+      .attr("class", "dot")
+    .selectAll("circle")
+      .data(datum)
+    .enter().append("circle")
+      .attr("r", (d) -> d.r)
+      .attr("cx", (d) -> d.x)
+      .attr("cy", (d) -> d.y)
+      .call(drag);
+
 </script>
 {% endcompress %}
-{% endblock %}
+</body>
