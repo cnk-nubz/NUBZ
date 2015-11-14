@@ -30,7 +30,14 @@ class ThriftCommunicator:
 
 	def ping(self, number, text):
 		msg = structs.ttypes.HelloMsg(number, text)
-		start_connection()
+		self.start_connection()
 		ret = self.client.ping(msg)
-		end_connection()
+		self.end_connection()
+		return ret
+	
+	def getMapImages(self):
+		msg = structs.ttypes.SetMapImageRequest(0)
+		self.start_connection()
+		ret = self.client.getMapImages(msg)
+		self.end_connection()
 		return ret
