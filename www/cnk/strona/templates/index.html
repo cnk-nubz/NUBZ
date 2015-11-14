@@ -26,26 +26,10 @@
   zoomed = ->
     container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
 
-  dragstarted = (d) ->
-    d3.event.sourceEvent.stopPropagation()
-    d3.select(this).classed("dragging", true)
-
-  dragged = (d) ->
-    d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y)
-
-  dragended = (d) ->
-    d3.select(this).classed("dragging", false)
-
 
   zoom = d3.behavior.zoom()
     .scaleExtent([1, 10])
     .on("zoom", zoomed)
-
-  drag = d3.behavior.drag()
-    .origin((d) -> d)
-    .on("dragstart", dragstarted)
-    .on("drag", dragged)
-    .on("dragend", dragended)
 
   svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -81,22 +65,6 @@
       "height": height,
       })
     .style("fill", "url(#bg)")
-
-  #EXAMPLE STRUCTURES TO DRAG
-  datum = [
-      {x: 100, y: 100, r: 23},
-      {x: 200, y: 200, r: 10},
-      {x: 300, y: 300, r: 15},
-    ];
-  dot = container.append("g")
-      .attr("class", "dot")
-    .selectAll("circle")
-      .data(datum)
-    .enter().append("circle")
-      .attr("r", (d) -> d.r)
-      .attr("cx", (d) -> d.x)
-      .attr("cy", (d) -> d.y)
-      .call(drag);
 
 </script>
 {% endcompress %}

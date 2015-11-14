@@ -17,14 +17,20 @@ class ThriftCommunicator:
 		self.transport = None
 		self.protocol = None
 		self.client = None
+
 	def start_connection(self):
 		self.transport = TSocket.TSocket(self.host, self.port)
   		self.transport = TTransport.TBufferedTransport(self.transport)
   		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
 		self.transport.open()
 		self.client = Server.Client(self.protocol)
+
 	def end_connection(self):
 		self.transport.close()
+
 	def ping(self, number, text):
 		msg = structs.ttypes.HelloMsg(number, text)
-		return self.client.ping(msg)
+		start_connection()
+		ret = self.client.ping(msg)
+		end_connection()
+		return ret
