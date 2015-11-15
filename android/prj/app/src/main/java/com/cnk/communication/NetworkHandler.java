@@ -30,14 +30,22 @@ public class NetworkHandler implements Observer {
     private Context context;
     private Notificator mapDownload;
     private Notificator raportUpload;
-
+    private Thread t;
 
     private class QueueThread extends Thread {
         private static final int TRIES = 3;
         public void run() {
             while(true) {
-                if (!tasks.isEmpty()) {
-                    tasks.remove().run(3);
+                synchronized(this) {
+                    if (!tasks.isEmpty()) {
+                        tasks.remove().run(3);
+                    } else {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         }
@@ -54,22 +62,32 @@ public class NetworkHandler implements Observer {
         RaportUploader.setNotificator(raportUpload);
 
         tasks = new ConcurrentLinkedQueue<>();
-        (new QueueThread()).start();
+        t = new QueueThread();
+        t.start();
     }
 
-    public void downloadMap() {
-        Task t = new MapDownloadTask(context);
-        tasks.add(t);
+    public synchronized void downloadMap() {
+        synchronized(t) {
+            Task task = new MapDownloadTask(context);
+            tasks.add(task);
+            t.notify();
+        }
     }
 
-    public void uploadRaport() {
-        Task t = new RaportUploadTask(context);
-        tasks.add(t);
+    public synchronized void uploadRaport() {
+        synchronized(t) {
+            Task task = new RaportUploadTask(context);
+            tasks.add(task);
+            t.notify();
+        }
     }
 
-    public void addWaitTask() {
-        Task t = new WaitTask(context, LONG_DELAY);
-        tasks.add(t);
+    public synchronized void addWaitTask() {
+        synchronized(t) {
+            Task task = new WaitTask(context, LONG_DELAY);
+            tasks.add(task);
+            t.notify();
+        }
     }
 
     public void update(Observable o, Object arg) {
