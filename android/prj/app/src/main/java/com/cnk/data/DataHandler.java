@@ -25,14 +25,25 @@ public class DataHandler extends Observable {
     // private Map<Integer, Exhibit> exhibits;
     private static final String LOG_TAG = "DataHandler";
     private static final String CONFIG_FILE = "config";
+    private static DataHandler instance;
+    private static Context context;
     private Map<Integer, File> mapFiles;
     private Map<Integer, Drawable> mapDrawables;
     private DataConfig config;
-    private Context context;
 
-    public DataHandler(Context context) {
+    public static DataHandler getInstance() {
+        if (instance == null) {
+            instance = new DataHandler();
+        }
+        return instance;
+    }
+
+    public static void setContext(Context c) {
+        context = c;
+    }
+
+    private DataHandler() {
         //exhibits = new HashMap<>();
-        this.context = context;
         mapDrawables = new ConcurrentHashMap<>();
         mapFiles = new ConcurrentHashMap<>();
         loadConfig();
@@ -49,6 +60,8 @@ public class DataHandler extends Observable {
     public void setMapFloor(int floor, String url) throws IOException {
         Drawable image = urlToDrawable(url);
         mapDrawables.put(floor, image);
+        setChanged();
+        notifyObservers();
     }
 
     public void setMapVersion(int newVersion) {
@@ -61,7 +74,7 @@ public class DataHandler extends Observable {
     }
 
     private void createNewFile() {
-        config = new DataConfig(0, 0);
+        config = new DataConfig(null, null);
         saveConfig();
     }
 
@@ -71,8 +84,8 @@ public class DataHandler extends Observable {
             FileInputStream in = context.openFileInput(CONFIG_FILE);
             ObjectInputStream objStream = new ObjectInputStream(in);
             config = (DataConfig) objStream.readObject();
-            in.close();
             objStream.close();
+            in.close();
             Log.i(LOG_TAG, "finding successful");
         } catch (IOException e1) {
             Log.e(LOG_TAG, "error with file, creating new one");
@@ -89,8 +102,8 @@ public class DataHandler extends Observable {
             FileOutputStream out = context.openFileOutput(CONFIG_FILE, Context.MODE_PRIVATE);
             ObjectOutputStream objectStream = new ObjectOutputStream(out);
             objectStream.writeObject(config);
-            out.close();
             objectStream.close();
+            out.close();
             Log.i(LOG_TAG, "saving config file");
         } catch (IOException e) {
             e.printStackTrace();

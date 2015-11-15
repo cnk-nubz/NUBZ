@@ -3,10 +3,10 @@ package com.cnk.data;
 import java.io.Serializable;
 
 public class DataConfig implements Serializable {
-    private int mapVersion;
-    private int exhibitsVersion;
+    private Integer mapVersion;
+    private Integer exhibitsVersion;
 
-    public DataConfig(int mapVersion, int exhibitsVersion) {
+    public DataConfig(Integer mapVersion, Integer exhibitsVersion) {
         this.mapVersion = mapVersion;
         this.exhibitsVersion = exhibitsVersion;
     }
