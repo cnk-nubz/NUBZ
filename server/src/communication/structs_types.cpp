@@ -14,6 +14,79 @@
 namespace communication {
 
 
+InternalError::~InternalError() throw() {
+}
+
+
+uint32_t InternalError::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    xfer += iprot->skip(ftype);
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t InternalError::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("InternalError");
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(InternalError &a, InternalError &b) {
+  using ::std::swap;
+  (void) a;
+  (void) b;
+}
+
+InternalError::InternalError(const InternalError& other0) : TException() {
+  (void) other0;
+}
+InternalError& InternalError::operator=(const InternalError& other1) {
+  (void) other1;
+  return *this;
+}
+void InternalError::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "InternalError(";
+  out << ")";
+}
+
+const char* InternalError::what() const throw() {
+  try {
+    std::stringstream ss;
+    ss << "TException - service has thrown: " << *this;
+    this->thriftTExceptionMessageHolder_ = ss.str();
+    return this->thriftTExceptionMessageHolder_.c_str();
+  } catch (const std::exception&) {
+    return "TException - service has thrown: InternalError";
+  }
+}
+
+
 HelloMsg::~HelloMsg() throw() {
 }
 
@@ -100,15 +173,15 @@ void swap(HelloMsg &a, HelloMsg &b) {
   swap(a.__isset, b.__isset);
 }
 
-HelloMsg::HelloMsg(const HelloMsg& other0) {
-  num = other0.num;
-  msg = other0.msg;
-  __isset = other0.__isset;
+HelloMsg::HelloMsg(const HelloMsg& other2) {
+  num = other2.num;
+  msg = other2.msg;
+  __isset = other2.__isset;
 }
-HelloMsg& HelloMsg::operator=(const HelloMsg& other1) {
-  num = other1.num;
-  msg = other1.msg;
-  __isset = other1.__isset;
+HelloMsg& HelloMsg::operator=(const HelloMsg& other3) {
+  num = other3.num;
+  msg = other3.msg;
+  __isset = other3.__isset;
   return *this;
 }
 void HelloMsg::printTo(std::ostream& out) const {
@@ -191,13 +264,13 @@ void swap(MapImagesRequest &a, MapImagesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-MapImagesRequest::MapImagesRequest(const MapImagesRequest& other2) {
-  acquiredLevel = other2.acquiredLevel;
-  __isset = other2.__isset;
+MapImagesRequest::MapImagesRequest(const MapImagesRequest& other4) {
+  acquiredLevel = other4.acquiredLevel;
+  __isset = other4.__isset;
 }
-MapImagesRequest& MapImagesRequest::operator=(const MapImagesRequest& other3) {
-  acquiredLevel = other3.acquiredLevel;
-  __isset = other3.__isset;
+MapImagesRequest& MapImagesRequest::operator=(const MapImagesRequest& other5) {
+  acquiredLevel = other5.acquiredLevel;
+  __isset = other5.__isset;
   return *this;
 }
 void MapImagesRequest::printTo(std::ostream& out) const {
@@ -253,17 +326,17 @@ uint32_t MapImagesResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->levelImageUrls.clear();
-            uint32_t _size4;
-            ::apache::thrift::protocol::TType _ktype5;
-            ::apache::thrift::protocol::TType _vtype6;
-            xfer += iprot->readMapBegin(_ktype5, _vtype6, _size4);
-            uint32_t _i8;
-            for (_i8 = 0; _i8 < _size4; ++_i8)
+            uint32_t _size6;
+            ::apache::thrift::protocol::TType _ktype7;
+            ::apache::thrift::protocol::TType _vtype8;
+            xfer += iprot->readMapBegin(_ktype7, _vtype8, _size6);
+            uint32_t _i10;
+            for (_i10 = 0; _i10 < _size6; ++_i10)
             {
-              int32_t _key9;
-              xfer += iprot->readI32(_key9);
-              std::string& _val10 = this->levelImageUrls[_key9];
-              xfer += iprot->readString(_val10);
+              int32_t _key11;
+              xfer += iprot->readI32(_key11);
+              std::string& _val12 = this->levelImageUrls[_key11];
+              xfer += iprot->readString(_val12);
             }
             xfer += iprot->readMapEnd();
           }
@@ -296,11 +369,11 @@ uint32_t MapImagesResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("levelImageUrls", ::apache::thrift::protocol::T_MAP, 2);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I32, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->levelImageUrls.size()));
-    std::map<int32_t, std::string> ::const_iterator _iter11;
-    for (_iter11 = this->levelImageUrls.begin(); _iter11 != this->levelImageUrls.end(); ++_iter11)
+    std::map<int32_t, std::string> ::const_iterator _iter13;
+    for (_iter13 = this->levelImageUrls.begin(); _iter13 != this->levelImageUrls.end(); ++_iter13)
     {
-      xfer += oprot->writeI32(_iter11->first);
-      xfer += oprot->writeString(_iter11->second);
+      xfer += oprot->writeI32(_iter13->first);
+      xfer += oprot->writeString(_iter13->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -318,15 +391,15 @@ void swap(MapImagesResponse &a, MapImagesResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-MapImagesResponse::MapImagesResponse(const MapImagesResponse& other12) {
-  version = other12.version;
-  levelImageUrls = other12.levelImageUrls;
-  __isset = other12.__isset;
+MapImagesResponse::MapImagesResponse(const MapImagesResponse& other14) {
+  version = other14.version;
+  levelImageUrls = other14.levelImageUrls;
+  __isset = other14.__isset;
 }
-MapImagesResponse& MapImagesResponse::operator=(const MapImagesResponse& other13) {
-  version = other13.version;
-  levelImageUrls = other13.levelImageUrls;
-  __isset = other13.__isset;
+MapImagesResponse& MapImagesResponse::operator=(const MapImagesResponse& other15) {
+  version = other15.version;
+  levelImageUrls = other15.levelImageUrls;
+  __isset = other15.__isset;
   return *this;
 }
 void MapImagesResponse::printTo(std::ostream& out) const {
@@ -424,15 +497,15 @@ void swap(SetMapImageRequest &a, SetMapImageRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-SetMapImageRequest::SetMapImageRequest(const SetMapImageRequest& other14) {
-  level = other14.level;
-  filename = other14.filename;
-  __isset = other14.__isset;
+SetMapImageRequest::SetMapImageRequest(const SetMapImageRequest& other16) {
+  level = other16.level;
+  filename = other16.filename;
+  __isset = other16.__isset;
 }
-SetMapImageRequest& SetMapImageRequest::operator=(const SetMapImageRequest& other15) {
-  level = other15.level;
-  filename = other15.filename;
-  __isset = other15.__isset;
+SetMapImageRequest& SetMapImageRequest::operator=(const SetMapImageRequest& other17) {
+  level = other17.level;
+  filename = other17.filename;
+  __isset = other17.__isset;
   return *this;
 }
 void SetMapImageRequest::printTo(std::ostream& out) const {

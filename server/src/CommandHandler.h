@@ -4,10 +4,11 @@
 #include <thrift/server/TServer.h>
 
 #include "communication/Server.h"
+#include "db/Database.h"
 
 class CommandHandler : public communication::ServerIf {
 public:
-    CommandHandler();
+    CommandHandler(db::Database &db);
 
     void setServer(apache::thrift::server::TServer *srv);
 
@@ -19,6 +20,7 @@ public:
     virtual void setMapImage(const communication::SetMapImageRequest &request) override;
 
 private:
+    db::Database &db;
     apache::thrift::server::TServer *srv;
 };
 
