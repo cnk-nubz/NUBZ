@@ -12,9 +12,9 @@ def index(request):
 	ret_urls = ret.levelImageUrls
 	url_floor0 = "floorplan0.jpg"
 	url_floor1 = "floorplan1.jpg"
-	if ret in ret_urls.keys():
+	if 0 in ret_urls.keys():
 		url_floor0 = ret_urls[0]
-	if ret in ret_urls.keys():
+	if 1 in ret_urls.keys():
 		url_floor1 = ret_urls[1]
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {

@@ -8,7 +8,7 @@ from thrift.protocol import TBinaryProtocol
 from thrift.server import TServer
 
 from server import Server
-from server.ttypes import *
+from structs.ttypes import *
 
 class ThriftCommunicator:
 	def __init__(self):
@@ -29,14 +29,14 @@ class ThriftCommunicator:
 		self.transport.close()
 
 	def ping(self, number, text):
-		msg = structs.ttypes.HelloMsg(number, text)
+		msg = HelloMsg(number, text)
 		self.start_connection()
 		ret = self.client.ping(msg)
 		self.end_connection()
 		return ret
 	
 	def getMapImages(self):
-		msg = structs.ttypes.SetMapImageRequest(0)
+		msg = MapImagesRequest(0)
 		self.start_connection()
 		ret = self.client.getMapImages(msg)
 		self.end_connection()
