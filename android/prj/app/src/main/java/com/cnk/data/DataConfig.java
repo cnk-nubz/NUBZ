@@ -15,7 +15,7 @@ public class DataConfig implements Serializable {
         mapVersion = newVersion;
     }
 
-    public int getMapVersion() {
+    public Integer getMapVersion() {
         return mapVersion;
     }
 

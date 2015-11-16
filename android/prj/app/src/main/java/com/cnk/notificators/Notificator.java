@@ -7,7 +7,12 @@ public class Notificator extends Observable {
 
     public void failure() {
         setChanged();
-        notifyObservers();
+        notifyObservers(false);
+    }
+
+    public void success() {
+        setChanged();
+        notifyObservers(true);
     }
 
 

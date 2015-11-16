@@ -1,24 +1,26 @@
-package com.cnk.communication;
+package com.cnk.communication.task;
 
-import android.app.IntentService;
+import android.content.Context;
 import android.util.Log;
 
+import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-public abstract class ServerConnector extends IntentService {
+public abstract class ServerTask extends Task {
 
-    protected static final String LOG_TAG = "ServerConnector";
+    protected static final String LOG_TAG = "ServerTask";
     protected static final long DELAY = 30000;
-    private static final String SEND_ADDRESS = "localhost";
-    private static final int SEND_PORT = 6969;
+    private static final String SEND_ADDRESS = "192.168.0.5";
+    private static final int SEND_PORT = 9090;
 
+    protected Notificator notificator;
     protected TTransport socket;
 
-    public ServerConnector() {
-        super(LOG_TAG);
+    public ServerTask(Notificator notificator) {
+        this.notificator = notificator;
     }
 
     protected int openSocket(int tries) {

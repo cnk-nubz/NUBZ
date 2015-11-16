@@ -9,11 +9,13 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
@@ -25,6 +27,7 @@ public class DataHandler extends Observable {
     // private Map<Integer, Exhibit> exhibits;
     private static final String LOG_TAG = "DataHandler";
     private static final String CONFIG_FILE = "config";
+    private static final String MAP_FILE_PREFIX = "map";
     private static DataHandler instance;
     private static Context context;
     private Map<Integer, File> mapFiles;
@@ -58,7 +61,7 @@ public class DataHandler extends Observable {
     }
 
     public void setMapFloor(int floor, String url) throws IOException {
-        Drawable image = urlToDrawable(url);
+        Drawable image = urlToDrawable(url, floor);
         mapDrawables.put(floor, image);
         setChanged();
         notifyObservers();
@@ -69,7 +72,7 @@ public class DataHandler extends Observable {
         saveConfig();
     }
 
-    public int getMapVersion() {
+    public Integer getMapVersion() {
         return config.getMapVersion();
     }
 
@@ -111,13 +114,23 @@ public class DataHandler extends Observable {
         }
     }
 
-    private Drawable urlToDrawable(String url) throws IOException {
+    private Drawable urlToDrawable(String url, Integer floor) throws IOException {
         Bitmap bmp;
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.connect();
         InputStream input = connection.getInputStream();
         bmp = BitmapFactory.decodeStream(input);
+        copyStream(input, floor);
         return new BitmapDrawable(context.getResources(), bmp);
+    }
+
+    private void copyStream(InputStream in, Integer floor) throws IOException {
+        FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
+        int read = 0;
+        byte[] bytes = new byte[1024];
+        while ((read = in.read(bytes)) != -1) {
+            out.write(bytes, 0, read);
+        }
     }
 
     private void scanForMapFiles() {

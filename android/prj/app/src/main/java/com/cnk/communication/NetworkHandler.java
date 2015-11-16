@@ -27,23 +27,26 @@ public class NetworkHandler implements Observer {
     private static final long LONG_DELAY = 300 * 1000;
 
     private Queue<Task> tasks;
-    private Context context;
     private Notificator mapDownload;
     private Notificator raportUpload;
-    private Thread t;
+    private Thread queuer;
 
     private class QueueThread extends Thread {
         private static final int TRIES = 3;
         public void run() {
             while(true) {
-                synchronized(this) {
-                    if (!tasks.isEmpty()) {
-                        tasks.remove().run(3);
-                    } else {
+                if (!tasks.isEmpty()) {
+                    Log.i(LOG_TAG, "starting another task");
+                    tasks.remove().run(3);
+                    Log.i(LOG_TAG, "task finished");
+                } else {
+                    synchronized (this) {
                         try {
+                            Log.i(LOG_TAG, "no tasks to run, sleeping");
                             this.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            Log.i(LOG_TAG, "resuming work");
                         }
                     }
                 }
@@ -51,52 +54,62 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    public NetworkHandler(Context context) {
-        this.context = context;
-
+    public NetworkHandler() {
         mapDownload = new Notificator();
         raportUpload = new Notificator();
         mapDownload.addObserver(this);
         raportUpload.addObserver(this);
-        MapDownloader.setNotificator(mapDownload);
-        RaportUploader.setNotificator(raportUpload);
-
         tasks = new ConcurrentLinkedQueue<>();
-        t = new QueueThread();
-        t.start();
+        queuer = new QueueThread();
+        queuer.start();
     }
 
     public synchronized void downloadMap() {
-        synchronized(t) {
-            Task task = new MapDownloadTask(context);
+        synchronized(queuer) {
+            Task task = new MapDownloadTask(mapDownload);
             tasks.add(task);
-            t.notify();
+            queuer.notify();
         }
     }
 
     public synchronized void uploadRaport() {
-        synchronized(t) {
-            Task task = new RaportUploadTask(context);
+        synchronized(queuer) {
+            Task task = new RaportUploadTask(raportUpload, null);
             tasks.add(task);
-            t.notify();
+            queuer.notify();
         }
     }
 
     public synchronized void addWaitTask() {
-        synchronized(t) {
-            Task task = new WaitTask(context, LONG_DELAY);
+        synchronized(queuer) {
+            Task task = new WaitTask(LONG_DELAY);
             tasks.add(task);
-            t.notify();
+            queuer.notify();
         }
     }
 
     public void update(Observable o, Object arg) {
+        if ((boolean) arg == false) {
+            onFailure(o);
+        } else {
+            onSuccess(o);
+        }
+    }
+
+    private void onSuccess(Observable o) {
+        Log.i(LOG_TAG, "task finished successfully");
+    }
+
+    private void onFailure(Observable o) {
+        Log.i(LOG_TAG, "task failed, retrying");
+        /*
         addWaitTask();
         if (o == mapDownload) {
             downloadMap();
         } else if (o == raportUpload) {
             uploadRaport();
         }
+        */
     }
 
 }

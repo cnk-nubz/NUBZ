@@ -17,7 +17,7 @@ public class StartScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen);
         DataHandler.setContext(getApplication().getApplicationContext());
-        net = new NetworkHandler(this.getBaseContext());
+        net = new NetworkHandler();
     }
 
     public void pingClick(View view) {

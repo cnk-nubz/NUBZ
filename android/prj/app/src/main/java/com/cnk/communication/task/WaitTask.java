@@ -8,8 +8,7 @@ public class WaitTask extends Task {
 
     private long delay;
 
-    public WaitTask(Context context, long delay) {
-        super(context);
+    public WaitTask(long delay) {
         this.delay = delay;
     }
 

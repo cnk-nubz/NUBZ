@@ -18,12 +18,6 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".communication.RaportUploader" >
-        </service>
-        <service
-            android:name=".communication.MapDownloader"
-            android:exported="false" >
-        </service>
     </application>
 
 </manifest>
