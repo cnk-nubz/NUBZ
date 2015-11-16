@@ -10,6 +10,7 @@ namespace db {
 
     DatabaseSession::Row DatabaseSession::getResult(const std::string &sqlQuery) {
         pqxx::result res = work.exec(sqlQuery);
+        assert(res.size());
         return translate(res[0]);
     }
 

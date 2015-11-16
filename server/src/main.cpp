@@ -45,22 +45,21 @@ boost::optional<Config> parseArguments(int argc, char *argv[]) {
     po::variables_map vm;
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
+        po::notify(vm);
+
+        if (vm.count(helpArg)) {
+            std::cout << opts;
+            return {};
+        }
+
+        if (vm.count(configFilePathArg)) {
+            return Config(path);
+        } else {
+            std::cout << opts;
+            return {};
+        }
     } catch (const boost::program_options::error &e) {
         std::cerr << e.what() << std::endl;
-        std::cout << opts;
-        return {};
-    }
-    po::notify(vm);
-
-    if (vm.count(helpArg)) {
-        std::cout << opts;
-        return {};
-    }
-
-    if (vm.count(configFilePathArg)) {
-        return Config(path);
-    } else {
-        std::cout << opts;
         return {};
     }
 }

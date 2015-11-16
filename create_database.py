@@ -6,8 +6,8 @@ con = psycopg2.connect(database='nubz_db', user='zpp')
 cur = con.cursor()
 
 # drop
-cur.execute('DROP TABLE map_images')
-cur.execute('DROP TABLE versions')
+cur.execute('DROP TABLE IF EXISTS map_images')
+cur.execute('DROP TABLE IF EXISTS versions')
 
 # create
 cur.execute('''
