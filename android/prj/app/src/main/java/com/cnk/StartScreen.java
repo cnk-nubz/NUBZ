@@ -9,14 +9,14 @@ import com.cnk.communication.NetworkHandler;
 
 
 public class StartScreen extends AppCompatActivity {
-
     NetworkHandler net;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start_screen);
-        DataHandler.setContext(getApplication().getApplicationContext());
+        DataHandler.getInstance().setContext(getApplication().getApplicationContext());
+        DataHandler.getInstance().loadConfig();
         net = new NetworkHandler();
     }
 

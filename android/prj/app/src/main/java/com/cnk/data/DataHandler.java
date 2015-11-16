@@ -24,12 +24,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
 
-    // private Map<Integer, Exhibit> exhibits;
     private static final String LOG_TAG = "DataHandler";
     private static final String CONFIG_FILE = "config";
     private static final String MAP_FILE_PREFIX = "map";
+    private static final String PROTOCOL = "http://";
     private static DataHandler instance;
-    private static Context context;
+    private Context context;
     private Map<Integer, File> mapFiles;
     private Map<Integer, Drawable> mapDrawables;
     private DataConfig config;
@@ -41,15 +41,13 @@ public class DataHandler extends Observable {
         return instance;
     }
 
-    public static void setContext(Context c) {
+    public void setContext(Context c) {
         context = c;
     }
 
     private DataHandler() {
-        //exhibits = new HashMap<>();
         mapDrawables = new ConcurrentHashMap<>();
         mapFiles = new ConcurrentHashMap<>();
-        loadConfig();
     }
 
     public Map<Integer, Drawable> getMap() {
@@ -76,12 +74,7 @@ public class DataHandler extends Observable {
         return config.getMapVersion();
     }
 
-    private void createNewFile() {
-        config = new DataConfig(null, null);
-        saveConfig();
-    }
-
-    private void loadConfig() {
+    public void loadConfig() {
         Log.i(LOG_TAG, "looking for file");
         try {
             FileInputStream in = context.openFileInput(CONFIG_FILE);
@@ -100,6 +93,11 @@ public class DataHandler extends Observable {
         }
     }
 
+    private void createNewFile() {
+        config = new DataConfig();
+        saveConfig();
+    }
+
     private void saveConfig() {
         try {
             FileOutputStream out = context.openFileOutput(CONFIG_FILE, Context.MODE_PRIVATE);
@@ -116,9 +114,10 @@ public class DataHandler extends Observable {
 
     private Drawable urlToDrawable(String url, Integer floor) throws IOException {
         Bitmap bmp;
-        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection connection = (HttpURLConnection) new URL(PROTOCOL + url).openConnection();
         connection.connect();
         InputStream input = connection.getInputStream();
+        connection.disconnect();
         bmp = BitmapFactory.decodeStream(input);
         copyStream(input, floor);
         return new BitmapDrawable(context.getResources(), bmp);
@@ -126,15 +125,11 @@ public class DataHandler extends Observable {
 
     private void copyStream(InputStream in, Integer floor) throws IOException {
         FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
-        int read = 0;
+        int read;
         byte[] bytes = new byte[1024];
         while ((read = in.read(bytes)) != -1) {
             out.write(bytes, 0, read);
         }
-    }
-
-    private void scanForMapFiles() {
-
     }
 
 }

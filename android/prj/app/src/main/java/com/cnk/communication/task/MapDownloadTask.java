@@ -24,39 +24,16 @@ public class MapDownloadTask extends ServerTask {
         super(notificator);
     }
 
-    public void run(int tries) {
-        Log.i(LOG_TAG, "sending");
-        tries = openSocket(tries);
-        TProtocol protocol = new TBinaryProtocol(socket);
-        Server.Client client = new Server.Client(protocol);
-
+    public void performInSession(Server.Client client) throws TException {
+        Log.i(LOG_TAG, "Downloading map");
         MapImagesRequest request = new MapImagesRequest();
         if (DataHandler.getInstance().getMapVersion() != null) {
             request.acquiredLevel = DataHandler.getInstance().getMapVersion();
         }
         MapImagesResponse response = null;
-
-        boolean succeeded = false;
-        while(!succeeded && tries > 0) {
-            try {
-                response = client.getMapImages(request);
-                succeeded = true;
-                updateDataHandler(response);
-                Log.i(LOG_TAG, "sent");
-            } catch (TException e) {
-                Log.e(LOG_TAG, "sending failed, remaining tries: " + Integer.toString(tries));
-                e.printStackTrace();
-                Util.waitDelay(DELAY);
-            }
-        }
-
-        if (tries <= 0) {
-            notificator.failure();
-        } else {
-            notificator.success();
-        }
-        socket.close();
-        Log.i(LOG_TAG, "exiting");
+        response = client.getMapImages(request);
+        updateDataHandler(response);
+        Log.i(LOG_TAG, "Map downlaoded");
     }
 
     private void updateDataHandler(MapImagesResponse response) {

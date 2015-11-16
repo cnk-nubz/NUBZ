@@ -4,11 +4,13 @@ import java.io.Serializable;
 
 public class DataConfig implements Serializable {
     private Integer mapVersion;
-    private Integer exhibitsVersion;
 
-    public DataConfig(Integer mapVersion, Integer exhibitsVersion) {
+    public DataConfig() {
+        this.mapVersion = null;
+    }
+
+    public DataConfig(Integer mapVersion) {
         this.mapVersion = mapVersion;
-        this.exhibitsVersion = exhibitsVersion;
     }
 
     public void setMapVersion(int newVersion) {
@@ -17,9 +19,5 @@ public class DataConfig implements Serializable {
 
     public Integer getMapVersion() {
         return mapVersion;
-    }
-
-    public int getExhibitsVersion() {
-        return exhibitsVersion;
     }
 }

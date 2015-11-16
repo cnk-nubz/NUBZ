@@ -36,17 +36,17 @@ public class NetworkHandler implements Observer {
         public void run() {
             while(true) {
                 if (!tasks.isEmpty()) {
-                    Log.i(LOG_TAG, "starting another task");
+                    Log.i(LOG_TAG, "Starting another task");
                     tasks.remove().run(3);
-                    Log.i(LOG_TAG, "task finished");
+                    Log.i(LOG_TAG, "Task finished");
                 } else {
-                    synchronized (this) {
+                    synchronized(this) {
                         try {
-                            Log.i(LOG_TAG, "no tasks to run, sleeping");
+                            Log.i(LOG_TAG, "No tasks to run, sleeping");
                             this.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
-                            Log.i(LOG_TAG, "resuming work");
+                            Log.i(LOG_TAG, "Resuming work");
                         }
                     }
                 }
@@ -97,19 +97,19 @@ public class NetworkHandler implements Observer {
     }
 
     private void onSuccess(Observable o) {
-        Log.i(LOG_TAG, "task finished successfully");
+        Log.i(LOG_TAG, "Task finished successfully");
     }
 
     private void onFailure(Observable o) {
-        Log.i(LOG_TAG, "task failed, retrying");
-        /*
-        addWaitTask();
+        Log.i(LOG_TAG, "Task failed, retrying");
+        //addWaitTask();
         if (o == mapDownload) {
+            Log.i(LOG_TAG, "Map download task failure");
             downloadMap();
         } else if (o == raportUpload) {
+            Log.i(LOG_TAG, "Raport upload task failure");
             uploadRaport();
         }
-        */
     }
 
 }

@@ -23,35 +23,19 @@ public class RaportUploadTask extends ServerTask {
         this.toSend = toSend;
     }
 
-    public void run(int tries) {
-        Log.i(LOG_TAG, "sending");
-        tries = openSocket(tries);
-        boolean succeeded = false;
-        TProtocol protocol = new TBinaryProtocol(socket);
-        Server.Client client = new Server.Client(protocol);
-
+    @Override
+    protected void performInSession(Server.Client client) {
+        Log.i(LOG_TAG, "Uploading raport");
         HelloMsg msg = new HelloMsg();
         msg.msg = "test";
         msg.num = 123;
-
-        while (!succeeded && tries > 0) {
-            try {
-                client.ping(msg);
-                succeeded = true;
-                Log.i(LOG_TAG, "sent");
-            } catch (TException e1) {
-                tries--;
-                Log.e(LOG_TAG, "sending failed");
-                Util.waitDelay(DELAY);
-            }
+        try {
+            client.ping(msg);
+        } catch (TException e) {
+            Log.e(LOG_TAG, "Error");
+            e.printStackTrace();
         }
-        if (tries <= 0) {
-            notificator.failure();
-        } else {
-            notificator.success();
-        }
-        socket.close();
-        Log.i(LOG_TAG, "exiting");
+        Log.i(LOG_TAG, "Raport uploaded");
     }
 
 }
