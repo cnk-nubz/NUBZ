@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+{% load compress %}
+{% load staticfiles %}
+<head>
+  <meta charset="utf-8">
+  <link rel="icon" href="{%static "favicon.ico" %}">
+  <link href="{% static "css/base.css" %}" rel="stylesheet">
+  <title>Tajny Projekt NUBZ</title>
+</head>
+
+<body>
+<script src="{% static "js/d3.v3.min.js" %}"></script>
+{% compress js %}
+<script type="text/coffeescript">
+  margin = {top: -5, right: -5, bottom: -5, left: -5}
+  width = 800 - margin.left - margin.right
+  height = 600 - margin.top - margin.bottom
+
+  zoomed = ->
+    container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
+
+  clickChangeFloorButton = ->
+    id = d3.select("#floorImage").style("fill")
+    last_dig = +id.charAt(id.length - 2)
+    d3.select("#changeFloorButton").html("Zmień piętro na " + last_dig + ".")
+    d3.select("#floorImage").style("fill", if last_dig is 0 then "url(#floor1)" else "url(#floor0)")
+
+  zoom = d3.behavior.zoom()
+    .scaleExtent([1, 10])
+    .on("zoom", zoomed)
+
+  div = d3.select("body").append("div")
+
+  div.append("button").attr("id", "changeFloorButton")
+  .style({
+    "width": "auto",
+    "height": "20px",
+  })
+  .html("Zmień piętro na 1.")
+  .on("click", clickChangeFloorButton)
+
+  svg = d3.select("body")
+    .append("div")
+    .append("svg")
+    .attr({
+      "width": width + margin.left + margin.right,
+      "height": height + margin.top + margin.bottom,
+    })
+    .append("g")
+    .attr("id", "zoomGroup")
+    .call(zoom)
+
+  svg.append("defs")
+  	.append("pattern")
+    .attr({
+      "id": "floor0",
+      "patternUnits": "userSpaceOnUse",
+      "width": width,
+      "height": height,
+      "preserveAspectRatio": "xMinYMin meet",
+      })
+  	.append("image")
+  	.attr({
+  		"width": width,
+  		"height": height,
+  		"x": "0",
+  		"y": "0",
+  		"xlink:href": "{{url_floor0}}",
+  	})
+
+  svg.append("defs")
+    	.append("pattern")
+      .attr({
+        "id": "floor1",
+        "patternUnits": "userSpaceOnUse",
+        "width": width,
+        "height": height,
+        "preserveAspectRatio": "xMinYMin meet",
+        })
+    	.append("image")
+    	.attr({
+    		"width": width,
+    		"height": height,
+    		"x": "0",
+    		"y": "0",
+    		"xlink:href": "{{url_floor1}}",
+    	})
+
+
+  container = svg.append("g")
+
+  container.append("rect")
+    .attr({
+      "id": "floorImage"
+      "width": width,
+      "height": height,
+      })
+    .style("fill", "url(#floor0)")
+
+</script>
+{% endcompress %}
+</body>

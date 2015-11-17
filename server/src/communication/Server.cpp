@@ -443,6 +443,14 @@ uint32_t Server_getMapImages_result::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->err.read(iprot);
+          this->__isset.err = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -464,6 +472,10 @@ uint32_t Server_getMapImages_result::write(::apache::thrift::protocol::TProtocol
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
     xfer += this->success.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.err) {
+    xfer += oprot->writeFieldBegin("err", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->err.write(oprot);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -501,6 +513,14 @@ uint32_t Server_getMapImages_presult::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += (*(this->success)).read(iprot);
           this->__isset.success = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->err.read(iprot);
+          this->__isset.err = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -838,6 +858,9 @@ void ServerClient::recv_getMapImages( ::communication::MapImagesResponse& _retur
     // _return pointer has now been filled
     return;
   }
+  if (result.__isset.err) {
+    throw result.err;
+  }
   throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getMapImages failed: unknown result");
 }
 
@@ -1045,6 +1068,9 @@ void ServerProcessor::process_getMapImages(int32_t seqid, ::apache::thrift::prot
   try {
     iface_->getMapImages(result.success, args.request);
     result.__isset.success = true;
+  } catch ( ::communication::InternalError &err) {
+    result.err = err;
+    result.__isset.err = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "Server.getMapImages");
@@ -1367,6 +1393,10 @@ void ServerConcurrentClient::recv_getMapImages( ::communication::MapImagesRespon
         // _return pointer has now been filled
         sentry.commit();
         return;
+      }
+      if (result.__isset.err) {
+        sentry.commit();
+        throw result.err;
       }
       // in a bad state, don't commit
       throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "getMapImages failed: unknown result");
