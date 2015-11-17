@@ -3,18 +3,18 @@ package com.cnk.database;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-public class MapFile extends RealmObject{
+public class MapFile extends RealmObject {
 
     @PrimaryKey
-    private int floor;
+    private Integer floor;
 
     private String mapFileLocation;
 
-    public int getFloor() {
+    public Integer getFloor() {
         return floor;
     }
 
-    public void setFloor(int floor) {
+    public void setFloor(Integer floor) {
         this.floor = floor;
     }
 

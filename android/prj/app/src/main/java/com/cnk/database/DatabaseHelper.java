@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.cnk.exceptions.NoSuchRecordException;
 
+import org.javatuples.Triplet;
+
 import io.realm.Realm;
 import io.realm.RealmResults;
 
@@ -24,9 +26,21 @@ public class DatabaseHelper {
         realm.close();
     }
 
-    public Version getVersion(String item) throws NoSuchRecordException {
+    public void beginTransaction() {
+        realm.beginTransaction();
+    }
+
+    public void commitTransaction() {
+        realm.commitTransaction();
+    }
+
+    public void cancelTransaction() {
+        realm.cancelTransaction();
+    }
+
+    public Version getVersion(Enum<Version.Item> item) throws NoSuchRecordException {
         RealmResults<Version> results = realm.where(Version.class)
-                .equalTo("item", item).findAll();
+                .equalTo("item", item.toString()).findAll();
 
         if (!results.isEmpty()) {
             return results.first();
@@ -35,50 +49,15 @@ public class DatabaseHelper {
         }
     }
 
-    public void setVersion(String item, int currentVersion) throws RuntimeException {
+    public void setVersion(Enum<Version.Item> item, Integer currentVersion) throws RuntimeException {
         Version version = new Version();
-        version.setItem(item);
+        version.setItem(item.toString());
         version.setCurrentVersion(currentVersion);
 
-        try {
-            realm.beginTransaction();
-            realm.copyToRealmOrUpdate(version);
-            realm.commitTransaction();
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
-            realm.cancelTransaction();
-            throw e;
-        }
+        realm.copyToRealmOrUpdate(version);
     }
 
-    public void removeItemVersion(String item) throws RuntimeException {
-        Version version = getVersion(item);
-        if (version != null) {
-            try {
-                realm.beginTransaction();
-                version.removeFromRealm();
-                realm.commitTransaction();
-            } catch (Exception e) {
-                Log.e("Realm Error", "error msg: " + e.toString());
-                realm.cancelTransaction();
-                throw e;
-            }
-        }
-    }
-
-    public void addAllVersions(Iterable<Version> items) throws RuntimeException {
-        try {
-            realm.beginTransaction();
-            realm.copyToRealmOrUpdate(items);
-            realm.commitTransaction();
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
-            realm.cancelTransaction();
-            throw e;
-        }
-    }
-
-    public MapFile getMapFile(int floor) throws NoSuchRecordException {
+    public MapFile getMapFile(Integer floor) throws NoSuchRecordException {
         RealmResults<MapFile> results = realm.where(MapFile.class)
                 .equalTo("floor", floor).findAll();
 
@@ -89,19 +68,46 @@ public class DatabaseHelper {
         }
     }
 
-    public void setMapFile(int floor, String mapFileLocation) throws RuntimeException {
+    public void setMapFile(Integer floor, String mapFileLocation) throws RuntimeException {
         MapFile mapFile = new MapFile();
         mapFile.setFloor(floor);
         mapFile.setMapFileLocation(mapFileLocation);
 
+        realm.copyToRealmOrUpdate(mapFile);
+    }
+
+    public static final Integer floor1Code = 1;
+    public static final Integer floor2Code = 2;
+
+    public void setMap(Integer versionNum, String floor1MapLocation, Strinfg floor2MapLocation) throws RuntimeException {
         try {
-            realm.beginTransaction();
-            realm.copyToRealmOrUpdate(mapFile);
-            realm.commitTransaction();
+            beginTransaction();
+            setVersion(Version.Item.MAP, versionNum);
+            setMapFile(floor1Code, floor1MapLocation);
+            setMapFile(floor2Code, floor2MapLocation);
+            commitTransaction();
         } catch (Exception e) {
             Log.e("Realm Error", "error msg: " + e.toString());
-            realm.cancelTransaction();
+            cancelTransaction();
             throw e;
         }
+    }
+
+    public Triplet<Integer, String, String> getCurrentMapData() throws RuntimeException {
+        Integer version;
+        String floor1Map, floor2Map;
+        try {
+            beginTransaction();
+            version = getVersion(Version.Item.MAP).getCurrentVersion();
+            floor1Map = getMapFile(floor1Code).getMapFileLocation();
+            floor2Map = getMapFile(floor2Code).getMapFileLocation();
+            cancelTransaction();
+            return Triplet.with(version, floor1Map, floor2Map);
+        } catch (Exception e) {
+            Log.e("Realm Error", "error msg: " + e.toString());
+            cancelTransaction();
+            throw e;
+        }
+
     }
 }
