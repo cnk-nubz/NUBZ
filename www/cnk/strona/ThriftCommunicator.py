@@ -36,7 +36,7 @@ class ThriftCommunicator:
 		return ret
 	
 	def getMapImages(self):
-		msg = MapImagesRequest(0)
+		msg = MapImagesRequest()
 		self.start_connection()
 		ret = self.client.getMapImages(msg)
 		self.end_connection()
