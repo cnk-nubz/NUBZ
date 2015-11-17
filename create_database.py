@@ -27,8 +27,8 @@ cur.execute('''
 # sample data
 cur.execute('''
 	INSERT INTO map_images VALUES
-		('test0.png', 1, 0),
-		('test1.png', 2, 1)
+		('floorplan0.jpg', 1, 0),
+		('floorplan0.jpg', 2, 1)
 ''')
 cur.execute('''
 	INSERT INTO versions VALUES
