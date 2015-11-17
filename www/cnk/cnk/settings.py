@@ -127,7 +127,11 @@ STATICFILES_FINDERS = [
 ]
 STATIC_URL = '/static/'
 STATIC_ROOT = ''
-STATICFILES_DIRS = ( os.path.join('static'), )
+
+STATICFILES_DIRS = ( 
+	os.path.join('download'),
+	os.path.join(BASE_DIR + '/strona/', 'static'),
+)
 MEDIA_URL = os.path.join(BASE_DIR, 'strona/media/')
 
 COMPRESS_ROOT = os.path.join(BASE_DIR, 'TMPCOFFEE/')

@@ -135,6 +135,8 @@ class Client(Iface):
     iprot.readMessageEnd()
     if result.success is not None:
       return result.success
+    if result.err is not None:
+      raise result.err
     raise TApplicationException(TApplicationException.MISSING_RESULT, "getMapImages failed: unknown result")
 
   def setMapImage(self, request):
@@ -239,6 +241,9 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except structs.ttypes.InternalError as err:
+      msg_type = TMessageType.REPLY
+      result.err = err
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -562,14 +567,17 @@ class getMapImages_result:
   """
   Attributes:
    - success
+   - err
   """
 
   thrift_spec = (
     (0, TType.STRUCT, 'success', (structs.ttypes.MapImagesResponse, structs.ttypes.MapImagesResponse.thrift_spec), None, ), # 0
+    (1, TType.STRUCT, 'err', (structs.ttypes.InternalError, structs.ttypes.InternalError.thrift_spec), None, ), # 1
   )
 
-  def __init__(self, success=None,):
+  def __init__(self, success=None, err=None,):
     self.success = success
+    self.err = err
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -586,6 +594,12 @@ class getMapImages_result:
           self.success.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 1:
+        if ftype == TType.STRUCT:
+          self.err = structs.ttypes.InternalError()
+          self.err.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -600,6 +614,10 @@ class getMapImages_result:
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
+    if self.err is not None:
+      oprot.writeFieldBegin('err', TType.STRUCT, 1)
+      self.err.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -610,6 +628,7 @@ class getMapImages_result:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.success)
+    value = (value * 31) ^ hash(self.err)
     return value
 
   def __repr__(self):
