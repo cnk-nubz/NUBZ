@@ -26,4 +26,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile files('libs/libthrift-0.9.3.jar')
     compile files('libs/slf4j-api-1.7.12.jar')
+    compile files('libs/realm-0.84.1.jar')
 }
