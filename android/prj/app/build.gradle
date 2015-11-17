@@ -17,6 +17,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
 }
 
 dependencies {
@@ -26,4 +39,7 @@ dependencies {
     compile 'com.android.support:appcompat-v7:22.2.1'
     compile files('libs/libthrift-0.9.3.jar')
     compile files('libs/slf4j-api-1.7.12.jar')
+    compile files('libs/realm-0.84.1.jar')
+    compile files('libs/javatuples-1.2.jar')
 }
+
