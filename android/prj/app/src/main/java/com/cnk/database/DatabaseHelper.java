@@ -79,7 +79,7 @@ public class DatabaseHelper {
     public static final Integer floor1Code = 1;
     public static final Integer floor2Code = 2;
 
-    public void setMap(Integer versionNum, String floor1MapLocation, Strinfg floor2MapLocation) throws RuntimeException {
+    public void setMap(Integer versionNum, String floor1MapLocation, String floor2MapLocation) throws RuntimeException {
         try {
             beginTransaction();
             setVersion(Version.Item.MAP, versionNum);
