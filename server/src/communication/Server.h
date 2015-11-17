@@ -297,8 +297,9 @@ class Server_getMapImages_pargs {
 };
 
 typedef struct _Server_getMapImages_result__isset {
-  _Server_getMapImages_result__isset() : success(false) {}
+  _Server_getMapImages_result__isset() : success(false), err(false) {}
   bool success :1;
+  bool err :1;
 } _Server_getMapImages_result__isset;
 
 class Server_getMapImages_result {
@@ -311,14 +312,19 @@ class Server_getMapImages_result {
 
   virtual ~Server_getMapImages_result() throw();
    ::communication::MapImagesResponse success;
+   ::communication::InternalError err;
 
   _Server_getMapImages_result__isset __isset;
 
   void __set_success(const  ::communication::MapImagesResponse& val);
 
+  void __set_err(const  ::communication::InternalError& val);
+
   bool operator == (const Server_getMapImages_result & rhs) const
   {
     if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
       return false;
     return true;
   }
@@ -334,8 +340,9 @@ class Server_getMapImages_result {
 };
 
 typedef struct _Server_getMapImages_presult__isset {
-  _Server_getMapImages_presult__isset() : success(false) {}
+  _Server_getMapImages_presult__isset() : success(false), err(false) {}
   bool success :1;
+  bool err :1;
 } _Server_getMapImages_presult__isset;
 
 class Server_getMapImages_presult {
@@ -344,6 +351,7 @@ class Server_getMapImages_presult {
 
   virtual ~Server_getMapImages_presult() throw();
    ::communication::MapImagesResponse* success;
+   ::communication::InternalError err;
 
   _Server_getMapImages_presult__isset __isset;
 

@@ -3,10 +3,10 @@
 #include "external/easylogging++.h"
 
 #include "CommandHandler.h"
-#include "command/PingCommand.h"
-#include "io/input/HelloMsg.h"
+#include "command/commands.h"
+#include "io/io.h"
 
-CommandHandler::CommandHandler() : srv(nullptr) {
+CommandHandler::CommandHandler(db::Database &db) : db(db), srv(nullptr) {
 }
 
 void CommandHandler::setServer(apache::thrift::server::TServer *srv) {
@@ -15,10 +15,10 @@ void CommandHandler::setServer(apache::thrift::server::TServer *srv) {
 
 void CommandHandler::shutdown() {
     LOG(INFO) << "shutdown start";
-    
+
     assert(srv);
     srv->stop();
-    
+
     LOG(INFO) << "shutdown end";
 }
 
@@ -29,7 +29,6 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     io::input::HelloMsg input(msg);
 
     command::PingCommand cmd;
-
     std::int32_t output = cmd.perform(msg);
 
     LOG(INFO) << "output: " << output;
@@ -38,12 +37,23 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     return output;
 }
 
-void CommandHandler::getMapImages(communication::MapImagesResponse &response, const communication::MapImagesRequest &request) {
+void CommandHandler::getMapImages(communication::MapImagesResponse &response,
+                                  const communication::MapImagesRequest &request) {
     LOG(INFO) << "getMapImages start";
     LOG(INFO) << "input: " << request;
-    
-    LOG(INFO) << "not implemented";
-    
+
+    try {
+        io::input::MapImagesRequest input(request);
+
+        command::GetMapImagesCommand cmd(db);
+        io::output::MapImagesResponse output = cmd.perform(input);
+
+        response = output.toThrift();
+    } catch (std::exception &e) {
+        LOG(ERROR) << e.what();
+        throw communication::InternalError{};
+    }
+
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getMapImages end";
 }
@@ -51,8 +61,8 @@ void CommandHandler::getMapImages(communication::MapImagesResponse &response, co
 void CommandHandler::setMapImage(const communication::SetMapImageRequest &request) {
     LOG(INFO) << "setMapImage start";
     LOG(INFO) << "input: " << request;
-    
+
     LOG(INFO) << "not implemented";
-    
+
     LOG(INFO) << "setMapImage end";
 }

@@ -19,6 +19,8 @@
 
 namespace communication {
 
+class InternalError;
+
 class HelloMsg;
 
 class MapImagesRequest;
@@ -26,6 +28,43 @@ class MapImagesRequest;
 class MapImagesResponse;
 
 class SetMapImageRequest;
+
+
+class InternalError : public ::apache::thrift::TException {
+ public:
+
+  InternalError(const InternalError&);
+  InternalError& operator=(const InternalError&);
+  InternalError() {
+  }
+
+  virtual ~InternalError() throw();
+
+  bool operator == (const InternalError & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const InternalError &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const InternalError & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+  mutable std::string thriftTExceptionMessageHolder_;
+  const char* what() const throw();
+};
+
+void swap(InternalError &a, InternalError &b);
+
+inline std::ostream& operator<<(std::ostream& out, const InternalError& obj)
+{
+  obj.printTo(out);
+  return out;
+}
 
 typedef struct _HelloMsg__isset {
   _HelloMsg__isset() : num(false), msg(false) {}
