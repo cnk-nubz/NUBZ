@@ -66,7 +66,7 @@ public abstract class ServerTask extends Task {
             } catch (org.apache.thrift.transport.TTransportException transportException) {
                 tries--;
                 Log.e(LOG_TAG, "Socket open failed, remaining tries: " + Integer.toString(tries));
-                Util.waitDelay(delay);
+                Util.waitDelay(delay * 1000);
                 delay += 2;
             }
         }
