@@ -14,3 +14,4 @@ BinPackArguments: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 Cpp11BracedListStyle: true
 Standard: Cpp11
+NamespaceIndentation: All
