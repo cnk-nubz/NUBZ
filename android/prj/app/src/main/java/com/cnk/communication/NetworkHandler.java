@@ -1,106 +1,148 @@
 package com.cnk.communication;
 
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
-import com.cnk.data.DataHandler;
 import com.cnk.notificators.Notificator;
-import com.cnk.utilities.Util;
 
-import java.io.File;
-import java.io.IOError;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class NetworkHandler implements Observer {
 
     private static final String LOG_TAG = "NetworkHandler";
-    private static final long DELAY = 30 * 1000;
-    private static final long LONG_DELAY = 300 * 1000;
+    private static final long SECONDS_DELAY = 30;
 
-    private Queue<Task> tasks;
+    private long bgDelaySeconds;
+    private BlockingQueue<Task> tasks;
+    private BlockingQueue<Task> bgTasks;
     private Notificator mapDownload;
     private Notificator raportUpload;
-    private Thread queuer;
+    private Notificator bgMapDownload;
+    private Notificator bgRaportUpload;
+    private boolean downloadInBg;
+    private boolean uploadInBg;
 
-    private class QueueThread extends Thread {
+    private class QueueThread implements Runnable {
         private static final int TRIES = 3;
+        private BlockingQueue<Task> queue;
+        public QueueThread(BlockingQueue<Task> queue) {
+            this.queue = queue;
+        }
         public void run() {
             while(true) {
-                if (!tasks.isEmpty()) {
+                try {
                     Log.i(LOG_TAG, "Starting another task");
-                    tasks.remove().run(3);
+                    queue.take().run(TRIES);
                     Log.i(LOG_TAG, "Task finished");
-                } else {
-                    synchronized(this) {
-                        try {
-                            Log.i(LOG_TAG, "No tasks to run, sleeping");
-                            this.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                            Log.i(LOG_TAG, "Resuming work");
-                        }
-                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.i(LOG_TAG, "Thread woken");
                 }
             }
         }
     }
 
     public NetworkHandler() {
-        mapDownload = new Notificator();
-        raportUpload = new Notificator();
-        mapDownload.addObserver(this);
-        raportUpload.addObserver(this);
-        tasks = new ConcurrentLinkedQueue<>();
-        queuer = new QueueThread();
-        queuer.start();
+        mapDownload = new Notificator(this);
+        raportUpload = new Notificator(this);
+        bgRaportUpload = new Notificator(this);
+        bgMapDownload = new Notificator(this);
+        downloadInBg = false;
+        bgDelaySeconds = 30;
+        tasks = new LinkedBlockingQueue<>();
+        bgTasks = new LinkedBlockingQueue<>();
+        Thread onDemendQueuer = new Thread(new QueueThread(tasks));
+        Thread bgQueuer = new Thread(new QueueThread(bgTasks));
+        bgQueuer.start();
+        onDemendQueuer.start();
     }
 
     public synchronized void downloadMap() {
-        synchronized(queuer) {
-            Task task = new MapDownloadTask(mapDownload);
-            tasks.add(task);
-            queuer.notify();
-        }
+        Task task = new MapDownloadTask(mapDownload);
+        tasks.add(task);
     }
 
     public synchronized void uploadRaport() {
-        synchronized(queuer) {
-            Task task = new RaportUploadTask(raportUpload, null);
-            tasks.add(task);
-            queuer.notify();
-        }
+        Task task = new RaportUploadTask(raportUpload, null);
+        tasks.add(task);
     }
 
-    public synchronized void addWaitTask() {
-        synchronized(queuer) {
-            Task task = new WaitTask(LONG_DELAY);
-            tasks.add(task);
-            queuer.notify();
+    public synchronized void startBgDownload() {
+        if (downloadInBg) {
+            return;
         }
+        downloadInBg = true;
+        addBgDownloadTask();
+    }
+
+    public synchronized void stopBgDownload() {
+
+        downloadInBg = false;
+    }
+
+    public synchronized void startBgUpload() {
+        if (uploadInBg) {
+            return;
+        }
+        uploadInBg = true;
+        addBgUploadTask();
+    }
+
+    public synchronized void stopBgUpload() {
+        uploadInBg = false;
     }
 
     public void update(Observable o, Object arg) {
-        if ((boolean) arg == false) {
+        if (!(boolean) arg) {
             onFailure(o);
         } else {
             onSuccess(o);
         }
     }
 
-    private void onSuccess(Observable o) {
-        Log.i(LOG_TAG, "Task finished successfully");
+    public void setSecondsDelay(long seconds) {
+        bgDelaySeconds = seconds;
     }
 
-    private void onFailure(Observable o) {
+    public long getSecondsDelay() {
+        return bgDelaySeconds;
+    }
+
+    private synchronized void addWaitTask() {
+        Task task = new WaitTask(SECONDS_DELAY * 1000);
+        tasks.add(task);
+    }
+
+    private synchronized void addBgUploadTask() {
+        Task task = new RaportUploadTask(bgRaportUpload, null);
+        Task wait = new WaitTask(bgDelaySeconds * 1000);
+        bgTasks.add(task);
+        bgTasks.add(wait);
+    }
+
+    private synchronized void addBgDownloadTask() {
+        Task task = new MapDownloadTask(bgMapDownload);
+        Task wait = new WaitTask(bgDelaySeconds * 1000);
+        bgTasks.add(task);
+        bgTasks.add(wait);
+    }
+
+    private synchronized void onSuccess(Observable o) {
+        Log.i(LOG_TAG, "Task finished successfully");
+        if (downloadInBg && o == bgMapDownload) {
+            addBgDownloadTask();
+        } else if (uploadInBg && o == bgRaportUpload) {
+            addBgUploadTask();
+        }
+    }
+
+    private synchronized void onFailure(Observable o) {
         Log.i(LOG_TAG, "Task failed, retrying");
         //addWaitTask();
         if (o == mapDownload) {

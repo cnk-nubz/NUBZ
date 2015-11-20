@@ -14,26 +14,21 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:onClick="pingClick"/>
-
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Map"
         android:id="@+id/mapButton"
+        android:onClick="mapClick"
         android:layout_below="@+id/pingButton"
-        android:layout_marginTop="53dp"
-        android:layout_alignRight="@+id/pingButton"
-        android:layout_alignEnd="@+id/pingButton"
         android:layout_alignLeft="@+id/pingButton"
-        android:layout_alignStart="@+id/pingButton"
-        android:onClick="mapClick"/>
+        android:layout_alignStart="@+id/pingButton" />
 
     <Button
-        android:id="@+id/bDatabaseTest"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/pingButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:text="DATABASE_TEST"/>
+        android:text="Start BG downlaod"
+        android:id="@+id/bgButton"
+        android:layout_above="@+id/pingButton"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

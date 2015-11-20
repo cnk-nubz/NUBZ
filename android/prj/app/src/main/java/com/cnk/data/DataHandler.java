@@ -7,6 +7,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.cnk.database.DatabaseHelper;
+import com.cnk.database.Version;
+import com.cnk.exceptions.DatabaseException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,12 +19,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class DataHandler extends Observable {
 
@@ -28,11 +34,11 @@ public class DataHandler extends Observable {
     private static final String CONFIG_FILE = "config";
     private static final String MAP_FILE_PREFIX = "map";
     private static final String PROTOCOL = "http://";
+    private static final Integer FLOORS = 2;
     private static DataHandler instance;
     private Context context;
-    private Map<Integer, File> mapFiles;
     private Map<Integer, Drawable> mapDrawables;
-    private DataConfig config;
+    private DatabaseHelper dbHelper;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -45,91 +51,97 @@ public class DataHandler extends Observable {
         context = c;
     }
 
+    public void setDbHelper(DatabaseHelper dbHelper) {
+        this.dbHelper = dbHelper;
+    }
+
+    public synchronized void getInitData() {
+        for (int i = 0; i < FLOORS; i++) {
+            try {
+                String file = dbHelper.getMapFile(i);
+                mapDrawables.put(i, getMapFromFile(file));
+            } catch (IOException e){
+                e.printStackTrace();
+                Log.e(LOG_TAG, "Cannot get map file of floor " + Integer.toString(i));
+            } catch (DatabaseException e2) {
+                e2.printStackTrace();
+                Log.e(LOG_TAG, "No record of floor " + Integer.toString(i));
+            }
+        }
+    }
+
     private DataHandler() {
         mapDrawables = new ConcurrentHashMap<>();
-        mapFiles = new ConcurrentHashMap<>();
     }
 
-    public Map<Integer, Drawable> getMap() {
-        return mapDrawables;
-    }
-
-    public Drawable getFloorMap(Integer floor) {
+    public synchronized Drawable getFloorMap(Integer floor) {
         return mapDrawables.get(floor);
     }
 
-    public void setMapFloor(int floor, String url) throws IOException {
+    public synchronized void setMapFloor(Integer floor, String url) throws IOException {
         Drawable image = urlToDrawable(url, floor);
         mapDrawables.put(floor, image);
+        try {
+            dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
+        } catch (DatabaseException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Cant set floor map, db esception");
+        }
         setChanged();
         notifyObservers();
     }
 
-    public void setMapVersion(int newVersion) {
-        config.setMapVersion(newVersion);
-        saveConfig();
-    }
-
-    public Integer getMapVersion() {
-        return config.getMapVersion();
-    }
-
-    public void loadConfig() {
-        Log.i(LOG_TAG, "looking for file");
+    public synchronized void setMapVersion(int newVersion) {
         try {
-            FileInputStream in = context.openFileInput(CONFIG_FILE);
-            ObjectInputStream objStream = new ObjectInputStream(in);
-            config = (DataConfig) objStream.readObject();
-            objStream.close();
-            in.close();
-            Log.i(LOG_TAG, "finding successful");
-        } catch (IOException e1) {
-            Log.e(LOG_TAG, "error with file, creating new one");
-            createNewFile();
-            e1.printStackTrace();
-        } catch (ClassNotFoundException e2) {
-            Log.e(LOG_TAG, "class not found");
-            e2.printStackTrace();
+            dbHelper.setVersion(Version.Item.MAP, newVersion);
+        } catch (DatabaseException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Unable to change map version");
         }
     }
 
-    private void createNewFile() {
-        config = new DataConfig();
-        saveConfig();
-    }
-
-    private void saveConfig() {
+    public synchronized Integer getMapVersion() {
         try {
-            FileOutputStream out = context.openFileOutput(CONFIG_FILE, Context.MODE_PRIVATE);
-            ObjectOutputStream objectStream = new ObjectOutputStream(out);
-            objectStream.writeObject(config);
-            objectStream.close();
-            out.close();
-            Log.i(LOG_TAG, "saving config file");
-        } catch (IOException e) {
+            Integer version =  dbHelper.getVersion(Version.Item.MAP);
+            return version;
+        } catch (DatabaseException e) {
             e.printStackTrace();
-            Log.e(LOG_TAG, "cannot save config file");
+            Log.e(LOG_TAG, "Unable to get map version");
+            return null;
         }
     }
 
     private Drawable urlToDrawable(String url, Integer floor) throws IOException {
         Bitmap bmp;
-        HttpURLConnection connection = (HttpURLConnection) new URL(PROTOCOL + url).openConnection();
-        connection.connect();
-        InputStream input = connection.getInputStream();
-        connection.disconnect();
+        URL fileUrl = new URL(PROTOCOL + url);
+        InputStream input = fileUrl.openStream();
         bmp = BitmapFactory.decodeStream(input);
-        copyStream(input, floor);
+        input.close();
+        saveMapFile(bmp, floor);
         return new BitmapDrawable(context.getResources(), bmp);
     }
 
-    private void copyStream(InputStream in, Integer floor) throws IOException {
-        FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
-        int read;
-        byte[] bytes = new byte[1024];
-        while ((read = in.read(bytes)) != -1) {
-            out.write(bytes, 0, read);
+    private void saveMapFile(Bitmap bmp, Integer floor) throws IOException {
+        try {
+            FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.close();
+            Log.i(LOG_TAG, "Map saved to file " + MAP_FILE_PREFIX + floor.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "Saving map file failed");
+            throw e;
         }
     }
 
+    private Drawable getMapFromFile(String file) throws IOException {
+        try {
+            FileInputStream in = context.openFileInput(file);
+            Bitmap bmp = BitmapFactory.decodeStream(in);
+            return new BitmapDrawable(context.getResources(), bmp);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            throw new FileNotFoundException();
+        }
+    }
 }

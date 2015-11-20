@@ -1,7 +1,5 @@
 package com.cnk.communication.task;
 
-import android.content.Context;
-
 import com.cnk.utilities.Util;
 
 public class WaitTask extends Task {

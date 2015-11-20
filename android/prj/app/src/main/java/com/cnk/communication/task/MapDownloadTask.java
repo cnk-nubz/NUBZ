@@ -7,11 +7,8 @@ import com.cnk.communication.MapImagesResponse;
 import com.cnk.communication.Server;
 import com.cnk.data.DataHandler;
 import com.cnk.notificators.Notificator;
-import com.cnk.utilities.Util;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
 
 import java.io.IOException;
 import java.util.Map;
@@ -33,7 +30,7 @@ public class MapDownloadTask extends ServerTask {
         MapImagesResponse response = null;
         response = client.getMapImages(request);
         updateDataHandler(response);
-        Log.i(LOG_TAG, "Map downlaoded");
+        Log.i(LOG_TAG, "Map downloaded");
     }
 
     private void updateDataHandler(MapImagesResponse response) {

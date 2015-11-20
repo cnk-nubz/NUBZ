@@ -1,6 +1,5 @@
 package com.cnk.communication.task;
 
-import android.content.Context;
 import android.util.Log;
 
 import com.cnk.communication.Server;
@@ -12,14 +11,13 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
 
 public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
-    protected static final long DELAY = 30000;
+    protected long delay = 1;
     private static final String SEND_ADDRESS = "192.168.0.5";
-    private static final int SEND_PORT = 6090;
+    private static final int SEND_PORT = 9090;
 
     protected Notificator notificator;
 
@@ -43,7 +41,8 @@ public abstract class ServerTask extends Task {
             } catch (TException e) {
                 Log.e(LOG_TAG, "Action failed, remaining tries: " + Integer.toString(tries));
                 e.printStackTrace();
-                Util.waitDelay(DELAY);
+                Util.waitDelay(delay * 1000);
+                delay += 2;
                 tries--;
             }
         }
@@ -67,7 +66,8 @@ public abstract class ServerTask extends Task {
             } catch (org.apache.thrift.transport.TTransportException transportException) {
                 tries--;
                 Log.e(LOG_TAG, "Socket open failed, remaining tries: " + Integer.toString(tries));
-                Util.waitDelay(DELAY);
+                Util.waitDelay(delay);
+                delay += 2;
             }
         }
         return null;
