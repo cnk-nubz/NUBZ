@@ -1,3 +1,7 @@
 from django.db import models
 
-# Create your models here.
+class MapUploader(models.Model):
+    image = models.ImageField(
+        upload_to = lambda instance, filename:
+                    'map{}'.format(filename[filename.find('.'):])
+    )

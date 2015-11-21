@@ -40,6 +40,26 @@
   .html("Zmień piętro na 1.")
   .on("click", clickChangeFloorButton)
 
+  form = div.append("form")
+    .attr({
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "action": "/uploadImage/",
+      })
+    .html("{% csrf_token %}")
+  form.append("input")
+    .attr({
+      "id": "uploadImage",
+      "type": "file",
+      "name": "image",
+      })
+
+  form.append("input")
+    .attr({
+      "type": "submit",
+      "value": "Prześlij",
+      })
+
   svg = d3.select("body")
     .append("div")
     .append("svg")
