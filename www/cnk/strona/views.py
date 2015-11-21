@@ -40,7 +40,7 @@ def uploadImage(request):
 
 	#send information about update
 	tc = ThriftCommunicator()
-	floor = 0
+	floor = form.cleaned_data['floor']
 	filename = m.image.name
 	ret = tc.setMapImage(floor, filename[2:]) #remove ./ at beggining of filename
 	if ret == False:
