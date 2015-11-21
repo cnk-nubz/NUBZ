@@ -92,6 +92,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="javax.annotation-3.1.1" level="project" />
     <orderEntry type="library" exported="" name="libthrift-0.9.3" level="project" />
+    <orderEntry type="library" exported="" name="realm-0.84.1" level="project" />
+    <orderEntry type="library" exported="" name="javatuples-1.2" level="project" />
     <orderEntry type="library" exported="" name="support-v4-22.2.1" level="project" />
     <orderEntry type="library" exported="" name="slf4j-api-1.7.12" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-22.2.1" level="project" />
