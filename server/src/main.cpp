@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
@@ -11,6 +12,7 @@
 
 #include "CommandHandler.h"
 #include "Config.h"
+#include "FileHelper.h"
 #include "db/Database.h"
 #include "command/GetMapImagesCommand.h"
 
@@ -20,11 +22,13 @@ boost::optional<Config> parseArguments(int argc, char *argv[]);
 void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
+    srand((unsigned)time(NULL));
     boost::optional<Config> cfg = parseArguments(argc, argv);
     if (!cfg) {
         return 0;
     }
 
+    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath);
     command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
 
     db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);

@@ -21,6 +21,8 @@ namespace communication {
 
 class InternalError;
 
+class InvalidData;
+
 class HelloMsg;
 
 class MapImagesRequest;
@@ -61,6 +63,43 @@ class InternalError : public ::apache::thrift::TException {
 void swap(InternalError &a, InternalError &b);
 
 inline std::ostream& operator<<(std::ostream& out, const InternalError& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class InvalidData : public ::apache::thrift::TException {
+ public:
+
+  InvalidData(const InvalidData&);
+  InvalidData& operator=(const InvalidData&);
+  InvalidData() {
+  }
+
+  virtual ~InvalidData() throw();
+
+  bool operator == (const InvalidData & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const InvalidData &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const InvalidData & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+  mutable std::string thriftTExceptionMessageHolder_;
+  const char* what() const throw();
+};
+
+void swap(InvalidData &a, InvalidData &b);
+
+inline std::ostream& operator<<(std::ostream& out, const InvalidData& obj)
 {
   obj.printTo(out);
   return out;

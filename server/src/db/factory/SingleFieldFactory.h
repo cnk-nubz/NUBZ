@@ -9,9 +9,11 @@ namespace db {
         struct SingleFieldFactory {
             using Product = T;
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) {
+            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept {
+                Product res;
                 assert(raw.size() == 1);
-                return boost::lexical_cast<T>(raw[0].value());
+                assert(boost::conversion::try_lexical_convert(raw[0].value(), res));
+                return res;
             }
         };
     }

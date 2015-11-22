@@ -14,7 +14,7 @@ namespace db {
         GetMapImages::GetMapImages(std::int32_t minVersion) : minVersion(minVersion) {
         }
 
-        void GetMapImages::perform(DatabaseSession &session) {
+        void GetMapImages::operator()(DatabaseSession &session) {
             result = session.getResults<db::factory::MapImageFactory>(createQuery());
         }
 

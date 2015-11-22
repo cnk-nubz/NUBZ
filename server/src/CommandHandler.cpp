@@ -62,7 +62,18 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
     LOG(INFO) << "setMapImage start";
     LOG(INFO) << "input: " << request;
 
-    LOG(INFO) << "not implemented";
+    try {
+        io::input::SetMapImageRequest input(request);
+        
+        command::SetMapImageCommand cmd(db);
+        cmd.perform(input);
+    } catch (command::InvalidInput &e) {
+        LOG(ERROR) << e.what();
+        throw communication::InvalidData{};
+    } catch (std::exception &e) {
+        LOG(ERROR) << e.what();
+        throw communication::InternalError{};
+    }
 
     LOG(INFO) << "setMapImage end";
 }

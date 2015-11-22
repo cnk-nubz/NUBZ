@@ -18,7 +18,7 @@ namespace command {
 
     io::output::MapImagesResponse GetMapImagesCommand::perform(
         const io::input::MapImagesRequest &input) {
-        db::cmd::GetVersion getVersion(db::cmd::GetVersion::ElementType::MapImage);
+        db::cmd::GetVersion getVersion(db::info::versions::element_type::map_images);
         std::unique_ptr<db::cmd::GetMapImages> getMapImages;
         if (input.acquiredLevel) {
             getMapImages.reset(new db::cmd::GetMapImages(*input.acquiredLevel + 1));
@@ -26,8 +26,8 @@ namespace command {
             getMapImages.reset(new db::cmd::GetMapImages);
         }
 
-        db.execute(&getVersion);
-        db.execute(getMapImages.get());
+        db.execute(getVersion);
+        db.execute(*getMapImages);
 
         io::output::MapImagesResponse response;
         response.version = getVersion.getResult();

@@ -408,6 +408,11 @@ class Server_setMapImage_pargs {
 
 };
 
+typedef struct _Server_setMapImage_result__isset {
+  _Server_setMapImage_result__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_setMapImage_result__isset;
 
 class Server_setMapImage_result {
  public:
@@ -418,9 +423,21 @@ class Server_setMapImage_result {
   }
 
   virtual ~Server_setMapImage_result() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
 
-  bool operator == (const Server_setMapImage_result & /* rhs */) const
+  _Server_setMapImage_result__isset __isset;
+
+  void __set_intErr(const  ::communication::InternalError& val);
+
+  void __set_dataErr(const  ::communication::InvalidData& val);
+
+  bool operator == (const Server_setMapImage_result & rhs) const
   {
+    if (!(intErr == rhs.intErr))
+      return false;
+    if (!(dataErr == rhs.dataErr))
+      return false;
     return true;
   }
   bool operator != (const Server_setMapImage_result &rhs) const {
@@ -434,12 +451,21 @@ class Server_setMapImage_result {
 
 };
 
+typedef struct _Server_setMapImage_presult__isset {
+  _Server_setMapImage_presult__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_setMapImage_presult__isset;
 
 class Server_setMapImage_presult {
  public:
 
 
   virtual ~Server_setMapImage_presult() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
+
+  _Server_setMapImage_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
