@@ -11,22 +11,15 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Version;
 import com.cnk.exceptions.DatabaseException;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Map;
 import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class DataHandler extends Observable {
 
@@ -81,34 +74,19 @@ public class DataHandler extends Observable {
     public synchronized void setMapFloor(Integer floor, String url) throws IOException {
         Drawable image = urlToDrawable(url, floor);
         mapDrawables.put(floor, image);
-        try {
-            dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
-        } catch (DatabaseException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Cant set floor map, db esception");
-        }
+        dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
+
         setChanged();
         notifyObservers();
     }
 
     public synchronized void setMapVersion(int newVersion) {
-        try {
-            dbHelper.setVersion(Version.Item.MAP, newVersion);
-        } catch (DatabaseException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Unable to change map version");
-        }
+        dbHelper.setVersion(Version.Item.MAP, newVersion);
     }
 
     public synchronized Integer getMapVersion() {
-        try {
-            Integer version =  dbHelper.getVersion(Version.Item.MAP);
-            return version;
-        } catch (DatabaseException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Unable to get map version");
-            return null;
-        }
+        Integer version =  dbHelper.getVersion(Version.Item.MAP);
+        return version;
     }
 
     private Drawable urlToDrawable(String url, Integer floor) throws IOException {
