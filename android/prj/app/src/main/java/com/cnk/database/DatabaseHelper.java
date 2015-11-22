@@ -3,12 +3,15 @@ package com.cnk.database;
 import android.content.Context;
 import android.util.Log;
 
+import com.cnk.database.MapFileRealm;
 import com.cnk.exceptions.DatabaseException;
+import com.cnk.exceptions.InternalDatabaseError;
 
 import org.javatuples.Triplet;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import io.realm.internal.IOException;
 
 public class DatabaseHelper {
     Context applicationContext;
@@ -26,118 +29,189 @@ public class DatabaseHelper {
         realm.close();
     }
 
-    public void beginTransaction() {
+    private void beginTransaction() {
         realm.beginTransaction();
     }
 
-    public void commitTransaction() {
+    private void commitTransaction() {
         realm.commitTransaction();
     }
 
-    public void cancelTransaction() {
+    private void cancelTransaction() {
         realm.cancelTransaction();
     }
 
-    public Integer getVersion(Enum<Version.Item> item) throws DatabaseException {
-        open();
-        RealmResults<Version> results = realm.where(Version.class).equalTo("item", item.toString()).findAll();
+    private Integer getVersionImpl(Enum<Version.Item> item) {
+        Integer versionNumber = null;
+
+        RealmResults<VersionRealm> results = realm.where(VersionRealm.class).equalTo("item", item.toString()).findAll();
         if (!results.isEmpty()) {
-            Integer version = results.first().getCurrentVersion();
+            versionNumber = results.first().getCurrentVersion();
+        }
+
+        return versionNumber;
+    }
+
+    public Integer getVersion(Enum<Version.Item> item) {
+        Integer version;
+        open();
+
+        try {
+            version = getVersionImpl(item);
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
             close();
-            return version;
+        }
+
+        if (version == null) {
+            throw new InternalDatabaseError("No such element: " + item.toString());
         } else {
-            close();
-            throw new DatabaseException();
+            return version;
         }
     }
 
-    public void setVersion(Enum<Version.Item> item, Integer currentVersion) throws DatabaseException {
+    private void setVersionImpl(Version.Item item, Integer versionNumber) {
+        VersionRealm version = new VersionRealm();
+        version.setItem(item.toString());
+        version.setCurrentVersion(versionNumber);
+        realm.copyToRealmOrUpdate(version);
+    }
+
+    public void setVersion(Version.Item item, Integer versionNumber) {
         open();
+
         try {
             beginTransaction();
-            Version version = new Version();
-            version.setItem(item.toString());
-            version.setCurrentVersion(currentVersion);
-            realm.copyToRealmOrUpdate(version);
+            setVersionImpl(item, versionNumber);
             commitTransaction();
-            close();
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RuntimeException e) {
             cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting version of " + item.toString()
+                    + " to " + versionNumber.toString());
+        } finally {
             close();
-            throw new DatabaseException();
+        }
+    }
+
+    private String getMapFileImpl(Integer floor) {
+        String mapFileAddr = null;
+
+        RealmResults<MapFileRealm> results = realm.where(MapFileRealm.class).equalTo("floor", floor).findAll();
+        if (!results.isEmpty()) {
+            mapFileAddr = results.first().getMapFileLocation();
         }
 
+        return mapFileAddr;
     }
 
     public String getMapFile(Integer floor) throws DatabaseException {
+        String mapFileAddr = null;
         open();
-        RealmResults<MapFile> results = realm.where(MapFile.class).equalTo("floor", floor).findAll();
-        if (!results.isEmpty()) {
-            String map = results.first().getMapFileLocation();
+
+        try {
+            mapFileAddr = getMapFileImpl(floor);
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
             close();
-            return map;
+        }
+
+        if (mapFileAddr == null) {
+            throw new InternalDatabaseError("No map for such floor: " + floor.toString());
         } else {
-            close();
-            throw new DatabaseException();
+            return mapFileAddr;
         }
     }
 
-    public void setMapFile(Integer floor, String mapFileLocation) throws DatabaseException {
-        try {
-            open();
-            beginTransaction();
-            MapFile mapFile = new MapFile();
-            mapFile.setFloor(floor);
-            mapFile.setMapFileLocation(mapFileLocation);
-            realm.copyToRealmOrUpdate(mapFile);
-            commitTransaction();
-            close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            close();
-            throw new DatabaseException();
-        }
+    private void setMapFileImpl(Integer floor, String mapFileLocation) {
+        MapFileRealm mapFileRealm = new MapFileRealm();
+        mapFileRealm.setFloor(floor);
+        mapFileRealm.setMapFileLocation(mapFileLocation);
 
+        realm.copyToRealmOrUpdate(mapFileRealm);
+    }
+
+    public void setMapFile(Integer floor, String mapFileLocation) {
+        open();
+
+        try {
+            beginTransaction();
+            setMapFileImpl(floor, mapFileLocation);
+            commitTransaction();
+        } catch (Exception e) {
+            cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting map of floor "
+                    + floor.toString() + " to " + mapFileLocation);
+        } finally {
+            close();
+        }
     }
 
     public static final Integer floor1Code = 1;
     public static final Integer floor2Code = 2;
 
-    public void setMap(Integer versionNum, String floor1MapLocation, String floor2MapLocation) throws DatabaseException {
+    private void setMapsImpl(Integer versionNum, String floor1MapLocation, String floor2MapLocation) {
+        setVersionImpl(Version.Item.MAP, versionNum);
+        setMapFileImpl(floor1Code, floor1MapLocation);
+        setMapFileImpl(floor2Code, floor2MapLocation);
+    }
+
+    public void setMaps(Integer versionNum, String floor1MapLocation, String floor2MapLocation) {
+        open();
+
         try {
-            open();
             beginTransaction();
-            setVersion(Version.Item.MAP, versionNum);
-            setMapFile(floor1Code, floor1MapLocation);
-            setMapFile(floor2Code, floor2MapLocation);
+            setMapsImpl(versionNum, floor1MapLocation, floor2MapLocation);
             commitTransaction();
-            close();
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
+        } catch (RuntimeException re) {
             cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
             close();
-            throw new DatabaseException();
         }
     }
 
-    public Triplet<Integer, String, String> getCurrentMapData() throws DatabaseException {
+    private Triplet<Integer, String, String> getCurrentMapDataImpl() {
         Integer version;
         String floor1Map, floor2Map;
+
+        version = getVersionImpl(Version.Item.MAP);
+        floor1Map = getMapFileImpl(floor1Code);
+        floor2Map = getMapFileImpl(floor2Code);
+
+        return Triplet.with(version, floor1Map, floor2Map);
+    }
+
+    public Triplet<Integer, String, String> getCurrentMapData() {
+        Triplet<Integer, String, String> mapDataTriplet;
         open();
+
         try {
             beginTransaction();
-            version = getVersion(Version.Item.MAP);
-            floor1Map = getMapFile(floor1Code);
-            floor2Map = getMapFile(floor2Code);
+            mapDataTriplet = getCurrentMapDataImpl();
             commitTransaction();
-            close();
-            return Triplet.with(version, floor1Map, floor2Map);
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
+        } catch (RuntimeException re) {
             cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
             close();
-            throw new DatabaseException();
+        }
+
+        if (mapDataTriplet.getValue0() == null) {
+            throw new InternalDatabaseError("No such element: " + Version.Item.MAP.toString());
+        } else if (mapDataTriplet.getValue1() == null) {
+            throw new InternalDatabaseError("No map for such floor: " + floor1Code.toString());
+        } else if (mapDataTriplet.getValue2() == null) {
+            throw new InternalDatabaseError("No map for such floor: " + floor2Code.toString());
+        } else {
+            return mapDataTriplet;
         }
     }
 }
