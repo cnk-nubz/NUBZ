@@ -20,9 +20,13 @@
   zoomed = ->
     container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
 
+  getActiveFloorLevel = ->
+    id = d3.select("#floorImage").style("fill")
+    return +id.charAt(id.length - 2)
+
   clickChangeFloorButton = ->
     id = d3.select("#floorImage").style("fill")
-    last_dig = +id.charAt(id.length - 2)
+    last_dig = getActiveFloorLevel()
     d3.select("#changeFloorButton").html("Zmień piętro na " + last_dig + ".")
     d3.select("#floorImage").style("fill", if last_dig is 0 then "url(#floor1)" else "url(#floor0)")
 
@@ -39,6 +43,35 @@
   })
   .html("Zmień piętro na 1.")
   .on("click", clickChangeFloorButton)
+
+  form = div.append("form")
+    .attr({
+      "method": "POST",
+      "enctype": "multipart/form-data",
+      "action": "/uploadImage/",
+      })
+    .html("{% csrf_token %}")
+  form.append("input")
+    .attr({
+      "id": "uploadImage",
+      "type": "file",
+      "name": "image",
+      "accept": "image/*",
+      })
+  form.append("input")
+    .attr({
+      "id": "hiddenFloorLevel"
+      "type": "hidden",
+      "name": "floor",
+      })
+  form.append("input")
+    .attr({
+      "type": "submit",
+      "value": "Prześlij",
+      })
+    .on("click", () ->
+      d3.select("#hiddenFloorLevel").attr("value", getActiveFloorLevel())
+    )
 
   svg = d3.select("body")
     .append("div")

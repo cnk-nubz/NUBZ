@@ -34,10 +34,21 @@ class ThriftCommunicator:
 		ret = self.client.ping(msg)
 		self.end_connection()
 		return ret
-	
+
 	def getMapImages(self):
 		msg = MapImagesRequest()
 		self.start_connection()
 		ret = self.client.getMapImages(msg)
+		self.end_connection()
+		return ret
+
+	def setMapImage(self, floor, filename):
+		msg = SetMapImageRequest(floor, filename)
+		ret = True
+		self.start_connection()
+		try:
+			self.client.setMapImage(msg)
+		except:
+			ret = False #failed to set the map
 		self.end_connection()
 		return ret
