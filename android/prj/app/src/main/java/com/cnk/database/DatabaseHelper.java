@@ -116,7 +116,7 @@ public class DatabaseHelper {
     /*
      * returns map file location for selected floor if exists, otherwise null
      */
-    public String getMapFile(Integer floor) throws DatabaseException {
+    public String getMapFile(Integer floor) {
         String mapFileAddr = null;
         open();
 

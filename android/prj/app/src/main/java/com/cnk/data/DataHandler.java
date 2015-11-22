@@ -52,13 +52,12 @@ public class DataHandler extends Observable {
         for (int i = 0; i < FLOORS; i++) {
             try {
                 String file = dbHelper.getMapFile(i);
-                mapDrawables.put(i, getMapFromFile(file));
+                if (file != null) {
+                    mapDrawables.put(i, getMapFromFile(file));
+                }
             } catch (IOException e){
                 e.printStackTrace();
                 Log.e(LOG_TAG, "Cannot get map file of floor " + Integer.toString(i));
-            } catch (DatabaseException e2) {
-                e2.printStackTrace();
-                Log.e(LOG_TAG, "No record of floor " + Integer.toString(i));
             }
         }
     }
