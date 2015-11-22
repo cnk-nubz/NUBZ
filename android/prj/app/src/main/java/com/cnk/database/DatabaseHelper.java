@@ -1,15 +1,19 @@
 package com.cnk.database;
 
 import android.content.Context;
-import android.util.Log;
 
-import com.cnk.exceptions.NoSuchRecordException;
+import com.cnk.database.MapFileRealm;
+import com.cnk.exceptions.DatabaseException;
+import com.cnk.exceptions.InternalDatabaseError;
 
-import org.javatuples.Triplet;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
 
+/*
+ * impl functions could be used in both impl functions and public functions
+ * public functions provide atomic transactions and should only be used from outside this class
+ */
 public class DatabaseHelper {
     Context applicationContext;
     Realm realm;
@@ -18,96 +22,163 @@ public class DatabaseHelper {
         this.applicationContext = applicationContext;
     }
 
-    public void open() {
+    private void open() {
         realm = Realm.getInstance(applicationContext);
     }
 
-    public void close() {
+    private void close() {
         realm.close();
     }
 
-    public void beginTransaction() {
+    private void beginTransaction() {
         realm.beginTransaction();
     }
 
-    public void commitTransaction() {
+    private void commitTransaction() {
         realm.commitTransaction();
     }
 
-    public void cancelTransaction() {
+    private void cancelTransaction() {
         realm.cancelTransaction();
     }
 
-    public Version getVersion(Enum<Version.Item> item) throws NoSuchRecordException {
-        RealmResults<Version> results = realm.where(Version.class)
-                .equalTo("item", item.toString()).findAll();
+    /*
+     * returns current version of item if exists, otherwise null
+     */
+    private Integer getVersionImpl(Enum<Version.Item> item) {
+        Integer versionNumber = null;
 
+        RealmResults<VersionRealm> results = realm.where(VersionRealm.class).equalTo("item", item.toString()).findAll();
         if (!results.isEmpty()) {
-            return results.first();
-        } else {
-            throw new NoSuchRecordException();
+            versionNumber = results.first().getCurrentVersion();
         }
+
+        return versionNumber;
     }
 
-    public void setVersion(Enum<Version.Item> item, Integer currentVersion) throws RuntimeException {
-        Version version = new Version();
-        version.setItem(item.toString());
-        version.setCurrentVersion(currentVersion);
+    /*
+     * returns current version of item if exists, otherwise null
+     */
+    public Integer getVersion(Enum<Version.Item> item) {
+        Integer version = null;
+        open();
 
+        try {
+            version = getVersionImpl(item);
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return version;
+    }
+
+    private void setVersionImpl(Version.Item item, Integer versionNumber) {
+        VersionRealm version = new VersionRealm();
+        version.setItem(item.toString());
+        version.setCurrentVersion(versionNumber);
         realm.copyToRealmOrUpdate(version);
     }
 
-    public MapFile getMapFile(Integer floor) throws NoSuchRecordException {
-        RealmResults<MapFile> results = realm.where(MapFile.class)
-                .equalTo("floor", floor).findAll();
+    public void setVersion(Version.Item item, Integer versionNumber) {
+        open();
 
-        if (!results.isEmpty()) {
-            return results.first();
-        } else {
-            throw new NoSuchRecordException();
+        try {
+            beginTransaction();
+            setVersionImpl(item, versionNumber);
+            commitTransaction();
+        } catch (RuntimeException e) {
+            cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting version of " + item.toString()
+                    + " to " + versionNumber.toString());
+        } finally {
+            close();
         }
     }
 
-    public void setMapFile(Integer floor, String mapFileLocation) throws RuntimeException {
-        MapFile mapFile = new MapFile();
-        mapFile.setFloor(floor);
-        mapFile.setMapFileLocation(mapFileLocation);
+    /*
+     * returns map file location for selected floor if exists, otherwise null
+     */
+    private String getMapFileImpl(Integer floor) {
+        String mapFileAddr = null;
 
-        realm.copyToRealmOrUpdate(mapFile);
+        RealmResults<MapFileRealm> results = realm.where(MapFileRealm.class).equalTo("floor", floor).findAll();
+        if (!results.isEmpty()) {
+            mapFileAddr = results.first().getMapFileLocation();
+        }
+
+        return mapFileAddr;
+    }
+
+    /*
+     * returns map file location for selected floor if exists, otherwise null
+     */
+    public String getMapFile(Integer floor) {
+        String mapFileAddr = null;
+        open();
+
+        try {
+            mapFileAddr = getMapFileImpl(floor);
+        } catch (RuntimeException re) {
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return mapFileAddr;
+    }
+
+    private void setMapFileImpl(Integer floor, String mapFileLocation) {
+        MapFileRealm mapFileRealm = new MapFileRealm();
+        mapFileRealm.setFloor(floor);
+        mapFileRealm.setMapFileLocation(mapFileLocation);
+
+        realm.copyToRealmOrUpdate(mapFileRealm);
+    }
+
+    public void setMapFile(Integer floor, String mapFileLocation) {
+        open();
+
+        try {
+            beginTransaction();
+            setMapFileImpl(floor, mapFileLocation);
+            commitTransaction();
+        } catch (Exception e) {
+            cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting map of floor "
+                    + floor.toString() + " to " + mapFileLocation);
+        } finally {
+            close();
+        }
     }
 
     public static final Integer floor1Code = 1;
     public static final Integer floor2Code = 2;
 
-    public void setMap(Integer versionNum, String floor1MapLocation, String floor2MapLocation) throws RuntimeException {
-        try {
-            beginTransaction();
-            setVersion(Version.Item.MAP, versionNum);
-            setMapFile(floor1Code, floor1MapLocation);
-            setMapFile(floor2Code, floor2MapLocation);
-            commitTransaction();
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
-            cancelTransaction();
-            throw e;
-        }
+    private void setMapsImpl(Integer versionNum, String floor1MapLocation, String floor2MapLocation) {
+        setVersionImpl(Version.Item.MAP, versionNum);
+        setMapFileImpl(floor1Code, floor1MapLocation);
+        setMapFileImpl(floor2Code, floor2MapLocation);
     }
 
-    public Triplet<Integer, String, String> getCurrentMapData() throws RuntimeException {
-        Integer version;
-        String floor1Map, floor2Map;
+    public void setMaps(Integer versionNum, String floor1MapLocation, String floor2MapLocation) {
+        open();
+
         try {
             beginTransaction();
-            version = getVersion(Version.Item.MAP).getCurrentVersion();
-            floor1Map = getMapFile(floor1Code).getMapFileLocation();
-            floor2Map = getMapFile(floor2Code).getMapFileLocation();
+            setMapsImpl(versionNum, floor1MapLocation, floor2MapLocation);
+            commitTransaction();
+        } catch (RuntimeException re) {
             cancelTransaction();
-            return Triplet.with(version, floor1Map, floor2Map);
-        } catch (Exception e) {
-            Log.e("Realm Error", "error msg: " + e.toString());
-            cancelTransaction();
-            throw e;
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
         }
-
     }
 }
