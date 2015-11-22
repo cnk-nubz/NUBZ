@@ -1,18 +1,19 @@
 package com.cnk.database;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.cnk.database.MapFileRealm;
 import com.cnk.exceptions.DatabaseException;
 import com.cnk.exceptions.InternalDatabaseError;
 
-import org.javatuples.Triplet;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
-import io.realm.internal.IOException;
 
+/*
+ * impl functions could be used in both impl functions and public functions
+ * public functions provide atomic transactions and should only be used from outside this class
+ */
 public class DatabaseHelper {
     Context applicationContext;
     Realm realm;
@@ -41,6 +42,9 @@ public class DatabaseHelper {
         realm.cancelTransaction();
     }
 
+    /*
+     * returns current version of item if exists, otherwise null
+     */
     private Integer getVersionImpl(Enum<Version.Item> item) {
         Integer versionNumber = null;
 
@@ -52,8 +56,11 @@ public class DatabaseHelper {
         return versionNumber;
     }
 
+    /*
+     * returns current version of item if exists, otherwise null
+     */
     public Integer getVersion(Enum<Version.Item> item) {
-        Integer version;
+        Integer version = null;
         open();
 
         try {
@@ -65,11 +72,7 @@ public class DatabaseHelper {
             close();
         }
 
-        if (version == null) {
-            throw new InternalDatabaseError("No such element: " + item.toString());
-        } else {
-            return version;
-        }
+        return version;
     }
 
     private void setVersionImpl(Version.Item item, Integer versionNumber) {
@@ -96,6 +99,9 @@ public class DatabaseHelper {
         }
     }
 
+    /*
+     * returns map file location for selected floor if exists, otherwise null
+     */
     private String getMapFileImpl(Integer floor) {
         String mapFileAddr = null;
 
@@ -107,6 +113,9 @@ public class DatabaseHelper {
         return mapFileAddr;
     }
 
+    /*
+     * returns map file location for selected floor if exists, otherwise null
+     */
     public String getMapFile(Integer floor) throws DatabaseException {
         String mapFileAddr = null;
         open();
@@ -120,11 +129,7 @@ public class DatabaseHelper {
             close();
         }
 
-        if (mapFileAddr == null) {
-            throw new InternalDatabaseError("No map for such floor: " + floor.toString());
-        } else {
-            return mapFileAddr;
-        }
+        return mapFileAddr;
     }
 
     private void setMapFileImpl(Integer floor, String mapFileLocation) {
@@ -174,44 +179,6 @@ public class DatabaseHelper {
             throw new InternalDatabaseError(re.toString());
         } finally {
             close();
-        }
-    }
-
-    private Triplet<Integer, String, String> getCurrentMapDataImpl() {
-        Integer version;
-        String floor1Map, floor2Map;
-
-        version = getVersionImpl(Version.Item.MAP);
-        floor1Map = getMapFileImpl(floor1Code);
-        floor2Map = getMapFileImpl(floor2Code);
-
-        return Triplet.with(version, floor1Map, floor2Map);
-    }
-
-    public Triplet<Integer, String, String> getCurrentMapData() {
-        Triplet<Integer, String, String> mapDataTriplet;
-        open();
-
-        try {
-            beginTransaction();
-            mapDataTriplet = getCurrentMapDataImpl();
-            commitTransaction();
-        } catch (RuntimeException re) {
-            cancelTransaction();
-            re.printStackTrace();
-            throw new InternalDatabaseError(re.toString());
-        } finally {
-            close();
-        }
-
-        if (mapDataTriplet.getValue0() == null) {
-            throw new InternalDatabaseError("No such element: " + Version.Item.MAP.toString());
-        } else if (mapDataTriplet.getValue1() == null) {
-            throw new InternalDatabaseError("No map for such floor: " + floor1Code.toString());
-        } else if (mapDataTriplet.getValue2() == null) {
-            throw new InternalDatabaseError("No map for such floor: " + floor2Code.toString());
-        } else {
-            return mapDataTriplet;
         }
     }
 }
