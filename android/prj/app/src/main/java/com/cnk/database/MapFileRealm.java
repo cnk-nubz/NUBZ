@@ -1,17 +1,13 @@
 package com.cnk.database;
 
-public class MapFile {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class MapFileRealm extends RealmObject {
+
+    @PrimaryKey
     private Integer floor;
     private String mapFileLocation;
-
-    public MapFile() {
-    }
-
-    public MapFile(Integer floor, String mapFileLocation) {
-        this.floor = floor;
-        this.mapFileLocation = mapFileLocation;
-    }
 
     public Integer getFloor() {
         return floor;
