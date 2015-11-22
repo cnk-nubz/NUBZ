@@ -1,4 +1,5 @@
 import sys
+import os
 import json
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
@@ -42,7 +43,7 @@ def uploadImage(request):
 	tc = ThriftCommunicator()
 	floor = form.cleaned_data['floor']
 	filename = m.image.name
-	ret = tc.setMapImage(floor, filename[2:]) #remove ./ at beggining of filename
+	ret = tc.setMapImage(floor, os.path.basename(filename)) #extract filename
 	if ret == False:
 		return HttpResponse('Blad aktualizacji mapy!') #TODO
 	return HttpResponseRedirect('/')
