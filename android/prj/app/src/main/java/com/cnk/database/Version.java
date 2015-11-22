@@ -1,10 +1,6 @@
 package com.cnk.database;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
-
-public class Version extends RealmObject{
-
+public class Version {
     public enum Item {
         MAP("Map") {
             @Override
@@ -17,6 +13,7 @@ public class Version extends RealmObject{
                 return super.toString();
             }
         };
+
         private String code;
 
         private Item(String code) {
@@ -27,25 +24,40 @@ public class Version extends RealmObject{
         public String toString() {
             return code;
         }
+
+        public static Item fromString(String code) {
+            if (code != null) {
+                for (Item i : Item.values()) {
+                    if (code.equals(i.code)) {
+                        return i;
+                    }
+                }
+            }
+            return Item.UNKNOWN;
+        }
     }
 
-    @PrimaryKey
-    private String item;
-
+    private Item item;
     private Integer currentVersion;
 
-    public String getItem() {
-        return item;
+    public Version() {
     }
 
-    public void setItem(String item) {
+    public Version(Item item, Integer currentVersion) {
+        this.item = item;
+        this.currentVersion = currentVersion;
+    }
+
+    public Item getItem() {
+        return item;
+    }
+    public void setItem(Item item) {
         this.item = item;
     }
 
     public Integer getCurrentVersion() {
         return currentVersion;
     }
-
     public void setCurrentVersion(Integer currentVersion) {
         this.currentVersion = currentVersion;
     }
