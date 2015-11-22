@@ -640,7 +640,28 @@ uint32_t Server_setMapImage_result::read(::apache::thrift::protocol::TProtocol* 
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->intErr.read(iprot);
+          this->__isset.intErr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->dataErr.read(iprot);
+          this->__isset.dataErr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -655,6 +676,15 @@ uint32_t Server_setMapImage_result::write(::apache::thrift::protocol::TProtocol*
 
   xfer += oprot->writeStructBegin("Server_setMapImage_result");
 
+  if (this->__isset.intErr) {
+    xfer += oprot->writeFieldBegin("intErr", ::apache::thrift::protocol::T_STRUCT, 1);
+    xfer += this->intErr.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  } else if (this->__isset.dataErr) {
+    xfer += oprot->writeFieldBegin("dataErr", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->dataErr.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -684,7 +714,28 @@ uint32_t Server_setMapImage_presult::read(::apache::thrift::protocol::TProtocol*
     if (ftype == ::apache::thrift::protocol::T_STOP) {
       break;
     }
-    xfer += iprot->skip(ftype);
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->intErr.read(iprot);
+          this->__isset.intErr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->dataErr.read(iprot);
+          this->__isset.dataErr = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
     xfer += iprot->readFieldEnd();
   }
 
@@ -914,6 +965,12 @@ void ServerClient::recv_setMapImage()
   iprot_->readMessageEnd();
   iprot_->getTransport()->readEnd();
 
+  if (result.__isset.intErr) {
+    throw result.intErr;
+  }
+  if (result.__isset.dataErr) {
+    throw result.dataErr;
+  }
   return;
 }
 
@@ -1124,6 +1181,12 @@ void ServerProcessor::process_setMapImage(int32_t seqid, ::apache::thrift::proto
   Server_setMapImage_result result;
   try {
     iface_->setMapImage(args.request);
+  } catch ( ::communication::InternalError &intErr) {
+    result.intErr = intErr;
+    result.__isset.intErr = true;
+  } catch ( ::communication::InvalidData &dataErr) {
+    result.dataErr = dataErr;
+    result.__isset.dataErr = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
       this->eventHandler_->handlerError(ctx, "Server.setMapImage");
@@ -1476,6 +1539,14 @@ void ServerConcurrentClient::recv_setMapImage(const int32_t seqid)
       iprot_->readMessageEnd();
       iprot_->getTransport()->readEnd();
 
+      if (result.__isset.intErr) {
+        sentry.commit();
+        throw result.intErr;
+      }
+      if (result.__isset.dataErr) {
+        sentry.commit();
+        throw result.dataErr;
+      }
       sentry.commit();
       return;
     }

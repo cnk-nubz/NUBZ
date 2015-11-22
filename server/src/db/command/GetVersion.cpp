@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include <boost/format.hpp>
-#include <pqxx/pqxx>
 
 #include "GetVersion.h"
 #include "db/db_info.h"
@@ -9,10 +8,11 @@
 
 namespace db {
     namespace cmd {
-        GetVersion::GetVersion(ElementType elementType) : elementType(elementType), result(0) {
+        GetVersion::GetVersion(db::info::versions::element_type elementType)
+            : elementType(elementType), result(0) {
         }
 
-        void GetVersion::perform(DatabaseSession &session) {
+        void GetVersion::operator()(DatabaseSession &session) {
             result =
                 session.getResult<db::factory::SingleFieldFactory<std::int32_t>>(createQuery());
         }
@@ -30,17 +30,9 @@ namespace db {
 
             select % colVersion;
             from % tableName;
-            where % colElement % elementTypeName();
+            where % colElement % colElementType(elementType);
 
             return select.str() + from.str() + where.str();
-        }
-
-        std::string GetVersion::elementTypeName() const {
-            using namespace db::info::versions;
-            switch (elementType) {
-                case ElementType::MapImage:
-                    return element_option::map_image;
-            }
         }
     }
 }

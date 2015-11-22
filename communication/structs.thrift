@@ -4,6 +4,9 @@ namespace java com.cnk.communication
 exception InternalError {
 }
 
+exception InvalidData {
+}
+
 struct HelloMsg {
 	1: i32 num,
 	2: string msg,

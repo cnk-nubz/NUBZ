@@ -166,6 +166,10 @@ class Client(Iface):
     result = setMapImage_result()
     result.read(iprot)
     iprot.readMessageEnd()
+    if result.intErr is not None:
+      raise result.intErr
+    if result.dataErr is not None:
+      raise result.dataErr
     return
 
 
@@ -263,6 +267,12 @@ class Processor(Iface, TProcessor):
       msg_type = TMessageType.REPLY
     except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
       raise
+    except structs.ttypes.InternalError as intErr:
+      msg_type = TMessageType.REPLY
+      result.intErr = intErr
+    except structs.ttypes.InvalidData as dataErr:
+      msg_type = TMessageType.REPLY
+      result.dataErr = dataErr
     except Exception as ex:
       msg_type = TMessageType.EXCEPTION
       logging.exception(ex)
@@ -709,9 +719,21 @@ class setMapImage_args:
     return not (self == other)
 
 class setMapImage_result:
+  """
+  Attributes:
+   - intErr
+   - dataErr
+  """
 
   thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'intErr', (structs.ttypes.InternalError, structs.ttypes.InternalError.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'dataErr', (structs.ttypes.InvalidData, structs.ttypes.InvalidData.thrift_spec), None, ), # 2
   )
+
+  def __init__(self, intErr=None, dataErr=None,):
+    self.intErr = intErr
+    self.dataErr = dataErr
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -722,6 +744,18 @@ class setMapImage_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.intErr = structs.ttypes.InternalError()
+          self.intErr.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.dataErr = structs.ttypes.InvalidData()
+          self.dataErr.read(iprot)
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -732,6 +766,14 @@ class setMapImage_result:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('setMapImage_result')
+    if self.intErr is not None:
+      oprot.writeFieldBegin('intErr', TType.STRUCT, 1)
+      self.intErr.write(oprot)
+      oprot.writeFieldEnd()
+    if self.dataErr is not None:
+      oprot.writeFieldBegin('dataErr', TType.STRUCT, 2)
+      self.dataErr.write(oprot)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -741,6 +783,8 @@ class setMapImage_result:
 
   def __hash__(self):
     value = 17
+    value = (value * 31) ^ hash(self.intErr)
+    value = (value * 31) ^ hash(self.dataErr)
     return value
 
   def __repr__(self):

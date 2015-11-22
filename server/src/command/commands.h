@@ -3,5 +3,6 @@
 
 #include "PingCommand.h"
 #include "GetMapImagesCommand.h"
+#include "SetMapImageCommand.h"
 
 #endif

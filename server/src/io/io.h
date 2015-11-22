@@ -3,6 +3,7 @@
 
 #include "input/HelloMsg.h"
 #include "input/MapImagesRequest.h"
+#include "input/SetMapImageRequest.h"
 
 #include "output/MapImagesResponse.h"
 

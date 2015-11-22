@@ -1,32 +1,25 @@
 #ifndef DB_CMD__GET_VERSION__H
 #define DB_CMD__GET_VERSION__H
 
-#include "DatabaseCommand.h"
+#include "db/DatabaseSession.h"
 #include "db/struct/MapImage.h"
+#include "db/db_info.h"
 
 namespace db {
     namespace cmd {
-        class GetVersion : public DatabaseCommand {
+        class GetVersion {
         public:
-            enum class ElementType { MapImage };
+            GetVersion(db::info::versions::element_type elementType);
+            ~GetVersion() = default;
 
-            GetVersion(ElementType elementType);
-            virtual ~GetVersion() = default;
-
-            GetVersion(const GetVersion &) = delete;
-            GetVersion(GetVersion &&) = default;
-            GetVersion &operator=(const GetVersion &) = delete;
-            GetVersion &operator=(GetVersion &&) = default;
-
-            virtual void perform(DatabaseSession &session);
+            void operator()(DatabaseSession &session);
             std::int32_t getResult() const;
 
         private:
-            ElementType elementType;
+            db::info::versions::element_type elementType;
             std::int32_t result;
 
             std::string createQuery() const;
-            std::string elementTypeName() const;
         };
     }
 }

@@ -22,6 +22,9 @@ public:
 
     std::string urlPrefixForMapImage;
 
+    std::string publicFolderPath;
+    std::string tmpFolderPath;
+
 private:
     static const std::string argServerPort;
 
@@ -32,7 +35,12 @@ private:
 
     static const std::string argUrlPrefixForMapImage;
 
+    static const std::string argPublicFolderPath;
+    static const std::string argTmpFolderPath;
+
     void loadFromFile(const std::string &path);
+    void validate() const;
+    void validateDirectory(const std::string &path) const;
 };
 
 #endif

@@ -1,6 +1,5 @@
 #include <boost/format.hpp>
 
-#include "external/easylogging++.h"
 #include "Database.h"
 
 namespace db {
@@ -15,22 +14,9 @@ namespace db {
         connection.reset(new pqxx::lazyconnection(initMsg.str()));
     }
 
-    void Database::execute(cmd::DatabaseCommand *cmd) {
-        std::lock_guard<std::mutex> lock(cmdMutex);
-        pqxx::work work(*connection);
-        DatabaseSession session(work);
-
-        try {
-            cmd->perform(session);
-            work.commit();
-        } catch (pqxx::broken_connection &e) {
-            LOG(DEBUG) << e.what();
-            throw;
-        } catch (pqxx::sql_error &e) {
-            LOG(DEBUG) << e.what();
-            throw;
-        } catch (...) {
-            throw;
-        }
+    DatabaseException::DatabaseException(const pqxx::broken_connection &e)
+        : std::runtime_error(e.what()) {
+    }
+    DatabaseException::DatabaseException(const pqxx::sql_error &e) : std::runtime_error(e.what()) {
     }
 }

@@ -1,23 +1,18 @@
 #ifndef DB_CMD__GET_MAP_IMAGES__H
 #define DB_CMD__GET_MAP_IMAGES__H
 
-#include "DatabaseCommand.h"
+#include "db/DatabaseSession.h"
 #include "db/struct/MapImage.h"
 
 namespace db {
     namespace cmd {
-        class GetMapImages : public DatabaseCommand {
+        class GetMapImages {
         public:
             GetMapImages();
             GetMapImages(std::int32_t minVersion);
-            virtual ~GetMapImages() = default;
+            ~GetMapImages() = default;
 
-            GetMapImages(const GetMapImages &) = delete;
-            GetMapImages(GetMapImages &&) = default;
-            GetMapImages &operator=(const GetMapImages &) = delete;
-            GetMapImages &operator=(GetMapImages &&) = default;
-
-            virtual void perform(DatabaseSession &session);
+            void operator()(DatabaseSession &session);
             const std::vector<MapImage> &getResult() const;
 
         private:

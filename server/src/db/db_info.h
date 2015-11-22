@@ -17,8 +17,15 @@ namespace db {
             static const std::string colElement = "element";
             static const std::string colVersion = "version";
 
-            namespace element_option {
-                static const std::string map_image = "map_images";
+            enum class element_type {
+                map_images,
+            };
+
+            inline static std::string colElementType(element_type t) {
+                switch (t) {
+                    case element_type::map_images:
+                        return "map_images";
+                }
             }
         }
     }

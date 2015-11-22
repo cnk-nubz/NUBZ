@@ -3,10 +3,13 @@
 
 #include <thread>
 #include <memory>
+#include <mutex>
 
 #include <pqxx/pqxx>
 
-#include "command/DatabaseCommand.h"
+#include "external/easylogging++.h"
+
+#include "DatabaseSession.h"
 
 namespace db {
     class Database {
@@ -20,12 +23,36 @@ namespace db {
         Database &operator=(Database &&) = delete;
 
         // thread-safe
-        void execute(cmd::DatabaseCommand *cmd);
+        template <class CMD>
+        void execute(CMD &&cmd);
 
     private:
         std::unique_ptr<pqxx::lazyconnection> connection;
         std::mutex cmdMutex;
     };
+
+    struct DatabaseException : public std::runtime_error {
+        DatabaseException(const pqxx::broken_connection &e);
+        DatabaseException(const pqxx::sql_error &e);
+    };
+
+    template <class CMD>
+    void Database::execute(CMD &&cmd) {
+        std::lock_guard<std::mutex> lock(cmdMutex);
+        pqxx::work work(*connection);
+        DatabaseSession session(work);
+
+        try {
+            cmd(session);
+            work.commit();
+        } catch (pqxx::broken_connection &e) {
+            LOG(DEBUG) << e.what();
+            throw DatabaseException(e);
+        } catch (pqxx::sql_error &e) {
+            LOG(DEBUG) << e.what();
+            throw DatabaseException(e);
+        }
+    }
 }
 
 #endif
