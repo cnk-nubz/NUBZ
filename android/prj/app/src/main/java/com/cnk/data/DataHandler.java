@@ -11,6 +11,7 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Version;
 import com.cnk.exceptions.DatabaseException;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -30,7 +31,6 @@ public class DataHandler extends Observable {
     private static final Integer FLOORS = 2;
     private static DataHandler instance;
     private Context context;
-    private Map<Integer, Drawable> mapDrawables;
     private DatabaseHelper dbHelper;
 
     public static DataHandler getInstance() {
@@ -49,30 +49,22 @@ public class DataHandler extends Observable {
     }
 
     public synchronized void getInitData() {
-        for (int i = 0; i < FLOORS; i++) {
-            try {
-                String file = dbHelper.getMapFile(i);
-                if (file != null) {
-                    mapDrawables.put(i, getMapFromFile(file));
-                }
-            } catch (IOException e){
-                e.printStackTrace();
-                Log.e(LOG_TAG, "Cannot get map file of floor " + Integer.toString(i));
-            }
-        }
     }
 
     private DataHandler() {
-        mapDrawables = new ConcurrentHashMap<>();
     }
 
     public synchronized Drawable getFloorMap(Integer floor) {
-        return mapDrawables.get(floor);
+        try {
+            return getMapFromFile(dbHelper.getMapFile(floor));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public synchronized void setMapFloor(Integer floor, String url) throws IOException {
         Drawable image = urlToDrawable(url, floor);
-        mapDrawables.put(floor, image);
         dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
 
         setChanged();
@@ -84,6 +76,9 @@ public class DataHandler extends Observable {
     }
 
     public synchronized Integer getMapVersion() {
+        if (dbHelper == null) {
+            Log.e("DB HELPER", "IS NULL");
+        }
         Integer version =  dbHelper.getVersion(Version.Item.MAP);
         return version;
     }
@@ -112,9 +107,14 @@ public class DataHandler extends Observable {
     }
 
     private Drawable getMapFromFile(String file) throws IOException {
+        if (file == null) {
+            return null;
+        }
         try {
             FileInputStream in = context.openFileInput(file);
-            Bitmap bmp = BitmapFactory.decodeStream(in);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            Bitmap bmp = BitmapFactory.decodeStream(in, null, options);
             return new BitmapDrawable(context.getResources(), bmp);
         } catch (FileNotFoundException e) {
             e.printStackTrace();

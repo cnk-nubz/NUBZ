@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">CNK</string>
+
+    <string name="pietro1">Piętro 1</string>
+    <string name="pietro2">Piętro 2</string>
+    <string name="loading_map">Trwa ładowanie mapy</string>
+    <string name="loading_map_failed">Nie udało się załadować mapy dla tego piętra</string>
 </resources>

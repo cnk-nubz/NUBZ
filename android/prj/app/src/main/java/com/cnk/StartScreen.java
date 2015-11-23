@@ -1,5 +1,6 @@
 package com.cnk;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -9,10 +10,12 @@ import android.widget.ImageView;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
+import com.cnk.ui.MapActivity;
 
 public class StartScreen extends AppCompatActivity {
     NetworkHandler net;
     Button bgButton;
+    Button bMapActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,13 +25,12 @@ public class StartScreen extends AppCompatActivity {
         DataHandler.getInstance().setContext(getApplication().getApplicationContext());
         DataHandler.getInstance().setDbHelper(dbHelper);
         DataHandler.getInstance().getInitData();
-        ImageView v = (ImageView) findViewById(R.id.imageView);
-        if (DataHandler.getInstance().getFloorMap(0) != null) {
-            v.setBackground(DataHandler.getInstance().getFloorMap(0));
-        }
         net = new NetworkHandler();
         bgButton = (Button) findViewById(R.id.bgButton);
         bgButton.setOnClickListener(new BgClick());
+
+        bMapActivity = (Button) findViewById(R.id.bMapActivity);
+        bMapActivity.setOnClickListener(new MapActivityClick());
     }
 
     public void pingClick(View view) {
@@ -49,6 +51,14 @@ public class StartScreen extends AppCompatActivity {
                 bgButton.setText("Start BG downlaod");
             }
 
+        }
+    }
+
+    private class MapActivityClick implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            Intent i = new Intent(getApplicationContext(), MapActivity.class);
+            startActivity(i);
         }
     }
 }
