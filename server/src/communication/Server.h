@@ -23,6 +23,8 @@ class ServerIf {
   virtual ~ServerIf() {}
   virtual void shutdown() = 0;
   virtual int32_t ping(const  ::communication::HelloMsg& msg) = 0;
+  virtual void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request) = 0;
+  virtual void setMapImage(const  ::communication::SetMapImageRequest& request) = 0;
 };
 
 class ServerIfFactory {
@@ -58,6 +60,12 @@ class ServerNull : virtual public ServerIf {
   int32_t ping(const  ::communication::HelloMsg& /* msg */) {
     int32_t _return = 0;
     return _return;
+  }
+  void getMapImages( ::communication::MapImagesResponse& /* _return */, const  ::communication::MapImagesRequest& /* request */) {
+    return;
+  }
+  void setMapImage(const  ::communication::SetMapImageRequest& /* request */) {
+    return;
   }
 };
 
@@ -239,6 +247,230 @@ class Server_ping_presult {
 
 };
 
+typedef struct _Server_getMapImages_args__isset {
+  _Server_getMapImages_args__isset() : request(false) {}
+  bool request :1;
+} _Server_getMapImages_args__isset;
+
+class Server_getMapImages_args {
+ public:
+
+  Server_getMapImages_args(const Server_getMapImages_args&);
+  Server_getMapImages_args& operator=(const Server_getMapImages_args&);
+  Server_getMapImages_args() {
+  }
+
+  virtual ~Server_getMapImages_args() throw();
+   ::communication::MapImagesRequest request;
+
+  _Server_getMapImages_args__isset __isset;
+
+  void __set_request(const  ::communication::MapImagesRequest& val);
+
+  bool operator == (const Server_getMapImages_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImages_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImages_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_getMapImages_pargs {
+ public:
+
+
+  virtual ~Server_getMapImages_pargs() throw();
+  const  ::communication::MapImagesRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImages_result__isset {
+  _Server_getMapImages_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImages_result__isset;
+
+class Server_getMapImages_result {
+ public:
+
+  Server_getMapImages_result(const Server_getMapImages_result&);
+  Server_getMapImages_result& operator=(const Server_getMapImages_result&);
+  Server_getMapImages_result() {
+  }
+
+  virtual ~Server_getMapImages_result() throw();
+   ::communication::MapImagesResponse success;
+   ::communication::InternalError err;
+
+  _Server_getMapImages_result__isset __isset;
+
+  void __set_success(const  ::communication::MapImagesResponse& val);
+
+  void __set_err(const  ::communication::InternalError& val);
+
+  bool operator == (const Server_getMapImages_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImages_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImages_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImages_presult__isset {
+  _Server_getMapImages_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImages_presult__isset;
+
+class Server_getMapImages_presult {
+ public:
+
+
+  virtual ~Server_getMapImages_presult() throw();
+   ::communication::MapImagesResponse* success;
+   ::communication::InternalError err;
+
+  _Server_getMapImages_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Server_setMapImage_args__isset {
+  _Server_setMapImage_args__isset() : request(false) {}
+  bool request :1;
+} _Server_setMapImage_args__isset;
+
+class Server_setMapImage_args {
+ public:
+
+  Server_setMapImage_args(const Server_setMapImage_args&);
+  Server_setMapImage_args& operator=(const Server_setMapImage_args&);
+  Server_setMapImage_args() {
+  }
+
+  virtual ~Server_setMapImage_args() throw();
+   ::communication::SetMapImageRequest request;
+
+  _Server_setMapImage_args__isset __isset;
+
+  void __set_request(const  ::communication::SetMapImageRequest& val);
+
+  bool operator == (const Server_setMapImage_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_setMapImage_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_setMapImage_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_setMapImage_pargs {
+ public:
+
+
+  virtual ~Server_setMapImage_pargs() throw();
+  const  ::communication::SetMapImageRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_setMapImage_result__isset {
+  _Server_setMapImage_result__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_setMapImage_result__isset;
+
+class Server_setMapImage_result {
+ public:
+
+  Server_setMapImage_result(const Server_setMapImage_result&);
+  Server_setMapImage_result& operator=(const Server_setMapImage_result&);
+  Server_setMapImage_result() {
+  }
+
+  virtual ~Server_setMapImage_result() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
+
+  _Server_setMapImage_result__isset __isset;
+
+  void __set_intErr(const  ::communication::InternalError& val);
+
+  void __set_dataErr(const  ::communication::InvalidData& val);
+
+  bool operator == (const Server_setMapImage_result & rhs) const
+  {
+    if (!(intErr == rhs.intErr))
+      return false;
+    if (!(dataErr == rhs.dataErr))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_setMapImage_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_setMapImage_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_setMapImage_presult__isset {
+  _Server_setMapImage_presult__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_setMapImage_presult__isset;
+
+class Server_setMapImage_presult {
+ public:
+
+
+  virtual ~Server_setMapImage_presult() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
+
+  _Server_setMapImage_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServerClient : virtual public ServerIf {
  public:
   ServerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -270,6 +502,12 @@ class ServerClient : virtual public ServerIf {
   int32_t ping(const  ::communication::HelloMsg& msg);
   void send_ping(const  ::communication::HelloMsg& msg);
   int32_t recv_ping();
+  void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
+  void send_getMapImages(const  ::communication::MapImagesRequest& request);
+  void recv_getMapImages( ::communication::MapImagesResponse& _return);
+  void setMapImage(const  ::communication::SetMapImageRequest& request);
+  void send_setMapImage(const  ::communication::SetMapImageRequest& request);
+  void recv_setMapImage();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -287,11 +525,15 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
   ProcessMap processMap_;
   void process_shutdown(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getMapImages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_setMapImage(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServerProcessor(boost::shared_ptr<ServerIf> iface) :
     iface_(iface) {
     processMap_["shutdown"] = &ServerProcessor::process_shutdown;
     processMap_["ping"] = &ServerProcessor::process_ping;
+    processMap_["getMapImages"] = &ServerProcessor::process_getMapImages;
+    processMap_["setMapImage"] = &ServerProcessor::process_setMapImage;
   }
 
   virtual ~ServerProcessor() {}
@@ -338,6 +580,25 @@ class ServerMultiface : virtual public ServerIf {
     return ifaces_[i]->ping(msg);
   }
 
+  void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getMapImages(_return, request);
+    }
+    ifaces_[i]->getMapImages(_return, request);
+    return;
+  }
+
+  void setMapImage(const  ::communication::SetMapImageRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->setMapImage(request);
+    }
+    ifaces_[i]->setMapImage(request);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -374,6 +635,12 @@ class ServerConcurrentClient : virtual public ServerIf {
   int32_t ping(const  ::communication::HelloMsg& msg);
   int32_t send_ping(const  ::communication::HelloMsg& msg);
   int32_t recv_ping(const int32_t seqid);
+  void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
+  int32_t send_getMapImages(const  ::communication::MapImagesRequest& request);
+  void recv_getMapImages( ::communication::MapImagesResponse& _return, const int32_t seqid);
+  void setMapImage(const  ::communication::SetMapImageRequest& request);
+  int32_t send_setMapImage(const  ::communication::SetMapImageRequest& request);
+  void recv_setMapImage(const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

@@ -1,31 +1,41 @@
 #include <iostream>
+#include <cstdlib>
 
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TSimpleServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TTransportUtils.h>
 #include <boost/program_options.hpp>
+#include <boost/optional.hpp>
 
 #include "external/easylogging++.h"
 
 #include "CommandHandler.h"
 #include "Config.h"
+#include "FileHelper.h"
+#include "db/Database.h"
+#include "command/GetMapImagesCommand.h"
 
 INITIALIZE_EASYLOGGINGPP
 
-Config *parseArguments(int argc, char *argv[]);
-void runServer(std::uint16_t port);
+boost::optional<Config> parseArguments(int argc, char *argv[]);
+void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
-    Config *cfg = parseArguments(argc, argv);
+    srand((unsigned)time(NULL));
+    boost::optional<Config> cfg = parseArguments(argc, argv);
     if (!cfg) {
         return 0;
     }
 
-    runServer(cfg->port);
+    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath);
+    command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
+
+    db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
+    runServer(cfg->serverPort, db);
 }
 
-Config *parseArguments(int argc, char *argv[]) {
+boost::optional<Config> parseArguments(int argc, char *argv[]) {
     static const char *configFilePathArg = "cfg";
     static const char *helpArg = "help";
     namespace po = boost::program_options;
@@ -39,32 +49,32 @@ Config *parseArguments(int argc, char *argv[]) {
     po::variables_map vm;
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
+        po::notify(vm);
+
+        if (vm.count(helpArg)) {
+            std::cout << opts;
+            return {};
+        }
+
+        if (vm.count(configFilePathArg)) {
+            return Config(path);
+        } else {
+            std::cout << opts;
+            return {};
+        }
     } catch (const boost::program_options::error &e) {
         std::cerr << e.what() << std::endl;
-        std::cout << opts;
-        return nullptr;
+        return {};
     }
-    po::notify(vm);
-    
-    if (vm.count(helpArg)) {
-        std::cout << opts;
-        return nullptr;
-    }
-
-    if (vm.count(configFilePathArg)) {
-        return new Config(path);
-    }
-
-    return new Config();
 }
 
-void runServer(std::uint16_t port) {
+void runServer(std::uint16_t port, db::Database &db) {
     using namespace apache::thrift;
     using namespace apache::thrift::protocol;
     using namespace apache::thrift::transport;
     using namespace apache::thrift::server;
 
-    boost::shared_ptr<CommandHandler> handler(new CommandHandler());
+    boost::shared_ptr<CommandHandler> handler(new CommandHandler(db));
     boost::shared_ptr<TProcessor> processor(new communication::ServerProcessor(handler));
     boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
     boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
@@ -72,9 +82,9 @@ void runServer(std::uint16_t port) {
 
     TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
     handler->setServer(&server);
-    
+
     LOG(INFO) << "Starting server...";
     LOG(INFO) << "Port: " << port;
-    
+
     server.serve();
 }
