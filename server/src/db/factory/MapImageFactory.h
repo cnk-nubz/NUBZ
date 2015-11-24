@@ -11,7 +11,8 @@ namespace db {
         struct MapImageFactory {
             using Product = MapImage;
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept {
+            inline static Product create(
+                const std::vector<boost::optional<std::string>> &raw) noexcept {
                 MapImage res;
                 assert(raw.size() == fieldsOrder().size());
                 assert(boost::conversion::try_lexical_convert(raw[0].value(), res.filename));
@@ -20,7 +21,7 @@ namespace db {
                 return res;
             }
 
-            static const std::vector<std::string> &fieldsOrder() noexcept {
+            inline static const std::vector<std::string> &fieldsOrder() noexcept {
                 using namespace db::info::map_images;
                 static const std::vector<std::string> order = {colFilename, colVersion, colLevel};
                 return order;

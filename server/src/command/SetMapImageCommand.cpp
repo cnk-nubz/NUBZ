@@ -16,9 +16,9 @@ namespace command {
             std::int32_t nextVersion = getCurrentVersion(session) + 1;
             db::cmd::SetVersion(db::info::versions::element_type::map_images, nextVersion)(session);
 
-            std::string publicFilename = createFilename(input.level);
+            std::string publicFilename = createFilename(input.filename, input.level);
 
-            MapImage mapImage;
+            db::MapImage mapImage;
             mapImage.level = input.level;
             mapImage.filename = publicFilename;
             mapImage.version = nextVersion;
@@ -34,9 +34,16 @@ namespace command {
         return cmd.getResult();
     }
 
-    std::string SetMapImageCommand::createFilename(std::int32_t level) const {
-        // temporary sufix for easier testing
-        return "map_l" + std::to_string(level) + "_" + std::to_string(rand() % 1000);
+    std::string SetMapImageCommand::createFilename(const std::string &srcFilename,
+                                                   std::int32_t level) const {
+        boost::filesystem::path src = srcFilename;
+        boost::filesystem::path dst =
+            "map_l" + std::to_string(level) + "_" + std::to_string(rand() % 1000);
+        if (src.has_extension()) {
+            dst.replace_extension(src.extension());
+        }
+
+        return dst.filename().native();
     }
 
     void SetMapImageCommand::moveFileToPublic(const std::string &srcFilename,
@@ -45,6 +52,7 @@ namespace command {
 
         fs::path src = FileHelper::getInstance().pathForTmpFile(srcFilename);
         fs::path dst = FileHelper::getInstance().pathForPublicFile(destFilename);
+
         try {
             fs::rename(src, dst);
         } catch (std::runtime_error &e) {

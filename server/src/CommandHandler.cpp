@@ -83,7 +83,17 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
     LOG(INFO) << "getExhibits start";
     LOG(INFO) << "input: " << request;
 
-    LOG(INFO) << "not implemented";
+    try {
+        io::input::ExhibitsRequest input(request);
+
+        command::GetExhibitsCommand cmd(db);
+        io::output::ExhibitsResponse output = cmd.perform(input);
+
+        response = output.toThrift();
+    } catch (std::exception &e) {
+        LOG(ERROR) << e.what();
+        throw communication::InternalError{};
+    }
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExhibits end";

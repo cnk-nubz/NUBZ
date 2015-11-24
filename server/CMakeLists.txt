@@ -27,6 +27,7 @@ file(GLOB SOURCES
     src/communication/*.cpp
     src/command/*.cpp
     src/external/*.cpp
+    src/io/*.cpp
     src/io/input/*.cpp
     src/io/output/*.cpp
     src/db/*.cpp
