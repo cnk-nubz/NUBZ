@@ -9,7 +9,8 @@ namespace db {
         struct SingleFieldFactory {
             using Product = T;
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept {
+            inline static Product create(
+                const std::vector<boost::optional<std::string>> &raw) noexcept {
                 Product res;
                 assert(raw.size() == 1);
                 assert(boost::conversion::try_lexical_convert(raw[0].value(), res));

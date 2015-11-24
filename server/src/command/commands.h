@@ -4,5 +4,6 @@
 #include "PingCommand.h"
 #include "GetMapImagesCommand.h"
 #include "SetMapImageCommand.h"
+#include "GetExhibitsCommand.h"
 
 #endif

@@ -10,16 +10,7 @@
 
 namespace io {
     namespace output {
-        class MapImagesResponse {
-        public:
-            MapImagesResponse() = default;
-            ~MapImagesResponse() = default;
-
-            MapImagesResponse(const MapImagesResponse &) = default;
-            MapImagesResponse(MapImagesResponse &&) = default;
-            MapImagesResponse &operator=(const MapImagesResponse &) = default;
-            MapImagesResponse &operator=(MapImagesResponse &&) = default;
-
+        struct MapImagesResponse {
             communication::MapImagesResponse toThrift() const;
 
             std::int32_t version;

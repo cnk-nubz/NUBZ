@@ -22,7 +22,7 @@ namespace command {
         db::Database &db;
 
         std::int32_t getCurrentVersion(db::DatabaseSession &session) const;
-        std::string createFilename(std::int32_t level) const;
+        std::string createFilename(const std::string &srcFilename, std::int32_t level) const;
         void moveFileToPublic(const std::string &srcFilename,
                               const std::string &destFilename) const;
     };
