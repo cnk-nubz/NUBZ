@@ -32,4 +32,13 @@
         android:id="@+id/bMapActivity"
         android:layout_below="@+id/mapButton"
         android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Database exhibits test"
+        android:id="@+id/bDatabaseExhibits"
+        android:onClick="databaseTest"
+        android:layout_below="@+id/bMapActivity"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
