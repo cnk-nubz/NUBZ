@@ -270,9 +270,9 @@ MapImagesRequest::~MapImagesRequest() throw() {
 }
 
 
-void MapImagesRequest::__set_acquiredLevel(const int32_t val) {
-  this->acquiredLevel = val;
-__isset.acquiredLevel = true;
+void MapImagesRequest::__set_acquiredVersion(const int32_t val) {
+  this->acquiredVersion = val;
+__isset.acquiredVersion = true;
 }
 
 uint32_t MapImagesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -298,8 +298,8 @@ uint32_t MapImagesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          xfer += iprot->readI32(this->acquiredLevel);
-          this->__isset.acquiredLevel = true;
+          xfer += iprot->readI32(this->acquiredVersion);
+          this->__isset.acquiredVersion = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -321,9 +321,9 @@ uint32_t MapImagesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("MapImagesRequest");
 
-  if (this->__isset.acquiredLevel) {
-    xfer += oprot->writeFieldBegin("acquiredLevel", ::apache::thrift::protocol::T_I32, 1);
-    xfer += oprot->writeI32(this->acquiredLevel);
+  if (this->__isset.acquiredVersion) {
+    xfer += oprot->writeFieldBegin("acquiredVersion", ::apache::thrift::protocol::T_I32, 1);
+    xfer += oprot->writeI32(this->acquiredVersion);
     xfer += oprot->writeFieldEnd();
   }
   xfer += oprot->writeFieldStop();
@@ -333,23 +333,23 @@ uint32_t MapImagesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 
 void swap(MapImagesRequest &a, MapImagesRequest &b) {
   using ::std::swap;
-  swap(a.acquiredLevel, b.acquiredLevel);
+  swap(a.acquiredVersion, b.acquiredVersion);
   swap(a.__isset, b.__isset);
 }
 
 MapImagesRequest::MapImagesRequest(const MapImagesRequest& other6) {
-  acquiredLevel = other6.acquiredLevel;
+  acquiredVersion = other6.acquiredVersion;
   __isset = other6.__isset;
 }
 MapImagesRequest& MapImagesRequest::operator=(const MapImagesRequest& other7) {
-  acquiredLevel = other7.acquiredLevel;
+  acquiredVersion = other7.acquiredVersion;
   __isset = other7.__isset;
   return *this;
 }
 void MapImagesRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "MapImagesRequest(";
-  out << "acquiredLevel="; (__isset.acquiredLevel ? (out << to_string(acquiredLevel)) : (out << "<null>"));
+  out << "acquiredVersion="; (__isset.acquiredVersion ? (out << to_string(acquiredVersion)) : (out << "<null>"));
   out << ")";
 }
 
@@ -586,6 +586,498 @@ void SetMapImageRequest::printTo(std::ostream& out) const {
   out << "SetMapImageRequest(";
   out << "level=" << to_string(level);
   out << ", " << "filename=" << to_string(filename);
+  out << ")";
+}
+
+
+ExhibitsRequest::~ExhibitsRequest() throw() {
+}
+
+
+void ExhibitsRequest::__set_acquiredVersion(const int32_t val) {
+  this->acquiredVersion = val;
+__isset.acquiredVersion = true;
+}
+
+uint32_t ExhibitsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->acquiredVersion);
+          this->__isset.acquiredVersion = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ExhibitsRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ExhibitsRequest");
+
+  if (this->__isset.acquiredVersion) {
+    xfer += oprot->writeFieldBegin("acquiredVersion", ::apache::thrift::protocol::T_I32, 1);
+    xfer += oprot->writeI32(this->acquiredVersion);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ExhibitsRequest &a, ExhibitsRequest &b) {
+  using ::std::swap;
+  swap(a.acquiredVersion, b.acquiredVersion);
+  swap(a.__isset, b.__isset);
+}
+
+ExhibitsRequest::ExhibitsRequest(const ExhibitsRequest& other20) {
+  acquiredVersion = other20.acquiredVersion;
+  __isset = other20.__isset;
+}
+ExhibitsRequest& ExhibitsRequest::operator=(const ExhibitsRequest& other21) {
+  acquiredVersion = other21.acquiredVersion;
+  __isset = other21.__isset;
+  return *this;
+}
+void ExhibitsRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ExhibitsRequest(";
+  out << "acquiredVersion="; (__isset.acquiredVersion ? (out << to_string(acquiredVersion)) : (out << "<null>"));
+  out << ")";
+}
+
+
+MapElementFrame::~MapElementFrame() throw() {
+}
+
+
+void MapElementFrame::__set_x(const int32_t val) {
+  this->x = val;
+}
+
+void MapElementFrame::__set_y(const int32_t val) {
+  this->y = val;
+}
+
+void MapElementFrame::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void MapElementFrame::__set_height(const int32_t val) {
+  this->height = val;
+}
+
+void MapElementFrame::__set_mapLevel(const int32_t val) {
+  this->mapLevel = val;
+}
+
+uint32_t MapElementFrame::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->x);
+          this->__isset.x = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->y);
+          this->__isset.y = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->mapLevel);
+          this->__isset.mapLevel = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MapElementFrame::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MapElementFrame");
+
+  xfer += oprot->writeFieldBegin("x", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->x);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("y", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->y);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 3);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 4);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("mapLevel", ::apache::thrift::protocol::T_I32, 5);
+  xfer += oprot->writeI32(this->mapLevel);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MapElementFrame &a, MapElementFrame &b) {
+  using ::std::swap;
+  swap(a.x, b.x);
+  swap(a.y, b.y);
+  swap(a.width, b.width);
+  swap(a.height, b.height);
+  swap(a.mapLevel, b.mapLevel);
+  swap(a.__isset, b.__isset);
+}
+
+MapElementFrame::MapElementFrame(const MapElementFrame& other22) {
+  x = other22.x;
+  y = other22.y;
+  width = other22.width;
+  height = other22.height;
+  mapLevel = other22.mapLevel;
+  __isset = other22.__isset;
+}
+MapElementFrame& MapElementFrame::operator=(const MapElementFrame& other23) {
+  x = other23.x;
+  y = other23.y;
+  width = other23.width;
+  height = other23.height;
+  mapLevel = other23.mapLevel;
+  __isset = other23.__isset;
+  return *this;
+}
+void MapElementFrame::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MapElementFrame(";
+  out << "x=" << to_string(x);
+  out << ", " << "y=" << to_string(y);
+  out << ", " << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
+  out << ", " << "mapLevel=" << to_string(mapLevel);
+  out << ")";
+}
+
+
+Exhibit::~Exhibit() throw() {
+}
+
+
+void Exhibit::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void Exhibit::__set_frame(const MapElementFrame& val) {
+  this->frame = val;
+__isset.frame = true;
+}
+
+uint32_t Exhibit::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->frame.read(iprot);
+          this->__isset.frame = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Exhibit::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Exhibit");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.frame) {
+    xfer += oprot->writeFieldBegin("frame", ::apache::thrift::protocol::T_STRUCT, 2);
+    xfer += this->frame.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Exhibit &a, Exhibit &b) {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.frame, b.frame);
+  swap(a.__isset, b.__isset);
+}
+
+Exhibit::Exhibit(const Exhibit& other24) {
+  name = other24.name;
+  frame = other24.frame;
+  __isset = other24.__isset;
+}
+Exhibit& Exhibit::operator=(const Exhibit& other25) {
+  name = other25.name;
+  frame = other25.frame;
+  __isset = other25.__isset;
+  return *this;
+}
+void Exhibit::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "Exhibit(";
+  out << "name=" << to_string(name);
+  out << ", " << "frame="; (__isset.frame ? (out << to_string(frame)) : (out << "<null>"));
+  out << ")";
+}
+
+
+ExhibitsResponse::~ExhibitsResponse() throw() {
+}
+
+
+void ExhibitsResponse::__set_version(const int32_t val) {
+  this->version = val;
+}
+
+void ExhibitsResponse::__set_exhibits(const std::map<int32_t, Exhibit> & val) {
+  this->exhibits = val;
+}
+
+uint32_t ExhibitsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->version);
+          this->__isset.version = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_MAP) {
+          {
+            this->exhibits.clear();
+            uint32_t _size26;
+            ::apache::thrift::protocol::TType _ktype27;
+            ::apache::thrift::protocol::TType _vtype28;
+            xfer += iprot->readMapBegin(_ktype27, _vtype28, _size26);
+            uint32_t _i30;
+            for (_i30 = 0; _i30 < _size26; ++_i30)
+            {
+              int32_t _key31;
+              xfer += iprot->readI32(_key31);
+              Exhibit& _val32 = this->exhibits[_key31];
+              xfer += _val32.read(iprot);
+            }
+            xfer += iprot->readMapEnd();
+          }
+          this->__isset.exhibits = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ExhibitsResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ExhibitsResponse");
+
+  xfer += oprot->writeFieldBegin("version", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->version);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("exhibits", ::apache::thrift::protocol::T_MAP, 2);
+  {
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I32, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->exhibits.size()));
+    std::map<int32_t, Exhibit> ::const_iterator _iter33;
+    for (_iter33 = this->exhibits.begin(); _iter33 != this->exhibits.end(); ++_iter33)
+    {
+      xfer += oprot->writeI32(_iter33->first);
+      xfer += _iter33->second.write(oprot);
+    }
+    xfer += oprot->writeMapEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ExhibitsResponse &a, ExhibitsResponse &b) {
+  using ::std::swap;
+  swap(a.version, b.version);
+  swap(a.exhibits, b.exhibits);
+  swap(a.__isset, b.__isset);
+}
+
+ExhibitsResponse::ExhibitsResponse(const ExhibitsResponse& other34) {
+  version = other34.version;
+  exhibits = other34.exhibits;
+  __isset = other34.__isset;
+}
+ExhibitsResponse& ExhibitsResponse::operator=(const ExhibitsResponse& other35) {
+  version = other35.version;
+  exhibits = other35.exhibits;
+  __isset = other35.__isset;
+  return *this;
+}
+void ExhibitsResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ExhibitsResponse(";
+  out << "version=" << to_string(version);
+  out << ", " << "exhibits=" << to_string(exhibits);
   out << ")";
 }
 

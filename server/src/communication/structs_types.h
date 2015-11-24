@@ -31,6 +31,14 @@ class MapImagesResponse;
 
 class SetMapImageRequest;
 
+class ExhibitsRequest;
+
+class MapElementFrame;
+
+class Exhibit;
+
+class ExhibitsResponse;
+
 
 class InternalError : public ::apache::thrift::TException {
  public:
@@ -158,8 +166,8 @@ inline std::ostream& operator<<(std::ostream& out, const HelloMsg& obj)
 }
 
 typedef struct _MapImagesRequest__isset {
-  _MapImagesRequest__isset() : acquiredLevel(false) {}
-  bool acquiredLevel :1;
+  _MapImagesRequest__isset() : acquiredVersion(false) {}
+  bool acquiredVersion :1;
 } _MapImagesRequest__isset;
 
 class MapImagesRequest {
@@ -167,21 +175,21 @@ class MapImagesRequest {
 
   MapImagesRequest(const MapImagesRequest&);
   MapImagesRequest& operator=(const MapImagesRequest&);
-  MapImagesRequest() : acquiredLevel(0) {
+  MapImagesRequest() : acquiredVersion(0) {
   }
 
   virtual ~MapImagesRequest() throw();
-  int32_t acquiredLevel;
+  int32_t acquiredVersion;
 
   _MapImagesRequest__isset __isset;
 
-  void __set_acquiredLevel(const int32_t val);
+  void __set_acquiredVersion(const int32_t val);
 
   bool operator == (const MapImagesRequest & rhs) const
   {
-    if (__isset.acquiredLevel != rhs.__isset.acquiredLevel)
+    if (__isset.acquiredVersion != rhs.__isset.acquiredVersion)
       return false;
-    else if (__isset.acquiredLevel && !(acquiredLevel == rhs.acquiredLevel))
+    else if (__isset.acquiredVersion && !(acquiredVersion == rhs.acquiredVersion))
       return false;
     return true;
   }
@@ -304,6 +312,230 @@ class SetMapImageRequest {
 void swap(SetMapImageRequest &a, SetMapImageRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const SetMapImageRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ExhibitsRequest__isset {
+  _ExhibitsRequest__isset() : acquiredVersion(false) {}
+  bool acquiredVersion :1;
+} _ExhibitsRequest__isset;
+
+class ExhibitsRequest {
+ public:
+
+  ExhibitsRequest(const ExhibitsRequest&);
+  ExhibitsRequest& operator=(const ExhibitsRequest&);
+  ExhibitsRequest() : acquiredVersion(0) {
+  }
+
+  virtual ~ExhibitsRequest() throw();
+  int32_t acquiredVersion;
+
+  _ExhibitsRequest__isset __isset;
+
+  void __set_acquiredVersion(const int32_t val);
+
+  bool operator == (const ExhibitsRequest & rhs) const
+  {
+    if (__isset.acquiredVersion != rhs.__isset.acquiredVersion)
+      return false;
+    else if (__isset.acquiredVersion && !(acquiredVersion == rhs.acquiredVersion))
+      return false;
+    return true;
+  }
+  bool operator != (const ExhibitsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ExhibitsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ExhibitsRequest &a, ExhibitsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ExhibitsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _MapElementFrame__isset {
+  _MapElementFrame__isset() : x(false), y(false), width(false), height(false), mapLevel(false) {}
+  bool x :1;
+  bool y :1;
+  bool width :1;
+  bool height :1;
+  bool mapLevel :1;
+} _MapElementFrame__isset;
+
+class MapElementFrame {
+ public:
+
+  MapElementFrame(const MapElementFrame&);
+  MapElementFrame& operator=(const MapElementFrame&);
+  MapElementFrame() : x(0), y(0), width(0), height(0), mapLevel(0) {
+  }
+
+  virtual ~MapElementFrame() throw();
+  int32_t x;
+  int32_t y;
+  int32_t width;
+  int32_t height;
+  int32_t mapLevel;
+
+  _MapElementFrame__isset __isset;
+
+  void __set_x(const int32_t val);
+
+  void __set_y(const int32_t val);
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
+
+  void __set_mapLevel(const int32_t val);
+
+  bool operator == (const MapElementFrame & rhs) const
+  {
+    if (!(x == rhs.x))
+      return false;
+    if (!(y == rhs.y))
+      return false;
+    if (!(width == rhs.width))
+      return false;
+    if (!(height == rhs.height))
+      return false;
+    if (!(mapLevel == rhs.mapLevel))
+      return false;
+    return true;
+  }
+  bool operator != (const MapElementFrame &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MapElementFrame & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MapElementFrame &a, MapElementFrame &b);
+
+inline std::ostream& operator<<(std::ostream& out, const MapElementFrame& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _Exhibit__isset {
+  _Exhibit__isset() : name(false), frame(false) {}
+  bool name :1;
+  bool frame :1;
+} _Exhibit__isset;
+
+class Exhibit {
+ public:
+
+  Exhibit(const Exhibit&);
+  Exhibit& operator=(const Exhibit&);
+  Exhibit() : name() {
+  }
+
+  virtual ~Exhibit() throw();
+  std::string name;
+  MapElementFrame frame;
+
+  _Exhibit__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_frame(const MapElementFrame& val);
+
+  bool operator == (const Exhibit & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (__isset.frame != rhs.__isset.frame)
+      return false;
+    else if (__isset.frame && !(frame == rhs.frame))
+      return false;
+    return true;
+  }
+  bool operator != (const Exhibit &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Exhibit & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Exhibit &a, Exhibit &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Exhibit& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ExhibitsResponse__isset {
+  _ExhibitsResponse__isset() : version(false), exhibits(false) {}
+  bool version :1;
+  bool exhibits :1;
+} _ExhibitsResponse__isset;
+
+class ExhibitsResponse {
+ public:
+
+  ExhibitsResponse(const ExhibitsResponse&);
+  ExhibitsResponse& operator=(const ExhibitsResponse&);
+  ExhibitsResponse() : version(0) {
+  }
+
+  virtual ~ExhibitsResponse() throw();
+  int32_t version;
+  std::map<int32_t, Exhibit>  exhibits;
+
+  _ExhibitsResponse__isset __isset;
+
+  void __set_version(const int32_t val);
+
+  void __set_exhibits(const std::map<int32_t, Exhibit> & val);
+
+  bool operator == (const ExhibitsResponse & rhs) const
+  {
+    if (!(version == rhs.version))
+      return false;
+    if (!(exhibits == rhs.exhibits))
+      return false;
+    return true;
+  }
+  bool operator != (const ExhibitsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ExhibitsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ExhibitsResponse &a, ExhibitsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ExhibitsResponse& obj)
 {
   obj.printTo(out);
   return out;

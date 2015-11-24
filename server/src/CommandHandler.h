@@ -19,6 +19,9 @@ public:
                               const communication::MapImagesRequest &request) override;
     virtual void setMapImage(const communication::SetMapImageRequest &request) override;
 
+    virtual void getExhibits(communication::ExhibitsResponse &response,
+                             const communication::ExhibitsRequest &request) override;
+
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;

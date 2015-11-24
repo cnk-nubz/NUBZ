@@ -64,7 +64,7 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
 
     try {
         io::input::SetMapImageRequest input(request);
-        
+
         command::SetMapImageCommand cmd(db);
         cmd.perform(input);
     } catch (command::InvalidInput &e) {
@@ -76,4 +76,15 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
     }
 
     LOG(INFO) << "setMapImage end";
+}
+
+void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
+                                 const communication::ExhibitsRequest &request) {
+    LOG(INFO) << "getExhibits start";
+    LOG(INFO) << "input: " << request;
+
+    LOG(INFO) << "not implemented";
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getExhibits end";
 }
