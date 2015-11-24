@@ -82,7 +82,6 @@ public class NetworkHandler implements Observer {
     }
 
     public synchronized void stopBgDownload() {
-
         downloadInBg = false;
     }
 

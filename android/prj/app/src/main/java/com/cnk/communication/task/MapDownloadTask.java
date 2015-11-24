@@ -25,10 +25,9 @@ public class MapDownloadTask extends ServerTask {
         Log.i(LOG_TAG, "Downloading map");
         MapImagesRequest request = new MapImagesRequest();
         if (DataHandler.getInstance().getMapVersion() != null) {
-            request.acquiredLevel = DataHandler.getInstance().getMapVersion();
+            request.setAcquiredLevel(DataHandler.getInstance().getMapVersion());
         }
-        MapImagesResponse response = null;
-        response = client.getMapImages(request);
+        MapImagesResponse response = client.getMapImages(request);
         updateDataHandler(response);
         Log.i(LOG_TAG, "Map downloaded");
     }

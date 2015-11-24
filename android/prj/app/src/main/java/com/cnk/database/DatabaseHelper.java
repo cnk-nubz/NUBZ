@@ -2,13 +2,9 @@ package com.cnk.database;
 
 import android.content.Context;
 
-import com.cnk.database.MapFileRealm;
-import com.cnk.exceptions.DatabaseException;
 import com.cnk.exceptions.InternalDatabaseError;
 
-
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 /*
  * impl functions could be used in both impl functions and public functions
@@ -48,9 +44,9 @@ public class DatabaseHelper {
     private Integer getVersionImpl(Enum<Version.Item> item) {
         Integer versionNumber = null;
 
-        RealmResults<VersionRealm> results = realm.where(VersionRealm.class).equalTo("item", item.toString()).findAll();
-        if (!results.isEmpty()) {
-            versionNumber = results.first().getCurrentVersion();
+        VersionRealm result = realm.where(VersionRealm.class).equalTo("item", item.toString()).findFirst();
+        if (result != null) {
+            versionNumber = result.getCurrentVersion();
         }
 
         return versionNumber;
@@ -105,9 +101,9 @@ public class DatabaseHelper {
     private String getMapFileImpl(Integer floor) {
         String mapFileAddr = null;
 
-        RealmResults<MapFileRealm> results = realm.where(MapFileRealm.class).equalTo("floor", floor).findAll();
-        if (!results.isEmpty()) {
-            mapFileAddr = results.first().getMapFileLocation();
+        MapFileRealm result = realm.where(MapFileRealm.class).equalTo("floor", floor).findFirst();
+        if (result != null) {
+            mapFileAddr = result.getMapFileLocation();
         }
 
         return mapFileAddr;
