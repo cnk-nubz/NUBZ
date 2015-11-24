@@ -12,4 +12,7 @@ service Server {
 
 	void setMapImage(1: structs.SetMapImageRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.ExhibitsResponse getExhibits(1: structs.ExhibitsRequest request)
+		throws (1: structs.InternalError err),
 }
