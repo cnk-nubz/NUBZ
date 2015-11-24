@@ -25,6 +25,7 @@ class ServerIf {
   virtual int32_t ping(const  ::communication::HelloMsg& msg) = 0;
   virtual void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request) = 0;
   virtual void setMapImage(const  ::communication::SetMapImageRequest& request) = 0;
+  virtual void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request) = 0;
 };
 
 class ServerIfFactory {
@@ -65,6 +66,9 @@ class ServerNull : virtual public ServerIf {
     return;
   }
   void setMapImage(const  ::communication::SetMapImageRequest& /* request */) {
+    return;
+  }
+  void getExhibits( ::communication::ExhibitsResponse& /* _return */, const  ::communication::ExhibitsRequest& /* request */) {
     return;
   }
 };
@@ -471,6 +475,118 @@ class Server_setMapImage_presult {
 
 };
 
+typedef struct _Server_getExhibits_args__isset {
+  _Server_getExhibits_args__isset() : request(false) {}
+  bool request :1;
+} _Server_getExhibits_args__isset;
+
+class Server_getExhibits_args {
+ public:
+
+  Server_getExhibits_args(const Server_getExhibits_args&);
+  Server_getExhibits_args& operator=(const Server_getExhibits_args&);
+  Server_getExhibits_args() {
+  }
+
+  virtual ~Server_getExhibits_args() throw();
+   ::communication::ExhibitsRequest request;
+
+  _Server_getExhibits_args__isset __isset;
+
+  void __set_request(const  ::communication::ExhibitsRequest& val);
+
+  bool operator == (const Server_getExhibits_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getExhibits_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getExhibits_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_getExhibits_pargs {
+ public:
+
+
+  virtual ~Server_getExhibits_pargs() throw();
+  const  ::communication::ExhibitsRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getExhibits_result__isset {
+  _Server_getExhibits_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getExhibits_result__isset;
+
+class Server_getExhibits_result {
+ public:
+
+  Server_getExhibits_result(const Server_getExhibits_result&);
+  Server_getExhibits_result& operator=(const Server_getExhibits_result&);
+  Server_getExhibits_result() {
+  }
+
+  virtual ~Server_getExhibits_result() throw();
+   ::communication::ExhibitsResponse success;
+   ::communication::InternalError err;
+
+  _Server_getExhibits_result__isset __isset;
+
+  void __set_success(const  ::communication::ExhibitsResponse& val);
+
+  void __set_err(const  ::communication::InternalError& val);
+
+  bool operator == (const Server_getExhibits_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getExhibits_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getExhibits_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getExhibits_presult__isset {
+  _Server_getExhibits_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getExhibits_presult__isset;
+
+class Server_getExhibits_presult {
+ public:
+
+
+  virtual ~Server_getExhibits_presult() throw();
+   ::communication::ExhibitsResponse* success;
+   ::communication::InternalError err;
+
+  _Server_getExhibits_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServerClient : virtual public ServerIf {
  public:
   ServerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -508,6 +624,9 @@ class ServerClient : virtual public ServerIf {
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   void send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage();
+  void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request);
+  void send_getExhibits(const  ::communication::ExhibitsRequest& request);
+  void recv_getExhibits( ::communication::ExhibitsResponse& _return);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -527,6 +646,7 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getMapImages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMapImage(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getExhibits(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServerProcessor(boost::shared_ptr<ServerIf> iface) :
     iface_(iface) {
@@ -534,6 +654,7 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["ping"] = &ServerProcessor::process_ping;
     processMap_["getMapImages"] = &ServerProcessor::process_getMapImages;
     processMap_["setMapImage"] = &ServerProcessor::process_setMapImage;
+    processMap_["getExhibits"] = &ServerProcessor::process_getExhibits;
   }
 
   virtual ~ServerProcessor() {}
@@ -599,6 +720,16 @@ class ServerMultiface : virtual public ServerIf {
     ifaces_[i]->setMapImage(request);
   }
 
+  void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getExhibits(_return, request);
+    }
+    ifaces_[i]->getExhibits(_return, request);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -641,6 +772,9 @@ class ServerConcurrentClient : virtual public ServerIf {
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   int32_t send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage(const int32_t seqid);
+  void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request);
+  int32_t send_getExhibits(const  ::communication::ExhibitsRequest& request);
+  void recv_getExhibits( ::communication::ExhibitsResponse& _return, const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
