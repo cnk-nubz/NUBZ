@@ -5,26 +5,33 @@ zoomed = ->
 								"scale(#{d3.event.scale})")
 	return
 
-zoom = d3.behavior.zoom()
-	.scaleExtent [1, 10]
-	.on("zoom", zoomed)
 
+
+zoom = d3.behavior.zoom()
+	.scaleExtent [1, 5]
+	.on("zoom", zoomed)
+root.zoom = zoom #make it global for zooming buttons
+root.svgWidth = "1280"
+root.svgHeight = "960"
 svg = d3.select "body"
 	.append "div"
 	.style(
-		"width": "700px"
+		"width": "100%"
 		"height": "auto"
 	)
 	.append "svg"
 	.attr(
-		"viewBox": "0 0 1 1"
+		"id": "mapImage"
+		"viewBox": "0 0 #{root.svgWidth} #{root.svgHeight}"
 		"preserveAspectRatio": "xMinYMin"
-		"height": "100%"
-		"width": "100%"
+		"height": "600"
+		"width": "800"
 	)
 	.append "g"
 	.attr("id", "zoomGroup")
 	.call zoom
+	.append "g"
+
 
 svg.append "defs"
 	.append "pattern"

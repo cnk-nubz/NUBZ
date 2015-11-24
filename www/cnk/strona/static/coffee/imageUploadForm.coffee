@@ -28,7 +28,6 @@ form.append "input"
 	"name": "image"
 	"accept": "image/*"
 )
-.style("float", "left")
 .classed(
 	"btn": true
 	"btn-xs": true
