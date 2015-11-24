@@ -24,8 +24,8 @@ svg = d3.select "body"
 		"id": "mapImage"
 		"viewBox": "0 0 #{root.svgWidth} #{root.svgHeight}"
 		"preserveAspectRatio": "xMinYMin"
-		"height": "600"
-		"width": "800"
+		"height": "100%"
+		"width": "100%"
 	)
 	.append "g"
 	.attr("id", "zoomGroup")
