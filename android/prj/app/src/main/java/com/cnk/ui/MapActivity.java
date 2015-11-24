@@ -31,9 +31,7 @@ import java.util.concurrent.Semaphore;
 
 public class MapActivity extends Activity implements Observer {
 
-    private RelativeLayout rlRootLayout;
     private TileView tileView;
-    private MapBitmapProvider floorsProviders[];
     private Semaphore updateMapDataSemaphore;
     private MapState mapState;
     private Switch floorsSwitch;
@@ -46,7 +44,7 @@ public class MapActivity extends Activity implements Observer {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.map_activity_layout);
-        rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
+        RelativeLayout rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
 
         currentFloorNum = 0;
 

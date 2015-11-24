@@ -2,17 +2,8 @@ package com.cnk.database;
 
 public class Version {
     public enum Item {
-        MAP("Map") {
-            @Override
-            public String toString() {
-                return super.toString();
-            }
-        }, UNKNOWN("Unknown") {
-            @Override
-            public String toString() {
-                return super.toString();
-            }
-        };
+        MAP("Map"),
+        UNKNOWN("Unknown");
 
         private String code;
 

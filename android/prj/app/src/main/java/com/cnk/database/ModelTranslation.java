@@ -25,7 +25,7 @@ public class ModelTranslation {
         return v;
     }
 
-    public static VersionRealm realmFromVerion(Version v) {
+    public static VersionRealm realmFromVersion(Version v) {
         VersionRealm vr = new VersionRealm();
         vr.setItem(v.getItem().toString());
         vr.setCurrentVersion(v.getCurrentVersion());

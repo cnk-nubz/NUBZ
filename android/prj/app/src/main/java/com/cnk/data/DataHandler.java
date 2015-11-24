@@ -9,26 +9,20 @@ import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Version;
-import com.cnk.exceptions.DatabaseException;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Map;
 import java.util.Observable;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
 
     private static final String LOG_TAG = "DataHandler";
-    private static final String CONFIG_FILE = "config";
     private static final String MAP_FILE_PREFIX = "map";
     private static final String PROTOCOL = "http://";
-    private static final Integer FLOORS = 2;
     private static DataHandler instance;
     private Context context;
     private DatabaseHelper dbHelper;
@@ -48,9 +42,6 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    public synchronized void getInitData() {
-    }
-
     private DataHandler() {
     }
 
@@ -64,7 +55,7 @@ public class DataHandler extends Observable {
     }
 
     public synchronized void setMapFloor(Integer floor, String url) throws IOException {
-        Drawable image = urlToDrawable(url, floor);
+        downloadMap(url, floor);
         dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
 
         setChanged();
@@ -79,18 +70,15 @@ public class DataHandler extends Observable {
         if (dbHelper == null) {
             Log.e("DB HELPER", "IS NULL");
         }
-        Integer version =  dbHelper.getVersion(Version.Item.MAP);
-        return version;
+        return dbHelper.getVersion(Version.Item.MAP);
     }
 
-    private Drawable urlToDrawable(String url, Integer floor) throws IOException {
-        Bitmap bmp;
+    private void downloadMap(String url, Integer floor) throws IOException {
         URL fileUrl = new URL(PROTOCOL + url);
         InputStream input = fileUrl.openStream();
-        bmp = BitmapFactory.decodeStream(input);
+        Bitmap bmp = BitmapFactory.decodeStream(input);
         input.close();
         saveMapFile(bmp, floor);
-        return new BitmapDrawable(context.getResources(), bmp);
     }
 
     private void saveMapFile(Bitmap bmp, Integer floor) throws IOException {
@@ -118,7 +106,7 @@ public class DataHandler extends Observable {
             return new BitmapDrawable(context.getResources(), bmp);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            throw new FileNotFoundException();
+            throw e;
         }
     }
 }

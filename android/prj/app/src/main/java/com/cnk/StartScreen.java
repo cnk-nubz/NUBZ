@@ -13,7 +13,6 @@ import com.cnk.ui.MapActivity;
 
 public class StartScreen extends AppCompatActivity {
     NetworkHandler net;
-    Button bgButton;
     Button bMapActivity;
 
     @Override
@@ -23,7 +22,6 @@ public class StartScreen extends AppCompatActivity {
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setContext(getApplication().getApplicationContext());
         DataHandler.getInstance().setDbHelper(dbHelper);
-        DataHandler.getInstance().getInitData();
         net = new NetworkHandler();
 
         bMapActivity = (Button) findViewById(R.id.bMapActivity);
