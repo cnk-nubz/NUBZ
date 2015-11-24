@@ -13,7 +13,6 @@ getThFloor = (n) ->
 
 div = d3.select "body"
 		.append "div"
-
 div.append "button"
 .attr("id", "floorButton0")
 .style(

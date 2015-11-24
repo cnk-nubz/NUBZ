@@ -1,5 +1,5 @@
 root = exports ? this
-margin = {"top": 25, "left": 25}
+margin = {"top": 5, "left": 25}
 width = 50
 height = 50
 
@@ -47,107 +47,40 @@ resetZoom = ->
 		.attr("transform", "translate(0, 0) scale(1)")
 	return
 
-plusGroup = div.append "g"
+buttonGroup = d3.select("#divImage").append "div"
+	.style(
+		"position": "absolute"
+		"top": "10px"
+		"left": "10px"
+	) 
+
+buttonData = [
+	{"caption": "+", "id": "plusButton"}
+	{"caption": "0", "id": "resetButton"}
+	{"caption": "-", "id": "minusButton"}
+]
+
+buttonGroup.selectAll "button"
+	.data buttonData
+	.enter()
+	.append "div"
+	.style(
+		"padding-top": "5px"
+	)
+	.append "button"
 	.attr(
-		"id": "plusGroup"
+		"id": (d) -> d.id
+	)
+	.style(
+		"width": "34px"
+		"height": "34px"
 	)
 	.classed(
 		"btn": true
+		"btn-primary": true
 	)
+	.html (d) -> d.caption
 
-plusGroup.append "rect"
-	.attr(
-		"x": "#{margin.left}px"
-		"y": "#{margin.top}px"
-		"width": "#{width}px"
-		"height": "#{height}px"
-		"rx": "10px"
-	)
-	.style(
-		"fill": "lightgray"
-		"fill-opacity": "0.5"
-		"stroke": "lightblue"
-		"stroke-width": "5px"
-	)
-plusGroup.append "text"
-	.attr(
-		"x": "#{margin.left + width/2}px"
-		"y": "#{margin.top + height/2 + 10 }px"
-		"font-size": "32"
-		"fill": "blue"
-	)
-	.style(
-		"text-anchor": "middle"
-	)
-	.html "+"
-
-minusGroup = div.append "g"
-	.attr(
-		"id": "minusGroup"
-	)
-	.classed(
-		"btn": true
-	)
-minusGroup.append "rect"
-	.attr(
-		"x": "#{margin.left}px"
-		"y": "#{2 * margin.top + height}px"
-		"width" : "#{width}px"
-		"height": "#{height}px"
-		"rx": "10px"
-	)
-	.style(
-		"fill": "lightgray"
-		"fill-opacity": "0.5"
-		"stroke": "lightblue"
-		"stroke-width": "5px"
-	)
-minusGroup.append "text"
-	.attr(
-		"x": "50px"
-		"y": "#{10 + 2 * margin.top + height + height/2}px"
-		"font-size": "32"
-		"fill": "blue"
-	)
-	.style(
-		"text-anchor": "middle"
-	)
-	.html "-"
-
-resetGroup = div.append "g"
-	.attr(
-		"id": "resetGroup"
-	)
-	.classed(
-		"btn": true
-	)
-
-resetGroup.append "rect"
-	.attr(
-		"x": "#{margin.left}px"
-		"y": "#{3 * margin.top + 2*height}px"
-		"width" : "#{width}px"
-		"height": "#{height}px"
-		"rx": "10px"
-	)
-	.style(
-		"fill": "lightgray"
-		"fill-opacity": "0.5"
-		"stroke": "lightblue"
-		"stroke-width": "5px"
-	)
-resetGroup.append "text"
-	.attr(
-		"x": "50px"
-		"y": "#{5 + 3 * margin.top + 2*height + height/2}px"
-		"font-size": "16"
-		"fill": "blue"
-	)
-	.style(
-		"text-anchor": "middle"
-	)
-	.html "Reset"
-
-plusGroup.on("click", zoomIn)
-minusGroup.on("click", zoomOut)
-resetGroup.on("click", resetZoom)
+d3.select("#plusButton").on("click", zoomIn)
+d3.select("#minusButton").on("click", zoomOut)
+d3.select("#resetButton").on("click", resetZoom)

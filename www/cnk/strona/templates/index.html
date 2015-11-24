@@ -24,12 +24,15 @@
 		root.url_floor0 = "{{url_floor0}}"
 		root.url_floor1 = "{{url_floor1}}"
 		root.csrf_token = "{% csrf_token %}"
+		root.svgWidth = 640
+		root.svgHeight = 420
 	</script>
 	{% endcompress %}
 </head>
 
 <body>
 {% compress js %}
+
 <script src="{% static "coffee/navbar.coffee"%}" type="text/coffeescript">
 ###
 # CREATE NAVIGATION BAR
