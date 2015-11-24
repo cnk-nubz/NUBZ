@@ -6,8 +6,8 @@
 namespace db {
     struct MapImage {
         std::string filename;
-        std::uint32_t version;
-        std::uint32_t level;
+        std::int32_t version;
+        std::int32_t level;
     };
 }
 
