@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
@@ -26,8 +25,6 @@ public class StartScreen extends AppCompatActivity {
         DataHandler.getInstance().setDbHelper(dbHelper);
         DataHandler.getInstance().getInitData();
         net = new NetworkHandler();
-        bgButton = (Button) findViewById(R.id.bgButton);
-        bgButton.setOnClickListener(new BgClick());
 
         bMapActivity = (Button) findViewById(R.id.bMapActivity);
         bMapActivity.setOnClickListener(new MapActivityClick());
@@ -39,19 +36,6 @@ public class StartScreen extends AppCompatActivity {
 
     public void mapClick(View view) {
         net.downloadMap();
-    }
-
-    private class BgClick implements View.OnClickListener {
-        public void onClick(View v) {
-            if (bgButton.getText().equals("Start BG downlaod")) {
-                net.startBgDownload();
-                bgButton.setText("Stop BG download");
-            } else {
-                net.stopBgDownload();
-                bgButton.setText("Start BG downlaod");
-            }
-
-        }
     }
 
     private class MapActivityClick implements View.OnClickListener {

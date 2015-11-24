@@ -8,13 +8,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.ContactsContract;
-import android.text.Layout;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -22,13 +19,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
-import com.cnk.database.DatabaseHelper;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.detail.DetailLevel;
 import com.qozix.tileview.graphics.BitmapProvider;
-
-import org.javatuples.Pair;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -44,6 +39,7 @@ public class MapActivity extends Activity implements Observer {
     private Switch floorsSwitch;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
+    private NetworkHandler networkHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +75,11 @@ public class MapActivity extends Activity implements Observer {
         mapState.mapWidth = new Integer[2];
         mapState.mapHeight = new Integer[2];
         mapState.floorProvider = new BitmapProvider[2];
+        mapState.firstRun = true;
+
+        DataHandler.getInstance().addObserver(this);
+
+        networkHandler = new NetworkHandler();
 
         new MapUpdateTask().execute();
     }
@@ -123,9 +124,12 @@ public class MapActivity extends Activity implements Observer {
 
     private LinearLayout addMapMissingLayout(RelativeLayout parent, Context c) {
         TextView tvLoadingFailed = new TextView(c);
-        tvLoadingFailed.setText(getResources().getString(R.string.loading_map_failed));
+        tvLoadingFailed.setText(getResources().getString(R.string.map_wait));
         tvLoadingFailed.setTextSize(20);
         LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        ProgressBar pb = new ProgressBar(c);
+        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
@@ -134,6 +138,7 @@ public class MapActivity extends Activity implements Observer {
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoadingFailed, tvLp);
+        ll.addView(pb, pbLp);
 
         parent.addView(ll, lp);
 
@@ -148,7 +153,7 @@ public class MapActivity extends Activity implements Observer {
 
     @Override
     public void update(Observable observable, Object o) {
-        if (DataHandler.getInstance().getMapVersion() > mapState.mapVersion) {
+        if (mapState.mapVersion == null || DataHandler.getInstance().getMapVersion() > mapState.mapVersion) {
             mapState.mapVersion = DataHandler.getInstance().getMapVersion();
             new MapUpdateTask().execute();
         }
@@ -207,7 +212,6 @@ public class MapActivity extends Activity implements Observer {
     }
 
     private class MapUpdateTask extends AsyncTask<Void, Void, Void> {
-        private int mapVersion;
         private Drawable floorDrawable[];
 
         @Override
@@ -215,12 +219,18 @@ public class MapActivity extends Activity implements Observer {
             super.onPreExecute();
 
             updateMapDataSemaphore.acquireUninterruptibly();
-            floorsSwitch.setEnabled(false);
+            MapActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    floorsSwitch.setEnabled(false);
+                }
+            });
+
         }
 
         @Override
         protected Void doInBackground(Void... voids) {
-            mapVersion = DataHandler.getInstance().getMapVersion();
+            mapState.mapVersion = DataHandler.getInstance().getMapVersion();
             floorDrawable = new Drawable[2];
 
             for (int i = 0; i <= 1; i++) {
@@ -240,15 +250,23 @@ public class MapActivity extends Activity implements Observer {
         protected void onPostExecute(Void object) {
             super.onPostExecute(object);
 
-            refreshMapAsFloor(currentFloorNum);
+            MapActivity.this.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    refreshMapAsFloor(currentFloorNum);
+                    floorsSwitch.setEnabled(true);
+                }
+            });
 
-            floorsSwitch.setEnabled(true);
             updateMapDataSemaphore.release();
+            networkHandler.startBgDownload();
+
         }
     }
 
     private class MapState {
         Integer mapVersion;
+        Boolean firstRun;
         BitmapProvider floorProvider[];
         Integer mapWidth[], mapHeight[];
     }

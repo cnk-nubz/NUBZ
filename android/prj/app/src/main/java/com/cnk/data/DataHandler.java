@@ -96,7 +96,7 @@ public class DataHandler extends Observable {
     private void saveMapFile(Bitmap bmp, Integer floor) throws IOException {
         try {
             FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
             out.close();
             Log.i(LOG_TAG, "Map saved to file " + MAP_FILE_PREFIX + floor.toString());
         } catch (IOException e) {
