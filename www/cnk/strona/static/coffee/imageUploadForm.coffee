@@ -5,7 +5,7 @@ div = d3.select "body"
 form = div.append "div"
 	.style(
 		"display": "block-inline"
-		"height": "50px"
+		"height": "55px"
 	)
 	.attr(
 		"id": "formDiv"

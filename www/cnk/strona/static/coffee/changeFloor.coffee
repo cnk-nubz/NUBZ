@@ -31,7 +31,7 @@ div.append "button"
 	"padding-top": "5px"
 	"min-width": "50px"
 	"width": "auto"
-	"height": "20px"
+	"height": "auto"
 )
 .classed(
 	"btn": true
@@ -48,7 +48,7 @@ div.append "button"
 	"padding-top": "5px"
 	"min-width": "50px"
 	"width": "auto"
-	"height": "20px"
+	"height": "auto"
 )
 .classed(
 	"btn": true
