@@ -1,9 +1,4 @@
 root = exports ? this
-getActiveFloorLevel = ->
-	id = d3.select "#floorImage"
-			.style "fill"
-	return +id.charAt(id.length - 2)
-
 div = d3.select "body"
 		.append "div"
 
@@ -46,7 +41,7 @@ form.append "input"
 )
 .on("click", ->
 	d3.select "#hiddenFloorLevel"
-		.attr("value", getActiveFloorLevel())
+		.attr("value", root.activeFloor)
 )
 
 form.append "input"

@@ -80,4 +80,4 @@ container.append "rect"
 		"width": "100%"
 		"height": "100%"
 		)
-	.style("fill", "url(#floor0)")
+	.style("fill", "url(#floor#{root.activeFloor})")

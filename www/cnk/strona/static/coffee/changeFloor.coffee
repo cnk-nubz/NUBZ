@@ -1,4 +1,6 @@
-getThFloor = (n) ->
+root = exports ? this
+setThFloor = (n) ->
+	root.activeFloor = n
 	d3.select "#floorButton#{n}"
 		.classed(
 			"active": true
@@ -10,6 +12,8 @@ getThFloor = (n) ->
 	d3.select "#floorImage"
 		.style("fill", "url(#floor#{n})")
 	return
+
+activeFloor = root.activeFloor
 
 div = d3.select "body"
 		.append "div"
@@ -27,7 +31,7 @@ div.append "button"
 	"active": true
 )
 .html "Piętro 0."
-.on("click", ->getThFloor(0))
+.on("click", ->setThFloor(0))
 
 div.append "button"
 .attr("id", "floorButton1")
@@ -42,4 +46,7 @@ div.append "button"
 	"btn-xs": true
 )
 .html "Piętro 1."
-.on("click", ->getThFloor(1))
+.on("click", ->setThFloor(1))
+
+#set default active floor
+setThFloor(activeFloor)

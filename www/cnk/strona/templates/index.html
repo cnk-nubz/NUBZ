@@ -24,8 +24,11 @@
 		root.url_floor0 = "{{url_floor0}}"
 		root.url_floor1 = "{{url_floor1}}"
 		root.csrf_token = "{% csrf_token %}"
+		root.uploadError = +"{{err}}"
+		root.activeFloor = +"{{floor}}"
 		root.svgWidth = 640
 		root.svgHeight = 420
+
 	</script>
 	{% endcompress %}
 </head>
@@ -38,6 +41,13 @@
 # CREATE NAVIGATION BAR
 ###
 </script>
+
+<script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
+###
+# GIVE INFORMATION ABOUT UPLOAD RESULT
+###
+</script>
+
 <script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
 ###
 # CREATE IMAGE UPLOAD FORM
