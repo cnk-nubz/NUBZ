@@ -50,14 +50,13 @@ resetZoom = ->
 buttonGroup = d3.select("#divImage").append "div"
 	.style(
 		"position": "absolute"
-		"top": "10px"
-		"left": "10px"
-	) 
+		"top": "0px"
+	)
 
 buttonData = [
-	{"caption": "+", "id": "plusButton"}
-	{"caption": "0", "id": "resetButton"}
-	{"caption": "-", "id": "minusButton"}
+	{"caption": "+", "id": "plusButton", "f": zoomIn}
+	{"caption": "0", "id": "resetButton", "f": resetZoom}
+	{"caption": "-", "id": "minusButton", "f": zoomOut}
 ]
 
 buttonGroup.selectAll "button"
@@ -80,7 +79,4 @@ buttonGroup.selectAll "button"
 		"btn-primary": true
 	)
 	.html (d) -> d.caption
-
-d3.select("#plusButton").on("click", zoomIn)
-d3.select("#minusButton").on("click", zoomOut)
-d3.select("#resetButton").on("click", resetZoom)
+	.on("click", (d) -> d.f())

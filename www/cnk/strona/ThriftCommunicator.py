@@ -21,8 +21,8 @@ class ThriftCommunicator:
 	def start_connection(self):
 		ret = True
 		try:
-			self.transport = TSocket.TSocket(self.host, self.port)
-	  		self.transport = TTransport.TBufferedTransport(self.transport)
+			socket = TSocket.TSocket(self.host, self.port)
+	  		self.transport = TTransport.TBufferedTransport(socket)
 	  		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
 			self.transport.open()
 			self.client = Server.Client(self.protocol)
@@ -31,12 +31,11 @@ class ThriftCommunicator:
 		return ret
 
 	def end_connection(self):
-		ret = True
 		try:
 			self.transport.close()
 		except:
-			ret = False
-		return ret
+			return False
+		return True
 
 	def ping(self, number, text):
 		msg = HelloMsg(number, text)

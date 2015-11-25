@@ -7,7 +7,7 @@ getJustMap = ->
 getEditMap = ->
 	d3.select "#imageUploadForm"
 		.style(
-			"display": "block"
+			"display": "initial"
 		)
 	return
 
