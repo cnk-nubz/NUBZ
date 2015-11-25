@@ -8,7 +8,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +38,7 @@ public class MapActivity extends Activity implements Observer {
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
-    private Boolean wasPaused;
+    private Boolean fullyLoaded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +48,7 @@ public class MapActivity extends Activity implements Observer {
         RelativeLayout rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
 
         currentFloorNum = 0;
-        wasPaused = false;
+        fullyLoaded = false;
 
         tileView = new TileView(this);
 
@@ -156,11 +155,11 @@ public class MapActivity extends Activity implements Observer {
     protected void onResume() {
         super.onResume();
 
-        if (wasPaused) {
+        if (fullyLoaded) {
             tileView.resume();
             refreshMapAsFloor(currentFloorNum);
         }
-        wasPaused = true;
+        fullyLoaded = true;
     }
 
     @Override

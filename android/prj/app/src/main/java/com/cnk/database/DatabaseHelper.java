@@ -64,8 +64,11 @@ public class DatabaseHelper {
         open();
 
         try {
+            beginTransaction();
             version = getVersionImpl(item);
+            commitTransaction();
         } catch (RuntimeException re) {
+            cancelTransaction();
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
@@ -127,8 +130,11 @@ public class DatabaseHelper {
         open();
 
         try {
+            beginTransaction();
             mapFileAddr = getMapFileImpl(floor);
+            commitTransaction();
         } catch (RuntimeException re) {
+            cancelTransaction();
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
