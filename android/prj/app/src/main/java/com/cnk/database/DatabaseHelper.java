@@ -5,9 +5,7 @@ import android.content.Context;
 import com.cnk.exceptions.InternalDatabaseError;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -246,26 +244,26 @@ public class DatabaseHelper {
     /*
      * if exhibit with such id exists, updates it, otherwise adds new exhibit
      */
-    private void setExhibitImpl(Integer id, com.cnk.communication.Exhibit e) {
-        ExhibitRealm er = ModelTranslation.realmFromExhibit(new Exhibit(id, e));
+    private void setExhibitImpl(Exhibit e) {
+        ExhibitRealm er = ModelTranslation.realmFromExhibit(e);
         realm.copyToRealmOrUpdate(er);
     }
 
     /*
      * if exhibit with such id exists, updates it, otherwise adds new exhibit
      */
-    public void setExhibit(Integer versionNum, Integer id, com.cnk.communication.Exhibit e) {
+    public void setExhibit(Integer versionNum, Exhibit e) {
         open();
 
         try {
             beginTransaction();
             setVersionImpl(Version.Item.EXHIBITS, versionNum);
-            setExhibitImpl(id, e);
+            setExhibitImpl(e);
             commitTransaction();
         } catch (RuntimeException re) {
             cancelTransaction();
             re.printStackTrace();
-            throw new InternalDatabaseError("Exception saving exhibit with id " + id.toString());
+            throw new InternalDatabaseError("Exception saving exhibit with id " + e.getId());
         } finally {
             close();
         }
