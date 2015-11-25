@@ -8,6 +8,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ public class MapActivity extends Activity implements Observer {
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
+    private Boolean wasPaused;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +49,7 @@ public class MapActivity extends Activity implements Observer {
         RelativeLayout rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
 
         currentFloorNum = 0;
+        wasPaused = false;
 
         tileView = new TileView(this);
 
@@ -56,9 +59,9 @@ public class MapActivity extends Activity implements Observer {
         floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
 
         tileView.setVisibility(View.INVISIBLE);
-        tileView.setTransitionsEnabled(true);
+        tileView.setTransitionsEnabled(false);
         tileView.setShouldRecycleBitmaps(false);
-        tileView.setScaleLimits(0.3f, 4f);
+        tileView.setScaleLimits(0.01f, 4f);
         tileView.setScale(0.5f);
 
         layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
@@ -146,7 +149,27 @@ public class MapActivity extends Activity implements Observer {
     @Override
     protected void onPause() {
         super.onPause();
-        tileView.resume();
+        tileView.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (wasPaused) {
+            tileView.resume();
+            refreshMapAsFloor(currentFloorNum);
+        }
+        wasPaused = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tileView.setBitmapProvider(null);
+        tileView.destroy();
+        mapState.floorProvider = null;
+        networkHandler.stopBgDownload();
     }
 
     @Override
@@ -184,7 +207,7 @@ public class MapActivity extends Activity implements Observer {
 
         tileView.setVisibility(View.VISIBLE);
         tileView.setShouldScaleToFit(true);
-        tileView.setScale(0.5f);
+        tileView.setScale(0.02f);
 
         layoutLoading.setVisibility(View.INVISIBLE);
         tileView.setVisibility(View.VISIBLE);
@@ -256,9 +279,8 @@ public class MapActivity extends Activity implements Observer {
                 }
             });
 
-            updateMapDataSemaphore.release();
             networkHandler.startBgDownload();
-
+            updateMapDataSemaphore.release();
         }
     }
 

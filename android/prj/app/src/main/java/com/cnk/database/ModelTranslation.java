@@ -1,5 +1,7 @@
 package com.cnk.database;
 
+import java.util.ArrayList;
+
 public class ModelTranslation {
     public static MapFile mapFileFromRealm(MapFileRealm mfr) {
         MapFile mf = null;
@@ -62,5 +64,14 @@ public class ModelTranslation {
         er.setName(e.getName());
 
         return er;
+    }
+
+    public static ArrayList<ExhibitRealm> realmFromExhibits(Iterable<Exhibit> exhibits) {
+        ArrayList<ExhibitRealm> list = new ArrayList<>();
+        for (Exhibit e : exhibits) {
+            list.add(realmFromExhibit(e));
+        }
+
+        return list;
     }
 }

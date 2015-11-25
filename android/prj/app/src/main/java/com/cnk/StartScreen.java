@@ -49,44 +49,5 @@ public class StartScreen extends AppCompatActivity {
             startActivity(i);
         }
     }
-
-    public void databaseTest(View view) {
-        AsyncTask<Integer, Void, Void> dbTestTask = new AsyncTask<Integer, Void, Void>() {
-            @Override
-            protected Void doInBackground(Integer... integers) {
-                DatabaseHelper dbHelper = new DatabaseHelper(getApplicationContext());
-
-                ArrayList<Exhibit> exhibits = new ArrayList<>();
-                List<Exhibit> exhibitList;
-                Log.i("Creating dummy exhibits", "begin");
-                for (int i = 1; i <= integers[0]; i++) {
-                    exhibits.add(new Exhibit(i, 10, 10, 10, 10, 1, "asdf asdf asdf asdf asdf"));
-                }
-                Log.i("Creating dummy exhibits", "end");
-
-                Log.i("Save dummy exhibits", "begin");
-                dbHelper.setAllExhibits(exhibits);
-                Log.i("Save dummy exhibits", "end");
-
-                Log.i("Save dummy floor", "begin");
-                dbHelper.setExhibitsForFloor(exhibits, 1);
-                Log.i("Save dummy floor", "end");
-
-                Log.i("Get all dummy", "begin");
-                exhibitList = dbHelper.getAllExhibits();
-                Log.i("Get all dummy", "end");
-
-                Log.i("Get all dummy for floor", "begin");
-                exhibitList = dbHelper.getAllExhibitsForFloor(1);
-                Log.i("Get all dummy for floor", "end");
-
-                Exhibit e = dbHelper.getExhibit(1);
-
-                return null;
-            }
-        };
-
-        dbTestTask.execute(1000);
-    }
 }
 
