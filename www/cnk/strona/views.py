@@ -25,6 +25,8 @@ def index(request):
 
 	tc = ThriftCommunicator()
 	ret = tc.getMapImages()
+	if not ret: #failed to get maps
+		return HttpResponse('<h1>Nie mozna zaladowac map, sprawdz czy serwer jest wlaczony</h1>')
 	ret_version = ret.version
 	ret_urls = ret.levelImageUrls
 	url_floor0 = None
@@ -65,7 +67,7 @@ def uploadImage(request):
 	filename = m.image.name
 	#extract filename
 	ret = tc.setMapImage(floor, os.path.basename(filename))
-	if ret == False:
+	if not ret:
 		url = "{}?err=3&floor={}".format(reverse('index'), floor)
 		return HttpResponseRedirect(url)
 

@@ -19,36 +19,59 @@ class ThriftCommunicator:
 		self.client = None
 
 	def start_connection(self):
-		self.transport = TSocket.TSocket(self.host, self.port)
-  		self.transport = TTransport.TBufferedTransport(self.transport)
-  		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-		self.transport.open()
-		self.client = Server.Client(self.protocol)
+		ret = True
+		try:
+			self.transport = TSocket.TSocket(self.host, self.port)
+	  		self.transport = TTransport.TBufferedTransport(self.transport)
+	  		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+			self.transport.open()
+			self.client = Server.Client(self.protocol)
+		except:
+			ret = False
+		return ret
 
 	def end_connection(self):
-		self.transport.close()
+		ret = True
+		try:
+			self.transport.close()
+		except:
+			ret = False
+		return ret
 
 	def ping(self, number, text):
 		msg = HelloMsg(number, text)
-		self.start_connection()
+		if not self.start_connection():
+			return None
 		ret = self.client.ping(msg)
-		self.end_connection()
+		if not self.end_connection():
+			return None
 		return ret
 
 	def getMapImages(self):
 		msg = MapImagesRequest()
-		self.start_connection()
-		ret = self.client.getMapImages(msg)
-		self.end_connection()
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.getMapImages(msg)
+		except:
+			ret = None
+
+		if not self.end_connection():
+			return None
+
 		return ret
 
 	def setMapImage(self, floor, filename):
 		msg = SetMapImageRequest(floor, filename)
 		ret = True
-		self.start_connection()
+		if not self.start_connection():
+			return None
 		try:
 			self.client.setMapImage(msg)
 		except:
-			ret = False #failed to set the map
-		self.end_connection()
+			ret = None #failed to set the map
+
+		if not self.end_connection():
+			return None
 		return ret
