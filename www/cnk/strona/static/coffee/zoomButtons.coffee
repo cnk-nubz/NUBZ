@@ -53,6 +53,7 @@ buttonGroup = d3.select "#divImage"
 	.style(
 		"position": "absolute"
 		"top": "0px"
+		"left": "10px"
 	)
 
 buttonData = [

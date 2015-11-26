@@ -5,7 +5,7 @@ div = d3.select "body"
 form = div.append "div"
 	.style(
 		"display": "inline"
-		"height": "55px"
+		"height": "39px"
 	)
 	.attr(
 		"id": "formDiv"
@@ -25,6 +25,10 @@ form = div.append "div"
 		"padding-top": "5px"
 	)
 	.html root.csrf_token
+	.append "div" #spacer
+	.style(
+		"padding-bottom": "5px"
+	)
 
 form.append "div"
 	.classed(

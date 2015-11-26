@@ -20,44 +20,49 @@ div = d3.select "#divImage"
 	.append "div"
 	.style(
 		"position": "absolute"
-		"top": "0"
-		"right": "0"
+		"top": "0px"
+		"right": "10px"
 		"width": "50px"
-		"padding-top": "5px"
 	)
 
-div.append "button"
-.attr("id", "floorButton0")
-.style(
-	"padding-top": "5px"
-	"min-width": "50px"
-	"width": "auto"
-	"height": "auto"
-)
-.classed(
-	"btn": true
-	"btn-primary": true
-	"btn-xs": true
-	"active": true
-)
-.html "Piętro 0"
-.on("click", ->setThFloor(0))
+div.append "div"
+	.style(
+		"padding-top": "5px"
+	)
+	.append "button"
+	.attr("id", "floorButton0")
+	.style(
+		"min-width": "50px"
+		"width": "auto"
+		"height": "auto"
+	)
+	.classed(
+		"btn": true
+		"btn-primary": true
+		"btn-xs": true
+		"active": true
+	)
+	.html "Piętro 0"
+	.on("click", ->setThFloor(0))
 
-div.append "button"
-.attr("id", "floorButton1")
-.style(
-	"padding-top": "5px"
-	"min-width": "50px"
-	"width": "auto"
-	"height": "auto"
-)
-.classed(
-	"btn": true
-	"btn-primary": true
-	"btn-xs": true
-)
-.html "Piętro 1"
-.on("click", ->setThFloor(1))
+div.append "div"
+	.style(
+		"padding-top": "5px"
+	)
+	.append "button"
+	.attr("id", "floorButton1")
+	.style(
+		"min-width": "50px"
+		"width": "auto"
+		"height": "auto"
+	)
+	.classed(
+		"btn": true
+		"btn-primary": true
+		"btn-xs": true
+	)
+	.html "Piętro 1"
+	.on("click", ->setThFloor(1))
 
 #set default active floor
 setThFloor(activeFloor)
