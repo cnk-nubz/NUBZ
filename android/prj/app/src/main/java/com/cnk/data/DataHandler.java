@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
+import com.cnk.communication.Exhibit;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Version;
 
@@ -16,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Observable;
 
 public class DataHandler extends Observable {
@@ -54,16 +56,29 @@ public class DataHandler extends Observable {
         }
     }
 
-    public synchronized void setMapFloor(Integer floor, String url) throws IOException {
-        downloadMap(url, floor);
-        dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
+    public synchronized void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
+        if (urlFloor1 != null) {
+            downloadMap(urlFloor1, 0);
+        }
+        if (urlFloor2 != null) {
+            downloadMap(urlFloor2, 1);
+        }
+
+        String floor1File = null;
+        String floor2File = null;
+
+        if (urlFloor1 != null) {
+            floor1File = MAP_FILE_PREFIX + "0";
+    }
+        if (urlFloor2 != null) {
+            floor2File = MAP_FILE_PREFIX + "1";
+        }
+
+        dbHelper.setMaps(version, floor1File, floor2File);
 
         setChanged();
         notifyObservers();
-    }
 
-    public synchronized void setMapVersion(int newVersion) {
-        dbHelper.setVersion(Version.Item.MAP, newVersion);
     }
 
     public synchronized Integer getMapVersion() {
@@ -72,6 +87,20 @@ public class DataHandler extends Observable {
         }
         return dbHelper.getVersion(Version.Item.MAP);
     }
+
+    /*
+    public synchronized void setExhibits(List<Exhibit> exhibits) {
+        dbHelper.setExhibits(exhibits);
+    }
+
+    public synchronized List<Exhibit> getExhibitsOfFloor(Integer floor) {
+        return dbHelper.getAllExhibitsForFloor(floor);
+    }
+
+    public synchronized Exhibit getExhibit(Integer id) {
+        return dbHelper.getExhibit(id);
+    }
+    */
 
     private void downloadMap(String url, Integer floor) throws IOException {
         URL fileUrl = new URL(PROTOCOL + url);
