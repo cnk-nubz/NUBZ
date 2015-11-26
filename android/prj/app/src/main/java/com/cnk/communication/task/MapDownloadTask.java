@@ -11,17 +11,18 @@ import com.cnk.notificators.Notificator;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
+    private static final Integer FLOOR1 = 0;
+    private static final Integer FLOOR2 = 1;
 
     public MapDownloadTask(Notificator notificator) {
         super(notificator);
     }
 
-    public void performInSession(Server.Client client) throws TException {
+    public void performInSession(Server.Client client) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map");
         MapImagesRequest request = new MapImagesRequest();
         if (DataHandler.getInstance().getMapVersion() != null) {
@@ -32,15 +33,16 @@ public class MapDownloadTask extends ServerTask {
         Log.i(LOG_TAG, "Map downloaded");
     }
 
-    private void updateDataHandler(MapImagesResponse response) {
-        DataHandler.getInstance().setMapVersion(response.version);
-        for (Map.Entry<Integer, String> entry : response.levelImageUrls.entrySet()) {
-            try {
-                DataHandler.getInstance().setMapFloor(entry.getKey(), entry.getValue());
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "cant set floor");
-                e.printStackTrace();
-            }
+    private void updateDataHandler(MapImagesResponse response) throws IOException {
+        Integer version = response.getVersion();
+        String floor1Url = response.getLevelImageUrls().get(FLOOR1);
+        String floor2Url = response.getLevelImageUrls().get(FLOOR2);
+        try {
+            DataHandler.getInstance().setMaps(version, floor1Url, floor2Url);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
         }
+
     }
 }

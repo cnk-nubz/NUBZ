@@ -1,21 +1,15 @@
 package com.cnk;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
-import com.cnk.database.Exhibit;
 import com.cnk.ui.MapActivity;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class StartScreen extends AppCompatActivity {
     NetworkHandler net;

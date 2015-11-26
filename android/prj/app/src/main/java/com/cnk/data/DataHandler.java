@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
+import com.cnk.database.Exhibit;
 import com.cnk.database.Version;
 
 import java.io.FileInputStream;
@@ -16,9 +17,37 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.Observable;
 
 public class DataHandler extends Observable {
+    public enum Item {
+        MAP("Map"),
+        EXHIBITS("Exhibits"),
+        UNKNOWN("Unknown");
+
+        private String code;
+
+        private Item(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
+
+        public static Item fromString(String code) {
+            if (code != null) {
+                for (Item i : Item.values()) {
+                    if (code.equals(i.code)) {
+                        return i;
+                    }
+                }
+            }
+            return Item.UNKNOWN;
+        }
+    }
 
     private static final String LOG_TAG = "DataHandler";
     private static final String MAP_FILE_PREFIX = "map";
@@ -54,16 +83,29 @@ public class DataHandler extends Observable {
         }
     }
 
-    public synchronized void setMapFloor(Integer floor, String url) throws IOException {
-        downloadMap(url, floor);
-        dbHelper.setMapFile(floor, MAP_FILE_PREFIX + floor.toString());
+    public synchronized void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
+        if (urlFloor1 != null) {
+            downloadMap(urlFloor1, 0);
+        }
+        if (urlFloor2 != null) {
+            downloadMap(urlFloor2, 1);
+        }
+
+        String floor1File = null;
+        String floor2File = null;
+
+        if (urlFloor1 != null) {
+            floor1File = MAP_FILE_PREFIX + "0";
+    }
+        if (urlFloor2 != null) {
+            floor2File = MAP_FILE_PREFIX + "1";
+        }
+
+        dbHelper.setMaps(version, floor1File, floor2File);
 
         setChanged();
-        notifyObservers();
-    }
+        notifyObservers(Item.MAP);
 
-    public synchronized void setMapVersion(int newVersion) {
-        dbHelper.setVersion(Version.Item.MAP, newVersion);
     }
 
     public synchronized Integer getMapVersion() {
@@ -71,6 +113,24 @@ public class DataHandler extends Observable {
             Log.e("DB HELPER", "IS NULL");
         }
         return dbHelper.getVersion(Version.Item.MAP);
+    }
+
+    public synchronized void setExhibits(List<Exhibit> exhibits, Integer version) {
+        dbHelper.addOrUpdateExhibits(version, exhibits);
+        setChanged();
+        notifyObservers(Item.EXHIBITS);
+    }
+
+    public synchronized List<Exhibit> getExhibitsOfFloor(Integer floor) {
+        return dbHelper.getAllExhibitsForFloor(floor);
+    }
+
+    public synchronized Exhibit getExhibit(Integer id) {
+        return dbHelper.getExhibit(id);
+    }
+
+    public Integer getExhibitsVersion() {
+        return dbHelper.getVersion(Version.Item.EXHIBITS);
     }
 
     private void downloadMap(String url, Integer floor) throws IOException {
