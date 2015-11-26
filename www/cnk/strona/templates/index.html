@@ -26,8 +26,8 @@
 		root.csrf_token = "{% csrf_token %}"
 		root.uploadError = +"{{err}}"
 		root.activeFloor = +"{{floor}}"
-		root.svgWidth = 640
-		root.svgHeight = 420
+		root.svgWidth = 1280
+		root.svgHeight = 960
 
 	</script>
 	{% endcompress %}
@@ -41,22 +41,14 @@
 # CREATE NAVIGATION BAR
 ###
 </script>
-
 <script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
 ###
 # GIVE INFORMATION ABOUT UPLOAD RESULT
 ###
 </script>
-
 <script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
 ###
 # CREATE IMAGE UPLOAD FORM
-###
-</script>
-
-<script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
-###
-# CREATE BUTTONS TO CHANGE FLOOR
 ###
 </script>
 
@@ -69,6 +61,12 @@
 <script src="{% static "coffee/zoomButtons.coffee" %}" type="text/coffeescript">
 ###
 # CREATE ZOOM BUTTONS
+###
+</script>
+
+<script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
+###
+# CREATE BUTTONS TO CHANGE FLOOR
 ###
 </script>
 {% endcompress %}

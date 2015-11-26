@@ -4,7 +4,7 @@ div = d3.select "body"
 
 form = div.append "div"
 	.style(
-		"display": "block-inline"
+		"display": "inline"
 		"height": "55px"
 	)
 	.attr(
@@ -35,6 +35,7 @@ form.append "div"
 		"id": "uploadImage"
 		"type": "file"
 		"name": "image"
+		"required": "true"
 		"accept": "image/*"
 	)
 	.classed(

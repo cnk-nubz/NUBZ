@@ -6,8 +6,8 @@ height = 50
 div = d3.select "#mapImage"
 
 zoomed = ->
-	d3.select("#mapZoom").attr("transform",
-								"translate(#{d3.event.translate}) " +
+	d3.select "#mapZoom"
+		.attr("transform","translate(#{d3.event.translate}) " +
 								"scale(#{d3.event.scale})")
 	return
 
@@ -26,28 +26,30 @@ zoomByFactor = (factor) ->
 
 	t = zoom.translate()
 	c = [svgWidth / 2, svgHeight / 2]
-	zoom.scale(newScale)
+	zoom.scale newScale
 		.translate([
 			(c[0] + (t[0] - c[0]) / scale * newScale),
 			(c[1] + (t[1] - c[1]) / scale * newScale)
-		]).event(d3.select("#mapZoom"))
+		]).event(d3.select "#mapZoom")
 	return
 
 zoomIn = ->
-	zoomByFactor(1.2)
+	zoomByFactor 1.2
 	return
 
 zoomOut = ->
-	zoomByFactor(0.8)
+	zoomByFactor 0.8
 	return
 
 resetZoom = ->
-	zoom.scale(1).translate([0, 0])
-	d3.select("#mapZoom")
+	zoom.scale 1
+		.translate [0, 0]
+	d3.select "#mapZoom"
 		.attr("transform", "translate(0, 0) scale(1)")
 	return
 
-buttonGroup = d3.select("#divImage").append "div"
+buttonGroup = d3.select "#divImage"
+	.append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"

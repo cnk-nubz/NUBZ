@@ -14,6 +14,7 @@ svgHeight = root.svgHeight
 d3.select "body"
 	.style(
 		"overflow": "hidden"
+		"margin": "0"
 	)
 svg = d3.select "body"
 	.append "div"
@@ -22,55 +23,81 @@ svg = d3.select "body"
 	)
 	.style(
 		"position": "relative"
-		"width": "100%"
-		"height": "100%"
-		"z-index": "0"
+		"width": "100vw"
+		"height": "calc(100vh - 50px)"
 	)
 	.append "svg"
 	.attr(
 		"id": "mapImage"
-		"viewBox": "0 0 #{svgWidth} #{svgHeight}"
-		"preserveAspectRatio": "xMinYMin meet"
+	)
+	.style(
+		"width": "100%"
+		"height": "100%"
 	)
 	.append "g"
 	.attr("id", "zoomGroup")
 	.call zoom
-	.append "g"
-
 
 svg.append "defs"
 	.append "pattern"
 	.attr(
 		"id": "floor0"
-		"patternUnits": "userSpaceOnUse"
 		"width": "100%"
 		"height": "100%"
-		)
+		"patternContentUnits": "objectBoundingBox"
+		"preserveAspectRatio": "xMidYMid meet"
+	)
 	.append "image"
 	.attr(
-		"width": "100%"
-		"height": "100%"
-		"x": "0"
-		"y": "0"
+		"id": "patternimage0"
+		"preserveAspectRatio": "xMinYMin meet"
 		"xlink:href": root.url_floor0
 	)
 
 svg.append "defs"
-		.append "pattern"
+	.append "pattern"
+	.attr(
+		"id": "floor1"
+		"width": "100%"
+		"height": "100%"
+		"patternContentUnits": "objectBoundingBox"
+		"preserveAspectRatio": "xMidYMid meet"
+	)
+	.append "image"
+	.attr(
+		"id": "patternimage1"
+		"preserveAspectRatio": "xMinYMin meet"
+		"xlink:href": root.url_floor1
+	)
+
+
+tmpimg1 = new Image()
+tmpimg1.src = root.url_floor1
+tmpimg1.onload = () ->
+	d3.select "#patternimage1"
 		.attr(
-			"id": "floor1"
-			"patternUnits": "userSpaceOnUse"
-			"width": "100%"
-			"height": "100%"
-			)
-		.append "image"
-		.attr(
-			"width": "100%"
-			"height": "100%"
-			"x": "0"
-			"y": "0"
-			"xlink:href": root.url_floor1
+			"width": tmpimg1.naturalWidth
+			"height": tmpimg1.naturalHeight
 		)
+	d3.select "#floor1"
+		.attr(
+			"viewBox": "0 0 #{tmpimg1.naturalWidth} #{tmpimg1.naturalHeight}"
+		)
+	return
+
+tmpimg0 = new Image()
+tmpimg0.src = root.url_floor0
+tmpimg0.onload = () ->
+	d3.select "#patternimage0"
+		.attr(
+			"width": tmpimg0.naturalWidth
+			"height": tmpimg0.naturalHeight
+		)
+	d3.select "#floor0"
+		.attr(
+			"viewBox": "0 0 #{tmpimg0.naturalWidth} #{tmpimg0.naturalHeight}"
+		)
+	return
 
 container = svg.append "g"
 			.attr("id", "mapZoom")
@@ -78,7 +105,9 @@ container = svg.append "g"
 container.append "rect"
 	.attr(
 		"id": "floorImage"
+	)
+	.style(
+		"fill": "url(#floor#{root.activeFloor})"
 		"width": "100%"
 		"height": "100%"
-		)
-	.style("fill", "url(#floor#{root.activeFloor})")
+	)

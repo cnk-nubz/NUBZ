@@ -16,13 +16,14 @@ setThFloor = (n) ->
 
 activeFloor = root.activeFloor
 
-div = d3.select "#formDiv"
+div = d3.select "#divImage"
 	.append "div"
 	.style(
-		"float": "right"
-		"right": "0px"
+		"position": "absolute"
+		"top": "0"
+		"right": "0"
 		"width": "50px"
-	#	"z-index": "1"
+		"padding-top": "5px"
 	)
 
 div.append "button"
