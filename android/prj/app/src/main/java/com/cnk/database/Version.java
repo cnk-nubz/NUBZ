@@ -3,6 +3,7 @@ package com.cnk.database;
 public class Version {
     public enum Item {
         MAP("Map"),
+        EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
 
         private String code;

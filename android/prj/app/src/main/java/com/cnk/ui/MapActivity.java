@@ -38,6 +38,7 @@ public class MapActivity extends Activity implements Observer {
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
+    private Boolean fullyLoaded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +48,7 @@ public class MapActivity extends Activity implements Observer {
         RelativeLayout rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
 
         currentFloorNum = 0;
+        fullyLoaded = false;
 
         tileView = new TileView(this);
 
@@ -56,9 +58,9 @@ public class MapActivity extends Activity implements Observer {
         floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
 
         tileView.setVisibility(View.INVISIBLE);
-        tileView.setTransitionsEnabled(true);
+        tileView.setTransitionsEnabled(false);
         tileView.setShouldRecycleBitmaps(false);
-        tileView.setScaleLimits(0.3f, 4f);
+        tileView.setScaleLimits(0.01f, 4f);
         tileView.setScale(0.5f);
 
         layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
@@ -146,7 +148,27 @@ public class MapActivity extends Activity implements Observer {
     @Override
     protected void onPause() {
         super.onPause();
-        tileView.resume();
+        tileView.pause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (fullyLoaded) {
+            tileView.resume();
+            refreshMapAsFloor(currentFloorNum);
+        }
+        fullyLoaded = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tileView.setBitmapProvider(null);
+        tileView.destroy();
+        mapState.floorProvider = null;
+        networkHandler.stopBgDownload();
     }
 
     @Override
@@ -184,7 +206,7 @@ public class MapActivity extends Activity implements Observer {
 
         tileView.setVisibility(View.VISIBLE);
         tileView.setShouldScaleToFit(true);
-        tileView.setScale(0.5f);
+        tileView.setScale(0.02f);
 
         layoutLoading.setVisibility(View.INVISIBLE);
         tileView.setVisibility(View.VISIBLE);
@@ -256,9 +278,8 @@ public class MapActivity extends Activity implements Observer {
                 }
             });
 
-            updateMapDataSemaphore.release();
             networkHandler.startBgDownload();
-
+            updateMapDataSemaphore.release();
         }
     }
 
