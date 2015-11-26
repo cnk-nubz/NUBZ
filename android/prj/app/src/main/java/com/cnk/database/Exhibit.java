@@ -24,12 +24,14 @@ public class Exhibit {
 
     public Exhibit(Integer id, com.cnk.communication.Exhibit exhibitFromServer) {
         this.id = id;
-        this.x = exhibitFromServer.getFrame().getX();
-        this.y = exhibitFromServer.getFrame().getY();
-        this.width = exhibitFromServer.getFrame().getWidth();
-        this.height = exhibitFromServer.getFrame().getHeight();
-        this.floor = exhibitFromServer.getFrame().getMapLevel();
-        this.name = exhibitFromServer.getName();
+        if (exhibitFromServer.getFrame() != null) {
+            this.x = exhibitFromServer.getFrame().getX();
+            this.y = exhibitFromServer.getFrame().getY();
+            this.width = exhibitFromServer.getFrame().getWidth();
+            this.height = exhibitFromServer.getFrame().getHeight();
+            this.floor = exhibitFromServer.getFrame().getMapLevel();
+            this.name = exhibitFromServer.getName();
+        }
     }
 
     public Integer getId() {

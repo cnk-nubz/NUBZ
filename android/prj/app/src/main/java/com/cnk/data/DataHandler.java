@@ -7,7 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
 
-import com.cnk.communication.Exhibit;
+import com.cnk.database.Exhibit;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Version;
 
@@ -21,6 +21,33 @@ import java.util.List;
 import java.util.Observable;
 
 public class DataHandler extends Observable {
+    public enum Item {
+        MAP("Map"),
+        EXHIBITS("Exhibits"),
+        UNKNOWN("Unknown");
+
+        private String code;
+
+        private Item(String code) {
+            this.code = code;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
+
+        public static Item fromString(String code) {
+            if (code != null) {
+                for (Item i : Item.values()) {
+                    if (code.equals(i.code)) {
+                        return i;
+                    }
+                }
+            }
+            return Item.UNKNOWN;
+        }
+    }
 
     private static final String LOG_TAG = "DataHandler";
     private static final String MAP_FILE_PREFIX = "map";
@@ -77,7 +104,7 @@ public class DataHandler extends Observable {
         dbHelper.setMaps(version, floor1File, floor2File);
 
         setChanged();
-        notifyObservers();
+        notifyObservers(Item.MAP);
 
     }
 
@@ -88,9 +115,10 @@ public class DataHandler extends Observable {
         return dbHelper.getVersion(Version.Item.MAP);
     }
 
-    /*
-    public synchronized void setExhibits(List<Exhibit> exhibits) {
-        dbHelper.setExhibits(exhibits);
+    public synchronized void setExhibits(List<Exhibit> exhibits, Integer version) {
+        dbHelper.addOrUpdateExhibits(version, exhibits);
+        setChanged();
+        notifyObservers(Item.EXHIBITS);
     }
 
     public synchronized List<Exhibit> getExhibitsOfFloor(Integer floor) {
@@ -100,7 +128,10 @@ public class DataHandler extends Observable {
     public synchronized Exhibit getExhibit(Integer id) {
         return dbHelper.getExhibit(id);
     }
-    */
+
+    public Integer getExhibitsVersion() {
+        return dbHelper.getVersion(Version.Item.EXHIBITS);
+    }
 
     private void downloadMap(String url, Integer floor) throws IOException {
         URL fileUrl = new URL(PROTOCOL + url);
