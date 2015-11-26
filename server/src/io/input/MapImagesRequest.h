@@ -22,7 +22,7 @@ namespace io {
             MapImagesRequest &operator=(const MapImagesRequest &) = default;
             MapImagesRequest &operator=(MapImagesRequest &&) = default;
 
-            boost::optional<std::int32_t> acquiredLevel;
+            boost::optional<std::int32_t> acquiredVersion;
         };
     }
 }

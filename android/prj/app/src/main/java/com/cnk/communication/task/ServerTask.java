@@ -6,7 +6,6 @@ import com.cnk.communication.Server;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
-import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;
@@ -16,7 +15,7 @@ public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
     protected long delay = 1;
-    private static final String SEND_ADDRESS = "192.168.0.5";
+    private static final String SEND_ADDRESS = "zpp.dns1.us";
     private static final int SEND_PORT = 9090;
 
     protected Notificator notificator;
@@ -38,7 +37,7 @@ public abstract class ServerTask extends Task {
                 Log.i(LOG_TAG, "Action successful");
                 socket.close();
                 return;
-            } catch (TException e) {
+            } catch (Exception e) {
                 Log.e(LOG_TAG, "Action failed, remaining tries: " + Integer.toString(tries));
                 e.printStackTrace();
                 Util.waitDelay(delay * 1000);
@@ -53,7 +52,7 @@ public abstract class ServerTask extends Task {
 
     }
 
-    protected abstract void performInSession(Server.Client client) throws TException;
+    protected abstract void performInSession(Server.Client client) throws Exception;
 
     private TTransport openSocket(Integer tries) {
         TTransport socket = new TSocket(SEND_ADDRESS, SEND_PORT);

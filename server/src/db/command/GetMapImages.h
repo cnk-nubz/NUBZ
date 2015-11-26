@@ -20,7 +20,6 @@ namespace db {
             std::vector<MapImage> result;
 
             std::string createQuery() const;
-            std::string createMaxVersionQuery() const;
         };
     }
 }

@@ -20,8 +20,8 @@ namespace command {
         const io::input::MapImagesRequest &input) {
         db::cmd::GetVersion getVersion(db::info::versions::element_type::map_images);
         std::unique_ptr<db::cmd::GetMapImages> getMapImages;
-        if (input.acquiredLevel) {
-            getMapImages.reset(new db::cmd::GetMapImages(*input.acquiredLevel + 1));
+        if (input.acquiredVersion) {
+            getMapImages.reset(new db::cmd::GetMapImages(*input.acquiredVersion + 1));
         } else {
             getMapImages.reset(new db::cmd::GetMapImages);
         }

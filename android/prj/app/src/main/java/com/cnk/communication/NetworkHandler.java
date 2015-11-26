@@ -2,6 +2,8 @@ package com.cnk.communication;
 
 import android.util.Log;
 
+import com.cnk.communication.task.BackgroundDownloadTask;
+import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
@@ -23,7 +25,8 @@ public class NetworkHandler implements Observer {
     private BlockingQueue<Task> bgTasks;
     private Notificator mapDownload;
     private Notificator raportUpload;
-    private Notificator bgMapDownload;
+    private Notificator exhibitsDownload;
+    private Notificator bgDownload;
     private Notificator bgRaportUpload;
     private boolean downloadInBg;
     private boolean uploadInBg;
@@ -51,8 +54,9 @@ public class NetworkHandler implements Observer {
     public NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
+        exhibitsDownload = new Notificator(this);
         bgRaportUpload = new Notificator(this);
-        bgMapDownload = new Notificator(this);
+        bgDownload = new Notificator(this);
         downloadInBg = false;
         bgDelaySeconds = 30;
         tasks = new LinkedBlockingQueue<>();
@@ -70,6 +74,11 @@ public class NetworkHandler implements Observer {
 
     public synchronized void uploadRaport() {
         Task task = new RaportUploadTask(raportUpload, null);
+        tasks.add(task);
+    }
+
+    public synchronized void downloadExhibits() {
+        Task task = new ExhibitDownloadTask(exhibitsDownload);
         tasks.add(task);
     }
 
@@ -98,7 +107,9 @@ public class NetworkHandler implements Observer {
     }
 
     public void update(Observable o, Object arg) {
-        if (!(boolean) arg) {
+        if (o == bgDownload && downloadInBg) {
+            addBgDownloadTask();
+        } else if (!(boolean) arg) {
             onFailure(o);
         } else {
             onSuccess(o);
@@ -126,7 +137,7 @@ public class NetworkHandler implements Observer {
     }
 
     private synchronized void addBgDownloadTask() {
-        Task task = new MapDownloadTask(bgMapDownload);
+        Task task = new BackgroundDownloadTask(bgDownload);
         Task wait = new WaitTask(bgDelaySeconds * 1000);
         bgTasks.add(task);
         bgTasks.add(wait);
@@ -134,7 +145,7 @@ public class NetworkHandler implements Observer {
 
     private synchronized void onSuccess(Observable o) {
         Log.i(LOG_TAG, "Task finished successfully");
-        if (downloadInBg && o == bgMapDownload) {
+        if (downloadInBg && o == bgDownload) {
             addBgDownloadTask();
         } else if (uploadInBg && o == bgRaportUpload) {
             addBgUploadTask();
@@ -145,11 +156,14 @@ public class NetworkHandler implements Observer {
         Log.i(LOG_TAG, "Task failed, retrying");
         //addWaitTask();
         if (o == mapDownload) {
-            Log.i(LOG_TAG, "Map download task failure");
+            Log.e(LOG_TAG, "Map download task failure");
             downloadMap();
         } else if (o == raportUpload) {
-            Log.i(LOG_TAG, "Raport upload task failure");
+            Log.e(LOG_TAG, "Raport upload task failure");
             uploadRaport();
+        } else if (o == exhibitsDownload) {
+            Log.e(LOG_TAG, "Exhibits download task failed");
+            downloadExhibits();
         }
     }
 
