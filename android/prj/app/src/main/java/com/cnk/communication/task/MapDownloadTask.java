@@ -11,7 +11,6 @@ import com.cnk.notificators.Notificator;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class MapDownloadTask extends ServerTask {
 

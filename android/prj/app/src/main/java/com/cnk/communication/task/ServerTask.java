@@ -6,7 +6,6 @@ import com.cnk.communication.Server;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
-import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TSocket;

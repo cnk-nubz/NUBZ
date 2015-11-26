@@ -7,7 +7,6 @@ import com.cnk.communication.ExhibitsRequest;
 import com.cnk.communication.ExhibitsResponse;
 import com.cnk.communication.Server;
 import com.cnk.data.DataHandler;
-import com.cnk.exceptions.InternalDatabaseError;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
