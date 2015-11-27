@@ -14,6 +14,7 @@ setThFloor = (n) ->
 		.style("fill", "url(#floor#{n})")
 	return
 
+root.setThFloor = setThFloor
 activeFloor = root.activeFloor
 
 div = d3.select "#divImage"

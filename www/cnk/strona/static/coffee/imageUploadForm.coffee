@@ -1,11 +1,19 @@
 root = exports ? this
+
+getCookie = (name) ->
+	if document.cookie and document.cookie isnt ''
+		cookies = document.cookie.split(';')
+		for cookie in cookies
+			cookie = jQuery.trim(cookie)
+			if cookie[0..name.length] is "#{name}="
+				return decodeURIComponent(cookie[0..name.length])
+
 div = d3.select "body"
 		.append "div"
 
 form = div.append "div"
 	.style(
 		"display": "inline"
-		"height": "39px"
 	)
 	.attr(
 		"id": "formDiv"
@@ -13,9 +21,6 @@ form = div.append "div"
 	.append "form"
 	.attr(
 		"id": "imageUploadForm"
-		"method": "POST"
-		"enctype": "multipart/form-data"
-		"action": "/uploadImage/"
 	)
 	.classed(
 		"form-inline": true
@@ -29,6 +34,29 @@ form = div.append "div"
 	.style(
 		"padding-bottom": "5px"
 	)
+
+(($) ->
+
+) jQuery #safe use of $
+
+# Set ajax action for form submit
+$("#imageUploadForm").submit((e) ->
+	$.ajax(
+		type: "POST"
+		url: "/uploadImage/"
+		data: new FormData(@)
+		processData: false
+		contentType: false
+		success: (data) ->
+			root.setActiveAlert data.err #set error
+			root.setThFloor data.floor  #set active floor
+			root.loadFloorImages(data.url_floor0, data.url_floor1) #refresh images
+			$ "#uploadImage" #reset input value
+				.val ''
+	)
+	e.preventDefault()
+	return
+)
 
 form.append "div"
 	.classed(
