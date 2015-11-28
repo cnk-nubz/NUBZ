@@ -21,6 +21,8 @@
 	{% compress js %}
 	<script type="text/coffeescript">
 		root = exports ? this
+		root.maxZoomScale = 5
+		root.minZoomScale = 1
 		root.url_floor0 = "{{url_floor0}}"
 		root.url_floor1 = "{{url_floor1}}"
 		root.csrf_token = "{% csrf_token %}"
@@ -37,29 +39,36 @@
 # CREATE NAVIGATION BAR
 ###
 </script>
+{% endcompress %}
+{% compress js %}
 <script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
 ###
 # INFORMATION ABOUT UPLOAD RESULT
 ###
 </script>
+{% endcompress %}
+{% compress js %}
 <script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
 ###
 # CREATE IMAGE UPLOAD FORM
 ###
 </script>
-
+{% endcompress %}
+{% compress js %}
 <script src="{% static "coffee/mapImage.coffee" %}" type="text/coffeescript">
 ###
 # CREATE MAP IMAGE CONTAINER
 ###
 </script>
-
+{% endcompress %}
+{% compress js %}
 <script src="{% static "coffee/zoomButtons.coffee" %}" type="text/coffeescript">
 ###
 # CREATE ZOOM BUTTONS
 ###
 </script>
-
+{% endcompress %}
+{% compress js %}
 <script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
 ###
 # CREATE BUTTONS TO CHANGE FLOOR

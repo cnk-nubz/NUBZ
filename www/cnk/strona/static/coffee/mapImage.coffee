@@ -1,8 +1,21 @@
 root = exports ? this
 zoomed = ->
-	d3.select("#mapZoom").attr("transform",
-								"translate(#{d3.event.translate}) " +
-								"scale(#{d3.event.scale})")
+	d3.select "#mapZoom"
+		.attr(
+			"transform": "translate(#{d3.event.translate}) scale(#{d3.event.scale})"
+		)
+	return
+
+zoomedEnd = ->
+	d3.select "#minusButton"
+		.property(
+			"disabled": if root.zoom.scale() is root.minZoomScale then true else false
+		)
+
+	d3.select "#plusButton"
+		.property(
+			"disabled": if root.zoom.scale() is root.maxZoomScale then true else false
+		)
 	return
 
 loadFloorImages = (filename0, filename1) ->
@@ -41,11 +54,10 @@ loadFloorImages = (filename0, filename1) ->
 root.loadFloorImages = loadFloorImages
 
 zoom = d3.behavior.zoom()
-	.scaleExtent [1, 5]
+	.scaleExtent [root.minZoomScale, root.maxZoomScale]
 	.on("zoom", zoomed)
+	.on("zoomend", zoomedEnd)
 root.zoom = zoom #make it global for zooming buttons
-svgWidth = root.svgWidth
-svgHeight = root.svgHeight
 d3.select "body"
 	.style(
 		"overflow": "hidden"
@@ -54,7 +66,7 @@ d3.select "body"
 svg = d3.select "body"
 	.append "div"
 	.attr(
-		"id": "divImage"
+		"id": "mapContainer"
 	)
 	.style(
 		"position": "relative"
@@ -70,7 +82,9 @@ svg = d3.select "body"
 		"height": "100%"
 	)
 	.append "g"
-	.attr("id", "zoomGroup")
+	.attr(
+		"id": "zoomGroup"
+	)
 	.call zoom
 
 svg.append "defs"
@@ -106,7 +120,9 @@ svg.append "defs"
 loadFloorImages(root.url_floor0, root.url_floor1)
 
 container = svg.append "g"
-			.attr("id", "mapZoom")
+			.attr(
+				"id": "mapZoom"
+			)
 
 container.append "rect"
 	.attr(

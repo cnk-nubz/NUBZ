@@ -29,9 +29,11 @@ root.setActiveAlert = (err) ->
 	alert.append "button"
 		.attr(
 			"type": "button"
-			"class": "close"
 			"data-dismiss": "alert"
 			"aria-label": "Close"
+		)
+		.classed(
+			"close": true
 		)
 		.append "span"
 		.attr(

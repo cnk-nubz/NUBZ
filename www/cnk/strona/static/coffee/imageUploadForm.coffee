@@ -15,9 +15,6 @@ form = div.append "div"
 	.style(
 		"display": "inline"
 	)
-	.attr(
-		"id": "formDiv"
-	)
 	.append "form"
 	.attr(
 		"id": "imageUploadForm"
@@ -57,6 +54,7 @@ $("#imageUploadForm").submit((e) ->
 			root.setActiveAlert data.err #set error
 			root.setThFloor data.floor  #set active floor
 			root.loadFloorImages(data.url_floor0, data.url_floor1) #refresh images
+			root.resetZoom()
 			$ "#uploadImage" #reset input value
 				.val ''
 			return
@@ -91,10 +89,12 @@ form.append "input"
 		"btn-default": true
 		"btn-xs": true
 	)
-.on("click", ->
-	d3.select "#hiddenFloorLevel"
-		.attr("value", root.activeFloor)
-)
+	.on("click", ->
+		d3.select "#hiddenFloorLevel"
+			.attr(
+				"value": root.activeFloor
+			)
+	)
 
 form.append "input"
 	.attr(

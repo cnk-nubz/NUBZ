@@ -1,20 +1,11 @@
 root = exports ? this
-margin = {"top": 5, "left": 25}
-width = 50
-height = 50
-
-div = d3.select "#mapImage"
-
+zoom = root.zoom
 zoomed = ->
 	d3.select "#mapZoom"
 		.attr("transform","translate(#{d3.event.translate}) " +
 								"scale(#{d3.event.scale})")
 	return
 
-zoom = root.zoom
-
-svgWidth = root.svgWidth
-svgHeight = root.svgHeight
 zoomByFactor = (factor) ->
 	scale = zoom.scale()
 	if scale is 1 and factor > 1
@@ -43,7 +34,7 @@ zoomByFactor = (factor) ->
 			)
 
 	t = zoom.translate()
-	boundingRect = d3.select("#divImage").node().getBoundingClientRect()
+	boundingRect = d3.select("#mapContainer").node().getBoundingClientRect()
 	c = [
 		boundingRect.width / 2
 		boundingRect.height / 2
@@ -67,7 +58,9 @@ resetZoom = ->
 	zoom.scale 1
 		.translate [0, 0]
 	d3.select "#mapZoom"
-		.attr("transform", "translate(0, 0) scale(1)")
+		.attr(
+			"transform": "translate(0, 0) scale(1)"
+		)
 	d3.select "#minusButton"
 		.property(
 			"disabled": true
@@ -77,8 +70,9 @@ resetZoom = ->
 			"disabled": false
 		)
 	return
+root.resetZoom = resetZoom
 
-buttonGroup = d3.select "#divImage"
+buttonGroup = d3.select "#mapContainer"
 	.append "div"
 	.style(
 		"position": "absolute"
@@ -114,4 +108,4 @@ buttonGroup.selectAll "button"
 	.html (d) -> d.caption
 	.on("click", (d) -> d.f())
 
-resetZoom()
+resetZoom() #set initial state

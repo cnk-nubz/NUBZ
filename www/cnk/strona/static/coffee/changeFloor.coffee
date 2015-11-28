@@ -1,5 +1,5 @@
 root = exports ? this
-margin = {"top": 5, "right": 25}
+
 setThFloor = (n) ->
 	root.activeFloor = n
 	d3.select "#floorButton#{n}"
@@ -15,9 +15,8 @@ setThFloor = (n) ->
 	return
 
 root.setThFloor = setThFloor
-activeFloor = root.activeFloor
 
-div = d3.select "#divImage"
+div = d3.select "#mapContainer"
 	.append "div"
 	.style(
 		"position": "absolute"
@@ -31,7 +30,9 @@ div.append "div"
 		"padding-top": "5px"
 	)
 	.append "button"
-	.attr("id", "floorButton0")
+	.attr(
+		"id": "floorButton0"
+	)
 	.style(
 		"min-width": "50px"
 		"width": "auto"
@@ -51,7 +52,9 @@ div.append "div"
 		"padding-top": "5px"
 	)
 	.append "button"
-	.attr("id", "floorButton1")
+	.attr(
+		"id": "floorButton1"
+	)
 	.style(
 		"min-width": "50px"
 		"width": "auto"
@@ -66,4 +69,4 @@ div.append "div"
 	.on("click", ->setThFloor(1))
 
 #set default active floor
-setThFloor(activeFloor)
+setThFloor(root.activeFloor)

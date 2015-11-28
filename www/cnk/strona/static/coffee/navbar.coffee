@@ -48,7 +48,9 @@ navigationBar = d3.select "body"
 		"container": true
 	)
 	.append "div"
-	.attr("id", "navbar")
+	.attr(
+		"id": "navbar"
+	)
 	.classed(
 		"collapse": true
 		"navbar-collapse": true
