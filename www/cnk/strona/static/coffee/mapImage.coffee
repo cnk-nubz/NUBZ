@@ -37,11 +37,6 @@ loadFloorImages = (filename0, filename1) ->
 					"viewBox": "0 0 #{tmpimg1.naturalWidth} #{tmpimg1.naturalHeight}"
 				)
 			return
-	d3.select "#divImage"
-		.style(
-			"height": "calc(100vh - 50px)"
-		)
-	return
 
 root.loadFloorImages = loadFloorImages
 

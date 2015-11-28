@@ -34,6 +34,10 @@ form = div.append "div"
 	.style(
 		"padding-bottom": "5px"
 	)
+	.append "div"
+	.style(
+		"padding-top": "5px"
+	)
 
 (($) ->
 
@@ -48,11 +52,14 @@ $("#imageUploadForm").submit((e) ->
 		processData: false
 		contentType: false
 		success: (data) ->
+			d3.select "#uploadAlert"
+				.remove()
 			root.setActiveAlert data.err #set error
 			root.setThFloor data.floor  #set active floor
 			root.loadFloorImages(data.url_floor0, data.url_floor1) #refresh images
 			$ "#uploadImage" #reset input value
 				.val ''
+			return
 	)
 	e.preventDefault()
 	return

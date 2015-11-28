@@ -22,7 +22,7 @@ div = d3.select "#divImage"
 	.style(
 		"position": "absolute"
 		"top": "0px"
-		"right": "10px"
+		"right": "12px"
 		"width": "50px"
 	)
 

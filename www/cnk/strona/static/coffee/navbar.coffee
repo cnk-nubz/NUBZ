@@ -1,8 +1,14 @@
+removeAlert = ->
+	d3.select "#uploadAlert"
+		.remove()
+	return
+
 removeActiveClass = ->
 	d3.selectAll "#navJustMap, #navEditMap"
 		.classed(
 			"active": false
 		)
+	removeAlert()
 	return
 
 getJustMap = ->
@@ -15,6 +21,7 @@ getJustMap = ->
 		.classed(
 			"active": true
 		)
+	removeAlert()
 	return
 
 getEditMap = ->

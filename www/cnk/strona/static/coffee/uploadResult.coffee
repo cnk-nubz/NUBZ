@@ -22,6 +22,7 @@ root.setActiveAlert = (err) ->
 			"alert-dismissible": true
 		)
 		.attr(
+			"id": "uploadAlert"
 			"role": "alert"
 		)
 
