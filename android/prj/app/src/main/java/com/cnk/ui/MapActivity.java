@@ -4,13 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
@@ -37,14 +35,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 public class MapActivity extends Activity implements Observer {
 
     private TileView tileView;
-    private Semaphore updateMapDataMutex, exhibitsListMutex;
+    private Semaphore changeAndUpdateMutex;
     private MapState mapState;
     private Switch floorsSwitch;
     private LinearLayout layoutLoading, layoutMapMissing;
@@ -59,8 +55,8 @@ public class MapActivity extends Activity implements Observer {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.map_activity_layout);
-        RelativeLayout rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
+        RelativeLayout rlRootLayout = new RelativeLayout(this);
+        setContentView(rlRootLayout);
 
         currentFloorNum = 0;
         fullyLoaded = false;
@@ -84,8 +80,7 @@ public class MapActivity extends Activity implements Observer {
         layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
         layoutMapMissing.setVisibility(View.INVISIBLE);
 
-        updateMapDataMutex = new Semaphore(1, true);
-        exhibitsListMutex = new Semaphore(1, true);
+        changeAndUpdateMutex = new Semaphore(1, true);
 
         mapState = new MapState();
         mapState.mapWidth = new Integer[2];
@@ -196,22 +191,23 @@ public class MapActivity extends Activity implements Observer {
 
     @Override
     public void update(Observable observable, Object o) {
-        boolean isDirty = false;
+        boolean exhibitsChanged = false, mapChanged = false;
 
         if (mapState.exhibitsVersion == null ||
                 DataHandler.getInstance().getExhibitsVersion() > mapState.exhibitsVersion) {
             mapState.exhibitsVersion = DataHandler.getInstance().getExhibitsVersion();
-            isDirty = true;
+            exhibitsChanged = true;
         }
 
         if (mapState.mapVersion == null ||
                 DataHandler.getInstance().getMapVersion() > mapState.mapVersion) {
-            mapState.mapVersion = DataHandler.getInstance().getMapVersion();
-            isDirty = true;
+            mapChanged = true;
         }
 
-        if (isDirty) {
+        if (mapChanged) {
             new MapUpdateTask().execute();
+        } else if (exhibitsChanged) {
+            new MapRefreshExhibits().execute();
         }
     }
 
@@ -230,13 +226,12 @@ public class MapActivity extends Activity implements Observer {
 
         @Override
         protected Void doInBackground(Void... voids) {
-            updateMapDataMutex.acquireUninterruptibly();
+            changeAndUpdateMutex.acquireUninterruptibly();
 
             mapState.mapVersion = DataHandler.getInstance().getMapVersion();
-            Drawable d;
 
             for (int i = 0; i <= 1; i++) {
-                d = DataHandler.getInstance().getFloorMap(i);
+                Drawable d = DataHandler.getInstance().getFloorMap(i);
 
                 if (d != null) {
                     mapState.mapHeight[i] = d.getIntrinsicHeight();
@@ -245,13 +240,11 @@ public class MapActivity extends Activity implements Observer {
                     if (d instanceof BitmapDrawable && ((BitmapDrawable) d).getBitmap() != null) {
                         ((BitmapDrawable) d).getBitmap().recycle();
                     }
-                    d = null;
-                    System.gc();
                 } else {
                     mapState.mapHeight[i] = mapState.mapWidth[i] = null;
                 }
             }
-            updateMapDataMutex.release();
+            changeAndUpdateMutex.release();
 
             return null;
         }
@@ -267,17 +260,47 @@ public class MapActivity extends Activity implements Observer {
                 }
             });
 
-            Executors.newSingleThreadScheduledExecutor().schedule(new Runnable() {
-                @Override
-                public void run() {
-                    networkHandler.startBgDownload();
-                }
-            }, 5, TimeUnit.SECONDS);
+            networkHandler.startBgDownload();
         }
     }
 
 
     // Map changing:
+
+    private class MapRefreshExhibits extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            changeAndUpdateMutex.acquireUninterruptibly();
+
+            final Semaphore waitForUIMutex = new Semaphore(0, true);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    tileView.setVisibility(View.INVISIBLE);
+                    layoutLoading.setVisibility(View.VISIBLE);
+                    clearAllExhibitsOnMap();
+                    waitForUIMutex.release();
+                }
+            });
+
+            waitForUIMutex.acquireUninterruptibly();
+            getExhibitsForCurrentFloor();
+            addAllExhibitsToMap();
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    layoutLoading.setVisibility(View.INVISIBLE);
+                    tileView.setVisibility(View.VISIBLE);
+                }
+            });
+
+            changeAndUpdateMutex.release();
+
+            return null;
+        }
+    }
 
     private class MapChangeFloor extends AsyncTask<Integer, Void, Void> {
         private Integer floor;
@@ -289,13 +312,6 @@ public class MapActivity extends Activity implements Observer {
             if (mapState.mapHeight[currentFloorNum] == null) {
                 cancel(true);
             }
-
-            layoutMapMissing.setVisibility(View.INVISIBLE);
-            tileView.setVisibility(View.INVISIBLE);
-            layoutLoading.setVisibility(View.VISIBLE);
-
-            tileView.cancelRender();
-            tileView.setBitmapProvider(null);
         }
 
         @Override
@@ -303,8 +319,26 @@ public class MapActivity extends Activity implements Observer {
             floor = integers[0];
             assert (floor == 0 || floor == 1);
 
+            changeAndUpdateMutex.acquireUninterruptibly();
+
+            final Semaphore localSynchronizationMutex = new Semaphore(0, true);
+            
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    layoutMapMissing.setVisibility(View.INVISIBLE);
+                    tileView.setVisibility(View.INVISIBLE);
+                    layoutLoading.setVisibility(View.VISIBLE);
+
+                    tileView.cancelRender();
+                    tileView.setBitmapProvider(null);
+                    localSynchronizationMutex.release();
+                }
+            });
+
+            localSynchronizationMutex.acquireUninterruptibly();
+
             final BitmapProvider provider = prepareBitmapProvider(DataHandler.getInstance().getFloorMap(floor));
-            final Semaphore mapSettingOnMainThreadFinishedMutex = new Semaphore(0, true);
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -324,25 +358,21 @@ public class MapActivity extends Activity implements Observer {
                     tileView.setScale(0.02f);
                     System.gc();
 
-                    mapSettingOnMainThreadFinishedMutex.release();
+                    localSynchronizationMutex.release();
                 }
             });
 
-            mapSettingOnMainThreadFinishedMutex.acquireUninterruptibly();
-
-            exhibitsListMutex.acquireUninterruptibly();
-
-            final Semaphore exhibitsOnMapClearedMutex = new Semaphore(0, true);
+            localSynchronizationMutex.acquireUninterruptibly();
 
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     clearAllExhibitsOnMap();
-                    exhibitsOnMapClearedMutex.release();
+                    localSynchronizationMutex.release();
                 }
             });
 
-            exhibitsOnMapClearedMutex.acquireUninterruptibly();
+            localSynchronizationMutex.acquireUninterruptibly();
 
             getExhibitsForCurrentFloor();
             addAllExhibitsToMap();
@@ -356,9 +386,7 @@ public class MapActivity extends Activity implements Observer {
 
         if (drawable instanceof BitmapDrawable) {
             BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
-            if (bitmapDrawable.getBitmap() != null) {
-                map = bitmapDrawable.getBitmap();
-            }
+            map = bitmapDrawable.getBitmap();
         }
 
         if (map == null) {
@@ -374,32 +402,12 @@ public class MapActivity extends Activity implements Observer {
         provider.prepareTiles(map);
 
         map.recycle();
-        map = null;
 
         return provider;
     }
 
 
     // Exhibits handling:
-
-    private void getExhibitsForCurrentFloor() {
-        final Semaphore exhibitsRemovedFromMapMutex = new Semaphore(0, true);
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                clearAllExhibitsOnMap();
-                exhibitsRemovedFromMapMutex.release();
-            }
-        });
-
-        exhibitsRemovedFromMapMutex.acquireUninterruptibly();
-        if (mapState.exhibitsForFloor != null) {
-            mapState.exhibitsForFloor.clear();
-        }
-
-        mapState.exhibitsForFloor = DataHandler.getInstance().getExhibitsOfFloor(currentFloorNum);
-    }
 
     private void clearAllExhibitsOnMap() {
         for (HotSpot hs : mapState.hotSpotsForFloor) {
@@ -410,12 +418,18 @@ public class MapActivity extends Activity implements Observer {
         mapState.exhibitsOverlay.removeAllViews();
     }
 
+    private void getExhibitsForCurrentFloor() {
+        mapState.exhibitsForFloor = DataHandler.getInstance().getExhibitsOfFloor(currentFloorNum);
+    }
+
     private void addAllExhibitsToMap() {
         AutoResizeTextView artv;
         RelativeLayout.LayoutParams tvLP;
         ExhibitSpot es;
         Integer posX, posY, width, height;
         Drawable bcgDrawable;
+
+        HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
         for (Exhibit e: mapState.exhibitsForFloor) {
@@ -451,7 +465,7 @@ public class MapActivity extends Activity implements Observer {
             es = new ExhibitSpot(e.getId());
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
-            es.setHotSpotTapListener(new ExhibitTapListener());
+            es.setHotSpotTapListener(exhibitsListener);
             mapState.hotSpotsForFloor.add(es);
         }
 
@@ -467,13 +481,13 @@ public class MapActivity extends Activity implements Observer {
                 tileView.setVisibility(View.VISIBLE);
                 floorsSwitch.setVisibility(View.VISIBLE);
 
-                exhibitsListMutex.release();
+                changeAndUpdateMutex.release();
             }
         });
     }
 
 
-    // Private classes:
+    // Private classes declarations:
 
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;

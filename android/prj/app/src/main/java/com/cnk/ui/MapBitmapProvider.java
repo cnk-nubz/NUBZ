@@ -2,7 +2,6 @@ package com.cnk.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.util.Pair;
 
 import com.qozix.tileview.graphics.BitmapProvider;
