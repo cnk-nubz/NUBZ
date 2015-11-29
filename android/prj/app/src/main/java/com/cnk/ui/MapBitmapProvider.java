@@ -2,13 +2,15 @@ package com.cnk.ui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
+import android.util.Pair;
 
 import com.qozix.tileview.graphics.BitmapProvider;
 import com.qozix.tileview.tiles.Tile;
 
 public class MapBitmapProvider implements BitmapProvider {
 
-    private Bitmap tileImages[][];
+    private Bitmap tileImages[][], tileImagesInterpolated[][];
 
     private Boolean tilesReady;
 
@@ -21,24 +23,32 @@ public class MapBitmapProvider implements BitmapProvider {
             return;
         }
 
-        int columns = mapBitmap.getWidth() / 256;
-        if (mapBitmap.getWidth() % 256 != 0) {
+        Pair<Integer, Integer> newDimensions = ScaleHelper.getInterpolatedDimensions(mapBitmap.getWidth(), mapBitmap.getHeight());
+
+        System.gc();
+        Bitmap interpolated = Bitmap.createScaledBitmap(mapBitmap, newDimensions.first, newDimensions.second, true);
+        mapBitmap.recycle();
+
+        int columns = interpolated.getWidth() / 256;
+        if (interpolated.getWidth() % 256 != 0) {
             columns++;
         }
 
-        int rows = mapBitmap.getHeight() / 256;
-        if (mapBitmap.getHeight() % 256 != 0) {
+        int rows = interpolated.getHeight() / 256;
+        if (interpolated.getHeight() % 256 != 0) {
             rows++;
         }
 
-        tileImages = new Bitmap[columns + 1][rows + 1];
+        tileImagesInterpolated = new Bitmap[columns + 1][rows + 1];
         for (int col = 0; col < columns; col++) {
             for (int row = 0; row < rows; row++) {
-                tileImages[col][row] = Bitmap.createBitmap(mapBitmap, col * 256, row * 256,
-                        Math.min(256, mapBitmap.getWidth() - col * 256),
-                        Math.min(256, mapBitmap.getHeight() - row * 256));
+                tileImagesInterpolated[col][row] = Bitmap.createBitmap(interpolated, col * 256, row * 256,
+                        Math.min(256, interpolated.getWidth() - col * 256),
+                        Math.min(256, interpolated.getHeight() - row * 256));
             }
         }
+        interpolated.recycle();
+        System.gc();
 
         tilesReady = true;
     }
@@ -52,7 +62,7 @@ public class MapBitmapProvider implements BitmapProvider {
         if (!tilesReady) {
             return null;
         } else {
-            return tileImages[tile.getColumn()][tile.getRow()];
+            return tileImagesInterpolated[tile.getColumn()][tile.getRow()];
         }
     }
 }
