@@ -193,9 +193,9 @@ public class MapActivity extends Activity implements Observer {
     public void update(Observable observable, Object o) {
         boolean exhibitsChanged = false, mapChanged = false;
 
-        if (mapState.exhibitsVersion == null ||
-                DataHandler.getInstance().getExhibitsVersion() > mapState.exhibitsVersion) {
-            mapState.exhibitsVersion = DataHandler.getInstance().getExhibitsVersion();
+        Integer newExhibitsVersion = DataHandler.getInstance().getExhibitsVersion();
+        if (mapState.exhibitsVersion == null || newExhibitsVersion > mapState.exhibitsVersion) {
+            mapState.exhibitsVersion = newExhibitsVersion;
             exhibitsChanged = true;
         }
 
@@ -377,6 +377,8 @@ public class MapActivity extends Activity implements Observer {
             getExhibitsForCurrentFloor();
             addAllExhibitsToMap();
 
+            changeAndUpdateMutex.release();
+
             return null;
         }
     }
@@ -469,6 +471,8 @@ public class MapActivity extends Activity implements Observer {
             mapState.hotSpotsForFloor.add(es);
         }
 
+        final Semaphore waitOnUI = new Semaphore(0, true);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -481,9 +485,11 @@ public class MapActivity extends Activity implements Observer {
                 tileView.setVisibility(View.VISIBLE);
                 floorsSwitch.setVisibility(View.VISIBLE);
 
-                changeAndUpdateMutex.release();
+                waitOnUI.release();
             }
         });
+
+        waitOnUI.acquireUninterruptibly();
     }
 
 
