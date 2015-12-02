@@ -19,7 +19,6 @@ class ThriftCommunicator:
 		self.client = None
 
 	def start_connection(self):
-		ret = True
 		try:
 			socket = TSocket.TSocket(self.host, self.port)
 	  		self.transport = TTransport.TBufferedTransport(socket)
@@ -27,8 +26,8 @@ class ThriftCommunicator:
 			self.transport.open()
 			self.client = Server.Client(self.protocol)
 		except:
-			ret = False
-		return ret
+			return False
+		return True
 
 	def end_connection(self):
 		try:
@@ -50,7 +49,6 @@ class ThriftCommunicator:
 		msg = MapImagesRequest()
 		if not self.start_connection():
 			return None
-
 		try:
 			ret = self.client.getMapImages(msg)
 		except:
@@ -63,7 +61,6 @@ class ThriftCommunicator:
 
 	def setMapImage(self, floor, filename):
 		msg = SetMapImageRequest(floor, filename)
-		ret = True
 		if not self.start_connection():
 			return None
 		try:
@@ -73,4 +70,4 @@ class ThriftCommunicator:
 
 		if not self.end_connection():
 			return None
-		return ret
+		return True

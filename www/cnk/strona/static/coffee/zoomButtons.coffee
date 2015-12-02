@@ -33,16 +33,16 @@ zoomByFactor = (factor) ->
 				"disabled": true
 			)
 
-	t = zoom.translate()
+	translation = zoom.translate()
 	boundingRect = d3.select("#mapContainer").node().getBoundingClientRect()
-	c = [
+	centerPoint = [
 		boundingRect.width / 2
 		boundingRect.height / 2
 	]
 	zoom.scale newScale
 		.translate([
-			(c[0] + (t[0] - c[0]) / scale * newScale),
-			(c[1] + (t[1] - c[1]) / scale * newScale)
+			(centerPoint[0] + (translation[0] - centerPoint[0]) / scale * newScale),
+			(centerPoint[1] + (translation[1] - centerPoint[1]) / scale * newScale)
 		]).event(d3.select "#mapZoom")
 	return
 
@@ -73,7 +73,7 @@ resetZoom = ->
 root.resetZoom = resetZoom
 
 buttonGroup = d3.select "#mapContainer"
-	.append "div"
+	 .append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"
@@ -89,11 +89,11 @@ buttonData = [
 buttonGroup.selectAll "button"
 	.data buttonData
 	.enter()
-	.append "div"
+	 .append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": (d) -> d.id
 	)

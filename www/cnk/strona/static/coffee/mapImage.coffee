@@ -64,7 +64,7 @@ d3.select "body"
 		"margin": "0"
 	)
 svg = d3.select "body"
-	.append "div"
+	 .append "div"
 	.attr(
 		"id": "mapContainer"
 	)
@@ -73,7 +73,7 @@ svg = d3.select "body"
 		"width": "100vw"
 		"height": "calc(100vh - 50px)"
 	)
-	.append "svg"
+	 .append "svg"
 	.attr(
 		"id": "mapImage"
 	)
@@ -81,7 +81,7 @@ svg = d3.select "body"
 		"width": "100%"
 		"height": "100%"
 	)
-	.append "g"
+	 .append "g"
 	.attr(
 		"id": "zoomGroup"
 	)
@@ -103,7 +103,7 @@ svg.append "defs"
 	)
 
 svg.append "defs"
-	.append "pattern"
+	 .append "pattern"
 	.attr(
 		"id": "floor1"
 		"width": "100%"
@@ -111,7 +111,7 @@ svg.append "defs"
 		"patternContentUnits": "objectBoundingBox"
 		"preserveAspectRatio": "xMidYMid meet"
 	)
-	.append "image"
+	 .append "image"
 	.attr(
 		"id": "patternimage1"
 		"preserveAspectRatio": "xMinYMin meet"

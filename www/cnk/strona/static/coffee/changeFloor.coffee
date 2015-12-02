@@ -17,7 +17,7 @@ setThFloor = (n) ->
 root.setThFloor = setThFloor
 
 div = d3.select "#mapContainer"
-	.append "div"
+   .append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"

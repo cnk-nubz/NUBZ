@@ -7,7 +7,7 @@ root = exports ? this
 # 4 - not POST method
 
 errorData = [
-	{"info": "Mapa piętra #{root.activeFloor}. została pomyślnie zmieniona", "type": "success"}
+	{"info": "Mapa piętra została pomyślnie zmieniona", "type": "success"}
 	{"info": "Wybrany plik nie jest obrazkiem", "type": "info"}
 	{"info": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": "danger"}
 	{"info": "form error - not POST method", "type": "warning"}
@@ -35,7 +35,7 @@ root.setActiveAlert = (err) ->
 		.classed(
 			"close": true
 		)
-		.append "span"
+		 .append "span"
 		.attr(
 			"aria-hidden": "true"
 		)
