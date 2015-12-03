@@ -38,6 +38,7 @@ public class MapBitmapProvider implements BitmapProvider {
             rows++;
         }
 
+        System.gc();
         tileImagesInterpolated = new Bitmap[columns + 1][rows + 1];
         for (int col = 0; col < columns; col++) {
             for (int row = 0; row < rows; row++) {
@@ -46,8 +47,6 @@ public class MapBitmapProvider implements BitmapProvider {
                         Math.min(256, interpolated.getHeight() - row * 256));
             }
         }
-        interpolated.recycle();
-        System.gc();
 
         tilesReady = true;
     }

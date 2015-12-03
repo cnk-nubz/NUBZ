@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.View;
@@ -83,24 +84,23 @@ public class MapActivity extends Activity implements Observer {
         changeAndUpdateMutex = new Semaphore(1, true);
 
         mapState = new MapState();
-        mapState.mapWidth = new Integer[2];
-        mapState.mapHeight = new Integer[2];
         mapState.hotSpotsForFloor = new ArrayList<>();
         mapState.exhibitsOverlay = new RelativeLayout(this);
 
         tileView.addScalingViewGroup(mapState.exhibitsOverlay);
 
-        DataHandler.getInstance().addObserver(this);
-
         networkHandler = new NetworkHandler();
+        networkHandler.startBgDownload();
 
-        new MapUpdateTask().execute();
+        new MapChangeFloor().execute(currentFloorNum);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         tileView.pause();
+
+        DataHandler.getInstance().deleteObserver(this);
     }
 
     @Override
@@ -109,9 +109,12 @@ public class MapActivity extends Activity implements Observer {
 
         if (fullyLoaded) {
             tileView.resume();
-            new MapChangeFloor().execute(currentFloorNum);
+            tileView.onDetailLevelChanged(
+                    new DetailLevel(tileView.getDetailLevelManager(), 1.000f, 1, 256, 256));
         }
         fullyLoaded = true;
+
+        DataHandler.getInstance().addObserver(this);
     }
 
     @Override
@@ -191,79 +194,14 @@ public class MapActivity extends Activity implements Observer {
 
     @Override
     public void update(Observable observable, Object o) {
-        boolean exhibitsChanged = false, mapChanged = false;
+        DataHandler.Item itemChanged = (DataHandler.Item) o;
 
-        Integer newExhibitsVersion = DataHandler.getInstance().getExhibitsVersion();
-        if (mapState.exhibitsVersion == null || newExhibitsVersion > mapState.exhibitsVersion) {
-            mapState.exhibitsVersion = newExhibitsVersion;
-            exhibitsChanged = true;
-        }
-
-        if (mapState.mapVersion == null ||
-                DataHandler.getInstance().getMapVersion() > mapState.mapVersion) {
-            mapChanged = true;
-        }
-
-        if (mapChanged) {
-            new MapUpdateTask().execute();
-        } else if (exhibitsChanged) {
+        if (itemChanged.equals(DataHandler.Item.MAP)) {
+            new MapChangeFloor().execute(currentFloorNum);
+        } else if (itemChanged.equals(DataHandler.Item.EXHIBITS)) {
             new MapRefreshExhibits().execute();
         }
     }
-
-    private class MapUpdateTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    floorsSwitch.setVisibility(View.INVISIBLE);
-                }
-            });
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            changeAndUpdateMutex.acquireUninterruptibly();
-
-            mapState.mapVersion = DataHandler.getInstance().getMapVersion();
-
-            for (int i = 0; i <= 1; i++) {
-                Drawable d = DataHandler.getInstance().getFloorMap(i);
-
-                if (d != null) {
-                    mapState.mapHeight[i] = d.getIntrinsicHeight();
-                    mapState.mapWidth[i] = d.getIntrinsicWidth();
-
-                    if (d instanceof BitmapDrawable && ((BitmapDrawable) d).getBitmap() != null) {
-                        ((BitmapDrawable) d).getBitmap().recycle();
-                    }
-                } else {
-                    mapState.mapHeight[i] = mapState.mapWidth[i] = null;
-                }
-            }
-            changeAndUpdateMutex.release();
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void object) {
-            super.onPostExecute(object);
-
-            MapActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    new MapChangeFloor().execute(currentFloorNum);
-                }
-            });
-
-            networkHandler.startBgDownload();
-        }
-    }
-
 
     // Map changing:
 
@@ -306,20 +244,29 @@ public class MapActivity extends Activity implements Observer {
         private Integer floor;
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            if (mapState.mapHeight[currentFloorNum] == null) {
-                cancel(true);
-            }
-        }
-
-        @Override
         protected Void doInBackground(Integer... integers) {
             floor = integers[0];
             assert (floor == 0 || floor == 1);
 
+            System.gc();
+
             changeAndUpdateMutex.acquireUninterruptibly();
+
+            Drawable mapDrawable = DataHandler.getInstance().getFloorMap(floor);
+            if (mapDrawable == null) {
+                changeAndUpdateMutex.release();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        layoutLoading.setVisibility(View.INVISIBLE);
+                        layoutMapMissing.setVisibility(View.VISIBLE);
+                    }
+                });
+                cancel(true);
+            } else {
+                mapState.mapWidth = mapDrawable.getIntrinsicWidth();
+                mapState.mapHeight = mapDrawable.getIntrinsicHeight();
+            }
 
             final Semaphore localSynchronizationMutex = new Semaphore(0, true);
             
@@ -338,7 +285,8 @@ public class MapActivity extends Activity implements Observer {
 
             localSynchronizationMutex.acquireUninterruptibly();
 
-            final BitmapProvider provider = prepareBitmapProvider(DataHandler.getInstance().getFloorMap(floor));
+            final BitmapProvider provider = prepareBitmapProvider(mapDrawable);
+            // from here on mapDrawable is recycled and should not be used!
 
             runOnUiThread(new Runnable() {
                 @Override
@@ -346,8 +294,8 @@ public class MapActivity extends Activity implements Observer {
                     tileView.onDetailLevelChanged(
                             new DetailLevel(tileView.getDetailLevelManager(), 1.000f, 1, 256, 256));
                     tileView.setBitmapProvider(provider);
-                    mapState.currentMapSize = ScaleHelper.getInterpolatedDimensions(mapState.mapWidth[floor],
-                            mapState.mapHeight[floor]);
+                    mapState.currentMapSize = ScaleHelper.getInterpolatedDimensions(mapState.mapWidth,
+                            mapState.mapHeight);
                     tileView.setSize(mapState.currentMapSize.first, mapState.currentMapSize.second);
                     tileView.defineBounds(0, 0, mapState.currentMapSize.first, mapState.currentMapSize.second);
 
@@ -380,6 +328,20 @@ public class MapActivity extends Activity implements Observer {
             changeAndUpdateMutex.release();
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            Handler handler = new Handler();
+            Runnable gc = new Runnable() {
+                @Override
+                public void run() {
+                    System.gc();
+                }
+            };
+            handler.postDelayed(gc, 1000);
         }
     }
 
@@ -436,16 +398,16 @@ public class MapActivity extends Activity implements Observer {
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
         for (Exhibit e: mapState.exhibitsForFloor) {
             posX = ScaleHelper.getDimensionWhenScaleApplied(e.getX(),
-                    mapState.mapWidth[currentFloorNum],
+                    mapState.mapWidth,
                     mapState.currentMapSize.first);
             posY = ScaleHelper.getDimensionWhenScaleApplied(e.getY(),
-                    mapState.mapWidth[currentFloorNum],
+                    mapState.mapWidth,
                     mapState.currentMapSize.second);
             width = ScaleHelper.getDimensionWhenScaleApplied(e.getWidth(),
-                    mapState.mapWidth[currentFloorNum],
+                    mapState.mapWidth,
                     mapState.currentMapSize.first);
             height = ScaleHelper.getDimensionWhenScaleApplied(e.getHeight(),
-                    mapState.mapHeight[currentFloorNum],
+                    mapState.mapHeight,
                     mapState.currentMapSize.second);
 
             artv = new AutoResizeTextView(this);
@@ -509,11 +471,9 @@ public class MapActivity extends Activity implements Observer {
     }
 
     private class MapState {
-        Integer mapVersion;
-        Integer mapWidth[], mapHeight[];
+        Integer mapWidth, mapHeight;
         Pair<Integer, Integer> currentMapSize;
 
-        Integer exhibitsVersion;
         List<Exhibit> exhibitsForFloor;
         List<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
