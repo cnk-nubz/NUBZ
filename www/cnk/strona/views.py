@@ -1,41 +1,79 @@
 import sys
 import os
-import json
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
+from django.core.urlresolvers import reverse
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
-def index(request):
+#uploading error:
+# 1 - sucessful upload
+# 2 - sent file is not a image
+# 3 - problem with server
+# 4 - not POST method
+
+def _getFloorImages():
 	tc = ThriftCommunicator()
-	ret = tc.getMapImages()
-	ret_version = ret.version
-	ret_urls = ret.levelImageUrls
-	url_floor0 = None
-	url_floor1 = None
+	result = tc.getMapImages().levelImageUrls
+	urls = [None, None]
+	if not result:
+		raise Exception()
 
-	if 0 in ret_urls.keys():
-		url_floor0 = ret_urls[0]
-	if 1 in ret_urls.keys():
-		url_floor1 = ret_urls[1]
+	try:
+		urls[0] = result[0][result[0].find('/'):]
+	except KeyError:
+		pass
 
-	url_floor0 = url_floor0[url_floor0.find('/'):]
-	url_floor1 = url_floor1[url_floor1.find('/'):]
+	try:
+		urls[1] = result[1][result[1].find('/'):]
+	except KeyError:
+		pass
+
+	return urls
+
+def index(request):
+	err = 0
+	floor = 0
+	if 'err' in request.GET.keys():
+		err = request.GET['err']
+	if 'floor' in request.GET.keys():
+		floor = request.GET['floor']
+
+	try:
+		urls = _getFloorImages()
+	except:
+		return HttpResponse('<h1>Nie mozna zaladowac map, sprawdz czy serwer jest wlaczony</h1>')
+
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {
-	"url_floor0" : url_floor0,
-	"url_floor1" : url_floor1,
+	"url_floor0" : urls[0],
+	"url_floor1" : urls[1],
+	"err": err,
+	"floor": floor
 	})
+	if err != 0:
+		data = {"a": "witam", "b": "swiat"}
+		return JsonResponse(data)
 	return HttpResponse(template.render(context))
 
 def uploadImage(request):
 	if request.method != 'POST':
-		return HttpResponse('prosze nie hakowac strony')
+		data = {
+			"err": 4,
+			"floor": 0
+		}
+		return JsonResponse(data)
+
 	form = MapUploadForm(request.POST, request.FILES)
 	if not form.is_valid():
-		return HttpResponse('to nie obrazek')
+		data = {
+			"err": 2,
+			"floor": 0
+		}
+		return JsonResponse(data)
+
 	m = MapUploader(image = form.cleaned_data['image'])
 	m.save()
 
@@ -43,7 +81,25 @@ def uploadImage(request):
 	tc = ThriftCommunicator()
 	floor = form.cleaned_data['floor']
 	filename = m.image.name
-	ret = tc.setMapImage(floor, os.path.basename(filename)) #extract filename
-	if ret == False:
-		return HttpResponse('Blad aktualizacji mapy!') #TODO
-	return HttpResponseRedirect('/')
+	#extract filename
+	set_result = tc.setMapImage(floor, os.path.basename(filename))
+	try:
+		urls = _getFloorImages()
+	except:
+		urls = [None, None]
+	if not set_result:
+		data = {
+			"err": 3,
+			"floor": floor,
+			"url_floor0": urls[0],
+			"url_floor1": urls[1]
+		}
+		return JsonResponse(data)
+
+	data = {
+		"err": 1,
+		"floor": floor,
+		"url_floor0": urls[0],
+		"url_floor1": urls[1]
+	}
+	return JsonResponse(data)
