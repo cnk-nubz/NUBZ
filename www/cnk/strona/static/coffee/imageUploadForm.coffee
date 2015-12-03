@@ -27,11 +27,11 @@ form = div.append "div"
 		"padding-top": "5px"
 	)
 	.html root.csrf_token
-	 .append "div" #spacer
+	.append "div" #spacer
 	.style(
 		"padding-bottom": "5px"
 	)
-	 .append "div" #spacer
+	.append "div"
 	.style(
 		"padding-top": "5px"
 	)
@@ -53,7 +53,8 @@ $("#imageUploadForm").submit((e) ->
 				.remove()
 			root.setActiveAlert data.err #set error
 			root.setThFloor data.floor  #set active floor
-			root.loadFloorImages(data.url_floor0, data.url_floor1) #refresh images
+			root.loadFloorImage(0, data.url_floor0) #refresh images
+			root.loadFloorImage(1, data.url_floor1)
 			root.resetZoom()
 			$ "#uploadImage" #reset input value
 				.val ''
@@ -67,7 +68,7 @@ form.append "div"
 	.classed(
 		"form-group": true
 	)
-	 .append "input"
+	.append "input"
 	.attr(
 		"id": "uploadImage"
 		"type": "file"

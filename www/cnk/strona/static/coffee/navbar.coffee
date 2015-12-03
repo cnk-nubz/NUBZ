@@ -37,17 +37,17 @@ getEditMap = ->
 	return
 
 navigationBar = d3.select "body"
-	 .append "nav"
+	.append "nav"
 	.classed(
 		"navbar": true
 		"navbar-inverse": true
 		"navbar-fixed-top": true
 	)
-	 .append "div"
+	.append "div"
 	.classed(
 		"container": true
 	)
-	 .append "div"
+	.append "div"
 	.attr(
 		"id": "navbar"
 	)
@@ -55,7 +55,7 @@ navigationBar = d3.select "body"
 		"collapse": true
 		"navbar-collapse": true
 	)
-	 .append "ul"
+	.append "ul"
 	.classed(
 		"nav": true
 		"navbar-nav": true
@@ -77,12 +77,12 @@ navbarData = [
 navigationBar.selectAll "li"
 	.data navbarData
 	.enter()
-	 .append "li"
+	.append "li"
 	.attr(
 		"id": (d) -> d.id
 	)
 	.on("click", (d) -> d.clickHandler())
-	 .append "a"
+	.append "a"
 	.style(
 		"cursor": "pointer"
 	)

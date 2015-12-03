@@ -8,7 +8,7 @@ root = exports ? this
 
 errorData = [
 	{"info": "Mapa piętra została pomyślnie zmieniona", "type": "success"}
-	{"info": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": "info"}
+	{"info": "Wybrany plik nie jest obrazkiem", "type": "info"}
 	{"info": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": "danger"}
 	{"info": "form error - not POST method", "type": "warning"}
 ]
@@ -35,14 +35,14 @@ root.setActiveAlert = (err) ->
 		.classed(
 			"close": true
 		)
-		 .append "span"
+		.append "span"
 		.attr(
 			"aria-hidden": "true"
 		)
 		.html "&times;"
 
 	alert.append "span"
-    	.style(
-      		"font-weight": "bold"
-    	)
+    .style(
+      "font-weight": "bold"
+    )
 		.html "#{errorData[err - 1].info}"
