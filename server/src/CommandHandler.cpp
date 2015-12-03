@@ -98,3 +98,24 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExhibits end";
 }
+
+std::int32_t CommandHandler::getIdForNewReport() {
+    LOG(INFO) << "getIdForNewReport start";
+
+    LOG(INFO) << "not implemented";
+    std::int32_t response = 0;
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getIdForNewReport end";
+
+    return response;
+}
+
+void CommandHandler::saveReport(const communication::RawReport &report) {
+    LOG(INFO) << "saveReport start";
+    LOG(INFO) << "input: " << report;
+
+    LOG(INFO) << "not implemented";
+
+    LOG(INFO) << "saveReport end";
+}

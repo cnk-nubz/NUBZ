@@ -29,6 +29,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  MapImagesResponse getMapImages(MapImagesRequest request)')
   print('  void setMapImage(SetMapImageRequest request)')
   print('  ExhibitsResponse getExhibits(ExhibitsRequest request)')
+  print('  i32 getIdForNewReport()')
+  print('  void saveReport(RawReport report)')
   print('')
   sys.exit(0)
 
@@ -114,6 +116,18 @@ elif cmd == 'getExhibits':
     print('getExhibits requires 1 args')
     sys.exit(1)
   pp.pprint(client.getExhibits(eval(args[0]),))
+
+elif cmd == 'getIdForNewReport':
+  if len(args) != 0:
+    print('getIdForNewReport requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.getIdForNewReport())
+
+elif cmd == 'saveReport':
+  if len(args) != 1:
+    print('saveReport requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.saveReport(eval(args[0]),))
 
 else:
   print('Unrecognized method %s' % cmd)

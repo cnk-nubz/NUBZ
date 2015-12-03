@@ -39,6 +39,10 @@ class Exhibit;
 
 class ExhibitsResponse;
 
+class RawReportEvent;
+
+class RawReport;
+
 
 class InternalError : public ::apache::thrift::TException {
  public:
@@ -536,6 +540,118 @@ class ExhibitsResponse {
 void swap(ExhibitsResponse &a, ExhibitsResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const ExhibitsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _RawReportEvent__isset {
+  _RawReportEvent__isset() : exhibitId(false), durationInSecs(false), actions(false) {}
+  bool exhibitId :1;
+  bool durationInSecs :1;
+  bool actions :1;
+} _RawReportEvent__isset;
+
+class RawReportEvent {
+ public:
+
+  RawReportEvent(const RawReportEvent&);
+  RawReportEvent& operator=(const RawReportEvent&);
+  RawReportEvent() : exhibitId(0), durationInSecs(0) {
+  }
+
+  virtual ~RawReportEvent() throw();
+  int32_t exhibitId;
+  int32_t durationInSecs;
+  std::vector<int32_t>  actions;
+
+  _RawReportEvent__isset __isset;
+
+  void __set_exhibitId(const int32_t val);
+
+  void __set_durationInSecs(const int32_t val);
+
+  void __set_actions(const std::vector<int32_t> & val);
+
+  bool operator == (const RawReportEvent & rhs) const
+  {
+    if (__isset.exhibitId != rhs.__isset.exhibitId)
+      return false;
+    else if (__isset.exhibitId && !(exhibitId == rhs.exhibitId))
+      return false;
+    if (!(durationInSecs == rhs.durationInSecs))
+      return false;
+    if (!(actions == rhs.actions))
+      return false;
+    return true;
+  }
+  bool operator != (const RawReportEvent &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RawReportEvent & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RawReportEvent &a, RawReportEvent &b);
+
+inline std::ostream& operator<<(std::ostream& out, const RawReportEvent& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _RawReport__isset {
+  _RawReport__isset() : reportId(false), history(false) {}
+  bool reportId :1;
+  bool history :1;
+} _RawReport__isset;
+
+class RawReport {
+ public:
+
+  RawReport(const RawReport&);
+  RawReport& operator=(const RawReport&);
+  RawReport() : reportId(0) {
+  }
+
+  virtual ~RawReport() throw();
+  int32_t reportId;
+  std::vector<RawReportEvent>  history;
+
+  _RawReport__isset __isset;
+
+  void __set_reportId(const int32_t val);
+
+  void __set_history(const std::vector<RawReportEvent> & val);
+
+  bool operator == (const RawReport & rhs) const
+  {
+    if (!(reportId == rhs.reportId))
+      return false;
+    if (!(history == rhs.history))
+      return false;
+    return true;
+  }
+  bool operator != (const RawReport &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const RawReport & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(RawReport &a, RawReport &b);
+
+inline std::ostream& operator<<(std::ostream& out, const RawReport& obj)
 {
   obj.printTo(out);
   return out;
