@@ -15,4 +15,10 @@ service Server {
 
 	structs.ExhibitsResponse getExhibits(1: structs.ExhibitsRequest request)
 		throws (1: structs.InternalError err),
+
+	i32 getIdForNewReport()
+		throws (1: structs.InternalError err),
+
+	void saveReport(1: structs.RawReport report)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 }
