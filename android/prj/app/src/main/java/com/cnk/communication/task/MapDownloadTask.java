@@ -37,6 +37,11 @@ public class MapDownloadTask extends ServerTask {
         Integer version = response.getVersion();
         String floor1Url = response.getLevelImageUrls().get(FLOOR1);
         String floor2Url = response.getLevelImageUrls().get(FLOOR2);
+
+        if (floor1Url == null && floor2Url == null) {
+            return;
+        }
+        Log.i(LOG_TAG, "New map downloaded");
         try {
             DataHandler.getInstance().setMaps(version, floor1Url, floor2Url);
         } catch (IOException e) {

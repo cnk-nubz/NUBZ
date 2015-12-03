@@ -19,6 +19,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -55,6 +57,8 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     private Context context;
     private DatabaseHelper dbHelper;
+    private Lock mapLock;
+    private Lock exhibitsLock;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -72,9 +76,11 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
+        mapLock = new ReentrantLock(true);
+        exhibitsLock = new ReentrantLock(true);
     }
 
-    public synchronized Drawable getFloorMap(Integer floor) {
+    public Drawable getFloorMap(Integer floor) {
         try {
             return getMapFromFile(dbHelper.getMapFile(floor));
         } catch (IOException e) {
@@ -83,12 +89,18 @@ public class DataHandler extends Observable {
         }
     }
 
-    public synchronized void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
-        if (urlFloor1 != null) {
-            downloadMap(urlFloor1, 0);
-        }
-        if (urlFloor2 != null) {
-            downloadMap(urlFloor2, 1);
+    public void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
+        mapLock.lock();
+        try {
+            if (urlFloor1 != null) {
+                downloadMap(urlFloor1, 0);
+            }
+            if (urlFloor2 != null) {
+                downloadMap(urlFloor2, 1);
+            }
+        } catch (IOException e) {
+            mapLock.unlock();
+            throw e;
         }
 
         String floor1File = null;
@@ -96,36 +108,39 @@ public class DataHandler extends Observable {
 
         if (urlFloor1 != null) {
             floor1File = MAP_FILE_PREFIX + "0";
-    }
+        }
         if (urlFloor2 != null) {
             floor2File = MAP_FILE_PREFIX + "1";
         }
 
         dbHelper.setMaps(version, floor1File, floor2File);
 
+        mapLock.unlock();
         setChanged();
         notifyObservers(Item.MAP);
 
     }
 
-    public synchronized Integer getMapVersion() {
+    public Integer getMapVersion() {
         if (dbHelper == null) {
             Log.e("DB HELPER", "IS NULL");
         }
         return dbHelper.getVersion(Version.Item.MAP);
     }
 
-    public synchronized void setExhibits(List<Exhibit> exhibits, Integer version) {
+    public void setExhibits(List<Exhibit> exhibits, Integer version) {
+        exhibitsLock.lock();
         dbHelper.addOrUpdateExhibits(version, exhibits);
+        exhibitsLock.unlock();
         setChanged();
         notifyObservers(Item.EXHIBITS);
     }
 
-    public synchronized List<Exhibit> getExhibitsOfFloor(Integer floor) {
+    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
         return dbHelper.getAllExhibitsForFloor(floor);
     }
 
-    public synchronized Exhibit getExhibit(Integer id) {
+    public Exhibit getExhibit(Integer id) {
         return dbHelper.getExhibit(id);
     }
 
