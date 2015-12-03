@@ -8,7 +8,7 @@ root = exports ? this
 
 errorData = [
 	{"info": "Mapa piętra została pomyślnie zmieniona", "type": "success"}
-	{"info": "Wybrany plik nie jest obrazkiem", "type": "info"}
+	{"info": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": "info"}
 	{"info": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": "danger"}
 	{"info": "form error - not POST method", "type": "warning"}
 ]
