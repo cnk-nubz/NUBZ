@@ -19,7 +19,6 @@ class ThriftCommunicator:
 		self.client = None
 
 	def start_connection(self):
-		ret = True
 		try:
 			socket = TSocket.TSocket(self.host, self.port)
 			self.transport = TTransport.TBufferedTransport(socket)
@@ -27,8 +26,8 @@ class ThriftCommunicator:
 			self.transport.open()
 			self.client = Server.Client(self.protocol)
 		except:
-			ret = False
-		return ret
+			return False
+		return True
 
 	def end_connection(self):
 		try:

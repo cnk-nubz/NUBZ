@@ -32,7 +32,7 @@ setThFloor = (n) ->
 root.setThFloor = setThFloor
 
 div = d3.select "#mapContainer"
-	.append "div"
+	 .append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"
@@ -44,7 +44,7 @@ div.append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": "floorButton0"
 	)
@@ -66,7 +66,7 @@ div.append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": "floorButton1"
 	)

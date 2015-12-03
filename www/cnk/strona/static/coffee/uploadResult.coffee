@@ -35,7 +35,7 @@ root.setActiveAlert = (err) ->
 		.classed(
 			"close": true
 		)
-		.append "span"
+		 .append "span"
 		.attr(
 			"aria-hidden": "true"
 		)

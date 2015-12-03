@@ -15,7 +15,7 @@ form = div.append "div"
 	.style(
 		"display": "inline"
 	)
-	.append "form"
+	 .append "form"
 	.attr(
 		"id": "imageUploadForm"
 	)
@@ -27,11 +27,11 @@ form = div.append "div"
 		"padding-top": "5px"
 	)
 	.html root.csrf_token
-	.append "div" #spacer
+	 .append "div" #spacer
 	.style(
 		"padding-bottom": "5px"
 	)
-	.append "div"
+	 .append "div"
 	.style(
 		"padding-top": "5px"
 	)
@@ -68,7 +68,7 @@ form.append "div"
 	.classed(
 		"form-group": true
 	)
-	.append "input"
+	 .append "input"
 	.attr(
 		"id": "uploadImage"
 		"type": "file"

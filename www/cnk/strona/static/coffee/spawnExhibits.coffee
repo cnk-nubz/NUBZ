@@ -5,7 +5,7 @@ spawnExhibits = (floor) ->
 		.selectAll "rect"
 		.data(exhibitsData)
 		.enter()
-		.append "rect"
+		 .append "rect"
 		.attr(
 			"x": (d) -> "#{d.x}px"
 			"y": (d) -> "#{d.y}px"
@@ -27,13 +27,13 @@ spawnExhibits = (floor) ->
 root.spawnExhibits = spawnExhibits
 
 d3.select "#mapZoom"
-	.append "g"
+	 .append "g"
 	.attr(
 		"id": "exhibitsFloor0"
 	)
 
 d3.select "#mapZoom"
-	.append "g"
+	 .append "g"
 	.attr(
 		"id": "exhibitsFloor1"
 	)

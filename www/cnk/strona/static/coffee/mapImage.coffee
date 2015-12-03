@@ -139,7 +139,7 @@ svg.append "defs"
 		"patternContentUnits": "objectBoundingBox"
 		"preserveAspectRatio": "xMidYMid meet"
 	)
-	.append "image"
+	 .append "image"
 	.attr(
 		"id": "patternImage0"
 		"preserveAspectRatio": "xMinYMin meet"

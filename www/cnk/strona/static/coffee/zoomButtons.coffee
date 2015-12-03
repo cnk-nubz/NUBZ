@@ -85,7 +85,7 @@ resetZoom = ->
 root.resetZoom = resetZoom
 
 buttonGroup = d3.select "#mapContainer"
-	.append "div"
+	 .append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"
@@ -101,11 +101,11 @@ buttonData = [
 buttonGroup.selectAll "button"
 	.data buttonData
 	.enter()
-	.append "div"
+	 .append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": (d) -> d.id
 	)
