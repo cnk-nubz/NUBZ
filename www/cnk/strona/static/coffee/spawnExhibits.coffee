@@ -1,6 +1,6 @@
 root = exports ? this
 spawnExhibits = (floor) ->
-	exhibitsData = floorExhibits[floor]
+	exhibitsData = root.floorExhibits[floor]
 	d3.select "#exhibitsFloor#{floor}"
 		.selectAll "rect"
 		.data(exhibitsData)
@@ -15,7 +15,7 @@ spawnExhibits = (floor) ->
 			"ry": "3px"
 		)
 		.style(
-			"fill": "none"
+			"fill": "lightblue"
 			"stroke-width": "2px"
 			"stroke": "blue"
 			"pointer": "default"
@@ -23,6 +23,7 @@ spawnExhibits = (floor) ->
 		.classed(
 			"exhibitFloor#{floor}": true
 		)
+    #TODO: ADD TEXT, SPLIT IT, CENTER IT
 	return
 root.spawnExhibits = spawnExhibits
 

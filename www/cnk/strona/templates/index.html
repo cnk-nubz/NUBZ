@@ -21,13 +21,7 @@
 	{% compress js %}
 	<script type="text/coffeescript">
 		class Exhibit
-			constructor: (@x, @y, @width, @height, @mapLevel) ->
-				@data = [
-					"x": @x
-					"y": @y
-					"width": @width
-					"height": @height
-				]
+			constructor: (@x, @y, @width, @height, @exhibitName, @mapLevel) ->
 
 		root = exports ? this
 		root.maxZoomScale = 5
@@ -48,7 +42,7 @@
 
 		root.exhibits = []
 		{% for key in exhibits %}
-		root.exhibits.push(new Exhibit({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, {{key.mapLevel}}))
+		root.exhibits.push(new Exhibit({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, "{{key.name}}", {{key.mapLevel}}))
 		{% endfor %}
 		root.floorExhibits = [0, 0]
 		root.floorExhibits[0] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 0)

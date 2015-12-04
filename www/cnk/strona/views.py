@@ -61,6 +61,7 @@ def index(request):
 				"y": e.y,
 				"height": e.height,
 				"width": e.width,
+                "name": "{}".format(exhibits[i].name),
 				"mapLevel": e.mapLevel,
 			})
 
