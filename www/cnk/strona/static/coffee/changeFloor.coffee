@@ -1,32 +1,33 @@
 root = exports ? this
 
 setThFloor = (n) ->
-	root.activeFloor = n
-	d3.select "#floorButton#{n}"
-		.classed(
-			"active": true
-		)
+  root.activeFloor = n
+  root.resetZoom()
+  d3.select "#floorButton#{n}"
+    .classed(
+      "active": true
+    )
 
-	d3.select "#exhibitsFloor#{n}"
-		.style(
-			"display": "initial"
-		)
+  d3.select "#exhibitsFloor#{n}"
+    .style(
+      "display": "initial"
+    )
 
-	d3.select "#exhibitsFloor#{1-n}"
-		.style(
-			"display": "none"
-		)
+  d3.select "#exhibitsFloor#{1-n}"
+    .style(
+      "display": "none"
+    )
 
-	d3.select "#floorButton#{1-n}"
-		.classed(
-			"active": false
-		)
+  d3.select "#floorButton#{1-n}"
+    .classed(
+      "active": false
+    )
 
-	d3.select "#floorImage"
+  d3.select "#floorImage"
     .attr(
       "fill": "url(#floor#{n})"
     )
- return
+  return
 
 
 root.setThFloor = setThFloor

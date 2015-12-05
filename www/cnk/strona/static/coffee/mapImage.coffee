@@ -44,53 +44,57 @@ calcNewMapCoords = (floor) ->
 	return
 
 updateFloorExhibits = (floor) ->
-	d3.selectAll(".exhibitFloor#{floor}")
-		.each((d, _) ->
-				if root.floorImageX[floor] is 0 #glued to top line
-					ratio = root.floorScaledImageWidth[floor] / root.svgWidth[floor]
-					d3.select(this)
-						.attr(
-							"x": d.x * ratio + root.floorImageY[floor]
-							"y": d.y * ratio + root.floorImageX[floor]
-							"width": d.width * ratio
-							"height": d.height * ratio
-						)
-				else
-					ratio = root.floorScaledImageHeight[floor] / root.svgHeight[floor]
-					d3.select(this)
-						.attr(
-							"x": d.x * ratio + root.floorImageY[floor]
-							"y": d.y * ratio + root.floorImageX[floor]
-							"width": d.width * ratio
-							"height": d.height * ratio
-						)
-	)
-	return
+  d3.selectAll(".exhibitFloor#{floor}")
+    .each((d, i) ->
+        if root.floorImageX[floor] is 0 #glued to top line
+          ratio = root.floorScaledImageWidth[floor] / root.svgWidth[floor]
+        else
+          ratio = root.floorScaledImageHeight[floor] / root.svgHeight[floor]
+        d3.select this
+          .selectAll "rect, foreignObject"
+          .attr(
+            "x": d.x * ratio + root.floorImageY[floor]
+            "y": d.y * ratio + root.floorImageX[floor]
+            "width": d.width * ratio
+            "height": d.height * ratio
+          )
+
+        d3.select this
+          .select "foreignObject div"
+          .style(
+            "cursor": "default"
+            "width": "#{d.width * ratio}px"
+            "height": "#{d.height * ratio}px"
+          )
+          .html d.exhibitName
+
+        jQuery("foreignObject div", this).boxfit {'multiline': true}
+    )
+  return
 
 loadFloorImage = (floor, filename) ->
-	if filename?
-		tmpimg = new Image()
-		tmpimg.src = filename
-		tmpimg.onload = ->
-			d3.select "#patternImage#{floor}"
-				.attr(
-					"width": tmpimg.naturalWidth
-					"height": tmpimg.naturalHeight
-					"xlink:href": filename
-				)
-			d3.select "#floor#{floor}"
-				.attr(
-					"viewBox": "0 0 #{tmpimg.naturalWidth} #{tmpimg.naturalHeight}"
-				)
+  if filename?
+    tmpimg = new Image()
+    tmpimg.src = filename
+    tmpimg.onload = ->
+      d3.select "#patternImage#{floor}"
+      .attr(
+          "width": tmpimg.naturalWidth
+          "height": tmpimg.naturalHeight
+          "xlink:href": filename
+      )
+      d3.select "#floor#{floor}"
+      .attr(
+        "viewBox": "0 0 #{tmpimg.naturalWidth} #{tmpimg.naturalHeight}"
+      )
 
-		 root.floorRealImageHeight[floor] = tmpimg.naturalHeight
-		 root.floorRealImageWidth[floor] = tmpimg.naturalWidth
-		 calcMapImageSize(floor)
-		 calcNewMapCoords(floor) # set rendered values of images
-		 updateFloorExhibits(floor)
-		 return
-	return
-
+      root.floorRealImageHeight[floor] = tmpimg.naturalHeight
+      root.floorRealImageWidth[floor] = tmpimg.naturalWidth
+      calcMapImageSize floor
+      calcNewMapCoords floor
+      updateFloorExhibits floor
+      root.setThFloor(floor) if floor is root.activeFloor
+  return
 root.loadFloorImage = loadFloorImage
 
 zoom = d3.behavior.zoom()
@@ -101,7 +105,7 @@ root.zoom = zoom #make it global for zooming buttons
 d3.select "body"
 	.style(
 		"overflow": "hidden"
-		"margin": "0"
+		"margin": "none"
 	)
 
 svg = d3.select "body"
