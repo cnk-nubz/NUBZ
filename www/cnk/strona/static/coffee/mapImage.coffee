@@ -93,7 +93,6 @@ loadFloorImage = (floor, filename) ->
       calcMapImageSize floor
       calcNewMapCoords floor
       updateFloorExhibits floor
-      root.setThFloor(floor) if floor is root.activeFloor
   return
 root.loadFloorImage = loadFloorImage
 
