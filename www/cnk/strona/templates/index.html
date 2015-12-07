@@ -11,6 +11,7 @@
 	<title>Tajny Projekt NUBZ</title>
 
     <script src="{% static "js/jquery.min.js" %}"></script>
+    <script src="{% static "js/jquery.boxfit.js" %}"></script>
     <script src="{% static "js/bootstrap.min.js" %}"></script>
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
     <link href="{% static "css/base.css" %}" rel="stylesheet">
@@ -29,7 +30,7 @@
 		root.url_floor0 = "{{url_floor0}}"
 		root.url_floor1 = "{{url_floor1}}"
 		root.csrf_token = "{% csrf_token %}"
-		root.activeFloor = +"{{floor}}"
+		root.activeFloor = 0
 		root.svgWidth = [0, 0]
 		root.svgHeight = [0, 0]
 		root.floorRealImageWidth = [0, 0]

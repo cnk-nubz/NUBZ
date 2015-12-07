@@ -119,5 +119,3 @@ buttonGroup.selectAll "button"
 	)
 	.html (d) -> d.caption
 	.on("click", (d) -> d.f())
-
-resetZoom() #set initial state

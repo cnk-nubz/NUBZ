@@ -50,7 +50,7 @@ def index(request):
 	try:
 		exhibits = _getExhibits()
 	except:
-		pass
+		exhibits = {}
 
 	exhibitList = list()
 	for i in exhibits.keys():
@@ -61,7 +61,7 @@ def index(request):
 				"y": e.y,
 				"height": e.height,
 				"width": e.width,
-                "name": "{}".format(exhibits[i].name),
+                		"name": "{}".format(exhibits[i].name),
 				"mapLevel": e.mapLevel,
 			})
 
