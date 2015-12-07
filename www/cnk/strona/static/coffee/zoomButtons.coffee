@@ -6,6 +6,18 @@ zoomed = ->
 								"scale(#{d3.event.scale})")
 	return
 
+zoomedEnded = ->
+  d3.select "#minusButton"
+    .property(
+      "disabled": if zoom.scale() > root.minZoomScale then false else true
+    )
+
+  d3.select "#plusButton"
+    .property(
+      "disabled": if zoom.scale() < root.maxZoomScale then false else true
+    )
+  return
+
 zoomByFactor = (factor) ->
 	scale = zoom.scale()
 	if scale is 1 and factor > 1
@@ -41,7 +53,7 @@ zoomByFactor = (factor) ->
 	]
 	zoom.scale newScale
 		.translate([
-			(centerPoint[0] + (translation[0] - centerPoint[0]) / scale * newScale),
+			(centerPoint[0] + (translation[0] - centerPoint[0]) / scale * newScale)
 			(centerPoint[1] + (translation[1] - centerPoint[1]) / scale * newScale)
 		]).event(d3.select "#mapZoom")
 	return

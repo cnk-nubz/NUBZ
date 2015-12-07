@@ -42,7 +42,7 @@ root.setActiveAlert = (err) ->
 		.html "&times;"
 
 	alert.append "span"
-    	.style(
-      		"font-weight": "bold"
-    	)
+    .style(
+      "font-weight": "bold"
+    )
 		.html "#{errorData[err - 1].info}"

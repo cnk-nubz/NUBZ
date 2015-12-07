@@ -15,7 +15,7 @@ form = div.append "div"
 	.style(
 		"display": "inline"
 	)
-	.append "form"
+	 .append "form"
 	.attr(
 		"id": "imageUploadForm"
 	)
@@ -31,7 +31,7 @@ form = div.append "div"
 	.style(
 		"padding-bottom": "5px"
 	)
-	 .append "div" #spacer
+	 .append "div"
 	.style(
 		"padding-top": "5px"
 	)
@@ -53,7 +53,8 @@ $("#imageUploadForm").submit((e) ->
 				.remove()
 			root.setActiveAlert data.err #set error
 			root.setThFloor data.floor  #set active floor
-			root.loadFloorImages(data.url_floor0, data.url_floor1) #refresh images
+			root.loadFloorImage(0, data.url_floor0) #refresh images
+			root.loadFloorImage(1, data.url_floor1)
 			root.resetZoom()
 			$ "#uploadImage" #reset input value
 				.val ''

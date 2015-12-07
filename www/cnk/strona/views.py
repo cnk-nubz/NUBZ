@@ -1,5 +1,7 @@
 import sys
 import os
+import json
+from enum import Enum
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
@@ -8,18 +10,15 @@ from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
-#uploading error:
-# 1 - sucessful upload
-# 2 - sent file is not a image
-# 3 - problem with server
-# 4 - not POST method
-
 def _getFloorImages():
 	tc = ThriftCommunicator()
-	result = tc.getMapImages().levelImageUrls
-	urls = [None, None]
+	result = tc.getMapImages()
+
 	if not result:
 		raise Exception()
+
+	result = result.levelImageUrls
+	urls = [None, None]
 
 	try:
 		urls[0] = result[0][result[0].find('/'):]
@@ -33,35 +32,58 @@ def _getFloorImages():
 
 	return urls
 
-def index(request):
-	err = 0
-	floor = 0
-	if 'err' in request.GET.keys():
-		err = request.GET['err']
-	if 'floor' in request.GET.keys():
-		floor = request.GET['floor']
+def _getExhibits():
+	tc = ThriftCommunicator()
+	result = tc.getExhibits()
 
+	if not result:
+		raise Exception()
+
+	return result.exhibits
+
+def index(request):
 	try:
 		urls = _getFloorImages()
 	except:
 		return HttpResponse('<h1>Nie mozna zaladowac map, sprawdz czy serwer jest wlaczony</h1>')
 
+	try:
+		exhibits = _getExhibits()
+	except:
+		pass
+
+	exhibitList = list()
+	for i in exhibits.keys():
+		if exhibits[i].frame:
+			e = exhibits[i].frame
+			exhibitList.append({
+				"x": e.x,
+				"y": e.y,
+				"height": e.height,
+				"width": e.width,
+                "name": "{}".format(exhibits[i].name),
+				"mapLevel": e.mapLevel,
+			})
+
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {
-	"url_floor0" : urls[0],
-	"url_floor1" : urls[1],
-	"err": err,
-	"floor": floor
+		"url_floor0" : urls[0],
+		"url_floor1" : urls[1],
+		"floor": 0,
+		"exhibits": exhibitList
 	})
-	if err != 0:
-		data = {"a": "witam", "b": "swiat"}
-		return JsonResponse(data)
 	return HttpResponse(template.render(context))
+
+class uploadError(Enum):
+	SUCCESS = 1
+	NOT_AN_IMAGE = 2
+	SERVER_PROBLEM = 3
+	NOT_POST_METHOD = 4
 
 def uploadImage(request):
 	if request.method != 'POST':
 		data = {
-			"err": 4,
+			"err": uploadError.NOT_POST_METHOD.value,
 			"floor": 0
 		}
 		return JsonResponse(data)
@@ -69,7 +91,7 @@ def uploadImage(request):
 	form = MapUploadForm(request.POST, request.FILES)
 	if not form.is_valid():
 		data = {
-			"err": 2,
+			"err": uploadError.NOT_AN_IMAGE.value,
 			"floor": 0
 		}
 		return JsonResponse(data)
@@ -89,7 +111,7 @@ def uploadImage(request):
 		urls = [None, None]
 	if not set_result:
 		data = {
-			"err": 3,
+			"err": uploadError.SERVER_PROBLEM.value,
 			"floor": floor,
 			"url_floor0": urls[0],
 			"url_floor1": urls[1]
@@ -97,7 +119,7 @@ def uploadImage(request):
 		return JsonResponse(data)
 
 	data = {
-		"err": 1,
+		"err": uploadError.SUCCESS.value,
 		"floor": floor,
 		"url_floor0": urls[0],
 		"url_floor1": urls[1]
