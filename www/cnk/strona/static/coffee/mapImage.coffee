@@ -67,8 +67,11 @@ updateFloorExhibits = (floor) ->
             "height": "#{d.height * ratio}px"
           )
           .html d.exhibitName
+          .style(
+            "font-familt": "Open Sans"
+          )
 
-        jQuery("foreignObject div", this).boxfit {'multiline': true}
+        jQuery("foreignObject div", this).boxfit {'multiline': true, 'minimum_font_size': 1}
     )
   return
 
@@ -92,6 +95,8 @@ loadFloorImage = (floor, filename) ->
       root.floorRealImageWidth[floor] = tmpimg.naturalWidth
       calcMapImageSize floor
       calcNewMapCoords floor
+      jQuery(".exhibitFloor#{floor}").remove()
+      root.spawnExhibits floor
       updateFloorExhibits floor
   return
 root.loadFloorImage = loadFloorImage

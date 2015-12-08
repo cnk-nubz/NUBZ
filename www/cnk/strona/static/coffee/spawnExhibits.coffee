@@ -29,7 +29,10 @@ spawnExhibits = (floor) ->
       .attr(
         "fill": "none"
       )
-      .append "xhtml:div"
+       .append "xhtml:div"
+      .style(
+        "font-family": "Open Sans"
+      )
   )
   return
 root.spawnExhibits = spawnExhibits
