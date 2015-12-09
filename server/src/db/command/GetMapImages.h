@@ -16,7 +16,7 @@ namespace db {
             const std::vector<MapImage> &getResult() const;
 
         private:
-            std::int32_t minVersion;
+            const std::int32_t minVersion;
             std::vector<MapImage> result;
 
             std::string createQuery() const;

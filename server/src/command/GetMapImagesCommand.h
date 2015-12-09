@@ -1,27 +1,22 @@
 #ifndef COMMAND__GET_MAP_IMAGES_COMMAND__H
 #define COMMAND__GET_MAP_IMAGES_COMMAND__H
 
-#include "AbstractCommand.h"
+#include "commands_common.h"
 #include "io/input/MapImagesRequest.h"
 #include "io/output/MapImagesResponse.h"
 #include "db/Database.h"
 
 namespace command {
-    class GetMapImagesCommand
-        : public AbstractCommand<io::input::MapImagesRequest, io::output::MapImagesResponse> {
+    class GetMapImagesCommand {
     public:
         static void setUrlPathPrefix(const std::string &urlPrefix);
 
         GetMapImagesCommand(db::Database &db);
-        virtual ~GetMapImagesCommand() = default;
+        ~GetMapImagesCommand() = default;
 
-        GetMapImagesCommand(const GetMapImagesCommand &) = delete;
-        GetMapImagesCommand(GetMapImagesCommand &&) = default;
-        GetMapImagesCommand &operator=(const GetMapImagesCommand &) = delete;
-        GetMapImagesCommand &operator=(GetMapImagesCommand &&) = default;
+        DEFAULT_CP_MV(GetMapImagesCommand);
 
-        virtual io::output::MapImagesResponse perform(
-            const io::input::MapImagesRequest &input) override;
+        io::output::MapImagesResponse operator()(const io::input::MapImagesRequest &input);
 
     private:
         static std::string urlPathPrefix;
