@@ -13,14 +13,9 @@ spawnExhibits = (floor) ->
   exhibitGroup.each((d, _) ->
     d3.select this
        .append "rect"
-      .attr(
-        "rx": "3px"
-        "ry": "3px"
-      )
       .style(
         "fill": "lightblue"
         "stroke": "blue"
-        "stroke-width": "1px"
         "pointer": "default"
       )
 

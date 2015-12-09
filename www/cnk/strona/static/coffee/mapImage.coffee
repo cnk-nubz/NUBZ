@@ -43,6 +43,15 @@ calcNewMapCoords = (floor) ->
 		root.floorImageY[floor] = 0
 	return
 
+strokeWidthScale = d3.scale.linear().domain([2, 1024]).range([0.1, 6])
+getStrokeWidth = (d) ->
+  if d > 1024 then 6 else strokeWidthScale(d)
+
+roundCornerScale = d3.scale.linear().domain([2, 1024]).range([0.1, 16])
+getRoundCorner = (d) ->
+  if d > 1024 then 16 else roundCornerScale(d)
+
+
 updateFloorExhibits = (floor) ->
   d3.selectAll(".exhibitFloor#{floor}")
     .each((d, i) ->
@@ -50,6 +59,8 @@ updateFloorExhibits = (floor) ->
           ratio = root.floorScaledImageWidth[floor] / root.svgWidth[floor]
         else
           ratio = root.floorScaledImageHeight[floor] / root.svgHeight[floor]
+
+        roundCornerSize = getRoundCorner(d.width * ratio + d.height * ratio)
         d3.select this
           .selectAll "rect, foreignObject"
           .attr(
@@ -57,6 +68,14 @@ updateFloorExhibits = (floor) ->
             "y": d.y * ratio + root.floorImageX[floor]
             "width": d.width * ratio
             "height": d.height * ratio
+          )
+
+        d3.select this
+          .select "rect"
+          .attr(
+            "rx": "#{roundCornerSize}px"
+            "ry": "#{roundCornerSize}px"
+            "stroke-width": "#{getStrokeWidth(d.width * ratio + d.height * ratio)}px"
           )
 
         d3.select this
@@ -68,7 +87,7 @@ updateFloorExhibits = (floor) ->
           )
           .html d.exhibitName
           .style(
-            "font-familt": "Open Sans"
+            "font-family": "Open Sans"
           )
 
         jQuery("foreignObject div", this).boxfit {'multiline': true, 'minimum_font_size': 1}
