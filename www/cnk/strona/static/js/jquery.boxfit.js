@@ -106,26 +106,21 @@
         var fitsInside = function() {
           return (measurements[0] <= original_width && measurements[1] <= original_height);
         }
-        console.log("#####" + original_text);
         var eps = settings.step_size;
         while (hi - lo > eps) {
           mid = (lo + hi) / 2;
           inner_span.css('font-size', mid);
           measurements = realSize($(this));
-          console.log("mid" + mid);
           if (fitsInside()) {
-            console.log("up");
             lo = mid + settings.step_size;
           }
           else {
-            console.log("down");
             hi = mid;
           }
         }
 
         while (!fitsInside()) {
           var fsize = inner_span.css('font-size').slice(0, -2) - settings.step_size;
-          console.log (fsize);
           inner_span.css('font-size', fsize);
           measurements = realSize($(this));
         }
