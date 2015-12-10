@@ -90,7 +90,7 @@ updateFloorExhibits = (floor) ->
             "font-family": "Open Sans"
           )
 
-        jQuery("foreignObject div", this).boxfit {'multiline': true, 'minimum_font_size': 1}
+        jQuery("foreignObject div", this).boxfit()
     )
   return
 
