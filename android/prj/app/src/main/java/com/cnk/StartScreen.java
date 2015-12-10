@@ -34,14 +34,14 @@ public class StartScreen extends AppCompatActivity {
     }
 
     public void testRaportUpload() {
-        Integer raportId = DataHandler.getInstance().getNewRaportId();
+        DataHandler.getInstance().startNewRaport();
         List<Integer> actions = new ArrayList<>();
         actions.add(1);
         actions.add(3);
         Integer exhibitId = DataHandler.getInstance().getExhibitsOfFloor(1).get(0).getId();
         RaportEvent event = new RaportEvent(exhibitId, 10, actions);
         DataHandler.getInstance().addEventToRaport(event);
-        DataHandler.getInstance().markRaportAsReady(raportId);
+        DataHandler.getInstance().markRaportAsReady();
         DataHandler.getInstance().scanForReadyRaports();
         net.uploadRaport();
     }

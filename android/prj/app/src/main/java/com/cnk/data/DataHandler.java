@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -63,7 +61,6 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     private Context context;
     private DatabaseHelper dbHelper;
-    private Lock raportLock;
     private Raport currentRaport;
     private Map<Raport, Integer> raportsToSend;
 
@@ -84,47 +81,55 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
-        raportLock = new ReentrantLock(true);
         raportsToSend = new HashMap<>();
     }
 
-    public Integer getNewRaportId() {
+    // only creates new database entry and file for new raport which is not used anywhere else
+    public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId);
         String fileName = FileHandler.getInstance().saveRaportToFile(currentRaport);
         dbHelper.setRaportFile(newId, fileName);
-        return newId;
     }
 
+    // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
     public void setServerId(Raport raport, Integer serverId) {
-        raportLock.lock();
         raportsToSend.put(raport, serverId);
         dbHelper.changeRaportServerId(raport.getId(), serverId);
-        raportLock.unlock();
     }
 
+    // only modifies file of raport in progress, which is not used anywhere else at the time
     public void addEventToRaport(RaportEvent event) {
-        raportLock.lock();
         currentRaport.addEvent(event);
         FileHandler.getInstance().saveRaportToFile(currentRaport);
-        raportLock.unlock();
     }
 
     public Map<Raport, Integer> getAllReadyRaports() {
         return new HashMap<Raport, Integer>(raportsToSend);
     }
 
-    public void markRaportAsReady(Integer id) {
-        raportLock.lock();
-        dbHelper.changeRaportState(id, RaportFileRealm.READY_TO_SEND);
-        raportLock.unlock();
+    // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
+    public void markRaportAsReady() {
+        dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
+        currentRaport = null;
     }
 
+    // only modifies database entries which are used by one thread - uploading raports
     public void markRaportAsSent(Raport raport) {
-        raportLock.lock();
         raportsToSend.remove(raport);
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
-        raportLock.unlock();
+    }
+
+    // doesnt modify anything, and is only called upon starting or ending raport
+    public void scanForReadyRaports() {
+        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
+        raportsToSend.clear();
+        for (RaportFile file : toLoad) {
+            Raport loaded = FileHandler.getInstance().getRaport(file.getFileName());
+            if (loaded != null) {
+                raportsToSend.put(loaded, file.getServerId());
+            }
+        }
     }
 
     public synchronized Drawable getFloorMap(Integer floor) {
@@ -162,9 +167,6 @@ public class DataHandler extends Observable {
     }
 
     public synchronized Integer getMapVersion() {
-        if (dbHelper == null) {
-            Log.e("DB HELPER", "IS NULL");
-        }
         return dbHelper.getVersion(Version.Item.MAP);
     }
 
@@ -220,19 +222,6 @@ public class DataHandler extends Observable {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             throw e;
-        }
-    }
-
-    public void scanForReadyRaports() {
-        raportLock.lock();
-        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
-        raportsToSend.clear();
-        raportLock.unlock();
-        for (RaportFile file : toLoad) {
-            Raport loaded = FileHandler.getInstance().getRaport(file.getFileName());
-            if (loaded != null) {
-                raportsToSend.put(loaded, file.getServerId());
-            }
         }
     }
 }

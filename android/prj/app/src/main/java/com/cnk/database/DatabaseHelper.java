@@ -515,7 +515,7 @@ public class DatabaseHelper {
 
     private List<RaportFile> getAllReadyRaportsImpl() {
         List<RaportFile> raports = new ArrayList<>();
-        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", "READY_TO_SEND").findAll();
+        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", RaportFileRealm.READY_TO_SEND).findAll();
         for (RaportFileRealm r : results) {
             raports.add(ModelTranslation.raportFileFromRealm(r));
         }
