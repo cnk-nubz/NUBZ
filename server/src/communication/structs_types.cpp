@@ -1081,4 +1081,278 @@ void ExhibitsResponse::printTo(std::ostream& out) const {
   out << ")";
 }
 
+
+RawReportEvent::~RawReportEvent() throw() {
+}
+
+
+void RawReportEvent::__set_exhibitId(const int32_t val) {
+  this->exhibitId = val;
+__isset.exhibitId = true;
+}
+
+void RawReportEvent::__set_durationInSecs(const int32_t val) {
+  this->durationInSecs = val;
+}
+
+void RawReportEvent::__set_actions(const std::vector<int32_t> & val) {
+  this->actions = val;
+}
+
+uint32_t RawReportEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->exhibitId);
+          this->__isset.exhibitId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->durationInSecs);
+          this->__isset.durationInSecs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->actions.clear();
+            uint32_t _size36;
+            ::apache::thrift::protocol::TType _etype39;
+            xfer += iprot->readListBegin(_etype39, _size36);
+            this->actions.resize(_size36);
+            uint32_t _i40;
+            for (_i40 = 0; _i40 < _size36; ++_i40)
+            {
+              xfer += iprot->readI32(this->actions[_i40]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.actions = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RawReportEvent::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RawReportEvent");
+
+  if (this->__isset.exhibitId) {
+    xfer += oprot->writeFieldBegin("exhibitId", ::apache::thrift::protocol::T_I32, 1);
+    xfer += oprot->writeI32(this->exhibitId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("durationInSecs", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->durationInSecs);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("actions", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->actions.size()));
+    std::vector<int32_t> ::const_iterator _iter41;
+    for (_iter41 = this->actions.begin(); _iter41 != this->actions.end(); ++_iter41)
+    {
+      xfer += oprot->writeI32((*_iter41));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RawReportEvent &a, RawReportEvent &b) {
+  using ::std::swap;
+  swap(a.exhibitId, b.exhibitId);
+  swap(a.durationInSecs, b.durationInSecs);
+  swap(a.actions, b.actions);
+  swap(a.__isset, b.__isset);
+}
+
+RawReportEvent::RawReportEvent(const RawReportEvent& other42) {
+  exhibitId = other42.exhibitId;
+  durationInSecs = other42.durationInSecs;
+  actions = other42.actions;
+  __isset = other42.__isset;
+}
+RawReportEvent& RawReportEvent::operator=(const RawReportEvent& other43) {
+  exhibitId = other43.exhibitId;
+  durationInSecs = other43.durationInSecs;
+  actions = other43.actions;
+  __isset = other43.__isset;
+  return *this;
+}
+void RawReportEvent::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RawReportEvent(";
+  out << "exhibitId="; (__isset.exhibitId ? (out << to_string(exhibitId)) : (out << "<null>"));
+  out << ", " << "durationInSecs=" << to_string(durationInSecs);
+  out << ", " << "actions=" << to_string(actions);
+  out << ")";
+}
+
+
+RawReport::~RawReport() throw() {
+}
+
+
+void RawReport::__set_reportId(const int32_t val) {
+  this->reportId = val;
+}
+
+void RawReport::__set_history(const std::vector<RawReportEvent> & val) {
+  this->history = val;
+}
+
+uint32_t RawReport::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->reportId);
+          this->__isset.reportId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->history.clear();
+            uint32_t _size44;
+            ::apache::thrift::protocol::TType _etype47;
+            xfer += iprot->readListBegin(_etype47, _size44);
+            this->history.resize(_size44);
+            uint32_t _i48;
+            for (_i48 = 0; _i48 < _size44; ++_i48)
+            {
+              xfer += this->history[_i48].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.history = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RawReport::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RawReport");
+
+  xfer += oprot->writeFieldBegin("reportId", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->reportId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("history", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->history.size()));
+    std::vector<RawReportEvent> ::const_iterator _iter49;
+    for (_iter49 = this->history.begin(); _iter49 != this->history.end(); ++_iter49)
+    {
+      xfer += (*_iter49).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RawReport &a, RawReport &b) {
+  using ::std::swap;
+  swap(a.reportId, b.reportId);
+  swap(a.history, b.history);
+  swap(a.__isset, b.__isset);
+}
+
+RawReport::RawReport(const RawReport& other50) {
+  reportId = other50.reportId;
+  history = other50.history;
+  __isset = other50.__isset;
+}
+RawReport& RawReport::operator=(const RawReport& other51) {
+  reportId = other51.reportId;
+  history = other51.history;
+  __isset = other51.__isset;
+  return *this;
+}
+void RawReport::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RawReport(";
+  out << "reportId=" << to_string(reportId);
+  out << ", " << "history=" << to_string(history);
+  out << ")";
+}
+
 } // namespace

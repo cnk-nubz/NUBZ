@@ -8,8 +8,12 @@ import android.widget.Button;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
+import com.cnk.data.RaportEvent;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.ui.MapActivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class StartScreen extends AppCompatActivity {
     NetworkHandler net;
@@ -23,9 +27,22 @@ public class StartScreen extends AppCompatActivity {
         DataHandler.getInstance().setContext(getApplication().getApplicationContext());
         DataHandler.getInstance().setDbHelper(dbHelper);
         net = new NetworkHandler();
-
+        // !!!! ONLY USE AFTER EXHIBITS ARE DOWNLOADED !!!!
+        testRaportUpload();
         bMapActivity = (Button) findViewById(R.id.bMapActivity);
         bMapActivity.setOnClickListener(new MapActivityClick());
+    }
+
+    public void testRaportUpload() {
+        DataHandler.getInstance().startNewRaport();
+        List<Integer> actions = new ArrayList<>();
+        actions.add(1);
+        actions.add(3);
+        Integer exhibitId = DataHandler.getInstance().getExhibitsOfFloor(1).get(0).getId();
+        RaportEvent event = new RaportEvent(exhibitId, 10, actions);
+        DataHandler.getInstance().addEventToRaport(event);
+        DataHandler.getInstance().markRaportAsReady();
+        net.uploadRaport();
     }
 
     public void pingClick(View view) {

@@ -1,14 +1,15 @@
 #include "GetExhibitsCommand.h"
 #include "db/command/GetExhibits.h"
-#include "db/command/GetVersion.h"
+#include "db/command/GetCounter.h"
+#include "db/command/GetRawReports.h"
 
 namespace command {
     GetExhibitsCommand::GetExhibitsCommand(db::Database &db) : db(db) {
     }
 
-    io::output::ExhibitsResponse GetExhibitsCommand::perform(
+    io::output::ExhibitsResponse GetExhibitsCommand::operator()(
         const io::input::ExhibitsRequest &input) {
-        db::cmd::GetVersion getVersion(db::info::versions::element_type::exhibits);
+        db::cmd::GetCounter getCounter(db::info::counters::element_type::exhibits);
         std::unique_ptr<db::cmd::GetExhibits> getExhibits;
         if (input.acquiredVersion) {
             getExhibits.reset(new db::cmd::GetExhibits(*input.acquiredVersion + 1));
@@ -16,11 +17,11 @@ namespace command {
             getExhibits.reset(new db::cmd::GetExhibits);
         }
 
-        db.execute(getVersion);
+        db.execute(getCounter);
         db.execute(*getExhibits);
 
         io::output::ExhibitsResponse response;
-        response.version = getVersion.getResult();
+        response.version = getCounter.getResult();
         for (const auto &exhibit : getExhibits->getResult()) {
             response.exhibits[exhibit.ID] = io::Exhibit(exhibit);
         }

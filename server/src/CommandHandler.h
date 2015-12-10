@@ -22,6 +22,9 @@ public:
     virtual void getExhibits(communication::ExhibitsResponse &response,
                              const communication::ExhibitsRequest &request) override;
 
+    virtual std::int32_t getIdForNewReport() override;
+    virtual void saveReport(const communication::RawReport &report) override;
+
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;
