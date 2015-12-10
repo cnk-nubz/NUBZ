@@ -441,4 +441,147 @@ public class DatabaseHelper {
         }
     }
 
+    private Integer getNextRaportIdImpl() {
+        Number maxId = realm.where(RaportFileRealm.class).max("id");
+        return maxId == null ? 0 : maxId.intValue() + 1;
+    }
+
+    public Integer getNextRaportId() {
+        open();
+        Integer result;
+        try {
+            beginTransaction();
+            result = getNextRaportIdImpl();
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError("Exception getting next raport id.");
+        } finally {
+            close();
+        }
+        return result;
+    }
+
+    private String getRaportFilenameImpl(Integer id) {
+        RaportFileRealm result = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        return result == null ? null : result.getFileName();
+    }
+
+    public String getRaportFilename(Integer id) {
+        String raportFile = null;
+        open();
+
+        try {
+            beginTransaction();
+            raportFile = getRaportFilenameImpl(id);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return raportFile;
+    }
+
+    private void setRaportFileImpl(Integer id, String raportFilename) {
+        RaportFileRealm raportFileRealm = new RaportFileRealm();
+        raportFileRealm.setId(id);
+        raportFileRealm.setFileName(raportFilename);
+        raportFileRealm.setState(RaportFileRealm.IN_PROGRESS);
+        raportFileRealm.setServerId(null);
+        realm.copyToRealmOrUpdate(raportFileRealm);
+    }
+
+    public void setRaportFile(Integer id, String raportFilename) {
+        open();
+
+        try {
+            beginTransaction();
+            setRaportFileImpl(id, raportFilename);
+            commitTransaction();
+        } catch (Exception e) {
+            cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting map of floor "
+                    + id.toString() + " to " + raportFilename);
+        } finally {
+            close();
+        }
+    }
+
+    private List<RaportFile> getAllReadyRaportsImpl() {
+        List<RaportFile> raports = new ArrayList<>();
+        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", RaportFileRealm.READY_TO_SEND).findAll();
+        for (RaportFileRealm r : results) {
+            raports.add(ModelTranslation.raportFileFromRealm(r));
+        }
+        return raports;
+    }
+
+    public List<RaportFile> getAllReadyRaports() {
+        List<RaportFile> raports;
+        open();
+
+        try {
+            beginTransaction();
+            raports = getAllReadyRaportsImpl();
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return raports;
+    }
+
+    private void changeRaportStateImpl(Integer id, String newState) {
+        RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        entry.setState(newState);
+        realm.copyToRealmOrUpdate(entry);
+    }
+
+    public void changeRaportState(Integer id, String newState) {
+        open();
+
+        try {
+            beginTransaction();
+            changeRaportStateImpl(id, newState);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+    }
+
+    private void changeRaportServerIdImpl(Integer id, Integer serverId) {
+        RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        entry.setServerId(serverId);
+        realm.copyToRealmOrUpdate(entry);
+    }
+
+    public void changeRaportServerId(Integer id, Integer serverId) {
+        open();
+
+        try {
+            beginTransaction();
+            changeRaportServerIdImpl(id, serverId);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+    }
 }
