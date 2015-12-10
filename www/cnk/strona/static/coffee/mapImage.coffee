@@ -56,9 +56,9 @@ updateFloorExhibits = (floor) ->
   d3.selectAll(".exhibitFloor#{floor}")
     .each((d, i) ->
         if root.floorImageX[floor] is 0 #glued to top line
-          ratio = root.floorScaledImageWidth[floor] / root.svgWidth[floor]
+          ratio = root.floorScaledImageWidth[floor] / root.floorRealImageWidth[floor]
         else
-          ratio = root.floorScaledImageHeight[floor] / root.svgHeight[floor]
+          ratio = root.floorScaledImageHeight[floor] / root.floorRealImageHeight[floor]
 
         roundCornerSize = getRoundCorner(d.width * ratio + d.height * ratio)
         d3.select this
