@@ -85,11 +85,11 @@ public class ModelTranslation {
     }
 
     public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
-        RaportFile file = new RaportFile();
-        file.setId(realmFile.getId());
-        file.setServerId(realmFile.getServerId());
-        file.setFileName(realmFile.getFileName());
-        file.setState(realmFile.getState());
+        RaportFile file = null;
+        if (realmFile != null) {
+            file = new RaportFile(realmFile.getId(), realmFile.getServerId(),
+                       realmFile.getFileName(), realmFile.getState());
+        }
         return file;
     }
 }

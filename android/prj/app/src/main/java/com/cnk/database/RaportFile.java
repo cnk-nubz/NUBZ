@@ -8,6 +8,13 @@ public class RaportFile {
     // "READY_TO_SEND", "SENT", "IN_PROGRESS", enums are not supported
     private String state;
 
+    public RaportFile(Integer id, Integer serverId, String fileName, String state) {
+        this.id = id;
+        this.serverId = serverId;
+        this.fileName = fileName;
+        this.state = state;
+    }
+
     public Integer getId() {
         return id;
     }

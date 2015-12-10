@@ -523,7 +523,7 @@ public class DatabaseHelper {
     }
 
     public List<RaportFile> getAllReadyRaports() {
-        List<RaportFile> raports = new ArrayList<>();
+        List<RaportFile> raports;
         open();
 
         try {
