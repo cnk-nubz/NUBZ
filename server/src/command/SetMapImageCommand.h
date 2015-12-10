@@ -1,22 +1,19 @@
 #ifndef COMMAND__SET_MAP_IMAGE_COMMAND__H
 #define COMMAND__SET_MAP_IMAGE_COMMAND__H
 
-#include "AbstractCommand.h"
+#include "commands_common.h"
 #include "io/input/SetMapImageRequest.h"
 #include "db/Database.h"
 
 namespace command {
-    class SetMapImageCommand : public AbstractCommandOnlyIn<io::input::SetMapImageRequest> {
+    class SetMapImageCommand {
     public:
         SetMapImageCommand(db::Database &db);
-        virtual ~SetMapImageCommand() = default;
+        ~SetMapImageCommand() = default;
 
-        SetMapImageCommand(const SetMapImageCommand &) = delete;
-        SetMapImageCommand(SetMapImageCommand &&) = default;
-        SetMapImageCommand &operator=(const SetMapImageCommand &) = delete;
-        SetMapImageCommand &operator=(SetMapImageCommand &&) = default;
+        DEFAULT_CP_MV(SetMapImageCommand);
 
-        virtual void perform(const io::input::SetMapImageRequest &input) override;
+        void operator()(const io::input::SetMapImageRequest &input);
 
     private:
         db::Database &db;
