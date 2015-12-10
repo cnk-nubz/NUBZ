@@ -74,4 +74,22 @@ public class ModelTranslation {
 
         return list;
     }
+
+    public static RaportFileRealm realmFromRaportFile(RaportFile file) {
+        RaportFileRealm realmRaport = new RaportFileRealm();
+        realmRaport.setFileName(file.getFileName());
+        realmRaport.setId(file.getId());
+        realmRaport.setServerId(file.getServerId());
+        realmRaport.setState(file.getState());
+        return realmRaport;
+    }
+
+    public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
+        RaportFile file = new RaportFile();
+        file.setId(realmFile.getId());
+        file.setServerId(realmFile.getServerId());
+        file.setFileName(realmFile.getFileName());
+        file.setState(realmFile.getState());
+        return file;
+    }
 }

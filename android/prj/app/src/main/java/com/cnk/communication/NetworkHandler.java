@@ -73,7 +73,7 @@ public class NetworkHandler implements Observer {
     }
 
     public synchronized void uploadRaport() {
-        Task task = new RaportUploadTask(raportUpload, null);
+        Task task = new RaportUploadTask(raportUpload);
         tasks.add(task);
     }
 
@@ -130,7 +130,7 @@ public class NetworkHandler implements Observer {
     }
 
     private synchronized void addBgUploadTask() {
-        Task task = new RaportUploadTask(bgRaportUpload, null);
+        Task task = new RaportUploadTask(bgRaportUpload);
         Task wait = new WaitTask(bgDelaySeconds * 1000);
         bgTasks.add(task);
         bgTasks.add(wait);
@@ -147,8 +147,6 @@ public class NetworkHandler implements Observer {
         Log.i(LOG_TAG, "Task finished successfully");
         if (downloadInBg && o == bgDownload) {
             addBgDownloadTask();
-        } else if (uploadInBg && o == bgRaportUpload) {
-            addBgUploadTask();
         }
     }
 
