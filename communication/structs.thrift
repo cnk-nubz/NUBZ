@@ -21,6 +21,26 @@ struct MapImagesResponse {
 	2: map<i32, string> levelImageUrls,
 }
 
+struct MapImageTilesRequest {
+	1: i32 floor,
+}
+
+struct Size {
+	1: i32 width,
+	2: i32 height,
+}
+
+struct ImageTiles {
+	1: Size scaledSize,
+	2: Size tileSize,
+	3: list<list<string>> tilesUrls,
+}
+
+struct MapImageTilesResponse {
+	1: Size originalSize,
+	2: list<ImageTiles> zoomLevels,
+}
+
 struct SetMapImageRequest {
 	1: i32 level
 	2: string filename
