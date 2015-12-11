@@ -29,7 +29,7 @@
         width: null,
         height: null,
         // the amount to change each time - bigger numbers are faster but fit less perfectly
-        step_size: 1,
+        step_size: 0.1,
         // the number of font size iterations we should step through until we give up
         step_limit: 200,
         // set to false to NOT align middle (vertically)
@@ -37,11 +37,11 @@
         // set to false this to NOT center the text (horizontally)
         align_center: true,
         // set to false to allow the big text to wrap (useful for when you want text to fill a big vertical area)
-        multiline: false,
+        multiline: true,
         // minimum font size (changing this may cause some 'shrink' scenarios to overflow instead)
-        minimum_font_size: 5,
+        minimum_font_size: 0.1,
         // set to a number to limit the maximum font size allowed
-        maximum_font_size: null,
+        maximum_font_size: 15,
         // set desired line-height
         line_height:'100%'
       };
@@ -100,22 +100,30 @@
         // fixing issue where custom line-heights would break wrapped text
         inner_span.css('line-height', settings.line_height);
 
-        // keep growing the target so long as we haven't exceeded the width or height
-        inner_span.css('font-size', settings.minimum_font_size);
-        while (measurements[0] <= original_width && measurements[1] <= original_height) {
-          if (current_step++ > settings.step_limit) {
-            break;
-          }
-          next_font_size = parseInt(inner_span.css('font-size'), 10);
-          if (settings.maximum_font_size && next_font_size > settings.maximum_font_size) {
-            break;
-          }
-          inner_span.css('font-size', next_font_size + settings.step_size);
+        var lo = settings.minimum_font_size;
+        var hi = settings.maximum_font_size;
+        var mid = 0;
+        var fitsInside = function() {
+          return (measurements[0] <= original_width && measurements[1] <= original_height);
+        }
+        var eps = settings.step_size;
+        while (hi - lo > eps) {
+          mid = (lo + hi) / 2;
+          inner_span.css('font-size', mid);
           measurements = realSize($(this));
+          if (fitsInside()) {
+            lo = mid + settings.step_size;
+          }
+          else {
+            hi = mid;
+          }
         }
 
-        // go back one step
-        inner_span.css('font-size', parseInt(inner_span.css('font-size'), 10) - settings.step_size);
+        while (!fitsInside()) {
+          var fsize = inner_span.css('font-size').slice(0, -2) - settings.step_size;
+          inner_span.css('font-size', fsize);
+          measurements = realSize($(this));
+        }
         return $(this);
       }
     });

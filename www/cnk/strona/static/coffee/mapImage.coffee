@@ -43,34 +43,63 @@ calcNewMapCoords = (floor) ->
 		root.floorImageY[floor] = 0
 	return
 
+strokeWidthScale = d3.scale.linear().domain([2, 1024]).range([0.1, 6])
+getStrokeWidth = (d) ->
+  if d > 1024 then 6 else strokeWidthScale(d)
+
+roundCornerScale = d3.scale.linear().domain([2, 1024]).range([0.1, 16])
+getRoundCorner = (d) ->
+  if d > 1024 then 16 else roundCornerScale(d)
+
+
 updateFloorExhibits = (floor) ->
+  calcMapImageSize floor
+  calcNewMapCoords floor
+  jQuery(".exhibitFloor#{floor}").remove()
+  root.spawnExhibits floor
+  
   d3.selectAll(".exhibitFloor#{floor}")
     .each((d, i) ->
         if root.floorImageX[floor] is 0 #glued to top line
-          ratio = root.floorScaledImageWidth[floor] / root.svgWidth[floor]
+          ratio = root.floorScaledImageWidth[floor] / root.floorRealImageWidth[floor]
         else
-          ratio = root.floorScaledImageHeight[floor] / root.svgHeight[floor]
+          ratio = root.floorScaledImageHeight[floor] / root.floorRealImageHeight[floor]
+
+        roundCornerSize = getRoundCorner(d.width * ratio + d.height * ratio)
         d3.select this
           .selectAll "rect, foreignObject"
           .attr(
-            "x": d.x * ratio + root.floorImageY[floor]
-            "y": d.y * ratio + root.floorImageX[floor]
-            "width": d.width * ratio
-            "height": d.height * ratio
+            "x": Math.floor(d.x * ratio + root.floorImageY[floor])
+            "y": Math.floor(d.y * ratio + root.floorImageX[floor])
+            "width": Math.floor(d.width * ratio)
+            "height": Math.floor(d.height * ratio)
+          )
+
+        d3.select this
+          .select "rect"
+          .attr(
+            "rx": "#{roundCornerSize}px"
+            "ry": "#{roundCornerSize}px"
+            "stroke-width": "#{getStrokeWidth(d.width * ratio + d.height * ratio)}px"
           )
 
         d3.select this
           .select "foreignObject div"
           .style(
             "cursor": "default"
-            "width": "#{d.width * ratio}px"
-            "height": "#{d.height * ratio}px"
+            "width": "#{Math.floor(d.width * ratio)}px"
+            "height": "#{Math.floor(d.height * ratio)}px"
           )
           .html d.exhibitName
+          .style(
+            "font-family": "Open Sans"
+          )
 
-        jQuery("foreignObject div", this).boxfit {'multiline': true}
+        jQuery("foreignObject div", this).boxfit()
     )
   return
+
+root.updateFloorExhibits = updateFloorExhibits
 
 loadFloorImage = (floor, filename) ->
   if filename?
@@ -90,8 +119,6 @@ loadFloorImage = (floor, filename) ->
 
       root.floorRealImageHeight[floor] = tmpimg.naturalHeight
       root.floorRealImageWidth[floor] = tmpimg.naturalWidth
-      calcMapImageSize floor
-      calcNewMapCoords floor
       updateFloorExhibits floor
   return
 root.loadFloorImage = loadFloorImage
