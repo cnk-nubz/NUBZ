@@ -71,6 +71,17 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
     LOG(INFO) << "setMapImage end";
 }
 
+void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &response,
+                                      const communication::MapImageTilesRequest &request) {
+    LOG(INFO) << "getMapImageTiles start";
+    LOG(INFO) << "input: " << request;
+
+    LOG(INFO) << "not implemented";
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getMapImageTiles end";
+}
+
 void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
                                  const communication::ExhibitsRequest &request) {
     LOG(INFO) << "getExhibits start";
