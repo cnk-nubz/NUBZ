@@ -7,8 +7,9 @@ cur = con.cursor()
 
 ######### drop
 cur.execute('DROP TABLE IF EXISTS map_images')
-cur.execute('DROP TABLE IF EXISTS versions')
+cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
+cur.execute('DROP TABLE IF EXISTS reports')
 
 ######### create
 cur.execute('''
@@ -19,9 +20,9 @@ cur.execute('''
 	)
 ''')
 cur.execute('''
-	CREATE TABLE versions (
+	CREATE TABLE counters (
 		element VARCHAR NOT NULL UNIQUE,
-		version INT NOT NULL
+		counter INT NOT NULL
 	)
 ''')
 cur.execute('''
@@ -37,6 +38,12 @@ cur.execute('''
 		map_level INT NULL
 	)
 ''')
+cur.execute('''
+	CREATE TABLE reports (
+		id INT NOT NULL,
+		doc JSONB NOT NULL
+	)
+''')
 
 ######### sample data
 # map_images
@@ -46,11 +53,12 @@ cur.execute('''
 		('floorplan0.jpg', 2, 1)
 ''')
 
-# versions
+# counters
 cur.execute('''
-	INSERT INTO versions VALUES
-		('map_images', 2),
-		('exhibits', 5)
+	INSERT INTO counters VALUES
+		('map_images_version', 2),
+		('exhibits_version', 5),
+		('reports_last_id', 3)
 ''')
 
 # exhibits
@@ -62,6 +70,44 @@ cur.execute('''
 		('exhibit 3 floor 1', 3, 0, 0, 100, 100, 1),
 		('exhibit 4 floor 1', 4, 150, 150, 150, 150, 1),
 		('exhibit 5 floor 1', 5, 250, 250, 250, 250, 1)
+''')
+
+# reports
+cur.execute('''
+	INSERT INTO reports VALUES
+		(1, '
+			{
+				"history": [{
+						"exhibitId": 2,
+						"durationInSecs": 15,
+						"actions": [1, 2, 4]
+					}, {
+						"exhibitId": 0,
+						"durationInSecs": 30,
+						"actions": [1]
+					}, {
+						"durationInSecs": 140,
+						"actions": [5]
+					}
+				]
+			}
+		'),
+		(3, '
+			{
+				"history": [{
+						"durationInSecs": 17,
+						"actions": []
+					}, {
+						"exhibitId": 1,
+						"durationInSecs": 20,
+						"actions": [1, 2]
+					}, {
+						"durationInSecs": 14,
+						"actions": [5]
+					}
+				]
+			}
+		')
 ''')
 
 con.commit()

@@ -15,7 +15,7 @@ namespace db {
             void operator()(DatabaseSession &session);
 
         private:
-            MapImage mapImage;
+            const MapImage mapImage;
 
             std::string createQuery() const;
             std::string createInsert() const;

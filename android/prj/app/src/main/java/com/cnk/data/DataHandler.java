@@ -9,6 +9,8 @@ import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.Exhibit;
+import com.cnk.database.RaportFile;
+import com.cnk.database.RaportFileRealm;
 import com.cnk.database.Version;
 
 import java.io.FileInputStream;
@@ -17,7 +19,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 
 public class DataHandler extends Observable {
@@ -51,10 +55,13 @@ public class DataHandler extends Observable {
 
     private static final String LOG_TAG = "DataHandler";
     private static final String MAP_FILE_PREFIX = "map";
+    private static final String TMP_FILE = "TMP";
+    private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String PROTOCOL = "http://";
     private static DataHandler instance;
     private Context context;
     private DatabaseHelper dbHelper;
+    private Raport currentRaport;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -71,7 +78,49 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    private DataHandler() {
+    private DataHandler() {}
+
+    // only creates new database entry and file for new raport which is not used anywhere else
+    public void startNewRaport() {
+        Integer newId = dbHelper.getNextRaportId();
+        currentRaport = new Raport(newId);
+        String fileName = FileHandler.getInstance().saveRaportToFile(currentRaport);
+        dbHelper.setRaportFile(newId, fileName);
+    }
+
+    // only modifies file of raport in progress, which is not used anywhere else at the time
+    public void addEventToRaport(RaportEvent event) {
+        currentRaport.addEvent(event);
+        FileHandler.getInstance().saveRaportToFile(currentRaport);
+    }
+
+    // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
+    public void markRaportAsReady() {
+        dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
+        currentRaport = null;
+    }
+
+    // only modifies files ready to send which are used by one thread - uploading raports
+    public Map<Raport, Integer> getAllReadyRaports() {
+        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
+        Map<Raport, Integer> raportsToSend = new HashMap<>();
+        for (RaportFile file : toLoad) {
+            Raport loaded = FileHandler.getInstance().getRaport(file.getFileName());
+            if (loaded != null) {
+                raportsToSend.put(loaded, file.getServerId());
+            }
+        }
+        return raportsToSend;
+    }
+
+    // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
+    public void setServerId(Raport raport, Integer serverId) {
+        dbHelper.changeRaportServerId(raport.getId(), serverId);
+    }
+
+    // only modifies database entries which are used by one thread - uploading raports
+    public void markRaportAsSent(Raport raport) {
+        dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
     public synchronized Drawable getFloorMap(Integer floor) {
@@ -109,9 +158,6 @@ public class DataHandler extends Observable {
     }
 
     public synchronized Integer getMapVersion() {
-        if (dbHelper == null) {
-            Log.e("DB HELPER", "IS NULL");
-        }
         return dbHelper.getVersion(Version.Item.MAP);
     }
 

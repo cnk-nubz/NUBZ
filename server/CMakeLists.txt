@@ -7,6 +7,7 @@ find_package(Boost COMPONENTS system program_options filesystem REQUIRED)
 find_package(Thrift REQUIRED)
 find_package(PostgreSQL REQUIRED)
 find_package(Pqxx REQUIRED)
+find_package(RapidJSON REQUIRED)
 find_package(OpenSSL)
 
 include_directories("src")

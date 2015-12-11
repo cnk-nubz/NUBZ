@@ -27,9 +27,7 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     LOG(INFO) << "input: " << msg;
 
     io::input::HelloMsg input(msg);
-
-    command::PingCommand cmd;
-    std::int32_t output = cmd.perform(msg);
+    std::int32_t output = input.num;
 
     LOG(INFO) << "output: " << output;
     LOG(INFO) << "ping end";
@@ -44,10 +42,7 @@ void CommandHandler::getMapImages(communication::MapImagesResponse &response,
 
     try {
         io::input::MapImagesRequest input(request);
-
-        command::GetMapImagesCommand cmd(db);
-        io::output::MapImagesResponse output = cmd.perform(input);
-
+        io::output::MapImagesResponse output = command::GetMapImagesCommand{db}(input);
         response = output.toThrift();
     } catch (std::exception &e) {
         LOG(ERROR) << e.what();
@@ -64,9 +59,7 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
 
     try {
         io::input::SetMapImageRequest input(request);
-
-        command::SetMapImageCommand cmd(db);
-        cmd.perform(input);
+        command::SetMapImageCommand{db}(input);
     } catch (command::InvalidInput &e) {
         LOG(ERROR) << e.what();
         throw communication::InvalidData{};
@@ -85,10 +78,7 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
 
     try {
         io::input::ExhibitsRequest input(request);
-
-        command::GetExhibitsCommand cmd(db);
-        io::output::ExhibitsResponse output = cmd.perform(input);
-
+        io::output::ExhibitsResponse output = command::GetExhibitsCommand{db}(input);
         response = output.toThrift();
     } catch (std::exception &e) {
         LOG(ERROR) << e.what();
@@ -97,4 +87,25 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExhibits end";
+}
+
+std::int32_t CommandHandler::getIdForNewReport() {
+    LOG(INFO) << "getIdForNewReport start";
+
+    std::int32_t response = command::ReserveIdForReportCommand{db}();
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getIdForNewReport end";
+
+    return response;
+}
+
+void CommandHandler::saveReport(const communication::RawReport &report) {
+    LOG(INFO) << "saveReport start";
+    LOG(INFO) << "input: " << report;
+
+    io::input::RawReport input(report);
+    command::SaveRawReportCommand{db}(input);
+
+    LOG(INFO) << "saveReport end";
 }

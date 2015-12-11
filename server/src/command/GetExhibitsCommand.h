@@ -1,25 +1,20 @@
 #ifndef COMMAND__GET_EXHIBITS_COMMAND__H
 #define COMMAND__GET_EXHIBITS_COMMAND__H
 
-#include "AbstractCommand.h"
+#include "commands_common.h"
 #include "io/input/ExhibitsRequest.h"
 #include "io/output/ExhibitsResponse.h"
 #include "db/Database.h"
 
 namespace command {
-    class GetExhibitsCommand
-        : public AbstractCommand<io::input::ExhibitsRequest, io::output::ExhibitsResponse> {
+    class GetExhibitsCommand {
     public:
         GetExhibitsCommand(db::Database &db);
-        virtual ~GetExhibitsCommand() = default;
+        ~GetExhibitsCommand() = default;
 
-        GetExhibitsCommand(const GetExhibitsCommand &) = delete;
-        GetExhibitsCommand(GetExhibitsCommand &&) = default;
-        GetExhibitsCommand &operator=(const GetExhibitsCommand &) = delete;
-        GetExhibitsCommand &operator=(GetExhibitsCommand &&) = default;
+        DEFAULT_CP_MV(GetExhibitsCommand);
 
-        virtual io::output::ExhibitsResponse perform(
-            const io::input::ExhibitsRequest &input) override;
+        io::output::ExhibitsResponse operator()(const io::input::ExhibitsRequest &input);
 
     private:
         db::Database &db;
