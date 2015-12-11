@@ -28,7 +28,7 @@ public class StartScreen extends AppCompatActivity {
         DataHandler.getInstance().setDbHelper(dbHelper);
         net = new NetworkHandler();
         // !!!! ONLY USE AFTER EXHIBITS ARE DOWNLOADED !!!!
-        testRaportUpload();
+        // testRaportUpload();
         bMapActivity = (Button) findViewById(R.id.bMapActivity);
         bMapActivity.setOnClickListener(new MapActivityClick());
     }
