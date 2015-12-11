@@ -24,6 +24,7 @@ class ServerIf {
   virtual void shutdown() = 0;
   virtual int32_t ping(const  ::communication::HelloMsg& msg) = 0;
   virtual void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request) = 0;
+  virtual void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request) = 0;
   virtual void setMapImage(const  ::communication::SetMapImageRequest& request) = 0;
   virtual void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request) = 0;
   virtual int32_t getIdForNewReport() = 0;
@@ -65,6 +66,9 @@ class ServerNull : virtual public ServerIf {
     return _return;
   }
   void getMapImages( ::communication::MapImagesResponse& /* _return */, const  ::communication::MapImagesRequest& /* request */) {
+    return;
+  }
+  void getMapImageTiles( ::communication::MapImageTilesResponse& /* _return */, const  ::communication::MapImageTilesRequest& /* request */) {
     return;
   }
   void setMapImage(const  ::communication::SetMapImageRequest& /* request */) {
@@ -367,6 +371,118 @@ class Server_getMapImages_presult {
    ::communication::InternalError err;
 
   _Server_getMapImages_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Server_getMapImageTiles_args__isset {
+  _Server_getMapImageTiles_args__isset() : request(false) {}
+  bool request :1;
+} _Server_getMapImageTiles_args__isset;
+
+class Server_getMapImageTiles_args {
+ public:
+
+  Server_getMapImageTiles_args(const Server_getMapImageTiles_args&);
+  Server_getMapImageTiles_args& operator=(const Server_getMapImageTiles_args&);
+  Server_getMapImageTiles_args() {
+  }
+
+  virtual ~Server_getMapImageTiles_args() throw();
+   ::communication::MapImageTilesRequest request;
+
+  _Server_getMapImageTiles_args__isset __isset;
+
+  void __set_request(const  ::communication::MapImageTilesRequest& val);
+
+  bool operator == (const Server_getMapImageTiles_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImageTiles_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImageTiles_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_getMapImageTiles_pargs {
+ public:
+
+
+  virtual ~Server_getMapImageTiles_pargs() throw();
+  const  ::communication::MapImageTilesRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImageTiles_result__isset {
+  _Server_getMapImageTiles_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImageTiles_result__isset;
+
+class Server_getMapImageTiles_result {
+ public:
+
+  Server_getMapImageTiles_result(const Server_getMapImageTiles_result&);
+  Server_getMapImageTiles_result& operator=(const Server_getMapImageTiles_result&);
+  Server_getMapImageTiles_result() {
+  }
+
+  virtual ~Server_getMapImageTiles_result() throw();
+   ::communication::MapImageTilesResponse success;
+   ::communication::InternalError err;
+
+  _Server_getMapImageTiles_result__isset __isset;
+
+  void __set_success(const  ::communication::MapImageTilesResponse& val);
+
+  void __set_err(const  ::communication::InternalError& val);
+
+  bool operator == (const Server_getMapImageTiles_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImageTiles_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImageTiles_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImageTiles_presult__isset {
+  _Server_getMapImageTiles_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImageTiles_presult__isset;
+
+class Server_getMapImageTiles_presult {
+ public:
+
+
+  virtual ~Server_getMapImageTiles_presult() throw();
+   ::communication::MapImageTilesResponse* success;
+   ::communication::InternalError err;
+
+  _Server_getMapImageTiles_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -842,6 +958,9 @@ class ServerClient : virtual public ServerIf {
   void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
   void send_getMapImages(const  ::communication::MapImagesRequest& request);
   void recv_getMapImages( ::communication::MapImagesResponse& _return);
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request);
+  void send_getMapImageTiles(const  ::communication::MapImageTilesRequest& request);
+  void recv_getMapImageTiles( ::communication::MapImageTilesResponse& _return);
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   void send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage();
@@ -872,6 +991,7 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_shutdown(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getMapImages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getMapImageTiles(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMapImage(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getExhibits(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getIdForNewReport(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -882,6 +1002,7 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["shutdown"] = &ServerProcessor::process_shutdown;
     processMap_["ping"] = &ServerProcessor::process_ping;
     processMap_["getMapImages"] = &ServerProcessor::process_getMapImages;
+    processMap_["getMapImageTiles"] = &ServerProcessor::process_getMapImageTiles;
     processMap_["setMapImage"] = &ServerProcessor::process_setMapImage;
     processMap_["getExhibits"] = &ServerProcessor::process_getExhibits;
     processMap_["getIdForNewReport"] = &ServerProcessor::process_getIdForNewReport;
@@ -939,6 +1060,16 @@ class ServerMultiface : virtual public ServerIf {
       ifaces_[i]->getMapImages(_return, request);
     }
     ifaces_[i]->getMapImages(_return, request);
+    return;
+  }
+
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getMapImageTiles(_return, request);
+    }
+    ifaces_[i]->getMapImageTiles(_return, request);
     return;
   }
 
@@ -1018,6 +1149,9 @@ class ServerConcurrentClient : virtual public ServerIf {
   void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
   int32_t send_getMapImages(const  ::communication::MapImagesRequest& request);
   void recv_getMapImages( ::communication::MapImagesResponse& _return, const int32_t seqid);
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request);
+  int32_t send_getMapImageTiles(const  ::communication::MapImageTilesRequest& request);
+  void recv_getMapImageTiles( ::communication::MapImageTilesResponse& _return, const int32_t seqid);
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   int32_t send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage(const int32_t seqid);
