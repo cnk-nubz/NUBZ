@@ -53,6 +53,11 @@ getRoundCorner = (d) ->
 
 
 updateFloorExhibits = (floor) ->
+  calcMapImageSize floor
+  calcNewMapCoords floor
+  jQuery(".exhibitFloor#{floor}").remove()
+  root.spawnExhibits floor
+  
   d3.selectAll(".exhibitFloor#{floor}")
     .each((d, i) ->
         if root.floorImageX[floor] is 0 #glued to top line
@@ -64,10 +69,10 @@ updateFloorExhibits = (floor) ->
         d3.select this
           .selectAll "rect, foreignObject"
           .attr(
-            "x": d.x * ratio + root.floorImageY[floor]
-            "y": d.y * ratio + root.floorImageX[floor]
-            "width": d.width * ratio
-            "height": d.height * ratio
+            "x": Math.floor(d.x * ratio + root.floorImageY[floor])
+            "y": Math.floor(d.y * ratio + root.floorImageX[floor])
+            "width": Math.floor(d.width * ratio)
+            "height": Math.floor(d.height * ratio)
           )
 
         d3.select this
@@ -82,8 +87,8 @@ updateFloorExhibits = (floor) ->
           .select "foreignObject div"
           .style(
             "cursor": "default"
-            "width": "#{d.width * ratio}px"
-            "height": "#{d.height * ratio}px"
+            "width": "#{Math.floor(d.width * ratio)}px"
+            "height": "#{Math.floor(d.height * ratio)}px"
           )
           .html d.exhibitName
           .style(
@@ -93,6 +98,8 @@ updateFloorExhibits = (floor) ->
         jQuery("foreignObject div", this).boxfit()
     )
   return
+
+root.updateFloorExhibits = updateFloorExhibits
 
 loadFloorImage = (floor, filename) ->
   if filename?
@@ -112,10 +119,6 @@ loadFloorImage = (floor, filename) ->
 
       root.floorRealImageHeight[floor] = tmpimg.naturalHeight
       root.floorRealImageWidth[floor] = tmpimg.naturalWidth
-      calcMapImageSize floor
-      calcNewMapCoords floor
-      jQuery(".exhibitFloor#{floor}").remove()
-      root.spawnExhibits floor
       updateFloorExhibits floor
   return
 root.loadFloorImage = loadFloorImage
