@@ -25,12 +25,14 @@ namespace db {
         std::string GetMapImages::createQuery() const {
             using namespace db::info::map_images;
 
-            boost::format select("SELECT %1%, %2%, %3%");
+            boost::format select("SELECT %1%, %2%, %3%, %4%, %5%");
             boost::format from(" FROM %1%");
             boost::format where(" WHERE %1% %2% %3%");
 
-            const auto &col = db::factory::MapImageFactory::fieldsOrder();
-            select % col[0] % col[1] % col[2];
+            const auto &cols = db::factory::MapImageFactory::fieldsOrder();
+            for (const auto &col : cols) {
+                select % col;
+            }
             from % tableName;
             where % colVersion % ">=" % minVersion;
 

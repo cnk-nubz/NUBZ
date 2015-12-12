@@ -54,6 +54,8 @@ void CommandHandler::getMapImages(communication::MapImagesResponse &response,
 }
 
 void CommandHandler::setMapImage(const communication::SetMapImageRequest &request) {
+    std::lock_guard<std::mutex> lock(setMapLock);
+
     LOG(INFO) << "setMapImage start";
     LOG(INFO) << "input: " << request;
 
@@ -76,7 +78,14 @@ void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &resp
     LOG(INFO) << "getMapImageTiles start";
     LOG(INFO) << "input: " << request;
 
-    LOG(INFO) << "not implemented";
+    try {
+        io::input::MapImageTilesRequest input(request);
+        io::output::MapImageTilesResponse output = command::GetMapImageTilesCommand{db}(input);
+        response = output.toThrift();
+    } catch (std::exception &e) {
+        LOG(ERROR) << e.what();
+        throw communication::InternalError{};
+    }
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getMapImageTiles end";

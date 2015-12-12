@@ -7,9 +7,33 @@ namespace db {
             static const std::string tableName = "map_images";
 
             static const std::string colFilename = "filename";
+            static const std::string colWidth = "width";
+            static const std::string colHeight = "height";
             static const std::string colVersion = "version";
-            static const std::string colLevel = "level";
+            static const std::string colFloor = "floor";
         };
+
+        namespace map_tiles {
+            static const std::string tableName = "map_tiles";
+
+            static const std::string colFilename = "filename";
+            static const std::string colFloor = "floor";
+            static const std::string colZoomLevel = "zoom_level";
+            static const std::string colRow = "row";
+            static const std::string colColumn = "col";
+        }
+
+        namespace map_tiles_info {
+            static const std::string tableName = "map_tiles_info";
+
+            static const std::string colFloor = "floor";
+            static const std::string colZoomLevel = "zoom_level";
+            static const std::string colRowsCount = "rows_count";
+            static const std::string colColumnsCount = "columns_count";
+            static const std::string colImgWidth = "img_width";
+            static const std::string colImgHeight = "img_height";
+            static const std::string colTileSize = "tile_size";
+        }
 
         namespace counters {
             static const std::string tableName = "counters";

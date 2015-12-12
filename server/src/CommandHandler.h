@@ -31,6 +31,8 @@ public:
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;
+
+    std::mutex setMapLock;
 };
 
 #endif

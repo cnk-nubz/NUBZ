@@ -17,6 +17,10 @@ namespace utils {
         }
     }
 
+    const std::string &FileHandler::getPath() const noexcept {
+        return path;
+    }
+
     void FileHandler::release() noexcept {
         released = true;
     }

@@ -15,7 +15,9 @@ namespace img {
 
         // generates tiles, saves them in files, returns list of filenames
         // in case of crash removes created files and throws std::runtime_error
-        std::vector<std::vector<std::string>> generateTiles(const std::string &filepathPrefix);
+        std::vector<std::vector<std::string>> generateTiles(
+            const std::string &filepathPrefix, std::size_t *widthAfterScale = nullptr,
+            std::size_t *heightAfterScale = nullptr);
 
     private:
         const std::string originalImgPath;

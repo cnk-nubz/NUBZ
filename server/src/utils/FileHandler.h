@@ -13,6 +13,7 @@ namespace utils {
         FileHandler &operator=(const FileHandler &) = delete;
         FileHandler &operator=(FileHandler &&) = delete;
 
+        const std::string &getPath() const noexcept;
         void release() noexcept;
 
     private:

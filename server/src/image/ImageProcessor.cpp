@@ -15,8 +15,15 @@ namespace img {
     }
 
     std::vector<std::vector<std::string>> ImageProcessor::generateTiles(
-        const std::string &filepathPrefix) {
+        const std::string &filepathPrefix, std::size_t *widthAfterScale,
+        std::size_t *heightAfterScale) {
         createScaled();
+        if (widthAfterScale) {
+            *widthAfterScale = scaledImg.columns();
+        }
+        if (heightAfterScale) {
+            *heightAfterScale = scaledImg.rows();
+        }
 
         const std::size_t width = scaledImg.columns();
         const std::size_t height = scaledImg.rows();

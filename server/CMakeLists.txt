@@ -45,8 +45,10 @@ add_executable(main ${SOURCES})
 
 target_link_libraries(main
     ssl
-    pthread
     thrift
+    thriftnb
+    event
+    pthread
     ${Boost_LIBRARIES}
     ${PostgreSQL_LIBRARIES}
     ${Pqxx_LIBRARIES}
