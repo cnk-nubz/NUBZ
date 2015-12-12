@@ -26,7 +26,8 @@ import java.util.Observable;
 
 public class DataHandler extends Observable {
     public enum Item {
-        MAP("Map"),
+        MAP_CHANGED("Map changed"),
+        MAP_CHANGING("Map changing"),
         EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
 
@@ -54,12 +55,7 @@ public class DataHandler extends Observable {
     }
 
     private static final String LOG_TAG = "DataHandler";
-    private static final String MAP_FILE_PREFIX = "map";
-    private static final String TMP_FILE = "TMP";
-    private static final String RAPORT_FILE_PREFIX = "raport";
-    private static final String PROTOCOL = "http://";
     private static DataHandler instance;
-    private Context context;
     private DatabaseHelper dbHelper;
     private Raport currentRaport;
 
@@ -68,10 +64,6 @@ public class DataHandler extends Observable {
             instance = new DataHandler();
         }
         return instance;
-    }
-
-    public void setContext(Context c) {
-        context = c;
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -123,38 +115,15 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public synchronized Drawable getFloorMap(Integer floor) {
-        try {
-            return getMapFromFile(dbHelper.getMapFile(floor));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public synchronized void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
-        if (urlFloor1 != null) {
-            downloadMap(urlFloor1, 0);
-        }
-        if (urlFloor2 != null) {
-            downloadMap(urlFloor2, 1);
-        }
-
-        String floor1File = null;
-        String floor2File = null;
-
-        if (urlFloor1 != null) {
-            floor1File = MAP_FILE_PREFIX + "0";
-    }
-        if (urlFloor2 != null) {
-            floor2File = MAP_FILE_PREFIX + "1";
-        }
-
-        dbHelper.setMaps(version, floor1File, floor2File);
-
+    public void setMaps(Integer version, FloorMap floor1, FloorMap floor2) throws IOException {
+        Log.i(LOG_TAG, "Setting new maps");
         setChanged();
-        notifyObservers(Item.MAP);
-
+        notifyObservers(Item.MAP_CHANGING);
+        FileHandler.getInstance().downloadAndSaveMaps(floor1, floor2);
+        // TODO set version and resolution for respective detail level in database
+        setChanged();
+        notifyObservers(Item.MAP_CHANGED);
+        Log.i(LOG_TAG, "New maps set");
     }
 
     public synchronized Integer getMapVersion() {
@@ -177,42 +146,5 @@ public class DataHandler extends Observable {
 
     public Integer getExhibitsVersion() {
         return dbHelper.getVersion(Version.Item.EXHIBITS);
-    }
-
-    private void downloadMap(String url, Integer floor) throws IOException {
-        URL fileUrl = new URL(PROTOCOL + url);
-        InputStream input = fileUrl.openStream();
-        Bitmap bmp = BitmapFactory.decodeStream(input);
-        input.close();
-        saveMapFile(bmp, floor);
-    }
-
-    private void saveMapFile(Bitmap bmp, Integer floor) throws IOException {
-        try {
-            FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.close();
-            Log.i(LOG_TAG, "Map saved to file " + MAP_FILE_PREFIX + floor.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Saving map file failed");
-            throw e;
-        }
-    }
-
-    private Drawable getMapFromFile(String file) throws IOException {
-        if (file == null) {
-            return null;
-        }
-        try {
-            FileInputStream in = context.openFileInput(file);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            Bitmap bmp = BitmapFactory.decodeStream(in, null, options);
-            return new BitmapDrawable(context.getResources(), bmp);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw e;
-        }
     }
 }

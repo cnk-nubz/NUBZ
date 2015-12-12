@@ -8,6 +8,7 @@ import com.cnk.utilities.Util;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
@@ -27,7 +28,7 @@ public abstract class ServerTask extends Task {
     @Override
     public void run(int tries) {
         Log.i(LOG_TAG, "Starting run");
-        TTransport socket = openSocket(tries);
+        TFramedTransport socket = openSocket(tries);
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
         while (tries > 0 && socket != null) {
@@ -54,8 +55,8 @@ public abstract class ServerTask extends Task {
 
     protected abstract void performInSession(Server.Client client) throws Exception;
 
-    private TTransport openSocket(Integer tries) {
-        TTransport socket = new TSocket(SEND_ADDRESS, SEND_PORT);
+    private TFramedTransport openSocket(Integer tries) {
+        TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
         Log.i(LOG_TAG, "Opening socket");
         while (tries > 0) {
             try {

@@ -24,7 +24,6 @@ public class StartScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
-        DataHandler.getInstance().setContext(getApplication().getApplicationContext());
         DataHandler.getInstance().setDbHelper(dbHelper);
         net = new NetworkHandler();
         // !!!! ONLY USE AFTER EXHIBITS ARE DOWNLOADED !!!!
