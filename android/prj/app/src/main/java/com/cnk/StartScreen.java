@@ -11,8 +11,13 @@ import android.widget.Button;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.data.FileHandler;
+import com.cnk.data.FloorMap;
+import com.cnk.data.MapTiles;
 import com.cnk.data.RaportEvent;
+import com.cnk.data.Resolution;
 import com.cnk.database.DatabaseHelper;
+import com.cnk.database.models.DetailLevelRes;
+import com.cnk.database.models.Version;
 import com.cnk.ui.MapActivity;
 
 import java.io.File;

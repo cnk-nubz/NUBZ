@@ -1,24 +1,14 @@
 package com.cnk.data;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
-import com.cnk.database.Exhibit;
-import com.cnk.database.RaportFile;
-import com.cnk.database.RaportFileRealm;
-import com.cnk.database.Version;
+import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.RaportFile;
+import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.database.models.Version;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
