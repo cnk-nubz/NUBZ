@@ -1,4 +1,4 @@
-package com.cnk.database;
+package com.cnk.database.realm;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
