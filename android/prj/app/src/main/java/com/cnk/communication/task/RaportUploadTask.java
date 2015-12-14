@@ -48,7 +48,9 @@ public class RaportUploadTask extends ServerTask {
             RawReportEvent rawEvent = new RawReportEvent();
             rawEvent.setActions(event.getActions());
             rawEvent.setDurationInSecs(event.getDurationSeconds());
-            rawEvent.setExhibitId(event.getExhibitId());
+            if (event.getExhibitId() != null) {
+                rawEvent.setExhibitId(event.getExhibitId());
+            }
             events.add(rawEvent);
         }
         RawReport rawRaport = new RawReport();

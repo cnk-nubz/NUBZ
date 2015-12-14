@@ -7,6 +7,9 @@ import android.util.Log;
 
 import com.cnk.utilities.Consts;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -51,8 +54,6 @@ public class FileHandler {
     Files are saved to temporary directory and renamed to matching name once the download is successful
      */
     public void downloadAndSaveMaps(FloorMap floor1, FloorMap floor2) throws IOException {
-        Log.i(LOG_TAG, Boolean.toString(floor1 == null));
-        Log.i(LOG_TAG, Boolean.toString(floor2 == null));
         File mapsDir = new File(DATA_PATH + MAP_DIRECTORY);
         mapsDir.mkdirs();
         File tmpFloor1File = null;
@@ -69,12 +70,11 @@ public class FileHandler {
             }
             throw e;
         }
-
-        renameFile(tmpFloor1File, DATA_PATH + MAP_DIRECTORY + FLOOR1_DIRECTORY);
-        renameFile(tmpFloor2File, DATA_PATH + MAP_DIRECTORY + FLOOR2_DIRECTORY);
+        renameFile(tmpFloor1File, FLOOR1_DIRECTORY);
+        renameFile(tmpFloor2File, FLOOR2_DIRECTORY);
     }
 
-    public String saveRaportToFile(Raport raport) {
+    public String saveRaportToFile(Raport raport) throws IOException {
         File dir = new File(DATA_PATH + RAPORT_DIRECTORY);
         dir.mkdirs();
         File tmpFile = new File(dir, TMP);
@@ -123,17 +123,22 @@ public class FileHandler {
         }
     }
 
-    private void renameFile(File from, String to) {
+    private void renameFile(File from, String to) throws IOException {
         if (from == null) {
             return;
         }
-        Log.i(LOG_TAG, "Renaming " + from.toString() + " to " + to);
         File dir = from.getParentFile();
         File newFile = new File(dir, to);
+        Log.i(LOG_TAG, "Renaming " + from.toString() + " to " + to);
         if (newFile.exists()) {
-            newFile.delete();
+            if (newFile.isDirectory()) {
+                FileUtils.deleteDirectory(newFile);
+            } else {
+                newFile.delete();
+            }
         }
-        from.renameTo(newFile);
+        boolean renamed = from.renameTo(newFile);
+        Log.i(LOG_TAG, "Renaming successful " + Boolean.toString(renamed));
     }
 
     /*
@@ -165,32 +170,21 @@ public class FileHandler {
         for (int i = 0; i < urls.size(); i++) {
             for (int j = 0; j < urls.get(i).size(); j++) {
                 String url = urls.get(i).get(j);
-                Bitmap tile = downloadTile(url);
-                saveTile(tile, levelDir, i, j);
+                downloadAndSaveTile(url, levelDir, i, j);
             }
         }
         Log.i(LOG_TAG, "Level " + level.toString() + " downloaded and saved");
     }
 
-    private Bitmap downloadTile(String url) throws IOException {
+    public void downloadAndSaveTile(String url, File dir, Integer x, Integer y) throws IOException {
         URL fileUrl = new URL(PROTOCOL + url);
-        InputStream input = fileUrl.openStream();
-        Bitmap bmp = BitmapFactory.decodeStream(input);
-        input.close();
-        return bmp;
-    }
-
-    private void saveTile(Bitmap bmp, File dir, Integer x, Integer y) throws IOException {
+        InputStream in = fileUrl.openStream();
         File tileFile = new File(dir, getTileFileName(x, y));
-        try {
-            FileOutputStream out = new FileOutputStream(tileFile);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Saving tile file failed");
-            throw e;
-        }
+        FileOutputStream out = new FileOutputStream(tileFile);
+        IOUtils.copy(in, out);
+        out.close();
+        in.close();
+        Log.i(LOG_TAG, "Tile " + x.toString() + " " + y.toString() + " saved");
     }
 
     /*

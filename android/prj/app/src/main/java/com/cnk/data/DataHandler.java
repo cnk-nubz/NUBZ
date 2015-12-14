@@ -73,7 +73,7 @@ public class DataHandler extends Observable {
     private DataHandler() {}
 
     // only creates new database entry and file for new raport which is not used anywhere else
-    public void startNewRaport() {
+    public void startNewRaport() throws IOException {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId);
         String fileName = FileHandler.getInstance().saveRaportToFile(currentRaport);
@@ -81,7 +81,7 @@ public class DataHandler extends Observable {
     }
 
     // only modifies file of raport in progress, which is not used anywhere else at the time
-    public void addEventToRaport(RaportEvent event) {
+    public void addEventToRaport(RaportEvent event) throws IOException {
         currentRaport.addEvent(event);
         FileHandler.getInstance().saveRaportToFile(currentRaport);
     }
