@@ -272,7 +272,7 @@ public class DatabaseHelper {
     }
 
     public Integer getDetailLevelsForFloor(Integer floorNo) {
-        Integer detailLevels = 0;
+        Integer detailLevels = null;
         open();
 
         try {

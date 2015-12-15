@@ -15,6 +15,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -50,6 +52,7 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
     private Raport currentRaport;
+    private Lock mapDBLock;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -62,7 +65,9 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    private DataHandler() {}
+    private DataHandler() {
+        mapDBLock = new ReentrantLock(true);
+    }
 
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() throws IOException {
@@ -113,37 +118,56 @@ public class DataHandler extends Observable {
         notifyObservers(Item.MAP_CHANGING);
         FileHandler.getInstance().downloadAndSaveMaps(floor1, floor2);
         Log.i(LOG_TAG, "Files saved, saving to db");
+        mapDBLock.lock();
         dbHelper.setMaps(version, floor1, floor2);
+        mapDBLock.unlock();
         setChanged();
         notifyObservers(Item.MAP_CHANGED);
         Log.i(LOG_TAG, "New maps set");
     }
 
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
+        mapDBLock.lock();
         String tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+        mapDBLock.unlock();
         return FileHandler.getInstance().getTileBitmap(tileFilename);
     }
 
 
     public Boolean mapForFloorExists(Integer floor) {
-        return dbHelper.getDetailLevelsForFloor(floor) != 0;
+        mapDBLock.lock();
+        boolean exists = dbHelper.getDetailLevelsForFloor(floor) != null;
+        mapDBLock.unlock();
+        return exists;
     }
 
     public Integer getDetailLevelsCountForFloor(Integer floor) {
-        return dbHelper.getDetailLevelsForFloor(floor);
+        mapDBLock.lock();
+        Integer detailLevels = dbHelper.getDetailLevelsForFloor(floor);
+        mapDBLock.unlock();
+        return detailLevels;
     }
 
     public Resolution getOriginalResolution(Integer floor) {
-        return dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+        mapDBLock.lock();
+        Resolution originalRes = dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+        mapDBLock.unlock();
+        return originalRes;
     }
 
 
     public Integer getMapVersion() {
-        return dbHelper.getVersion(Version.Item.MAP);
+        mapDBLock.lock();
+        Integer version = dbHelper.getVersion(Version.Item.MAP);
+        mapDBLock.unlock();
+        return version;
     }
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        return dbHelper.getDetailLevelRes(floor, detailLevel);
+        mapDBLock.lock();
+        DetailLevelRes res = dbHelper.getDetailLevelRes(floor, detailLevel);
+        mapDBLock.unlock();
+        return res;
     }
 
     public synchronized void setExhibits(List<Exhibit> exhibits, Integer version) {
