@@ -34,10 +34,10 @@ public class RaportUploadTask extends ServerTask {
                 serverId = client.getIdForNewReport();
                 DataHandler.getInstance().setServerId(raport, serverId);
             }
-            Log.i(LOG_TAG, "Sending raports");
+            Log.i(LOG_TAG, "Sending raport with id " + raport.getId().toString());
             RawReport thriftRaport = translateToThrift(raport, serverId);
             client.saveReport(thriftRaport);
-            Log.i(LOG_TAG, "Raports sent");
+            Log.i(LOG_TAG, "Raport sent");
             DataHandler.getInstance().markRaportAsSent(raport);
         }
     }

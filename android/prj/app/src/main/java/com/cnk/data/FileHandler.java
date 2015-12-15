@@ -1,37 +1,22 @@
 package com.cnk.data;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.util.Log;
-
-import com.cnk.utilities.Consts;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URL;
-import java.util.List;
+import java.io.Serializable;
 
 public class FileHandler {
 
-    private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
-    private static final String RAPORT_DIRECTORY = "raports/";
-    private static final String MAP_DIRECTORY = "maps/";
-    private static final String FLOOR1_DIRECTORY = "floor1/";
-    private static final String FLOOR2_DIRECTORY = "floor2/";
-    private static final String TILE_FILE_PREFIX = "tile";
-    private static final String RAPORT_FILE_PREFIX = "raport";
-    private static final String TMP = "TMP";
     private static final String LOG_TAG = "FILE_HANDLER";
-    private static final String PROTOCOL = "http://";
 
     private static FileHandler instance;
 
@@ -44,15 +29,52 @@ public class FileHandler {
 
     private FileHandler() {}
 
-    public String getAddressofTile(Integer detailLevel, Integer floor, Integer x, Integer y) {
-        String floorDirectory = floor.equals(Consts.FLOOR1) ? FLOOR1_DIRECTORY : FLOOR2_DIRECTORY;
-        return DATA_PATH + MAP_DIRECTORY + floorDirectory + getTileFileName(x, y);
+    public void saveInputStream(InputStream in, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
+        IOUtils.copy(in, out);
+        out.close();
+        in.close();
+    }
+
+    public void saveSerializable(Serializable toSave, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
+        ObjectOutputStream objOut = new ObjectOutputStream(out);
+        objOut.writeObject(toSave);
+        out.close();
+        objOut.close();
+    }
+
+    public FileInputStream getFile(String filename) throws FileNotFoundException {
+        File file = new File(filename);
+        return new FileInputStream(file);
+    }
+
+    public void renameFile(String from, String to) throws IOException {
+        if (from == null) {
+            return;
+        }
+        File file = new File(from);
+        File dir = file.getParentFile();
+        File newFile = new File(dir, to);
+        Log.i(LOG_TAG, "Renaming " + from + " to " + to);
+        if (newFile.exists()) {
+            if (newFile.isDirectory()) {
+                FileUtils.deleteDirectory(newFile);
+            } else {
+                newFile.delete();
+            }
+        }
+        file.renameTo(newFile);
     }
 
     /*
     Downloads and saves tiles for floors, if the floor1 or floor2 object is null it does nothing for that floor
     Files are saved to temporary directory and renamed to matching name once the download is successful
-     */
+
     public void downloadAndSaveMaps(FloorMap floor1, FloorMap floor2) throws IOException {
         File mapsDir = new File(DATA_PATH + MAP_DIRECTORY);
         mapsDir.mkdirs();
@@ -73,7 +95,6 @@ public class FileHandler {
         renameFile(tmpFloor1File, FLOOR1_DIRECTORY);
         renameFile(tmpFloor2File, FLOOR2_DIRECTORY);
     }
-
     public Bitmap getTileBitmap(String filename) {
         try {
             FileInputStream in = new FileInputStream(filename);
@@ -135,28 +156,10 @@ public class FileHandler {
         }
     }
 
-    private void renameFile(File from, String to) throws IOException {
-        if (from == null) {
-            return;
-        }
-        File dir = from.getParentFile();
-        File newFile = new File(dir, to);
-        Log.i(LOG_TAG, "Renaming " + from.toString() + " to " + to);
-        if (newFile.exists()) {
-            if (newFile.isDirectory()) {
-                FileUtils.deleteDirectory(newFile);
-            } else {
-                newFile.delete();
-            }
-        }
-        boolean renamed = from.renameTo(newFile);
-        Log.i(LOG_TAG, "Renaming successful " + Boolean.toString(renamed));
-    }
-
     /*
     Downloads and saves tile for one particualr floor, if the floor is null, nothing is done
     Saves files to temporary directory
-     */
+
     private File downloadAndSaveFloor(FloorMap floor, File dir, Integer floorNo) throws IOException {
         if (floor == null) {
             return null;
@@ -207,5 +210,6 @@ public class FileHandler {
     private String getTileFileName(Integer x, Integer y) {
         return TILE_FILE_PREFIX + x.toString() + "_" + y.toString();
     }
+    */
 
 }
