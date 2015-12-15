@@ -6,12 +6,12 @@ public class MapTiles {
 
     private Resolution scaledSize;
     private Resolution tileSize;
-    List<List<String>> tilesUrls;
+    List<List<String>> tilesFiles;
 
-    public MapTiles(Resolution scaledSize, Resolution tileSize, List<List<String>> tilesUrls) {
+    public MapTiles(Resolution scaledSize, Resolution tileSize, List<List<String>> tilesFiles) {
         this.scaledSize = scaledSize;
         this.tileSize = tileSize;
-        this.tilesUrls = tilesUrls;
+        this.tilesFiles = tilesFiles;
     }
 
     public Resolution getScaledSize() {
@@ -30,11 +30,11 @@ public class MapTiles {
         this.tileSize = tileSize;
     }
 
-    public List<List<String>> getTilesUrls() {
-        return tilesUrls;
+    public List<List<String>> getTilesFiles() {
+        return tilesFiles;
     }
 
-    public void setTilesUrls(List<List<String>> tilesUrls) {
-        this.tilesUrls = tilesUrls;
+    public void setTilesFiles(List<List<String>> tilesFiles) {
+        this.tilesFiles = tilesFiles;
     }
 }

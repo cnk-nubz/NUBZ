@@ -5,11 +5,13 @@ import com.cnk.data.MapTiles;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.FloorDetailLevels;
 import com.cnk.database.models.MapTile;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
+import com.cnk.database.realm.FloorDetailLevelsRealm;
 import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
@@ -99,7 +101,7 @@ public class ModelTranslation {
         Integer columnNum;
         for (MapTiles mt : detailLevels) {
             rowNum = 0;
-            List<List<String> > tilesForLevel = mt.getTilesUrls();
+            List<List<String> > tilesForLevel = mt.getTilesFiles();
             for (List<String> row : tilesForLevel) {
                 columnNum = 0;
                 for (String location : row) {
@@ -232,5 +234,19 @@ public class ModelTranslation {
         }
 
         return dlrl;
+    }
+
+    public static FloorDetailLevels detailLevelsFromRealm(FloorDetailLevelsRealm realm) {
+        return realm == null ? null : new FloorDetailLevels(realm.getFloorNo(), realm.getDetailLevels());
+    }
+
+    public static FloorDetailLevelsRealm realmFromDetailLevels(FloorDetailLevels floorDetails) {
+        if (floorDetails == null) {
+            return null;
+        }
+        FloorDetailLevelsRealm floorDetailRealm = new FloorDetailLevelsRealm();
+        floorDetailRealm.setFloorNo(floorDetails.getFloorNo());
+        floorDetailRealm.setDetailLevels(floorDetails.getDetailLevels());
+        return floorDetailRealm;
     }
 }

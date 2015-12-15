@@ -5,10 +5,12 @@ import android.content.Context;
 import com.cnk.data.FloorMap;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.FloorDetailLevels;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
+import com.cnk.database.realm.FloorDetailLevelsRealm;
 import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
@@ -196,6 +198,18 @@ public class DatabaseHelper {
         return result;
     }
 
+    private void setDetailLevelsImpl(FloorDetailLevelsRealm floor0, FloorDetailLevelsRealm floor1) {
+        if (floor0 != null) {
+            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor0.getFloorNo()).findAll().clear();
+            realm.copyToRealm(floor0);
+        }
+        if (floor1 != null) {
+            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor1.getFloorNo()).findAll().clear();
+            realm.copyToRealm(floor1);
+        }
+
+    }
+
     private void setMapsImpl(Integer versionNum, List<MapTileRealm> tilesForFloor0,
                             List<MapTileRealm> tilesForFloor1) {
         assert(versionNum != null);
@@ -216,18 +230,24 @@ public class DatabaseHelper {
         List<MapTileRealm> floor1Tiles = null;
         List<DetailLevelResRealm> floor0Resolutions = null;
         List<DetailLevelResRealm> floor1Resolutions = null;
+        FloorDetailLevelsRealm floor0DetailLevels = null;
+        FloorDetailLevelsRealm floor1DetailLevels = null;
 
         if (floor0Map != null) {
             floor0Tiles = ModelTranslation.realmListFromMapTileList(
                     ModelTranslation.getMapTilesFromFloorMap(floor0Code, floor0Map));
             floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(
                     ModelTranslation.getDetailLevelResFromFloorMap(floor0Code, floor0Map));
+            floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
+                    new FloorDetailLevels(floor0Code, floor0Map.getLevels().size()));
         }
         if (floor1Map != null) {
             floor1Tiles = ModelTranslation.realmListFromMapTileList(
                     ModelTranslation.getMapTilesFromFloorMap(floor1Code, floor1Map));
             floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(
                     ModelTranslation.getDetailLevelResFromFloorMap(floor1Code, floor1Map));
+            floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
+                    new FloorDetailLevels(floor1Code, floor1Map.getLevels().size()));
         }
 
         open();
@@ -236,6 +256,7 @@ public class DatabaseHelper {
             beginTransaction();
             setMapResolutionsImpl(floor0Resolutions, floor1Resolutions);
             setMapsImpl(versionNum, floor0Tiles, floor1Tiles);
+            setDetailLevelsImpl(floor0DetailLevels, floor1DetailLevels);
             commitTransaction();
         } catch (RuntimeException re) {
             cancelTransaction();
@@ -244,6 +265,28 @@ public class DatabaseHelper {
         } finally {
             close();
         }
+    }
+
+    private Integer getDetailLevelsForFloorImpl(Integer floorNo) {
+        return realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst().getDetailLevels();
+    }
+
+    public Integer getDetailLevelsForFloor(Integer floorNo) {
+        Integer detailLevels = 0;
+        open();
+
+        try {
+            beginTransaction();
+            detailLevels = getDetailLevelsForFloorImpl(floorNo);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+        return detailLevels;
     }
 
     /*

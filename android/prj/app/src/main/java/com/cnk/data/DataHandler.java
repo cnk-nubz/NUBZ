@@ -1,12 +1,14 @@
 package com.cnk.data;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
+import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.RaportFile;
-import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.models.Version;
+import com.cnk.database.realm.RaportFileRealm;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -110,14 +112,38 @@ public class DataHandler extends Observable {
         setChanged();
         notifyObservers(Item.MAP_CHANGING);
         FileHandler.getInstance().downloadAndSaveMaps(floor1, floor2);
-        // TODO set version and resolution for respective detail level in database
+        Log.i(LOG_TAG, "Files saved, saving to db");
+        dbHelper.setMaps(version, floor1, floor2);
         setChanged();
         notifyObservers(Item.MAP_CHANGED);
         Log.i(LOG_TAG, "New maps set");
     }
 
-    public synchronized Integer getMapVersion() {
+    public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
+        String tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+        return FileHandler.getInstance().getTileBitmap(tileFilename);
+    }
+
+
+    public Boolean mapForFloorExists(Integer floor) {
+        return dbHelper.getDetailLevelsForFloor(floor) != 0;
+    }
+
+    public Integer getDetailLevelsCountForFloor(Integer floor) {
+        return dbHelper.getDetailLevelsForFloor(floor);
+    }
+
+    public Resolution getOriginalResolution(Integer floor) {
+        return dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+    }
+
+
+    public Integer getMapVersion() {
         return dbHelper.getVersion(Version.Item.MAP);
+    }
+
+    public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
+        return dbHelper.getDetailLevelRes(floor, detailLevel);
     }
 
     public synchronized void setExhibits(List<Exhibit> exhibits, Integer version) {

@@ -74,6 +74,18 @@ public class FileHandler {
         renameFile(tmpFloor2File, FLOOR2_DIRECTORY);
     }
 
+    public Bitmap getTileBitmap(String filename) {
+        try {
+            FileInputStream in = new FileInputStream(filename);
+            Bitmap bmp = BitmapFactory.decodeStream(in);
+            in.close();
+            return bmp;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String saveRaportToFile(Raport raport) throws IOException {
         File dir = new File(DATA_PATH + RAPORT_DIRECTORY);
         dir.mkdirs();
@@ -153,10 +165,13 @@ public class FileHandler {
         String floorDirName = floorNo.equals(Consts.FLOOR1) ? TMP + "1" : TMP + "2";
         Log.i(LOG_TAG, "Creating temporary directory " + floorDirName);
         File floorDir = new File(dir, floorDirName);
+        if (floorDir.exists()) {
+            FileUtils.deleteDirectory(floorDir);
+        }
         floorDir.mkdirs();
         for (int i = 1; i < floor.getLevels().size() + 1; i++) {
             MapTiles currentLevel = floor.getLevels().get(i - 1);
-            List<List<String>> urls = currentLevel.getTilesUrls();
+            List<List<String>> urls = currentLevel.getTilesFiles();
             downloadAndSaveLevel(i, floorDir, urls);
         }
         Log.i(LOG_TAG, "Tiles for floor " + floorNo.toString() + " done");
@@ -170,13 +185,14 @@ public class FileHandler {
         for (int i = 0; i < urls.size(); i++) {
             for (int j = 0; j < urls.get(i).size(); j++) {
                 String url = urls.get(i).get(j);
-                downloadAndSaveTile(url, levelDir, i, j);
+                String tileFile = downloadAndSaveTile(url, levelDir, i, j);
+                urls.get(i).set(j, tileFile);
             }
         }
         Log.i(LOG_TAG, "Level " + level.toString() + " downloaded and saved");
     }
 
-    public void downloadAndSaveTile(String url, File dir, Integer x, Integer y) throws IOException {
+    private String downloadAndSaveTile(String url, File dir, Integer x, Integer y) throws IOException {
         URL fileUrl = new URL(PROTOCOL + url);
         InputStream in = fileUrl.openStream();
         File tileFile = new File(dir, getTileFileName(x, y));
@@ -184,26 +200,9 @@ public class FileHandler {
         IOUtils.copy(in, out);
         out.close();
         in.close();
-        Log.i(LOG_TAG, "Tile " + x.toString() + " " + y.toString() + " saved");
+        //Log.i(LOG_TAG, "Tile " + x.toString() + " " + y.toString() + " saved");
+        return tileFile.toString();
     }
-
-    /*
-    private Drawable getMapFromFile(String file) throws IOException {
-        if (file == null) {
-            return null;
-        }
-        try {
-            FileInputStream in = context.openFileInput(file);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            Bitmap bmp = BitmapFactory.decodeStream(in, null, options);
-            return new BitmapDrawable(context.getResources(), bmp);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-    */
 
     private String getTileFileName(Integer x, Integer y) {
         return TILE_FILE_PREFIX + x.toString() + "_" + y.toString();
