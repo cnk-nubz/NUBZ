@@ -28,36 +28,35 @@ import io.realm.RealmResults;
  */
 public class DatabaseHelper {
     Context applicationContext;
-    Realm realm;
 
     public DatabaseHelper(Context applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    private void open() {
-        realm = Realm.getInstance(applicationContext);
+    private Realm open() {
+        return Realm.getInstance(applicationContext);
     }
 
-    private void close() {
+    private void close(Realm realm) {
         realm.close();
     }
 
-    private void beginTransaction() {
+    private void beginTransaction(Realm realm) {
         realm.beginTransaction();
     }
 
-    private void commitTransaction() {
+    private void commitTransaction(Realm realm) {
         realm.commitTransaction();
     }
 
-    private void cancelTransaction() {
+    private void cancelTransaction(Realm realm) {
         realm.cancelTransaction();
     }
 
     /*
      * returns current version of item if exists, otherwise null
      */
-    private Integer getVersionImpl(Enum<Version.Item> item) {
+    private Integer getVersionImpl(Realm realm, Enum<Version.Item> item) {
         Integer versionNumber = null;
 
         VersionRealm result = realm.where(VersionRealm.class).equalTo("item", item.toString()).findFirst();
@@ -73,18 +72,18 @@ public class DatabaseHelper {
      */
     public Integer getVersion(Enum<Version.Item> item) {
         Integer version = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            version = getVersionImpl(item);
-            commitTransaction();
+            beginTransaction(r);
+            version = getVersionImpl(r, item);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return version;
@@ -93,7 +92,7 @@ public class DatabaseHelper {
     /*
      * sets version of certain item
      */
-    private void setVersionImpl(Version.Item item, Integer versionNumber) {
+    private void setVersionImpl(Realm realm, Version.Item item, Integer versionNumber) {
         VersionRealm version = new VersionRealm();
         version.setItem(item.toString());
         version.setCurrentVersion(versionNumber);
@@ -104,26 +103,26 @@ public class DatabaseHelper {
      * sets version of certain item
      */
     public void setVersion(Version.Item item, Integer versionNumber) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setVersionImpl(item, versionNumber);
-            commitTransaction();
+            beginTransaction(r);
+            setVersionImpl(r, item, versionNumber);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception setting version of " + item.toString()
                     + " to " + versionNumber.toString());
         } finally {
-            close();
+            close(r);
         }
     }
 
     public static final Integer floor0Code = 0;
     public static final Integer floor1Code = 1;
 
-    public DetailLevelResRealm getDetailLevelResRealmImpl(Integer floor, Integer detailLevel) {
+    public DetailLevelResRealm getDetailLevelResRealmImpl(Realm realm, Integer floor, Integer detailLevel) {
         List<DetailLevelResRealm> list = realm.where(DetailLevelResRealm.class).findAll();
 
         DetailLevelResRealm result = realm.where(DetailLevelResRealm.class).equalTo("floor", floor)
@@ -135,23 +134,24 @@ public class DatabaseHelper {
     public DetailLevelRes getDetailLevelRes(Integer floor, Integer detailLevel) {
         DetailLevelRes result = null;
 
-        open();
+        Realm r = open();
         try {
-            beginTransaction();
-            result = ModelTranslation.detailLevelResFromRealm(getDetailLevelResRealmImpl(floor, detailLevel));
-            commitTransaction();
+            beginTransaction(r);
+            result = ModelTranslation.detailLevelResFromRealm(getDetailLevelResRealmImpl(r, floor, detailLevel));
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return result;
     }
 
-    private void setMapResolutionsImpl(List<DetailLevelResRealm> floor0Resolutions,
+    private void setMapResolutionsImpl(Realm realm,
+                                       List<DetailLevelResRealm> floor0Resolutions,
                                        List<DetailLevelResRealm> floor1Resolutions) {
         if (floor0Resolutions != null) {
             realm.where(DetailLevelResRealm.class).equalTo("floor", floor0Code).findAll().clear();
@@ -163,7 +163,7 @@ public class DatabaseHelper {
         }
     }
 
-    private String getMapTileFileLocationImpl(Integer floor, Integer detailLevel,
+    private String getMapTileFileLocationImpl(Realm realm, Integer floor, Integer detailLevel,
                                               Integer rowNumber, Integer colunNumber) {
         String result = null;
 
@@ -182,23 +182,23 @@ public class DatabaseHelper {
                                          Integer rowNumber, Integer columnNumber) {
         String result = null;
 
-        open();
+        Realm r = open();
         try {
-            beginTransaction();
-            result = getMapTileFileLocationImpl(floor, detailLevel, rowNumber, columnNumber);
-            commitTransaction();
+            beginTransaction(r);
+            result = getMapTileFileLocationImpl(r, floor, detailLevel, rowNumber, columnNumber);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return result;
     }
 
-    private void setDetailLevelsImpl(FloorDetailLevelsRealm floor0, FloorDetailLevelsRealm floor1) {
+    private void setDetailLevelsImpl(Realm realm, FloorDetailLevelsRealm floor0, FloorDetailLevelsRealm floor1) {
         if (floor0 != null) {
             realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor0.getFloorNo()).findAll().clear();
             realm.copyToRealm(floor0);
@@ -210,11 +210,11 @@ public class DatabaseHelper {
 
     }
 
-    private void setMapsImpl(Integer versionNum, List<MapTileRealm> tilesForFloor0,
+    private void setMapsImpl(Realm realm, Integer versionNum, List<MapTileRealm> tilesForFloor0,
                             List<MapTileRealm> tilesForFloor1) {
         assert(versionNum != null);
 
-        setVersionImpl(Version.Item.MAP, versionNum);
+        setVersionImpl(realm, Version.Item.MAP, versionNum);
         if (tilesForFloor0 != null) {
             realm.where(MapTileRealm.class).equalTo("floor", floor0Code).findAll().clear();
             realm.copyToRealm(tilesForFloor0);
@@ -250,41 +250,41 @@ public class DatabaseHelper {
                     new FloorDetailLevels(floor1Code, floor1Map.getLevels().size()));
         }
 
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setMapResolutionsImpl(floor0Resolutions, floor1Resolutions);
-            setMapsImpl(versionNum, floor0Tiles, floor1Tiles);
-            setDetailLevelsImpl(floor0DetailLevels, floor1DetailLevels);
-            commitTransaction();
+            beginTransaction(r);
+            setMapResolutionsImpl(r, floor0Resolutions, floor1Resolutions);
+            setMapsImpl(r, versionNum, floor0Tiles, floor1Tiles);
+            setDetailLevelsImpl(r, floor0DetailLevels, floor1DetailLevels);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
     }
 
-    private Integer getDetailLevelsForFloorImpl(Integer floorNo) {
+    private Integer getDetailLevelsForFloorImpl(Realm realm, Integer floorNo) {
         return realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst().getDetailLevels();
     }
 
     public Integer getDetailLevelsForFloor(Integer floorNo) {
         Integer detailLevels = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            detailLevels = getDetailLevelsForFloorImpl(floorNo);
-            commitTransaction();
+            beginTransaction(r);
+            detailLevels = getDetailLevelsForFloorImpl(r, floorNo);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
         return detailLevels;
     }
@@ -292,7 +292,7 @@ public class DatabaseHelper {
     /*
      * returns exhibit with specific id if exists, otherwise null
      */
-    private Exhibit getExhibitImpl(Integer id) {
+    private Exhibit getExhibitImpl(Realm realm, Integer id) {
         ExhibitRealm result = realm.where(ExhibitRealm.class).equalTo("id", id).findFirst();
 
         if (result != null) {
@@ -307,18 +307,18 @@ public class DatabaseHelper {
      */
     public Exhibit getExhibit(Integer id) {
         Exhibit exhibit = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            exhibit = getExhibitImpl(id);
-            commitTransaction();
+            beginTransaction(r);
+            exhibit = getExhibitImpl(r, id);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return exhibit;
@@ -327,7 +327,7 @@ public class DatabaseHelper {
     /*
      * if exhibit with such id exists, updates it, otherwise adds new exhibit
      */
-    private void setExhibitImpl(Exhibit e) {
+    private void setExhibitImpl(Realm realm, Exhibit e) {
         ExhibitRealm er = ModelTranslation.realmFromExhibit(e);
         realm.copyToRealmOrUpdate(er);
     }
@@ -336,26 +336,26 @@ public class DatabaseHelper {
      * if exhibit with such id exists, updates it, otherwise adds new exhibit
      */
     public void setExhibit(Integer versionNum, Exhibit e) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setVersionImpl(Version.Item.EXHIBITS, versionNum);
-            setExhibitImpl(e);
-            commitTransaction();
+            beginTransaction(r);
+            setVersionImpl(r, Version.Item.EXHIBITS, versionNum);
+            setExhibitImpl(r, e);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception saving exhibit with id " + e.getId());
         } finally {
-            close();
+            close(r);
         }
     }
 
     /*
      * return list of all exhibits in database, if there are no exhibits, list is empty
      */
-    private List<Exhibit> getAllExhibitsImpl() {
+    private List<Exhibit> getAllExhibitsImpl(Realm realm) {
         List<Exhibit> exhibits = new ArrayList<>();
         RealmResults<ExhibitRealm> results = realm.allObjects(ExhibitRealm.class);
 
@@ -371,18 +371,18 @@ public class DatabaseHelper {
      */
     public List<Exhibit> getAllExhibits() {
         List<Exhibit> exhibits = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            exhibits = getAllExhibitsImpl();
-            commitTransaction();
+            beginTransaction(r);
+            exhibits = getAllExhibitsImpl(r);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return exhibits;
@@ -391,7 +391,7 @@ public class DatabaseHelper {
     /*
      * removes all exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
-    private void setAllExhibitsImpl(Iterable<Exhibit> allExhibits) {
+    private void setAllExhibitsImpl(Realm realm, Iterable<Exhibit> allExhibits) {
         realm.clear(ExhibitRealm.class);
 
         for (Exhibit e : allExhibits) {
@@ -403,26 +403,26 @@ public class DatabaseHelper {
      * removes all exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
     public void setAllExhibits(Integer versionNum, Iterable<Exhibit> allExhibits) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setVersionImpl(Version.Item.EXHIBITS, versionNum);
-            setAllExhibitsImpl(allExhibits);
-            commitTransaction();
+            beginTransaction(r);
+            setVersionImpl(r, Version.Item.EXHIBITS, versionNum);
+            setAllExhibitsImpl(r, allExhibits);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception setting all exhibits.");
         } finally {
-            close();
+            close(r);
         }
     }
 
     /*
      * return list of all exhibits for floor, if there are no exhibits, list is empty
      */
-    private List<Exhibit> getAllExhibitsForFloorImpl(Integer floor) {
+    private List<Exhibit> getAllExhibitsForFloorImpl(Realm realm, Integer floor) {
         List<Exhibit> exhibits = new ArrayList<>();
         RealmResults<ExhibitRealm> results =
                 realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
@@ -439,18 +439,18 @@ public class DatabaseHelper {
      */
     public List<Exhibit> getAllExhibitsForFloor(Integer floor) {
         List<Exhibit> exhibits = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            exhibits = getAllExhibitsForFloorImpl(floor);
-            commitTransaction();
+            beginTransaction(r);
+            exhibits = getAllExhibitsForFloorImpl(r, floor);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception getting all exhibits for floor. " + re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return exhibits;
@@ -459,7 +459,7 @@ public class DatabaseHelper {
     /*
      * clears exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
-    private void setExhibitsForFloorImpl(Iterable<Exhibit> exhibitsForFloor, Integer floor) {
+    private void setExhibitsForFloorImpl(Realm realm, Iterable<Exhibit> exhibitsForFloor, Integer floor) {
         RealmResults<ExhibitRealm> exhibitsToDelete =
                 realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
         exhibitsToDelete.clear();
@@ -473,19 +473,19 @@ public class DatabaseHelper {
      * clears exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
     public void setExhibitsForFloor(Integer versionNum, Iterable<Exhibit> exhibitsForFloor, Integer floor) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setVersionImpl(Version.Item.EXHIBITS, versionNum);
-            setExhibitsForFloorImpl(exhibitsForFloor, floor);
-            commitTransaction();
+            beginTransaction(r);
+            setVersionImpl(r, Version.Item.EXHIBITS, versionNum);
+            setExhibitsForFloorImpl(r, exhibitsForFloor, floor);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception saving exhibits for floor: " + floor.toString());
         } finally {
-            close();
+            close(r);
         }
     }
 
@@ -493,7 +493,7 @@ public class DatabaseHelper {
      * for each exhibit from list adds it if its id doesn't exhist in database,
      * otherwise updates exhibit with such id
      */
-    private void addOrUpdateExhibitsRealm(Iterable<Exhibit> exhibits) {
+    private void addOrUpdateExhibitsImpl(Realm realm, Iterable<Exhibit> exhibits) {
         realm.copyToRealmOrUpdate(ModelTranslation.realmFromExhibits(exhibits));
     }
 
@@ -502,69 +502,70 @@ public class DatabaseHelper {
      * otherwise updates exhibit with such id
      */
     public void addOrUpdateExhibits(Integer versionNum, Iterable<Exhibit> exhibits) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setVersionImpl(Version.Item.EXHIBITS, versionNum);
-            addOrUpdateExhibitsRealm(exhibits);
-            commitTransaction();
+            beginTransaction(r);
+            setVersionImpl(r, Version.Item.EXHIBITS, versionNum);
+            addOrUpdateExhibitsImpl(r, exhibits);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception adding or updating multiple exhibits.");
         } finally {
-            close();
+            close(r);
         }
     }
 
-    private Integer getNextRaportIdImpl() {
+    private Integer getNextRaportIdImpl(Realm realm) {
         Number maxId = realm.where(RaportFileRealm.class).max("id");
         return maxId == null ? 0 : maxId.intValue() + 1;
     }
 
     public Integer getNextRaportId() {
-        open();
         Integer result;
+        Realm r = open();
+
         try {
-            beginTransaction();
-            result = getNextRaportIdImpl();
-            commitTransaction();
+            beginTransaction(r);
+            result = getNextRaportIdImpl(r);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError("Exception getting next raport id.");
         } finally {
-            close();
+            close(r);
         }
         return result;
     }
 
-    private String getRaportFilenameImpl(Integer id) {
+    private String getRaportFilenameImpl(Realm realm, Integer id) {
         RaportFileRealm result = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
         return result == null ? null : result.getFileName();
     }
 
     public String getRaportFilename(Integer id) {
         String raportFile = null;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            raportFile = getRaportFilenameImpl(id);
-            commitTransaction();
+            beginTransaction(r);
+            raportFile = getRaportFilenameImpl(r, id);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return raportFile;
     }
 
-    private void setRaportFileImpl(Integer id, String raportFilename) {
+    private void setRaportFileImpl(Realm realm, Integer id, String raportFilename) {
         RaportFileRealm raportFileRealm = new RaportFileRealm();
         raportFileRealm.setId(id);
         raportFileRealm.setFileName(raportFilename);
@@ -574,23 +575,23 @@ public class DatabaseHelper {
     }
 
     public void setRaportFile(Integer id, String raportFilename) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            setRaportFileImpl(id, raportFilename);
-            commitTransaction();
+            beginTransaction(r);
+            setRaportFileImpl(r, id, raportFilename);
+            commitTransaction(r);
         } catch (Exception e) {
-            cancelTransaction();
+            cancelTransaction(r);
             e.printStackTrace();
             throw new InternalDatabaseError("Exception setting map of floor "
                     + id.toString() + " to " + raportFilename);
         } finally {
-            close();
+            close(r);
         }
     }
 
-    private List<RaportFile> getAllReadyRaportsImpl() {
+    private List<RaportFile> getAllReadyRaportsImpl(Realm realm) {
         List<RaportFile> raports = new ArrayList<>();
         RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", RaportFileRealm.READY_TO_SEND).findAll();
         for (RaportFileRealm r : results) {
@@ -601,64 +602,64 @@ public class DatabaseHelper {
 
     public List<RaportFile> getAllReadyRaports() {
         List<RaportFile> raports;
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            raports = getAllReadyRaportsImpl();
-            commitTransaction();
+            beginTransaction(r);
+            raports = getAllReadyRaportsImpl(r);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
 
         return raports;
     }
 
-    private void changeRaportStateImpl(Integer id, String newState) {
+    private void changeRaportStateImpl(Realm realm, Integer id, String newState) {
         RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
         entry.setState(newState);
         realm.copyToRealmOrUpdate(entry);
     }
 
     public void changeRaportState(Integer id, String newState) {
-        open();
+        Realm r = open();
 
         try {
-            beginTransaction();
-            changeRaportStateImpl(id, newState);
-            commitTransaction();
+            beginTransaction(r);
+            changeRaportStateImpl(r, id, newState);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
     }
 
-    private void changeRaportServerIdImpl(Integer id, Integer serverId) {
+    private void changeRaportServerIdImpl(Realm realm, Integer id, Integer serverId) {
         RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
         entry.setServerId(serverId);
         realm.copyToRealmOrUpdate(entry);
     }
 
     public void changeRaportServerId(Integer id, Integer serverId) {
-        open();
+        Realm r =open();
 
         try {
-            beginTransaction();
-            changeRaportServerIdImpl(id, serverId);
-            commitTransaction();
+            beginTransaction(r);
+            changeRaportServerIdImpl(r, id, serverId);
+            commitTransaction(r);
         } catch (RuntimeException re) {
-            cancelTransaction();
+            cancelTransaction(r);
             re.printStackTrace();
             throw new InternalDatabaseError(re.toString());
         } finally {
-            close();
+            close(r);
         }
     }
 }

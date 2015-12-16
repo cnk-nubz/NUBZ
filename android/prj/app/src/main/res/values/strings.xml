@@ -5,4 +5,7 @@
     <string name="pietro2">Piętro 2</string>
     <string name="loading_map">Trwa ładowanie mapy</string>
     <string name="map_wait">Oczekiwanie na pobranie mapy</string>
+
+    <string name="cancel">Anuluj</string>
+    <string name="finish">Koniec</string>
 </resources>

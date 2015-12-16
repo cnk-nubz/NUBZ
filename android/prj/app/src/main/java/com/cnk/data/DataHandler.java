@@ -24,8 +24,12 @@ import java.util.Observable;
 
 public class DataHandler extends Observable {
     public enum Item {
-        MAP_CHANGED("Map changed"),
-        MAP_CHANGING("Map changing"),
+        FLOOR_0_MAP_CHANGED("Map changed 0"),
+        FLOOR_0_MAP_CHANGING("Map changing 0"),
+        FLOOR_1_MAP_CHANGED("Map changed 1"),
+        FLOOR_1_MAP_CHANGING("Map changing 1"),
+        BOTH_FLOORS_MAP_CHANGED("Map changed both"),
+        BOTH_FLOORS_MAP_CHANGING("Map changing both"),
         EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
 
@@ -62,6 +66,8 @@ public class DataHandler extends Observable {
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
 
+    private final HashMap<Integer, String> cachedTileAdresses;
+
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
 
@@ -78,7 +84,9 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    private DataHandler() {}
+    private DataHandler() {
+        cachedTileAdresses = new HashMap<>();
+    }
 
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() throws IOException {
@@ -133,22 +141,69 @@ public class DataHandler extends Observable {
     public void setMaps(Integer version, FloorMap floor1, FloorMap floor2) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         setChanged();
-        notifyObservers(Item.MAP_CHANGING);
-        downloadAndSaveFloor(floor1, Consts.FLOOR1);
-        downloadAndSaveFloor(floor2, Consts.FLOOR2);
-        FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR1.toString(),
-                FLOOR1_DIRECTORY);
-        FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR2.toString(),
-                FLOOR2_DIRECTORY);
+
+        Boolean floor0Changed = downloadAndSaveFloor(floor1, Consts.FLOOR1);
+        Boolean floor1Changed = downloadAndSaveFloor(floor2, Consts.FLOOR2);
+
+        if (floor0Changed && floor1Changed) {
+            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
+        } else if (floor0Changed) {
+            notifyObservers(Item.FLOOR_0_MAP_CHANGING);
+        } else if (floor1Changed) {
+            notifyObservers(Item.FLOOR_1_MAP_CHANGING);
+        }
+
+        if (floor0Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR1.toString(),
+                    FLOOR1_DIRECTORY);
+        }
+        if (floor1Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR2.toString(),
+                    FLOOR2_DIRECTORY);
+        }
+
+        synchronized (cachedTileAdresses) {
+            cachedTileAdresses.clear();
+        }
+
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor1, floor2);
         setChanged();
-        notifyObservers(Item.MAP_CHANGED);
+
+        if (floor0Changed && floor1Changed) {
+            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGED);
+        } else if (floor0Changed) {
+            notifyObservers(Item.FLOOR_0_MAP_CHANGED);
+        } else if (floor1Changed) {
+            notifyObservers(Item.FLOOR_1_MAP_CHANGED);
+        }
+
         Log.i(LOG_TAG, "New maps set");
     }
 
+    private Integer getTileCode(Integer floor, Integer detailLevel, Integer row, Integer column) {
+        Integer code = 0;
+        code += column;
+        code += row * 1000;
+        code += detailLevel * 1000 * 1000;
+        code += floor * 10 * 1000 * 1000;
+
+        return code;
+    }
+
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        String tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+        String tileFilename = null;
+        Integer tileCode = getTileCode(floor, detailLevel, row, column);
+        synchronized (cachedTileAdresses) {
+            tileFilename = cachedTileAdresses.get(tileCode);
+        }
+        if (tileFilename == null) {
+            tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+            synchronized (cachedTileAdresses) {
+                cachedTileAdresses.put(tileCode, tileFilename);
+            }
+        }
+
         Bitmap bmp = null;
         try {
             bmp = BitmapFactory.decodeStream(FileHandler.getInstance().getFile(tileFilename));
@@ -205,7 +260,7 @@ public class DataHandler extends Observable {
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
         String dir = DATA_PATH + MAP_DIRECTORY +
                 (floorNo.equals(Consts.FLOOR1) ? FLOOR1_DIRECTORY : FLOOR2_DIRECTORY)
-                + detailLevel.toString();
+                + detailLevel.toString() + "/";
         return dir + getTileFilename(x, y);
     }
 
@@ -215,14 +270,18 @@ public class DataHandler extends Observable {
     }
 
     private String getTileFilename(Integer x, Integer y) {
-        return "tile" + x.toString() + "_" + y.toString();
+        return TILE_FILE_PREFIX + x.toString() + "_" + y.toString();
     }
 
-    private void downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
+    private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
+        if (floor == null) {
+            return false;
+        }
+
         List<MapTiles> levels = floor.getLevels();
         for (int level = 0; level < levels.size(); level++) {
             List<List<String>> tiles = levels.get(level).getTilesFiles();
-            for (int i = 0; i < tiles.size(); i++) {
+            for (int i = 0; i < tiles.size(); i++) {g
                 for (int j = 0; j < tiles.get(i).size(); j++) {
                     InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
                     String tmpFilename = getTemporaryPathForTile(floorNo, level, i, j);
@@ -232,6 +291,7 @@ public class DataHandler extends Observable {
                 }
             }
         }
+        return true;
     }
 
     private String saveRaport(Raport raport) throws IOException {
