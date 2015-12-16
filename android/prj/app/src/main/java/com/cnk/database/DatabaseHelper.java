@@ -268,7 +268,8 @@ public class DatabaseHelper {
     }
 
     private Integer getDetailLevelsForFloorImpl(Realm realm, Integer floorNo) {
-        return realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst().getDetailLevels();
+        FloorDetailLevelsRealm res = realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst();
+        return res == null ? null : res.getDetailLevels();
     }
 
     public Integer getDetailLevelsForFloor(Integer floorNo) {
