@@ -117,11 +117,6 @@ public class MapActivity extends Activity implements Observer {
     protected void onPause() {
         super.onPause();
 
-        Log.i(LOG_TAG, "onPause execution");
-        if (tileView != null) {
-            tileView.pause();
-        }
-
         Log.i(LOG_TAG, "deleting from DataHandler observers list");
         DataHandler.getInstance().deleteObserver(this);
     }
@@ -129,11 +124,6 @@ public class MapActivity extends Activity implements Observer {
     @Override
     protected void onResume() {
         super.onResume();
-
-        Log.i(LOG_TAG, "onResume execution");
-        if (tileView != null) {
-            tileView.resume();
-        }
 
         if (networkHandler != null) {
             networkHandler.startBgDownload();
@@ -148,8 +138,10 @@ public class MapActivity extends Activity implements Observer {
         super.onDestroy();
 
         Log.i(LOG_TAG, "onDestroy execution");
-        tileView.setBitmapProvider(null);
-        tileView.destroy();
+        if (tileView != null) {
+            tileView.setBitmapProvider(null);
+            tileView.destroy();
+        }
         networkHandler.stopBgDownload();
     }
 
@@ -215,16 +207,15 @@ public class MapActivity extends Activity implements Observer {
                 }
 
                 layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
-                layoutMapMissing = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
+                layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
                 floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
-                floorsSwitch.setVisibility(View.INVISIBLE);
 
                 if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
                     layoutLoading.setVisibility(View.VISIBLE);
                     layoutMapMissing.setVisibility(View.INVISIBLE);
                 } else {
                     layoutLoading.setVisibility(View.INVISIBLE);
-                    layoutLoading.setVisibility(View.VISIBLE);
+                    layoutMapMissing.setVisibility(View.VISIBLE);
                 }
 
                 localUISynchronization.release();
@@ -238,6 +229,7 @@ public class MapActivity extends Activity implements Observer {
         Switch s = new Switch(c);
         s.setTextOff(getResources().getString(R.string.pietro1));
         s.setTextOn(getResources().getString(R.string.pietro2));
+        s.setChecked(currentFloorNum == 1);
         s.setOnCheckedChangeListener(new FloorsSwitchListener());
 
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -245,6 +237,7 @@ public class MapActivity extends Activity implements Observer {
         lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         lp.setMargins(20, 20, 20, 20);
 
+        //s.setVisibility(View.INVISIBLE);
         parent.addView(s, lp);
         return s;
     }
@@ -309,7 +302,10 @@ public class MapActivity extends Activity implements Observer {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                    if (MapActivity.this.tileView != null) {
+                        MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                    }
+                    MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
                     MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
                 }
             });
@@ -325,7 +321,10 @@ public class MapActivity extends Activity implements Observer {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                        if (MapActivity.this.tileView != null) {
+                            MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                        }
+                        MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
                         MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
                     }
                 });
@@ -343,7 +342,10 @@ public class MapActivity extends Activity implements Observer {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                        if (MapActivity.this.tileView != null) {
+                            MapActivity.this.tileView.setVisibility(View.INVISIBLE);
+                        }
+                        MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
                         MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
                     }
                 });
@@ -442,8 +444,6 @@ public class MapActivity extends Activity implements Observer {
                 DetailLevelRes current = DataHandler.getInstance().getDetailLevelResolution(floor, i);
                 ll.add(new ScaleData((float) current.getScaledRes().getWidth() / biggestResolution.getScaledRes().getWidth(), i));
             }
-
-            clearAllExhibitsOnMap();
 
             prepareTileView(ll);
             setLayout(true);
@@ -608,8 +608,9 @@ public class MapActivity extends Activity implements Observer {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
             //floorsSwitch.setEnabled(false);
-            floorsSwitch.setVisibility(View.INVISIBLE);
-            tileView.setVisibility(View.INVISIBLE);
+            if (tileView != null) {
+                tileView.setVisibility(View.INVISIBLE);
+            }
             if (b) {
                 // Change to 1 floor
                 Log.i(LOG_TAG, "switching floor to 1");
@@ -620,7 +621,10 @@ public class MapActivity extends Activity implements Observer {
                 currentFloorNum = DatabaseHelper.floor0Code;
             }
 
-            new MapChangeFloor().execute();
+            if (mapState.floorReady[currentFloorNum]) {
+                floorsSwitch.setVisibility(View.INVISIBLE);
+                new MapChangeFloor().execute();
+            }
         }
     }
 }
