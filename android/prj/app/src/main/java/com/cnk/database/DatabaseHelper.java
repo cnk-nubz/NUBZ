@@ -2,6 +2,18 @@ package com.cnk.database;
 
 import android.content.Context;
 
+import com.cnk.data.FloorMap;
+import com.cnk.database.models.DetailLevelRes;
+import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.FloorDetailLevels;
+import com.cnk.database.models.RaportFile;
+import com.cnk.database.models.Version;
+import com.cnk.database.realm.DetailLevelResRealm;
+import com.cnk.database.realm.ExhibitRealm;
+import com.cnk.database.realm.FloorDetailLevelsRealm;
+import com.cnk.database.realm.MapTileRealm;
+import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.database.realm.VersionRealm;
 import com.cnk.exceptions.InternalDatabaseError;
 
 import java.util.ArrayList;
@@ -108,100 +120,25 @@ public class DatabaseHelper {
         }
     }
 
-    /*
-     * returns map file location for selected floor if exists, otherwise null
-     */
-    private String getMapFileImpl(Integer floor) {
-        String mapFileAddr = null;
-
-        MapFileRealm result = realm.where(MapFileRealm.class).equalTo("floor", floor).findFirst();
-        if (result != null) {
-            mapFileAddr = result.getMapFileLocation();
-        }
-
-        return mapFileAddr;
-    }
-
-    /*
-     * returns map file location for selected floor if exists, otherwise null
-     */
-    public String getMapFile(Integer floor) {
-        String mapFileAddr = null;
-        open();
-
-        try {
-            beginTransaction();
-            mapFileAddr = getMapFileImpl(floor);
-            commitTransaction();
-        } catch (RuntimeException re) {
-            cancelTransaction();
-            re.printStackTrace();
-            throw new InternalDatabaseError(re.toString());
-        } finally {
-            close();
-        }
-
-        return mapFileAddr;
-    }
-
-    /*
-     * sets map file location for certain floor
-     */
-    private void setMapFileImpl(Integer floor, String mapFileLocation) {
-        MapFileRealm mapFileRealm = new MapFileRealm();
-        mapFileRealm.setFloor(floor);
-        mapFileRealm.setMapFileLocation(mapFileLocation);
-
-        realm.copyToRealmOrUpdate(mapFileRealm);
-    }
-
-    /*
-     * sets map file location for certain floor
-     */
-    public void setMapFile(Integer floor, String mapFileLocation) {
-        open();
-
-        try {
-            beginTransaction();
-            setMapFileImpl(floor, mapFileLocation);
-            commitTransaction();
-        } catch (Exception e) {
-            cancelTransaction();
-            e.printStackTrace();
-            throw new InternalDatabaseError("Exception setting map of floor "
-                    + floor.toString() + " to " + mapFileLocation);
-        } finally {
-            close();
-        }
-    }
-
     public static final Integer floor0Code = 0;
     public static final Integer floor1Code = 1;
 
-    /*
-     * sets maps for both floors, if passed map is null, then it's ignored
-     */
-    private void setMapsImpl(Integer versionNum, String floor1MapLocation, String floor2MapLocation) {
-        assert(versionNum != null);
+    public DetailLevelResRealm getDetailLevelResRealmImpl(Integer floor, Integer detailLevel) {
+        List<DetailLevelResRealm> list = realm.where(DetailLevelResRealm.class).findAll();
 
-        setVersionImpl(Version.Item.MAP, versionNum);
-        if (floor1MapLocation != null) {
-            setMapFileImpl(floor0Code, floor1MapLocation);
-        }
-        if (floor2MapLocation != null) {
-            setMapFileImpl(floor1Code, floor2MapLocation);
-        }
+        DetailLevelResRealm result = realm.where(DetailLevelResRealm.class).equalTo("floor", floor)
+                .equalTo("detailLevel", detailLevel).findFirst();
+
+        return result;
     }
 
-    /*
-     * sets maps for both floors, if one of maps is null, then it's ignored
-     */
-    public void setMaps(Integer versionNum, String floor0MapLocation, String floor1MapLocation) {
-        open();
+    public DetailLevelRes getDetailLevelRes(Integer floor, Integer detailLevel) {
+        DetailLevelRes result = null;
 
+        open();
         try {
             beginTransaction();
-            setMapsImpl(versionNum, floor0MapLocation, floor1MapLocation);
+            result = ModelTranslation.detailLevelResFromRealm(getDetailLevelResRealmImpl(floor, detailLevel));
             commitTransaction();
         } catch (RuntimeException re) {
             cancelTransaction();
@@ -210,6 +147,146 @@ public class DatabaseHelper {
         } finally {
             close();
         }
+
+        return result;
+    }
+
+    private void setMapResolutionsImpl(List<DetailLevelResRealm> floor0Resolutions,
+                                       List<DetailLevelResRealm> floor1Resolutions) {
+        if (floor0Resolutions != null) {
+            realm.where(DetailLevelResRealm.class).equalTo("floor", floor0Code).findAll().clear();
+            realm.copyToRealm(floor0Resolutions);
+        }
+        if (floor1Resolutions != null) {
+            realm.where(DetailLevelResRealm.class).equalTo("floor", floor1Code).findAll().clear();
+            realm.copyToRealm(floor1Resolutions);
+        }
+    }
+
+    private String getMapTileFileLocationImpl(Integer floor, Integer detailLevel,
+                                              Integer rowNumber, Integer colunNumber) {
+        String result = null;
+
+        MapTileRealm mtr = realm.where(MapTileRealm.class).equalTo("floor", floor)
+                .equalTo("detailLevel", detailLevel).equalTo("rowNumber", rowNumber)
+                .equalTo("columnNumber", colunNumber).findFirst();
+
+        if (mtr != null) {
+            result = mtr.getMapTileLocation();
+        }
+
+        return result;
+    }
+
+    public String getMapTileFileLocation(Integer floor, Integer detailLevel,
+                                         Integer rowNumber, Integer columnNumber) {
+        String result = null;
+
+        open();
+        try {
+            beginTransaction();
+            result = getMapTileFileLocationImpl(floor, detailLevel, rowNumber, columnNumber);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return result;
+    }
+
+    private void setDetailLevelsImpl(FloorDetailLevelsRealm floor0, FloorDetailLevelsRealm floor1) {
+        if (floor0 != null) {
+            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor0.getFloorNo()).findAll().clear();
+            realm.copyToRealm(floor0);
+        }
+        if (floor1 != null) {
+            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor1.getFloorNo()).findAll().clear();
+            realm.copyToRealm(floor1);
+        }
+
+    }
+
+    private void setMapsImpl(Integer versionNum, List<MapTileRealm> tilesForFloor0,
+                            List<MapTileRealm> tilesForFloor1) {
+        assert(versionNum != null);
+
+        setVersionImpl(Version.Item.MAP, versionNum);
+        if (tilesForFloor0 != null) {
+            realm.where(MapTileRealm.class).equalTo("floor", floor0Code).findAll().clear();
+            realm.copyToRealm(tilesForFloor0);
+        }
+        if (tilesForFloor1 != null) {
+            realm.where(MapTileRealm.class).equalTo("floor", floor1Code).findAll().clear();
+            realm.copyToRealm(tilesForFloor1);
+        }
+    }
+
+    public void setMaps(Integer versionNum, FloorMap floor0Map, FloorMap floor1Map) {
+        List<MapTileRealm> floor0Tiles = null;
+        List<MapTileRealm> floor1Tiles = null;
+        List<DetailLevelResRealm> floor0Resolutions = null;
+        List<DetailLevelResRealm> floor1Resolutions = null;
+        FloorDetailLevelsRealm floor0DetailLevels = null;
+        FloorDetailLevelsRealm floor1DetailLevels = null;
+
+        if (floor0Map != null) {
+            floor0Tiles = ModelTranslation.realmListFromMapTileList(
+                    ModelTranslation.getMapTilesFromFloorMap(floor0Code, floor0Map));
+            floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(
+                    ModelTranslation.getDetailLevelResFromFloorMap(floor0Code, floor0Map));
+            floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
+                    new FloorDetailLevels(floor0Code, floor0Map.getLevels().size()));
+        }
+        if (floor1Map != null) {
+            floor1Tiles = ModelTranslation.realmListFromMapTileList(
+                    ModelTranslation.getMapTilesFromFloorMap(floor1Code, floor1Map));
+            floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(
+                    ModelTranslation.getDetailLevelResFromFloorMap(floor1Code, floor1Map));
+            floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
+                    new FloorDetailLevels(floor1Code, floor1Map.getLevels().size()));
+        }
+
+        open();
+
+        try {
+            beginTransaction();
+            setMapResolutionsImpl(floor0Resolutions, floor1Resolutions);
+            setMapsImpl(versionNum, floor0Tiles, floor1Tiles);
+            setDetailLevelsImpl(floor0DetailLevels, floor1DetailLevels);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+    }
+
+    private Integer getDetailLevelsForFloorImpl(Integer floorNo) {
+        return realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst().getDetailLevels();
+    }
+
+    public Integer getDetailLevelsForFloor(Integer floorNo) {
+        Integer detailLevels = null;
+        open();
+
+        try {
+            beginTransaction();
+            detailLevels = getDetailLevelsForFloorImpl(floorNo);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+        return detailLevels;
     }
 
     /*
@@ -441,4 +518,147 @@ public class DatabaseHelper {
         }
     }
 
+    private Integer getNextRaportIdImpl() {
+        Number maxId = realm.where(RaportFileRealm.class).max("id");
+        return maxId == null ? 0 : maxId.intValue() + 1;
+    }
+
+    public Integer getNextRaportId() {
+        open();
+        Integer result;
+        try {
+            beginTransaction();
+            result = getNextRaportIdImpl();
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError("Exception getting next raport id.");
+        } finally {
+            close();
+        }
+        return result;
+    }
+
+    private String getRaportFilenameImpl(Integer id) {
+        RaportFileRealm result = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        return result == null ? null : result.getFileName();
+    }
+
+    public String getRaportFilename(Integer id) {
+        String raportFile = null;
+        open();
+
+        try {
+            beginTransaction();
+            raportFile = getRaportFilenameImpl(id);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return raportFile;
+    }
+
+    private void setRaportFileImpl(Integer id, String raportFilename) {
+        RaportFileRealm raportFileRealm = new RaportFileRealm();
+        raportFileRealm.setId(id);
+        raportFileRealm.setFileName(raportFilename);
+        raportFileRealm.setState(RaportFileRealm.IN_PROGRESS);
+        raportFileRealm.setServerId(null);
+        realm.copyToRealmOrUpdate(raportFileRealm);
+    }
+
+    public void setRaportFile(Integer id, String raportFilename) {
+        open();
+
+        try {
+            beginTransaction();
+            setRaportFileImpl(id, raportFilename);
+            commitTransaction();
+        } catch (Exception e) {
+            cancelTransaction();
+            e.printStackTrace();
+            throw new InternalDatabaseError("Exception setting map of floor "
+                    + id.toString() + " to " + raportFilename);
+        } finally {
+            close();
+        }
+    }
+
+    private List<RaportFile> getAllReadyRaportsImpl() {
+        List<RaportFile> raports = new ArrayList<>();
+        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", RaportFileRealm.READY_TO_SEND).findAll();
+        for (RaportFileRealm r : results) {
+            raports.add(ModelTranslation.raportFileFromRealm(r));
+        }
+        return raports;
+    }
+
+    public List<RaportFile> getAllReadyRaports() {
+        List<RaportFile> raports;
+        open();
+
+        try {
+            beginTransaction();
+            raports = getAllReadyRaportsImpl();
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+
+        return raports;
+    }
+
+    private void changeRaportStateImpl(Integer id, String newState) {
+        RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        entry.setState(newState);
+        realm.copyToRealmOrUpdate(entry);
+    }
+
+    public void changeRaportState(Integer id, String newState) {
+        open();
+
+        try {
+            beginTransaction();
+            changeRaportStateImpl(id, newState);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+    }
+
+    private void changeRaportServerIdImpl(Integer id, Integer serverId) {
+        RaportFileRealm entry = realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
+        entry.setServerId(serverId);
+        realm.copyToRealmOrUpdate(entry);
+    }
+
+    public void changeRaportServerId(Integer id, Integer serverId) {
+        open();
+
+        try {
+            beginTransaction();
+            changeRaportServerIdImpl(id, serverId);
+            commitTransaction();
+        } catch (RuntimeException re) {
+            cancelTransaction();
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close();
+        }
+    }
 }

@@ -24,8 +24,11 @@ class ServerIf {
   virtual void shutdown() = 0;
   virtual int32_t ping(const  ::communication::HelloMsg& msg) = 0;
   virtual void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request) = 0;
+  virtual void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request) = 0;
   virtual void setMapImage(const  ::communication::SetMapImageRequest& request) = 0;
   virtual void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request) = 0;
+  virtual int32_t getIdForNewReport() = 0;
+  virtual void saveReport(const  ::communication::RawReport& report) = 0;
 };
 
 class ServerIfFactory {
@@ -65,10 +68,20 @@ class ServerNull : virtual public ServerIf {
   void getMapImages( ::communication::MapImagesResponse& /* _return */, const  ::communication::MapImagesRequest& /* request */) {
     return;
   }
+  void getMapImageTiles( ::communication::MapImageTilesResponse& /* _return */, const  ::communication::MapImageTilesRequest& /* request */) {
+    return;
+  }
   void setMapImage(const  ::communication::SetMapImageRequest& /* request */) {
     return;
   }
   void getExhibits( ::communication::ExhibitsResponse& /* _return */, const  ::communication::ExhibitsRequest& /* request */) {
+    return;
+  }
+  int32_t getIdForNewReport() {
+    int32_t _return = 0;
+    return _return;
+  }
+  void saveReport(const  ::communication::RawReport& /* report */) {
     return;
   }
 };
@@ -363,6 +376,118 @@ class Server_getMapImages_presult {
 
 };
 
+typedef struct _Server_getMapImageTiles_args__isset {
+  _Server_getMapImageTiles_args__isset() : request(false) {}
+  bool request :1;
+} _Server_getMapImageTiles_args__isset;
+
+class Server_getMapImageTiles_args {
+ public:
+
+  Server_getMapImageTiles_args(const Server_getMapImageTiles_args&);
+  Server_getMapImageTiles_args& operator=(const Server_getMapImageTiles_args&);
+  Server_getMapImageTiles_args() {
+  }
+
+  virtual ~Server_getMapImageTiles_args() throw();
+   ::communication::MapImageTilesRequest request;
+
+  _Server_getMapImageTiles_args__isset __isset;
+
+  void __set_request(const  ::communication::MapImageTilesRequest& val);
+
+  bool operator == (const Server_getMapImageTiles_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImageTiles_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImageTiles_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_getMapImageTiles_pargs {
+ public:
+
+
+  virtual ~Server_getMapImageTiles_pargs() throw();
+  const  ::communication::MapImageTilesRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImageTiles_result__isset {
+  _Server_getMapImageTiles_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImageTiles_result__isset;
+
+class Server_getMapImageTiles_result {
+ public:
+
+  Server_getMapImageTiles_result(const Server_getMapImageTiles_result&);
+  Server_getMapImageTiles_result& operator=(const Server_getMapImageTiles_result&);
+  Server_getMapImageTiles_result() {
+  }
+
+  virtual ~Server_getMapImageTiles_result() throw();
+   ::communication::MapImageTilesResponse success;
+   ::communication::InternalError err;
+
+  _Server_getMapImageTiles_result__isset __isset;
+
+  void __set_success(const  ::communication::MapImageTilesResponse& val);
+
+  void __set_err(const  ::communication::InternalError& val);
+
+  bool operator == (const Server_getMapImageTiles_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getMapImageTiles_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getMapImageTiles_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getMapImageTiles_presult__isset {
+  _Server_getMapImageTiles_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getMapImageTiles_presult__isset;
+
+class Server_getMapImageTiles_presult {
+ public:
+
+
+  virtual ~Server_getMapImageTiles_presult() throw();
+   ::communication::MapImageTilesResponse* success;
+   ::communication::InternalError err;
+
+  _Server_getMapImageTiles_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _Server_setMapImage_args__isset {
   _Server_setMapImage_args__isset() : request(false) {}
   bool request :1;
@@ -587,6 +712,218 @@ class Server_getExhibits_presult {
 
 };
 
+
+class Server_getIdForNewReport_args {
+ public:
+
+  Server_getIdForNewReport_args(const Server_getIdForNewReport_args&);
+  Server_getIdForNewReport_args& operator=(const Server_getIdForNewReport_args&);
+  Server_getIdForNewReport_args() {
+  }
+
+  virtual ~Server_getIdForNewReport_args() throw();
+
+  bool operator == (const Server_getIdForNewReport_args & /* rhs */) const
+  {
+    return true;
+  }
+  bool operator != (const Server_getIdForNewReport_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getIdForNewReport_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_getIdForNewReport_pargs {
+ public:
+
+
+  virtual ~Server_getIdForNewReport_pargs() throw();
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getIdForNewReport_result__isset {
+  _Server_getIdForNewReport_result__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getIdForNewReport_result__isset;
+
+class Server_getIdForNewReport_result {
+ public:
+
+  Server_getIdForNewReport_result(const Server_getIdForNewReport_result&);
+  Server_getIdForNewReport_result& operator=(const Server_getIdForNewReport_result&);
+  Server_getIdForNewReport_result() : success(0) {
+  }
+
+  virtual ~Server_getIdForNewReport_result() throw();
+  int32_t success;
+   ::communication::InternalError err;
+
+  _Server_getIdForNewReport_result__isset __isset;
+
+  void __set_success(const int32_t val);
+
+  void __set_err(const  ::communication::InternalError& val);
+
+  bool operator == (const Server_getIdForNewReport_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(err == rhs.err))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_getIdForNewReport_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_getIdForNewReport_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_getIdForNewReport_presult__isset {
+  _Server_getIdForNewReport_presult__isset() : success(false), err(false) {}
+  bool success :1;
+  bool err :1;
+} _Server_getIdForNewReport_presult__isset;
+
+class Server_getIdForNewReport_presult {
+ public:
+
+
+  virtual ~Server_getIdForNewReport_presult() throw();
+  int32_t* success;
+   ::communication::InternalError err;
+
+  _Server_getIdForNewReport_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _Server_saveReport_args__isset {
+  _Server_saveReport_args__isset() : report(false) {}
+  bool report :1;
+} _Server_saveReport_args__isset;
+
+class Server_saveReport_args {
+ public:
+
+  Server_saveReport_args(const Server_saveReport_args&);
+  Server_saveReport_args& operator=(const Server_saveReport_args&);
+  Server_saveReport_args() {
+  }
+
+  virtual ~Server_saveReport_args() throw();
+   ::communication::RawReport report;
+
+  _Server_saveReport_args__isset __isset;
+
+  void __set_report(const  ::communication::RawReport& val);
+
+  bool operator == (const Server_saveReport_args & rhs) const
+  {
+    if (!(report == rhs.report))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_saveReport_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_saveReport_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class Server_saveReport_pargs {
+ public:
+
+
+  virtual ~Server_saveReport_pargs() throw();
+  const  ::communication::RawReport* report;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_saveReport_result__isset {
+  _Server_saveReport_result__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_saveReport_result__isset;
+
+class Server_saveReport_result {
+ public:
+
+  Server_saveReport_result(const Server_saveReport_result&);
+  Server_saveReport_result& operator=(const Server_saveReport_result&);
+  Server_saveReport_result() {
+  }
+
+  virtual ~Server_saveReport_result() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
+
+  _Server_saveReport_result__isset __isset;
+
+  void __set_intErr(const  ::communication::InternalError& val);
+
+  void __set_dataErr(const  ::communication::InvalidData& val);
+
+  bool operator == (const Server_saveReport_result & rhs) const
+  {
+    if (!(intErr == rhs.intErr))
+      return false;
+    if (!(dataErr == rhs.dataErr))
+      return false;
+    return true;
+  }
+  bool operator != (const Server_saveReport_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Server_saveReport_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _Server_saveReport_presult__isset {
+  _Server_saveReport_presult__isset() : intErr(false), dataErr(false) {}
+  bool intErr :1;
+  bool dataErr :1;
+} _Server_saveReport_presult__isset;
+
+class Server_saveReport_presult {
+ public:
+
+
+  virtual ~Server_saveReport_presult() throw();
+   ::communication::InternalError intErr;
+   ::communication::InvalidData dataErr;
+
+  _Server_saveReport_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ServerClient : virtual public ServerIf {
  public:
   ServerClient(boost::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -621,12 +958,21 @@ class ServerClient : virtual public ServerIf {
   void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
   void send_getMapImages(const  ::communication::MapImagesRequest& request);
   void recv_getMapImages( ::communication::MapImagesResponse& _return);
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request);
+  void send_getMapImageTiles(const  ::communication::MapImageTilesRequest& request);
+  void recv_getMapImageTiles( ::communication::MapImageTilesResponse& _return);
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   void send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage();
   void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request);
   void send_getExhibits(const  ::communication::ExhibitsRequest& request);
   void recv_getExhibits( ::communication::ExhibitsResponse& _return);
+  int32_t getIdForNewReport();
+  void send_getIdForNewReport();
+  int32_t recv_getIdForNewReport();
+  void saveReport(const  ::communication::RawReport& report);
+  void send_saveReport(const  ::communication::RawReport& report);
+  void recv_saveReport();
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -645,16 +991,22 @@ class ServerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_shutdown(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_ping(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getMapImages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getMapImageTiles(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_setMapImage(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_getExhibits(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_getIdForNewReport(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_saveReport(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ServerProcessor(boost::shared_ptr<ServerIf> iface) :
     iface_(iface) {
     processMap_["shutdown"] = &ServerProcessor::process_shutdown;
     processMap_["ping"] = &ServerProcessor::process_ping;
     processMap_["getMapImages"] = &ServerProcessor::process_getMapImages;
+    processMap_["getMapImageTiles"] = &ServerProcessor::process_getMapImageTiles;
     processMap_["setMapImage"] = &ServerProcessor::process_setMapImage;
     processMap_["getExhibits"] = &ServerProcessor::process_getExhibits;
+    processMap_["getIdForNewReport"] = &ServerProcessor::process_getIdForNewReport;
+    processMap_["saveReport"] = &ServerProcessor::process_saveReport;
   }
 
   virtual ~ServerProcessor() {}
@@ -711,6 +1063,16 @@ class ServerMultiface : virtual public ServerIf {
     return;
   }
 
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getMapImageTiles(_return, request);
+    }
+    ifaces_[i]->getMapImageTiles(_return, request);
+    return;
+  }
+
   void setMapImage(const  ::communication::SetMapImageRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -728,6 +1090,24 @@ class ServerMultiface : virtual public ServerIf {
     }
     ifaces_[i]->getExhibits(_return, request);
     return;
+  }
+
+  int32_t getIdForNewReport() {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->getIdForNewReport();
+    }
+    return ifaces_[i]->getIdForNewReport();
+  }
+
+  void saveReport(const  ::communication::RawReport& report) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->saveReport(report);
+    }
+    ifaces_[i]->saveReport(report);
   }
 
 };
@@ -769,12 +1149,21 @@ class ServerConcurrentClient : virtual public ServerIf {
   void getMapImages( ::communication::MapImagesResponse& _return, const  ::communication::MapImagesRequest& request);
   int32_t send_getMapImages(const  ::communication::MapImagesRequest& request);
   void recv_getMapImages( ::communication::MapImagesResponse& _return, const int32_t seqid);
+  void getMapImageTiles( ::communication::MapImageTilesResponse& _return, const  ::communication::MapImageTilesRequest& request);
+  int32_t send_getMapImageTiles(const  ::communication::MapImageTilesRequest& request);
+  void recv_getMapImageTiles( ::communication::MapImageTilesResponse& _return, const int32_t seqid);
   void setMapImage(const  ::communication::SetMapImageRequest& request);
   int32_t send_setMapImage(const  ::communication::SetMapImageRequest& request);
   void recv_setMapImage(const int32_t seqid);
   void getExhibits( ::communication::ExhibitsResponse& _return, const  ::communication::ExhibitsRequest& request);
   int32_t send_getExhibits(const  ::communication::ExhibitsRequest& request);
   void recv_getExhibits( ::communication::ExhibitsResponse& _return, const int32_t seqid);
+  int32_t getIdForNewReport();
+  int32_t send_getIdForNewReport();
+  int32_t recv_getIdForNewReport(const int32_t seqid);
+  void saveReport(const  ::communication::RawReport& report);
+  int32_t send_saveReport(const  ::communication::RawReport& report);
+  void recv_saveReport(const int32_t seqid);
  protected:
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   boost::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

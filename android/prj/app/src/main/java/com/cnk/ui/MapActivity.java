@@ -254,7 +254,7 @@ public class MapActivity extends Activity implements Observer {
             floorDrawable = new Drawable[2];
 
             for (int i = 0; i <= 1; i++) {
-                floorDrawable[i] = DataHandler.getInstance().getFloorMap(i);
+                //floorDrawable[i] = DataHandler.getInstance().getFloorMap(i);
 
                 if (floorDrawable[i] != null) {
                     mapState.floorProvider[i] = prepareBitmapProvider(floorDrawable[i]);

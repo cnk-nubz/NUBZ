@@ -1,10 +1,7 @@
-.dot circle {
-  fill: lightsteelblue;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+body {
+    padding-top: 50px;
 }
 
-.dot circle.dragging {
-  fill: red;
-  stroke: brown;
+.alert { /* Redefining margin for alert bootstrap class */
+	margin-bottom: 0px;
 }

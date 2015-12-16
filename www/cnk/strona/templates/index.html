@@ -1,136 +1,115 @@
 <!DOCTYPE html>
-<html>
 {% load compress %}
 {% load staticfiles %}
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <link rel="icon" href="{%static "favicon.ico" %}">
-  <link href="{% static "css/base.css" %}" rel="stylesheet">
-  <title>Tajny Projekt NUBZ</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="{% static "favicon.ico" %}">
+
+	<title>Tajny Projekt NUBZ</title>
+
+    <script src="{% static "js/jquery.min.js" %}"></script>
+    <script src="{% static "js/jquery.boxfit.js" %}"></script>
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
+    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
+    <link href="{% static "css/base.css" %}" rel="stylesheet">
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="{% static "js/ie10-viewport-bug-workaround.js" %}"></script>
+    <script src="{% static "js/d3.v3.min.js" %}"></script>
+	<!-- load django variables globally -->
+	{% compress js %}
+	<script type="text/coffeescript">
+		class Exhibit
+			constructor: (@x, @y, @width, @height, @exhibitName, @mapLevel) ->
+
+		root = exports ? this
+		root.maxZoomScale = 15
+		root.minZoomScale = 1
+		root.url_floor0 = "{{url_floor0}}"
+		root.url_floor1 = "{{url_floor1}}"
+		root.csrf_token = "{% csrf_token %}"
+		root.activeFloor = 0
+		root.svgWidth = [0, 0]
+		root.svgHeight = [0, 0]
+		root.floorRealImageWidth = [0, 0]
+		root.floorRealImageHeight = [0, 0]
+		root.floorImageX = [0, 0]
+		root.floorImageY = [0, 0]
+		root.floorScaledImageWidth = [0, 0]
+		root.floorScaledImageHeight = [0, 0]
+
+
+		root.exhibits = []
+		{% for key in exhibits %}
+		root.exhibits.push(new Exhibit({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, "{{key.name}}", {{key.mapLevel}}))
+		{% endfor %}
+		root.floorExhibits = [0, 0]
+		root.floorExhibits[0] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 0)
+		root.floorExhibits[1] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 1)
+	</script>
+	{% endcompress %}
 </head>
 
 <body>
-<script src="{% static "js/d3.v3.min.js" %}"></script>
+
 {% compress js %}
-<script type="text/coffeescript">
-  margin = {top: -5, right: -5, bottom: -5, left: -5}
-  width = 800 - margin.left - margin.right
-  height = 600 - margin.top - margin.bottom
 
-  zoomed = ->
-    container.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")")
-
-  getActiveFloorLevel = ->
-    id = d3.select("#floorImage").style("fill")
-    return +id.charAt(id.length - 2)
-
-  clickChangeFloorButton = ->
-    id = d3.select("#floorImage").style("fill")
-    last_dig = getActiveFloorLevel()
-    d3.select("#changeFloorButton").html("Zmień piętro na " + last_dig + ".")
-    d3.select("#floorImage").style("fill", if last_dig is 0 then "url(#floor1)" else "url(#floor0)")
-
-  zoom = d3.behavior.zoom()
-    .scaleExtent([1, 10])
-    .on("zoom", zoomed)
-
-  div = d3.select("body").append("div")
-
-  div.append("button").attr("id", "changeFloorButton")
-  .style({
-    "width": "auto",
-    "height": "20px",
-  })
-  .html("Zmień piętro na 1.")
-  .on("click", clickChangeFloorButton)
-
-  form = div.append("form")
-    .attr({
-      "method": "POST",
-      "enctype": "multipart/form-data",
-      "action": "/uploadImage/",
-      })
-    .html("{% csrf_token %}")
-  form.append("input")
-    .attr({
-      "id": "uploadImage",
-      "type": "file",
-      "name": "image",
-      "accept": "image/*",
-      })
-  form.append("input")
-    .attr({
-      "id": "hiddenFloorLevel"
-      "type": "hidden",
-      "name": "floor",
-      })
-  form.append("input")
-    .attr({
-      "type": "submit",
-      "value": "Prześlij",
-      })
-    .on("click", () ->
-      d3.select("#hiddenFloorLevel").attr("value", getActiveFloorLevel())
-    )
-
-  svg = d3.select("body")
-    .append("div")
-    .append("svg")
-    .attr({
-      "width": width + margin.left + margin.right,
-      "height": height + margin.top + margin.bottom,
-    })
-    .append("g")
-    .attr("id", "zoomGroup")
-    .call(zoom)
-
-  svg.append("defs")
-  	.append("pattern")
-    .attr({
-      "id": "floor0",
-      "patternUnits": "userSpaceOnUse",
-      "width": width,
-      "height": height,
-      "preserveAspectRatio": "xMinYMin meet",
-      })
-  	.append("image")
-  	.attr({
-  		"width": width,
-  		"height": height,
-  		"x": "0",
-  		"y": "0",
-  		"xlink:href": "{{url_floor0}}",
-  	})
-
-  svg.append("defs")
-    	.append("pattern")
-      .attr({
-        "id": "floor1",
-        "patternUnits": "userSpaceOnUse",
-        "width": width,
-        "height": height,
-        "preserveAspectRatio": "xMinYMin meet",
-        })
-    	.append("image")
-    	.attr({
-    		"width": width,
-    		"height": height,
-    		"x": "0",
-    		"y": "0",
-    		"xlink:href": "{{url_floor1}}",
-    	})
-
-
-  container = svg.append("g")
-
-  container.append("rect")
-    .attr({
-      "id": "floorImage"
-      "width": width,
-      "height": height,
-      })
-    .style("fill", "url(#floor0)")
-
+<script src="{% static "coffee/navbar.coffee"%}" type="text/coffeescript">
+###
+# CREATE NAVIGATION BAR
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
+###
+# INFORMATION ABOUT UPLOAD RESULT
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
+###
+# CREATE IMAGE UPLOAD FORM
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/mapImage.coffee" %}" type="text/coffeescript">
+###
+# CREATE MAP IMAGE CONTAINER
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/zoomButtons.coffee" %}" type="text/coffeescript">
+###
+# CREATE ZOOM BUTTONS
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src = "{% static "coffee/spawnExhibits.coffee" %}" type="text/coffeescript">
+###
+# SPAWN EXHIBITS
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
+###
+# CREATE BUTTONS TO CHANGE FLOOR
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src = "{% static "coffee/onSiteReady.coffee" %}" type="text/coffeescript">
+###
+# LOAD IMAGES OR SETTINGS AFTER SITE IS READY
+###
 </script>
 {% endcompress %}
 </body>
+</html>

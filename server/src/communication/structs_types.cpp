@@ -484,6 +484,490 @@ void MapImagesResponse::printTo(std::ostream& out) const {
 }
 
 
+MapImageTilesRequest::~MapImageTilesRequest() throw() {
+}
+
+
+void MapImageTilesRequest::__set_floor(const int32_t val) {
+  this->floor = val;
+}
+
+uint32_t MapImageTilesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->floor);
+          this->__isset.floor = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MapImageTilesRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MapImageTilesRequest");
+
+  xfer += oprot->writeFieldBegin("floor", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->floor);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MapImageTilesRequest &a, MapImageTilesRequest &b) {
+  using ::std::swap;
+  swap(a.floor, b.floor);
+  swap(a.__isset, b.__isset);
+}
+
+MapImageTilesRequest::MapImageTilesRequest(const MapImageTilesRequest& other18) {
+  floor = other18.floor;
+  __isset = other18.__isset;
+}
+MapImageTilesRequest& MapImageTilesRequest::operator=(const MapImageTilesRequest& other19) {
+  floor = other19.floor;
+  __isset = other19.__isset;
+  return *this;
+}
+void MapImageTilesRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MapImageTilesRequest(";
+  out << "floor=" << to_string(floor);
+  out << ")";
+}
+
+
+Size::~Size() throw() {
+}
+
+
+void Size::__set_width(const int32_t val) {
+  this->width = val;
+}
+
+void Size::__set_height(const int32_t val) {
+  this->height = val;
+}
+
+uint32_t Size::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->width);
+          this->__isset.width = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->height);
+          this->__isset.height = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t Size::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("Size");
+
+  xfer += oprot->writeFieldBegin("width", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->width);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("height", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->height);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(Size &a, Size &b) {
+  using ::std::swap;
+  swap(a.width, b.width);
+  swap(a.height, b.height);
+  swap(a.__isset, b.__isset);
+}
+
+Size::Size(const Size& other20) {
+  width = other20.width;
+  height = other20.height;
+  __isset = other20.__isset;
+}
+Size& Size::operator=(const Size& other21) {
+  width = other21.width;
+  height = other21.height;
+  __isset = other21.__isset;
+  return *this;
+}
+void Size::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "Size(";
+  out << "width=" << to_string(width);
+  out << ", " << "height=" << to_string(height);
+  out << ")";
+}
+
+
+ImageTiles::~ImageTiles() throw() {
+}
+
+
+void ImageTiles::__set_scaledSize(const Size& val) {
+  this->scaledSize = val;
+}
+
+void ImageTiles::__set_tileSize(const Size& val) {
+  this->tileSize = val;
+}
+
+void ImageTiles::__set_tilesUrls(const std::vector<std::vector<std::string> > & val) {
+  this->tilesUrls = val;
+}
+
+uint32_t ImageTiles::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->scaledSize.read(iprot);
+          this->__isset.scaledSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->tileSize.read(iprot);
+          this->__isset.tileSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->tilesUrls.clear();
+            uint32_t _size22;
+            ::apache::thrift::protocol::TType _etype25;
+            xfer += iprot->readListBegin(_etype25, _size22);
+            this->tilesUrls.resize(_size22);
+            uint32_t _i26;
+            for (_i26 = 0; _i26 < _size22; ++_i26)
+            {
+              {
+                this->tilesUrls[_i26].clear();
+                uint32_t _size27;
+                ::apache::thrift::protocol::TType _etype30;
+                xfer += iprot->readListBegin(_etype30, _size27);
+                this->tilesUrls[_i26].resize(_size27);
+                uint32_t _i31;
+                for (_i31 = 0; _i31 < _size27; ++_i31)
+                {
+                  xfer += iprot->readString(this->tilesUrls[_i26][_i31]);
+                }
+                xfer += iprot->readListEnd();
+              }
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.tilesUrls = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ImageTiles::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ImageTiles");
+
+  xfer += oprot->writeFieldBegin("scaledSize", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->scaledSize.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tileSize", ::apache::thrift::protocol::T_STRUCT, 2);
+  xfer += this->tileSize.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tilesUrls", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->tilesUrls.size()));
+    std::vector<std::vector<std::string> > ::const_iterator _iter32;
+    for (_iter32 = this->tilesUrls.begin(); _iter32 != this->tilesUrls.end(); ++_iter32)
+    {
+      {
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter32).size()));
+        std::vector<std::string> ::const_iterator _iter33;
+        for (_iter33 = (*_iter32).begin(); _iter33 != (*_iter32).end(); ++_iter33)
+        {
+          xfer += oprot->writeString((*_iter33));
+        }
+        xfer += oprot->writeListEnd();
+      }
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ImageTiles &a, ImageTiles &b) {
+  using ::std::swap;
+  swap(a.scaledSize, b.scaledSize);
+  swap(a.tileSize, b.tileSize);
+  swap(a.tilesUrls, b.tilesUrls);
+  swap(a.__isset, b.__isset);
+}
+
+ImageTiles::ImageTiles(const ImageTiles& other34) {
+  scaledSize = other34.scaledSize;
+  tileSize = other34.tileSize;
+  tilesUrls = other34.tilesUrls;
+  __isset = other34.__isset;
+}
+ImageTiles& ImageTiles::operator=(const ImageTiles& other35) {
+  scaledSize = other35.scaledSize;
+  tileSize = other35.tileSize;
+  tilesUrls = other35.tilesUrls;
+  __isset = other35.__isset;
+  return *this;
+}
+void ImageTiles::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ImageTiles(";
+  out << "scaledSize=" << to_string(scaledSize);
+  out << ", " << "tileSize=" << to_string(tileSize);
+  out << ", " << "tilesUrls=" << to_string(tilesUrls);
+  out << ")";
+}
+
+
+MapImageTilesResponse::~MapImageTilesResponse() throw() {
+}
+
+
+void MapImageTilesResponse::__set_originalSize(const Size& val) {
+  this->originalSize = val;
+}
+
+void MapImageTilesResponse::__set_zoomLevels(const std::vector<ImageTiles> & val) {
+  this->zoomLevels = val;
+}
+
+uint32_t MapImageTilesResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->originalSize.read(iprot);
+          this->__isset.originalSize = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->zoomLevels.clear();
+            uint32_t _size36;
+            ::apache::thrift::protocol::TType _etype39;
+            xfer += iprot->readListBegin(_etype39, _size36);
+            this->zoomLevels.resize(_size36);
+            uint32_t _i40;
+            for (_i40 = 0; _i40 < _size36; ++_i40)
+            {
+              xfer += this->zoomLevels[_i40].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.zoomLevels = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t MapImageTilesResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("MapImageTilesResponse");
+
+  xfer += oprot->writeFieldBegin("originalSize", ::apache::thrift::protocol::T_STRUCT, 1);
+  xfer += this->originalSize.write(oprot);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("zoomLevels", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->zoomLevels.size()));
+    std::vector<ImageTiles> ::const_iterator _iter41;
+    for (_iter41 = this->zoomLevels.begin(); _iter41 != this->zoomLevels.end(); ++_iter41)
+    {
+      xfer += (*_iter41).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(MapImageTilesResponse &a, MapImageTilesResponse &b) {
+  using ::std::swap;
+  swap(a.originalSize, b.originalSize);
+  swap(a.zoomLevels, b.zoomLevels);
+  swap(a.__isset, b.__isset);
+}
+
+MapImageTilesResponse::MapImageTilesResponse(const MapImageTilesResponse& other42) {
+  originalSize = other42.originalSize;
+  zoomLevels = other42.zoomLevels;
+  __isset = other42.__isset;
+}
+MapImageTilesResponse& MapImageTilesResponse::operator=(const MapImageTilesResponse& other43) {
+  originalSize = other43.originalSize;
+  zoomLevels = other43.zoomLevels;
+  __isset = other43.__isset;
+  return *this;
+}
+void MapImageTilesResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "MapImageTilesResponse(";
+  out << "originalSize=" << to_string(originalSize);
+  out << ", " << "zoomLevels=" << to_string(zoomLevels);
+  out << ")";
+}
+
+
 SetMapImageRequest::~SetMapImageRequest() throw() {
 }
 
@@ -570,15 +1054,15 @@ void swap(SetMapImageRequest &a, SetMapImageRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-SetMapImageRequest::SetMapImageRequest(const SetMapImageRequest& other18) {
-  level = other18.level;
-  filename = other18.filename;
-  __isset = other18.__isset;
+SetMapImageRequest::SetMapImageRequest(const SetMapImageRequest& other44) {
+  level = other44.level;
+  filename = other44.filename;
+  __isset = other44.__isset;
 }
-SetMapImageRequest& SetMapImageRequest::operator=(const SetMapImageRequest& other19) {
-  level = other19.level;
-  filename = other19.filename;
-  __isset = other19.__isset;
+SetMapImageRequest& SetMapImageRequest::operator=(const SetMapImageRequest& other45) {
+  level = other45.level;
+  filename = other45.filename;
+  __isset = other45.__isset;
   return *this;
 }
 void SetMapImageRequest::printTo(std::ostream& out) const {
@@ -661,13 +1145,13 @@ void swap(ExhibitsRequest &a, ExhibitsRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-ExhibitsRequest::ExhibitsRequest(const ExhibitsRequest& other20) {
-  acquiredVersion = other20.acquiredVersion;
-  __isset = other20.__isset;
+ExhibitsRequest::ExhibitsRequest(const ExhibitsRequest& other46) {
+  acquiredVersion = other46.acquiredVersion;
+  __isset = other46.__isset;
 }
-ExhibitsRequest& ExhibitsRequest::operator=(const ExhibitsRequest& other21) {
-  acquiredVersion = other21.acquiredVersion;
-  __isset = other21.__isset;
+ExhibitsRequest& ExhibitsRequest::operator=(const ExhibitsRequest& other47) {
+  acquiredVersion = other47.acquiredVersion;
+  __isset = other47.__isset;
   return *this;
 }
 void ExhibitsRequest::printTo(std::ostream& out) const {
@@ -815,21 +1299,21 @@ void swap(MapElementFrame &a, MapElementFrame &b) {
   swap(a.__isset, b.__isset);
 }
 
-MapElementFrame::MapElementFrame(const MapElementFrame& other22) {
-  x = other22.x;
-  y = other22.y;
-  width = other22.width;
-  height = other22.height;
-  mapLevel = other22.mapLevel;
-  __isset = other22.__isset;
+MapElementFrame::MapElementFrame(const MapElementFrame& other48) {
+  x = other48.x;
+  y = other48.y;
+  width = other48.width;
+  height = other48.height;
+  mapLevel = other48.mapLevel;
+  __isset = other48.__isset;
 }
-MapElementFrame& MapElementFrame::operator=(const MapElementFrame& other23) {
-  x = other23.x;
-  y = other23.y;
-  width = other23.width;
-  height = other23.height;
-  mapLevel = other23.mapLevel;
-  __isset = other23.__isset;
+MapElementFrame& MapElementFrame::operator=(const MapElementFrame& other49) {
+  x = other49.x;
+  y = other49.y;
+  width = other49.width;
+  height = other49.height;
+  mapLevel = other49.mapLevel;
+  __isset = other49.__isset;
   return *this;
 }
 void MapElementFrame::printTo(std::ostream& out) const {
@@ -932,15 +1416,15 @@ void swap(Exhibit &a, Exhibit &b) {
   swap(a.__isset, b.__isset);
 }
 
-Exhibit::Exhibit(const Exhibit& other24) {
-  name = other24.name;
-  frame = other24.frame;
-  __isset = other24.__isset;
+Exhibit::Exhibit(const Exhibit& other50) {
+  name = other50.name;
+  frame = other50.frame;
+  __isset = other50.__isset;
 }
-Exhibit& Exhibit::operator=(const Exhibit& other25) {
-  name = other25.name;
-  frame = other25.frame;
-  __isset = other25.__isset;
+Exhibit& Exhibit::operator=(const Exhibit& other51) {
+  name = other51.name;
+  frame = other51.frame;
+  __isset = other51.__isset;
   return *this;
 }
 void Exhibit::printTo(std::ostream& out) const {
@@ -997,17 +1481,17 @@ uint32_t ExhibitsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->exhibits.clear();
-            uint32_t _size26;
-            ::apache::thrift::protocol::TType _ktype27;
-            ::apache::thrift::protocol::TType _vtype28;
-            xfer += iprot->readMapBegin(_ktype27, _vtype28, _size26);
-            uint32_t _i30;
-            for (_i30 = 0; _i30 < _size26; ++_i30)
+            uint32_t _size52;
+            ::apache::thrift::protocol::TType _ktype53;
+            ::apache::thrift::protocol::TType _vtype54;
+            xfer += iprot->readMapBegin(_ktype53, _vtype54, _size52);
+            uint32_t _i56;
+            for (_i56 = 0; _i56 < _size52; ++_i56)
             {
-              int32_t _key31;
-              xfer += iprot->readI32(_key31);
-              Exhibit& _val32 = this->exhibits[_key31];
-              xfer += _val32.read(iprot);
+              int32_t _key57;
+              xfer += iprot->readI32(_key57);
+              Exhibit& _val58 = this->exhibits[_key57];
+              xfer += _val58.read(iprot);
             }
             xfer += iprot->readMapEnd();
           }
@@ -1040,11 +1524,11 @@ uint32_t ExhibitsResponse::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("exhibits", ::apache::thrift::protocol::T_MAP, 2);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I32, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->exhibits.size()));
-    std::map<int32_t, Exhibit> ::const_iterator _iter33;
-    for (_iter33 = this->exhibits.begin(); _iter33 != this->exhibits.end(); ++_iter33)
+    std::map<int32_t, Exhibit> ::const_iterator _iter59;
+    for (_iter59 = this->exhibits.begin(); _iter59 != this->exhibits.end(); ++_iter59)
     {
-      xfer += oprot->writeI32(_iter33->first);
-      xfer += _iter33->second.write(oprot);
+      xfer += oprot->writeI32(_iter59->first);
+      xfer += _iter59->second.write(oprot);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -1062,15 +1546,15 @@ void swap(ExhibitsResponse &a, ExhibitsResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-ExhibitsResponse::ExhibitsResponse(const ExhibitsResponse& other34) {
-  version = other34.version;
-  exhibits = other34.exhibits;
-  __isset = other34.__isset;
+ExhibitsResponse::ExhibitsResponse(const ExhibitsResponse& other60) {
+  version = other60.version;
+  exhibits = other60.exhibits;
+  __isset = other60.__isset;
 }
-ExhibitsResponse& ExhibitsResponse::operator=(const ExhibitsResponse& other35) {
-  version = other35.version;
-  exhibits = other35.exhibits;
-  __isset = other35.__isset;
+ExhibitsResponse& ExhibitsResponse::operator=(const ExhibitsResponse& other61) {
+  version = other61.version;
+  exhibits = other61.exhibits;
+  __isset = other61.__isset;
   return *this;
 }
 void ExhibitsResponse::printTo(std::ostream& out) const {
@@ -1078,6 +1562,280 @@ void ExhibitsResponse::printTo(std::ostream& out) const {
   out << "ExhibitsResponse(";
   out << "version=" << to_string(version);
   out << ", " << "exhibits=" << to_string(exhibits);
+  out << ")";
+}
+
+
+RawReportEvent::~RawReportEvent() throw() {
+}
+
+
+void RawReportEvent::__set_exhibitId(const int32_t val) {
+  this->exhibitId = val;
+__isset.exhibitId = true;
+}
+
+void RawReportEvent::__set_durationInSecs(const int32_t val) {
+  this->durationInSecs = val;
+}
+
+void RawReportEvent::__set_actions(const std::vector<int32_t> & val) {
+  this->actions = val;
+}
+
+uint32_t RawReportEvent::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->exhibitId);
+          this->__isset.exhibitId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->durationInSecs);
+          this->__isset.durationInSecs = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->actions.clear();
+            uint32_t _size62;
+            ::apache::thrift::protocol::TType _etype65;
+            xfer += iprot->readListBegin(_etype65, _size62);
+            this->actions.resize(_size62);
+            uint32_t _i66;
+            for (_i66 = 0; _i66 < _size62; ++_i66)
+            {
+              xfer += iprot->readI32(this->actions[_i66]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.actions = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RawReportEvent::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RawReportEvent");
+
+  if (this->__isset.exhibitId) {
+    xfer += oprot->writeFieldBegin("exhibitId", ::apache::thrift::protocol::T_I32, 1);
+    xfer += oprot->writeI32(this->exhibitId);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldBegin("durationInSecs", ::apache::thrift::protocol::T_I32, 2);
+  xfer += oprot->writeI32(this->durationInSecs);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("actions", ::apache::thrift::protocol::T_LIST, 3);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->actions.size()));
+    std::vector<int32_t> ::const_iterator _iter67;
+    for (_iter67 = this->actions.begin(); _iter67 != this->actions.end(); ++_iter67)
+    {
+      xfer += oprot->writeI32((*_iter67));
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RawReportEvent &a, RawReportEvent &b) {
+  using ::std::swap;
+  swap(a.exhibitId, b.exhibitId);
+  swap(a.durationInSecs, b.durationInSecs);
+  swap(a.actions, b.actions);
+  swap(a.__isset, b.__isset);
+}
+
+RawReportEvent::RawReportEvent(const RawReportEvent& other68) {
+  exhibitId = other68.exhibitId;
+  durationInSecs = other68.durationInSecs;
+  actions = other68.actions;
+  __isset = other68.__isset;
+}
+RawReportEvent& RawReportEvent::operator=(const RawReportEvent& other69) {
+  exhibitId = other69.exhibitId;
+  durationInSecs = other69.durationInSecs;
+  actions = other69.actions;
+  __isset = other69.__isset;
+  return *this;
+}
+void RawReportEvent::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RawReportEvent(";
+  out << "exhibitId="; (__isset.exhibitId ? (out << to_string(exhibitId)) : (out << "<null>"));
+  out << ", " << "durationInSecs=" << to_string(durationInSecs);
+  out << ", " << "actions=" << to_string(actions);
+  out << ")";
+}
+
+
+RawReport::~RawReport() throw() {
+}
+
+
+void RawReport::__set_reportId(const int32_t val) {
+  this->reportId = val;
+}
+
+void RawReport::__set_history(const std::vector<RawReportEvent> & val) {
+  this->history = val;
+}
+
+uint32_t RawReport::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->reportId);
+          this->__isset.reportId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->history.clear();
+            uint32_t _size70;
+            ::apache::thrift::protocol::TType _etype73;
+            xfer += iprot->readListBegin(_etype73, _size70);
+            this->history.resize(_size70);
+            uint32_t _i74;
+            for (_i74 = 0; _i74 < _size70; ++_i74)
+            {
+              xfer += this->history[_i74].read(iprot);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.history = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t RawReport::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("RawReport");
+
+  xfer += oprot->writeFieldBegin("reportId", ::apache::thrift::protocol::T_I32, 1);
+  xfer += oprot->writeI32(this->reportId);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("history", ::apache::thrift::protocol::T_LIST, 2);
+  {
+    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->history.size()));
+    std::vector<RawReportEvent> ::const_iterator _iter75;
+    for (_iter75 = this->history.begin(); _iter75 != this->history.end(); ++_iter75)
+    {
+      xfer += (*_iter75).write(oprot);
+    }
+    xfer += oprot->writeListEnd();
+  }
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(RawReport &a, RawReport &b) {
+  using ::std::swap;
+  swap(a.reportId, b.reportId);
+  swap(a.history, b.history);
+  swap(a.__isset, b.__isset);
+}
+
+RawReport::RawReport(const RawReport& other76) {
+  reportId = other76.reportId;
+  history = other76.history;
+  __isset = other76.__isset;
+}
+RawReport& RawReport::operator=(const RawReport& other77) {
+  reportId = other77.reportId;
+  history = other77.history;
+  __isset = other77.__isset;
+  return *this;
+}
+void RawReport::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "RawReport(";
+  out << "reportId=" << to_string(reportId);
+  out << ", " << "history=" << to_string(history);
   out << ")";
 }
 

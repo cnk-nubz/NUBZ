@@ -8,6 +8,7 @@
 #include "input/MapImagesRequest.h"
 #include "input/SetMapImageRequest.h"
 #include "input/ExhibitsRequest.h"
+#include "input/RawReport.h"
 
 #include "output/MapImagesResponse.h"
 #include "output/ExhibitsResponse.h"

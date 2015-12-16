@@ -1,6 +1,6 @@
 #include "GetMapImagesCommand.h"
 #include "db/command/GetMapImages.h"
-#include "db/command/GetVersion.h"
+#include "db/command/GetCounter.h"
 
 namespace command {
     std::string GetMapImagesCommand::urlPathPrefix = "";
@@ -16,9 +16,9 @@ namespace command {
     GetMapImagesCommand::GetMapImagesCommand(db::Database &db) : db(db) {
     }
 
-    io::output::MapImagesResponse GetMapImagesCommand::perform(
+    io::output::MapImagesResponse GetMapImagesCommand::operator()(
         const io::input::MapImagesRequest &input) {
-        db::cmd::GetVersion getVersion(db::info::versions::element_type::map_images);
+        db::cmd::GetCounter getCounter(db::info::counters::element_type::map_images);
         std::unique_ptr<db::cmd::GetMapImages> getMapImages;
         if (input.acquiredVersion) {
             getMapImages.reset(new db::cmd::GetMapImages(*input.acquiredVersion + 1));
@@ -26,11 +26,11 @@ namespace command {
             getMapImages.reset(new db::cmd::GetMapImages);
         }
 
-        db.execute(getVersion);
+        db.execute(getCounter);
         db.execute(*getMapImages);
 
         io::output::MapImagesResponse response;
-        response.version = getVersion.getResult();
+        response.version = getCounter.getResult();
         for (const auto &mapImage : getMapImages->getResult()) {
             response.levelImageUrls[mapImage.level] = createFullUrl(mapImage.filename);
         }

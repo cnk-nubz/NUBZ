@@ -1,30 +1,31 @@
 package com.cnk.data;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import android.os.Environment;
 import android.util.Log;
 
 import com.cnk.database.DatabaseHelper;
-import com.cnk.database.Exhibit;
-import com.cnk.database.Version;
+import com.cnk.database.models.DetailLevelRes;
+import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.RaportFile;
+import com.cnk.database.models.Version;
+import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.utilities.Consts;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
     public enum Item {
-        MAP("Map"),
+        MAP_CHANGED("Map changed"),
+        MAP_CHANGING("Map changing"),
         EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
 
@@ -52,13 +53,19 @@ public class DataHandler extends Observable {
     }
 
     private static final String LOG_TAG = "DataHandler";
-    private static final String MAP_FILE_PREFIX = "map";
-    private static final String PROTOCOL = "http://";
+    private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
+    private static final String RAPORT_DIRECTORY = "raports/";
+    private static final String MAP_DIRECTORY = "maps/";
+    private static final String FLOOR1_DIRECTORY = "floor1/";
+    private static final String FLOOR2_DIRECTORY = "floor2/";
+    private static final String TILE_FILE_PREFIX = "tile";
+    private static final String RAPORT_FILE_PREFIX = "raport";
+    private static final String TMP = "TMP";
+
     private static DataHandler instance;
-    private Context context;
     private DatabaseHelper dbHelper;
-    private Lock mapLock;
-    private Lock exhibitsLock;
+
+    private Raport currentRaport;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -67,71 +74,118 @@ public class DataHandler extends Observable {
         return instance;
     }
 
-    public void setContext(Context c) {
-        context = c;
-    }
-
     public void setDbHelper(DatabaseHelper dbHelper) {
         this.dbHelper = dbHelper;
     }
 
-    private DataHandler() {
-        mapLock = new ReentrantLock(true);
-        exhibitsLock = new ReentrantLock(true);
+    private DataHandler() {}
+
+    // only creates new database entry and file for new raport which is not used anywhere else
+    public void startNewRaport() throws IOException {
+        Integer newId = dbHelper.getNextRaportId();
+        currentRaport = new Raport(newId);
+        String path = saveRaport(currentRaport);
+        dbHelper.setRaportFile(newId, path);
     }
 
-    public Drawable getFloorMap(Integer floor) {
-        try {
-            return getMapFromFile(dbHelper.getMapFile(floor));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+    // only modifies file of raport in progress, which is not used anywhere else at the time
+    public void addEventToRaport(RaportEvent event) throws IOException {
+        currentRaport.addEvent(event);
+        saveRaport(currentRaport);
     }
 
-    public void setMaps(Integer version, String urlFloor1, String urlFloor2) throws IOException {
-        mapLock.lock();
-        try {
-            if (urlFloor1 != null) {
-                downloadMap(urlFloor1, 0);
+    // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
+    public void markRaportAsReady() throws IOException {
+        saveRaport(currentRaport);
+        dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
+        currentRaport = null;
+    }
+
+    // only modifies files ready to send which are used by one thread - uploading raports
+    public Map<Raport, Integer> getAllReadyRaports() {
+        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
+        Map<Raport, Integer> raportsToSend = new HashMap<>();
+        for (RaportFile file : toLoad) {
+            Raport loaded = null;
+            try {
+                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance().getFile(file.getFileName()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "Unable to get raport");
             }
-            if (urlFloor2 != null) {
-                downloadMap(urlFloor2, 1);
+            if (loaded != null) {
+                raportsToSend.put(loaded, file.getServerId());
             }
-        } catch (IOException e) {
-            mapLock.unlock();
-            throw e;
         }
+        return raportsToSend;
+    }
 
-        String floor1File = null;
-        String floor2File = null;
+    // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
+    public void setServerId(Raport raport, Integer serverId) {
+        dbHelper.changeRaportServerId(raport.getId(), serverId);
+    }
 
-        if (urlFloor1 != null) {
-            floor1File = MAP_FILE_PREFIX + "0";
-        }
-        if (urlFloor2 != null) {
-            floor2File = MAP_FILE_PREFIX + "1";
-        }
+    // only modifies database entries which are used by one thread - uploading raports
+    public void markRaportAsSent(Raport raport) {
+        dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
+    }
 
-        dbHelper.setMaps(version, floor1File, floor2File);
-
-        mapLock.unlock();
+    public void setMaps(Integer version, FloorMap floor1, FloorMap floor2) throws IOException {
+        Log.i(LOG_TAG, "Setting new maps");
         setChanged();
-        notifyObservers(Item.MAP);
+        notifyObservers(Item.MAP_CHANGING);
+        downloadAndSaveFloor(floor1, Consts.FLOOR1);
+        downloadAndSaveFloor(floor2, Consts.FLOOR2);
+        FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR1.toString(),
+                FLOOR1_DIRECTORY);
+        FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR2.toString(),
+                FLOOR2_DIRECTORY);
+        Log.i(LOG_TAG, "Files saved, saving to db");
+        dbHelper.setMaps(version, floor1, floor2);
+        setChanged();
+        notifyObservers(Item.MAP_CHANGED);
+        Log.i(LOG_TAG, "New maps set");
+    }
 
+    public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
+        String tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+        Bitmap bmp = null;
+        try {
+            bmp = BitmapFactory.decodeStream(FileHandler.getInstance().getFile(tileFilename));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "File " + tileFilename + " not found");
+        }
+        return bmp;
+    }
+
+    public Boolean mapForFloorExists(Integer floor) {
+        boolean exists = dbHelper.getDetailLevelsForFloor(floor) != null;
+        return exists;
+    }
+
+    public Integer getDetailLevelsCountForFloor(Integer floor) {
+        Integer detailLevels = dbHelper.getDetailLevelsForFloor(floor);
+        return detailLevels;
+    }
+
+    public Resolution getOriginalResolution(Integer floor) {
+        Resolution originalRes = dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+        return originalRes;
     }
 
     public Integer getMapVersion() {
-        if (dbHelper == null) {
-            Log.e("DB HELPER", "IS NULL");
-        }
-        return dbHelper.getVersion(Version.Item.MAP);
+        Integer version = dbHelper.getVersion(Version.Item.MAP);
+        return version;
+    }
+
+    public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
+        DetailLevelRes res = dbHelper.getDetailLevelRes(floor, detailLevel);
+        return res;
     }
 
     public void setExhibits(List<Exhibit> exhibits, Integer version) {
-        exhibitsLock.lock();
         dbHelper.addOrUpdateExhibits(version, exhibits);
-        exhibitsLock.unlock();
         setChanged();
         notifyObservers(Item.EXHIBITS);
     }
@@ -148,40 +202,45 @@ public class DataHandler extends Observable {
         return dbHelper.getVersion(Version.Item.EXHIBITS);
     }
 
-    private void downloadMap(String url, Integer floor) throws IOException {
-        URL fileUrl = new URL(PROTOCOL + url);
-        InputStream input = fileUrl.openStream();
-        Bitmap bmp = BitmapFactory.decodeStream(input);
-        input.close();
-        saveMapFile(bmp, floor);
+    public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
+        String dir = DATA_PATH + MAP_DIRECTORY +
+                (floorNo.equals(Consts.FLOOR1) ? FLOOR1_DIRECTORY : FLOOR2_DIRECTORY)
+                + detailLevel.toString();
+        return dir + getTileFilename(x, y);
     }
 
-    private void saveMapFile(Bitmap bmp, Integer floor) throws IOException {
-        try {
-            FileOutputStream out = context.openFileOutput(MAP_FILE_PREFIX + floor.toString(), Context.MODE_PRIVATE);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
-            out.close();
-            Log.i(LOG_TAG, "Map saved to file " + MAP_FILE_PREFIX + floor.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "Saving map file failed");
-            throw e;
+    public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
+        String dir = DATA_PATH + MAP_DIRECTORY + TMP + floorNo.toString() + "/" + detailLevel.toString() + "/";
+        return dir + getTileFilename(x, y);
+    }
+
+    private String getTileFilename(Integer x, Integer y) {
+        return "tile" + x.toString() + "_" + y.toString();
+    }
+
+    private void downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
+        List<MapTiles> levels = floor.getLevels();
+        for (int level = 0; level < levels.size(); level++) {
+            List<List<String>> tiles = levels.get(level).getTilesFiles();
+            for (int i = 0; i < tiles.size(); i++) {
+                for (int j = 0; j < tiles.get(i).size(); j++) {
+                    InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
+                    String tmpFilename = getTemporaryPathForTile(floorNo, level, i, j);
+                    String actualFilename = getPathForTile(floorNo, level, i, j);
+                    FileHandler.getInstance().saveInputStream(in, tmpFilename);
+                    tiles.get(i).set(j, actualFilename);
+                }
+            }
         }
     }
 
-    private Drawable getMapFromFile(String file) throws IOException {
-        if (file == null) {
-            return null;
-        }
-        try {
-            FileInputStream in = context.openFileInput(file);
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.RGB_565;
-            Bitmap bmp = BitmapFactory.decodeStream(in, null, options);
-            return new BitmapDrawable(context.getResources(), bmp);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw e;
-        }
+    private String saveRaport(Raport raport) throws IOException {
+        String dir = DATA_PATH + RAPORT_DIRECTORY;
+        new File(dir).mkdirs();
+        String tmpFile = dir + TMP;
+        FileHandler.getInstance().saveSerializable(raport, tmpFile);
+        String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
+        FileHandler.getInstance().renameFile(tmpFile, realFile);
+        return dir + realFile;
     }
 }

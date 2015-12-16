@@ -37,14 +37,10 @@ public class ExhibitDownloadTask extends ServerTask {
     private void updateDataHandler(ExhibitsResponse response) {
         Integer version = response.getVersion();
         Map<Integer, Exhibit> exhibits = response.getExhibits();
-        List<com.cnk.database.Exhibit> dbExhibits = new ArrayList<>();
 
-        if (exhibits.isEmpty()) {
-            return;
-        }
-        Log.i(LOG_TAG, "New exhibits downloaded");
+        List<com.cnk.database.models.Exhibit> dbExhibits = new ArrayList<>();
         for (Map.Entry<Integer, Exhibit> entry : exhibits.entrySet()) {
-            dbExhibits.add(new com.cnk.database.Exhibit(entry.getKey(), entry.getValue()));
+            dbExhibits.add(new com.cnk.database.models.Exhibit(entry.getKey(), entry.getValue()));
         }
         DataHandler.getInstance().setExhibits(dbExhibits, version);
     }

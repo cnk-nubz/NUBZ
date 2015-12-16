@@ -346,6 +346,346 @@ class MapImagesResponse:
   def __ne__(self, other):
     return not (self == other)
 
+class MapImageTilesRequest:
+  """
+  Attributes:
+   - floor
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'floor', None, None, ), # 1
+  )
+
+  def __init__(self, floor=None,):
+    self.floor = floor
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.floor = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MapImageTilesRequest')
+    if self.floor is not None:
+      oprot.writeFieldBegin('floor', TType.I32, 1)
+      oprot.writeI32(self.floor)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.floor)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class Size:
+  """
+  Attributes:
+   - width
+   - height
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'width', None, None, ), # 1
+    (2, TType.I32, 'height', None, None, ), # 2
+  )
+
+  def __init__(self, width=None, height=None,):
+    self.width = width
+    self.height = height
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.width = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.height = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('Size')
+    if self.width is not None:
+      oprot.writeFieldBegin('width', TType.I32, 1)
+      oprot.writeI32(self.width)
+      oprot.writeFieldEnd()
+    if self.height is not None:
+      oprot.writeFieldBegin('height', TType.I32, 2)
+      oprot.writeI32(self.height)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.width)
+    value = (value * 31) ^ hash(self.height)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class ImageTiles:
+  """
+  Attributes:
+   - scaledSize
+   - tileSize
+   - tilesUrls
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'scaledSize', (Size, Size.thrift_spec), None, ), # 1
+    (2, TType.STRUCT, 'tileSize', (Size, Size.thrift_spec), None, ), # 2
+    (3, TType.LIST, 'tilesUrls', (TType.LIST,(TType.STRING,None)), None, ), # 3
+  )
+
+  def __init__(self, scaledSize=None, tileSize=None, tilesUrls=None,):
+    self.scaledSize = scaledSize
+    self.tileSize = tileSize
+    self.tilesUrls = tilesUrls
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.scaledSize = Size()
+          self.scaledSize.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRUCT:
+          self.tileSize = Size()
+          self.tileSize.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.tilesUrls = []
+          (_etype12, _size9) = iprot.readListBegin()
+          for _i13 in xrange(_size9):
+            _elem14 = []
+            (_etype18, _size15) = iprot.readListBegin()
+            for _i19 in xrange(_size15):
+              _elem20 = iprot.readString()
+              _elem14.append(_elem20)
+            iprot.readListEnd()
+            self.tilesUrls.append(_elem14)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('ImageTiles')
+    if self.scaledSize is not None:
+      oprot.writeFieldBegin('scaledSize', TType.STRUCT, 1)
+      self.scaledSize.write(oprot)
+      oprot.writeFieldEnd()
+    if self.tileSize is not None:
+      oprot.writeFieldBegin('tileSize', TType.STRUCT, 2)
+      self.tileSize.write(oprot)
+      oprot.writeFieldEnd()
+    if self.tilesUrls is not None:
+      oprot.writeFieldBegin('tilesUrls', TType.LIST, 3)
+      oprot.writeListBegin(TType.LIST, len(self.tilesUrls))
+      for iter21 in self.tilesUrls:
+        oprot.writeListBegin(TType.STRING, len(iter21))
+        for iter22 in iter21:
+          oprot.writeString(iter22)
+        oprot.writeListEnd()
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.scaledSize)
+    value = (value * 31) ^ hash(self.tileSize)
+    value = (value * 31) ^ hash(self.tilesUrls)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class MapImageTilesResponse:
+  """
+  Attributes:
+   - originalSize
+   - zoomLevels
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRUCT, 'originalSize', (Size, Size.thrift_spec), None, ), # 1
+    (2, TType.LIST, 'zoomLevels', (TType.STRUCT,(ImageTiles, ImageTiles.thrift_spec)), None, ), # 2
+  )
+
+  def __init__(self, originalSize=None, zoomLevels=None,):
+    self.originalSize = originalSize
+    self.zoomLevels = zoomLevels
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRUCT:
+          self.originalSize = Size()
+          self.originalSize.read(iprot)
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.zoomLevels = []
+          (_etype26, _size23) = iprot.readListBegin()
+          for _i27 in xrange(_size23):
+            _elem28 = ImageTiles()
+            _elem28.read(iprot)
+            self.zoomLevels.append(_elem28)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('MapImageTilesResponse')
+    if self.originalSize is not None:
+      oprot.writeFieldBegin('originalSize', TType.STRUCT, 1)
+      self.originalSize.write(oprot)
+      oprot.writeFieldEnd()
+    if self.zoomLevels is not None:
+      oprot.writeFieldBegin('zoomLevels', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRUCT, len(self.zoomLevels))
+      for iter29 in self.zoomLevels:
+        iter29.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.originalSize)
+    value = (value * 31) ^ hash(self.zoomLevels)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
 class SetMapImageRequest:
   """
   Attributes:
@@ -719,12 +1059,12 @@ class ExhibitsResponse:
       elif fid == 2:
         if ftype == TType.MAP:
           self.exhibits = {}
-          (_ktype10, _vtype11, _size9 ) = iprot.readMapBegin()
-          for _i13 in xrange(_size9):
-            _key14 = iprot.readI32()
-            _val15 = Exhibit()
-            _val15.read(iprot)
-            self.exhibits[_key14] = _val15
+          (_ktype31, _vtype32, _size30 ) = iprot.readMapBegin()
+          for _i34 in xrange(_size30):
+            _key35 = iprot.readI32()
+            _val36 = Exhibit()
+            _val36.read(iprot)
+            self.exhibits[_key35] = _val36
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -745,9 +1085,9 @@ class ExhibitsResponse:
     if self.exhibits is not None:
       oprot.writeFieldBegin('exhibits', TType.MAP, 2)
       oprot.writeMapBegin(TType.I32, TType.STRUCT, len(self.exhibits))
-      for kiter16,viter17 in self.exhibits.items():
-        oprot.writeI32(kiter16)
-        viter17.write(oprot)
+      for kiter37,viter38 in self.exhibits.items():
+        oprot.writeI32(kiter37)
+        viter38.write(oprot)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -761,6 +1101,192 @@ class ExhibitsResponse:
     value = 17
     value = (value * 31) ^ hash(self.version)
     value = (value * 31) ^ hash(self.exhibits)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class RawReportEvent:
+  """
+  Attributes:
+   - exhibitId
+   - durationInSecs
+   - actions
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'exhibitId', None, None, ), # 1
+    (2, TType.I32, 'durationInSecs', None, None, ), # 2
+    (3, TType.LIST, 'actions', (TType.I32,None), None, ), # 3
+  )
+
+  def __init__(self, exhibitId=None, durationInSecs=None, actions=None,):
+    self.exhibitId = exhibitId
+    self.durationInSecs = durationInSecs
+    self.actions = actions
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.exhibitId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.I32:
+          self.durationInSecs = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.LIST:
+          self.actions = []
+          (_etype42, _size39) = iprot.readListBegin()
+          for _i43 in xrange(_size39):
+            _elem44 = iprot.readI32()
+            self.actions.append(_elem44)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('RawReportEvent')
+    if self.exhibitId is not None:
+      oprot.writeFieldBegin('exhibitId', TType.I32, 1)
+      oprot.writeI32(self.exhibitId)
+      oprot.writeFieldEnd()
+    if self.durationInSecs is not None:
+      oprot.writeFieldBegin('durationInSecs', TType.I32, 2)
+      oprot.writeI32(self.durationInSecs)
+      oprot.writeFieldEnd()
+    if self.actions is not None:
+      oprot.writeFieldBegin('actions', TType.LIST, 3)
+      oprot.writeListBegin(TType.I32, len(self.actions))
+      for iter45 in self.actions:
+        oprot.writeI32(iter45)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.exhibitId)
+    value = (value * 31) ^ hash(self.durationInSecs)
+    value = (value * 31) ^ hash(self.actions)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class RawReport:
+  """
+  Attributes:
+   - reportId
+   - history
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I32, 'reportId', None, None, ), # 1
+    (2, TType.LIST, 'history', (TType.STRUCT,(RawReportEvent, RawReportEvent.thrift_spec)), None, ), # 2
+  )
+
+  def __init__(self, reportId=None, history=None,):
+    self.reportId = reportId
+    self.history = history
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I32:
+          self.reportId = iprot.readI32()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.LIST:
+          self.history = []
+          (_etype49, _size46) = iprot.readListBegin()
+          for _i50 in xrange(_size46):
+            _elem51 = RawReportEvent()
+            _elem51.read(iprot)
+            self.history.append(_elem51)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('RawReport')
+    if self.reportId is not None:
+      oprot.writeFieldBegin('reportId', TType.I32, 1)
+      oprot.writeI32(self.reportId)
+      oprot.writeFieldEnd()
+    if self.history is not None:
+      oprot.writeFieldBegin('history', TType.LIST, 2)
+      oprot.writeListBegin(TType.STRUCT, len(self.history))
+      for iter52 in self.history:
+        iter52.write(oprot)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.reportId)
+    value = (value * 31) ^ hash(self.history)
     return value
 
   def __repr__(self):

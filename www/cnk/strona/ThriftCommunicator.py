@@ -19,36 +19,71 @@ class ThriftCommunicator:
 		self.client = None
 
 	def start_connection(self):
-		self.transport = TSocket.TSocket(self.host, self.port)
-  		self.transport = TTransport.TBufferedTransport(self.transport)
-  		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-		self.transport.open()
-		self.client = Server.Client(self.protocol)
+		try:
+			socket = TSocket.TSocket(self.host, self.port)
+			self.transport = TTransport.TBufferedTransport(socket)
+			self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+			self.transport.open()
+			self.client = Server.Client(self.protocol)
+		except:
+			return False
+		return True
 
 	def end_connection(self):
-		self.transport.close()
+		try:
+			self.transport.close()
+		except:
+			return False
+		return True
 
 	def ping(self, number, text):
 		msg = HelloMsg(number, text)
-		self.start_connection()
+		if not self.start_connection():
+			return None
 		ret = self.client.ping(msg)
-		self.end_connection()
+		if not self.end_connection():
+			return None
 		return ret
 
 	def getMapImages(self):
 		msg = MapImagesRequest()
-		self.start_connection()
-		ret = self.client.getMapImages(msg)
-		self.end_connection()
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.getMapImages(msg)
+		except:
+			ret = None
+
+		if not self.end_connection():
+			return None
+
 		return ret
 
 	def setMapImage(self, floor, filename):
 		msg = SetMapImageRequest(floor, filename)
-		ret = True
-		self.start_connection()
+		if not self.start_connection():
+			return None
+
 		try:
 			self.client.setMapImage(msg)
 		except:
-			ret = False #failed to set the map
-		self.end_connection()
+			return None #failed to set the map
+
+		if not self.end_connection():
+			return None
+		return True
+
+	def getExhibits(self):
+		msg = ExhibitsRequest()
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.getExhibits(msg)
+		except:
+			return None
+			
+		if not self.end_connection():
+			return None
 		return ret
