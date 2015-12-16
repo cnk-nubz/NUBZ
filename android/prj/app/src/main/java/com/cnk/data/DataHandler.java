@@ -281,7 +281,7 @@ public class DataHandler extends Observable {
         List<MapTiles> levels = floor.getLevels();
         for (int level = 0; level < levels.size(); level++) {
             List<List<String>> tiles = levels.get(level).getTilesFiles();
-            for (int i = 0; i < tiles.size(); i++) {g
+            for (int i = 0; i < tiles.size(); i++) {
                 for (int j = 0; j < tiles.get(i).size(); j++) {
                     InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
                     String tmpFilename = getTemporaryPathForTile(floorNo, level, i, j);
