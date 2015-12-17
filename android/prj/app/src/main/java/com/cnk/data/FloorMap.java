@@ -1,13 +1,13 @@
 package com.cnk.data;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class FloorMap {
 
     private Resolution originalSize;
-    private List<MapTiles> zoomLevels;
+    private ArrayList<MapTiles> zoomLevels;
 
-    public FloorMap(Resolution originalSize, List<MapTiles> zoomLevels) {
+    public FloorMap(Resolution originalSize, ArrayList<MapTiles> zoomLevels) {
         this.originalSize = originalSize;
         this.zoomLevels = zoomLevels;
     }
@@ -20,11 +20,11 @@ public class FloorMap {
         this.originalSize = originalSize;
     }
 
-    public List<MapTiles> getLevels() {
+    public ArrayList<MapTiles> getLevels() {
         return zoomLevels;
     }
 
-    public void setLevels(List<MapTiles> levels) {
+    public void setLevels(ArrayList<MapTiles> levels) {
         this.zoomLevels = levels;
     }
 }

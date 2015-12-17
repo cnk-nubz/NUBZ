@@ -1,14 +1,14 @@
 package com.cnk.data;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class MapTiles {
 
     private Resolution scaledSize;
     private Resolution tileSize;
-    List<List<String>> tilesFiles;
+    ArrayList<ArrayList<String>> tilesFiles;
 
-    public MapTiles(Resolution scaledSize, Resolution tileSize, List<List<String>> tilesFiles) {
+    public MapTiles(Resolution scaledSize, Resolution tileSize, ArrayList<ArrayList<String>> tilesFiles) {
         this.scaledSize = scaledSize;
         this.tileSize = tileSize;
         this.tilesFiles = tilesFiles;
@@ -30,11 +30,11 @@ public class MapTiles {
         this.tileSize = tileSize;
     }
 
-    public List<List<String>> getTilesFiles() {
+    public ArrayList<ArrayList<String>> getTilesFiles() {
         return tilesFiles;
     }
 
-    public void setTilesFiles(List<List<String>> tilesFiles) {
+    public void setTilesFiles(ArrayList<ArrayList<String>> tilesFiles) {
         this.tilesFiles = tilesFiles;
     }
 }

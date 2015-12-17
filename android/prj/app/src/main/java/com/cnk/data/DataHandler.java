@@ -17,10 +17,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -60,13 +62,14 @@ public class DataHandler extends Observable {
     private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String MAP_DIRECTORY = "maps/";
-    private static final String FLOOR1_DIRECTORY = "floor1/";
-    private static final String FLOOR2_DIRECTORY = "floor2/";
+    private static final String FLOOR1_DIRECTORY = "floor0/";
+    private static final String FLOOR2_DIRECTORY = "floor1/";
+    private static final String FLOOR_DIRECTORY_PREFIX = "floor";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
 
-    private final HashMap<Integer, String> cachedTileAdresses;
+    private final Map<Integer, String> cachedTileAdresses;
 
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
@@ -85,7 +88,7 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
-        cachedTileAdresses = new HashMap<>();
+        cachedTileAdresses = new ConcurrentHashMap<>();
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else
@@ -138,12 +141,12 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor1, FloorMap floor2) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         setChanged();
 
-        Boolean floor0Changed = downloadAndSaveFloor(floor1, Consts.FLOOR1);
-        Boolean floor1Changed = downloadAndSaveFloor(floor2, Consts.FLOOR2);
+        Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
+        Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
 
         if (floor0Changed && floor1Changed) {
             notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
@@ -154,20 +157,18 @@ public class DataHandler extends Observable {
         }
 
         if (floor0Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR1.toString(),
-                    FLOOR1_DIRECTORY);
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                    + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
         }
         if (floor1Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP + Consts.FLOOR2.toString(),
-                    FLOOR2_DIRECTORY);
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                            + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
         }
 
-        synchronized (cachedTileAdresses) {
-            cachedTileAdresses.clear();
-        }
+        cachedTileAdresses.clear();
 
         Log.i(LOG_TAG, "Files saved, saving to db");
-        dbHelper.setMaps(version, floor1, floor2);
+        dbHelper.setMaps(version, floor0, floor1);
         setChanged();
 
         if (floor0Changed && floor1Changed) {
@@ -195,24 +196,30 @@ public class DataHandler extends Observable {
         String tileFilename = null;
         Integer tileCode = getTileCode(floor, detailLevel, row, column);
 
-        synchronized (cachedTileAdresses) {
-            tileFilename = cachedTileAdresses.get(tileCode);
-        }
+        tileFilename = cachedTileAdresses.get(tileCode);
 
         if (tileFilename == null) {
             tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
 
-            synchronized (cachedTileAdresses) {
-                cachedTileAdresses.put(tileCode, tileFilename);
-            }
+            cachedTileAdresses.put(tileCode, tileFilename);
         }
 
         Bitmap bmp = null;
+        InputStream in = null;
         try {
-            bmp = BitmapFactory.decodeStream(FileHandler.getInstance().getFile(tileFilename));
+            in = FileHandler.getInstance().getFile(tileFilename);
+            bmp = BitmapFactory.decodeStream(in);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             Log.e(LOG_TAG, "File " + tileFilename + " not found");
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return bmp;
     }
@@ -266,13 +273,14 @@ public class DataHandler extends Observable {
 
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
         String dir = DATA_PATH + MAP_DIRECTORY +
-                (floorNo.equals(Consts.FLOOR1) ? FLOOR1_DIRECTORY : FLOOR2_DIRECTORY)
+                FLOOR_DIRECTORY_PREFIX + floorNo.toString() + "/"
                 + detailLevel.toString() + "/";
         return dir + getTileFilename(x, y);
     }
 
     public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = DATA_PATH + MAP_DIRECTORY + TMP + floorNo.toString() + "/" + detailLevel.toString() + "/";
+        String dir = DATA_PATH + MAP_DIRECTORY +
+                FLOOR_DIRECTORY_PREFIX + TMP + floorNo.toString() + "/" + detailLevel.toString() + "/";
         return dir + getTileFilename(x, y);
     }
 
@@ -285,9 +293,9 @@ public class DataHandler extends Observable {
             return false;
         }
 
-        List<MapTiles> levels = floor.getLevels();
+        ArrayList<MapTiles> levels = floor.getLevels();
         for (int level = 0; level < levels.size(); level++) {
-            List<List<String>> tiles = levels.get(level).getTilesFiles();
+            ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
             for (int i = 0; i < tiles.size(); i++) {
                 for (int j = 0; j < tiles.get(i).size(); j++) {
                     InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));

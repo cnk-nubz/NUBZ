@@ -26,8 +26,9 @@ public class ExhibitDownloadTask extends ServerTask {
     protected void performInSession(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading exhibits");
         ExhibitsRequest request = new ExhibitsRequest();
-        if (DataHandler.getInstance().getExhibitsVersion() != null) {
-            request.setAcquiredVersion(DataHandler.getInstance().getExhibitsVersion());
+        Integer version = DataHandler.getInstance().getExhibitsVersion();
+        if (version != null) {
+            request.setAcquiredVersion(version);
         }
         ExhibitsResponse response = client.getExhibits(request);
         updateDataHandler(response);

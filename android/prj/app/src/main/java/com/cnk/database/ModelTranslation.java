@@ -91,7 +91,7 @@ public class ModelTranslation {
         return file;
     }
 
-    public static List<MapTile> getMapTilesFromFloorMap(Integer floor, FloorMap fm) {
+    public static ArrayList<MapTile> getMapTilesFromFloorMap(Integer floor, FloorMap fm) {
         ArrayList<MapTile> result = new ArrayList<>();
 
         List<MapTiles> detailLevels = fm.getLevels();
@@ -101,7 +101,7 @@ public class ModelTranslation {
         Integer columnNum;
         for (MapTiles mt : detailLevels) {
             rowNum = 0;
-            List<List<String> > tilesForLevel = mt.getTilesFiles();
+            ArrayList<ArrayList<String>> tilesForLevel = mt.getTilesFiles();
             for (List<String> row : tilesForLevel) {
                 columnNum = 0;
                 for (String location : row) {

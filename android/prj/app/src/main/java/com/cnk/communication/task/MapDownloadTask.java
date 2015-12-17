@@ -34,9 +34,9 @@ public class MapDownloadTask extends ServerTask {
     public void performInSession(Server.Client client) throws TException, IOException {
         MapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
-        String floor1Update = response.getLevelImageUrls().get(Consts.FLOOR1);
-        String floor2Update = response.getLevelImageUrls().get(Consts.FLOOR2);
-        if (floor1Update != floor2Update) {
+        boolean floor1Update = (response.getLevelImageUrls().get(Consts.FLOOR1) != null);
+        boolean floor2Update = (response.getLevelImageUrls().get(Consts.FLOOR2) != null);
+        if (floor1Update || floor2Update) {
             downloadTilesUpdate(client, floor1Update, floor2Update, version);
         }
         Log.i(LOG_TAG, "Map update complete");
@@ -45,24 +45,25 @@ public class MapDownloadTask extends ServerTask {
     private MapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading maps to update");
         MapImagesRequest request = new MapImagesRequest();
-        if (DataHandler.getInstance().getMapVersion() != null) {
-            request.setAcquiredVersion(DataHandler.getInstance().getMapVersion());
+        Integer version = DataHandler.getInstance().getMapVersion();
+        if (version != null) {
+            request.setAcquiredVersion(version);
         }
         MapImagesResponse response = client.getMapImages(request);
         Log.i(LOG_TAG, "Maps to update obtained");
         return response;
     }
 
-    private void downloadTilesUpdate(Server.Client client, String floor1Update,
-                                     String floor2Update, Integer version) throws TException, IOException {
+    private void downloadTilesUpdate(Server.Client client, boolean floor1Update,
+                                     boolean floor2Update, Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
         MapImageTilesResponse floor1Response = null;
         MapImageTilesResponse floor2Response = null;
-        if (floor1Update != null) {
+        if (floor1Update) {
             MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
             floor1Response = client.getMapImageTiles(requestFloor1);
         }
-        if (floor2Update != null) {
+        if (floor2Update) {
             MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
             floor2Response = client.getMapImageTiles(requestFloor2);
         }
@@ -79,15 +80,28 @@ public class MapDownloadTask extends ServerTask {
         Size thriftSize = thriftResponse.getOriginalSize();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
         List<ImageTiles> imageTilesThrift = thriftResponse.getZoomLevels();
-        List<MapTiles> mapTiles = new ArrayList<>();
+        ArrayList<MapTiles> mapTiles = new ArrayList<>();
 
         for (ImageTiles tile : imageTilesThrift) {
             Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(), tile.getScaledSize().getHeight());
             Resolution tileSize = new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
-            MapTiles toAdd = new MapTiles(scaledSize, tileSize, tile.getTilesUrls());
+            List<List<String>> toCopy = tile.getTilesUrls();
+            MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(tile.getTilesUrls()));
             mapTiles.add(toAdd);
         }
 
         return new FloorMap(originalSize, mapTiles);
+    }
+
+    private ArrayList<ArrayList<String>> copyThriftList(List<List<String>> thriftList) {
+        ArrayList<ArrayList<String>> copied = new ArrayList<>();
+        for (List<String> list : thriftList) {
+            ArrayList<String> toAdd = new ArrayList<String>();
+            for (String s : list) {
+                toAdd.add(s);
+            }
+            copied.add(toAdd);
+        }
+        return copied;
     }
 }
