@@ -10,9 +10,9 @@ public class BackgroundDownloadTask extends ServerTask {
     }
 
     protected void performInSession(Server.Client client) throws Exception {
-        ServerTask mapTask = new MapDownloadTask(notificator);
+        //ServerTask mapTask = new MapDownloadTask(notificator);
         ServerTask exhibitsTask = new ExhibitDownloadTask(notificator);
-        mapTask.performInSession(client);
+        //mapTask.performInSession(client);
         exhibitsTask.performInSession(client);
     }
 }
