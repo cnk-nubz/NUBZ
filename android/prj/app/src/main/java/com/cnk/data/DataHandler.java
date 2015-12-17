@@ -194,11 +194,14 @@ public class DataHandler extends Observable {
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
         String tileFilename = null;
         Integer tileCode = getTileCode(floor, detailLevel, row, column);
+
         synchronized (cachedTileAdresses) {
             tileFilename = cachedTileAdresses.get(tileCode);
         }
+
         if (tileFilename == null) {
             tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
+
             synchronized (cachedTileAdresses) {
                 cachedTileAdresses.put(tileCode, tileFilename);
             }
@@ -240,6 +243,10 @@ public class DataHandler extends Observable {
     }
 
     public void setExhibits(List<Exhibit> exhibits, Integer version) {
+        if (exhibits.isEmpty()) {
+            return;
+        }
+
         dbHelper.addOrUpdateExhibits(version, exhibits);
         setChanged();
         notifyObservers(Item.EXHIBITS);

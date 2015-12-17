@@ -47,7 +47,6 @@ public class MapActivity extends Activity implements Observer {
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
-    private Boolean fullyLoaded;
     RelativeLayout rlRootLayout;
 
     private static final Float MAXIMUM_SCALE = 4.0f;
@@ -73,9 +72,6 @@ public class MapActivity extends Activity implements Observer {
         mapState = new MapState();
         mapState.hotSpotsForFloor = new ArrayList<>();
         mapState.exhibitsOverlay = new RelativeLayout(this);
-        mapState.floorReady = new Boolean[2];
-        mapState.floorReady[0] = false;
-        mapState.floorReady[1] = false;
 
         new StartUpTask().execute();
 
@@ -108,9 +104,7 @@ public class MapActivity extends Activity implements Observer {
     protected void onStop() {
         super.onStop();
 
-        if (networkHandler != null) {
-            networkHandler.stopBgDownload();
-        }
+        networkHandler.stopBgDownload();
     }
 
     @Override
@@ -125,9 +119,7 @@ public class MapActivity extends Activity implements Observer {
     protected void onResume() {
         super.onResume();
 
-        if (networkHandler != null) {
-            networkHandler.startBgDownload();
-        }
+        networkHandler.startBgDownload();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
@@ -142,6 +134,7 @@ public class MapActivity extends Activity implements Observer {
             tileView.setBitmapProvider(null);
             tileView.destroy();
         }
+
         networkHandler.stopBgDownload();
     }
 
@@ -248,7 +241,7 @@ public class MapActivity extends Activity implements Observer {
         tvLoading.setTextSize(20);
         LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        ProgressBar pb = new ProgressBar(c);
+        ProgressBar pb = new ProgressBar(c, null, android.R.attr.progressBarStyleLarge);
         LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
@@ -267,12 +260,9 @@ public class MapActivity extends Activity implements Observer {
 
     private LinearLayout addMapMissingLayout(RelativeLayout parent, Context c) {
         TextView tvLoadingFailed = new TextView(c);
-        tvLoadingFailed.setText(getResources().getString(R.string.map_wait));
+        tvLoadingFailed.setText(getResources().getString(R.string.map_missing));
         tvLoadingFailed.setTextSize(20);
         LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        ProgressBar pb = new ProgressBar(c);
-        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
@@ -281,7 +271,6 @@ public class MapActivity extends Activity implements Observer {
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoadingFailed, tvLp);
-        ll.addView(pb, pbLp);
 
         parent.addView(ll, lp);
 
@@ -295,69 +284,7 @@ public class MapActivity extends Activity implements Observer {
     public void update(Observable observable, Object o) {
         DataHandler.Item notification = (DataHandler.Item) o;
 
-        if (notification.equals(DataHandler.Item.BOTH_FLOORS_MAP_CHANGING)) {
-            mapState.floorReady[0] = false;
-            mapState.floorReady[1] = false;
-            Log.i(LOG_TAG, "Notification - both floors map is being changed");
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (MapActivity.this.tileView != null) {
-                        MapActivity.this.tileView.setVisibility(View.INVISIBLE);
-                    }
-                    MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
-                    MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
-                }
-            });
-        } else if (notification.equals(DataHandler.Item.BOTH_FLOORS_MAP_CHANGED)) {
-            mapState.floorReady[0] = true;
-            mapState.floorReady[1] = true;
-            Log.i(LOG_TAG, "Notification - both floors map has been changed");
-            new MapChangeFloor().execute();
-        } else if (notification.equals(DataHandler.Item.FLOOR_0_MAP_CHANGING)) {
-            mapState.floorReady[0] = false;
-            Log.i(LOG_TAG, "Notification - floor 0 map is being changed");
-            if (currentFloorNum == 0) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (MapActivity.this.tileView != null) {
-                            MapActivity.this.tileView.setVisibility(View.INVISIBLE);
-                        }
-                        MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
-                        MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                });
-            }
-        } else if (notification.equals(DataHandler.Item.FLOOR_0_MAP_CHANGED)) {
-            mapState.floorReady[0] = true;
-            Log.i(LOG_TAG, "Notification - floor 0 map has been changed");
-            if (currentFloorNum == 0) {
-                new MapChangeFloor().execute();
-            }
-        } else if (notification.equals(DataHandler.Item.FLOOR_1_MAP_CHANGING)) {
-            mapState.floorReady[1] = false;
-            Log.i(LOG_TAG, "Notification - floor 1 map is being changed");
-            if (currentFloorNum == 1) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (MapActivity.this.tileView != null) {
-                            MapActivity.this.tileView.setVisibility(View.INVISIBLE);
-                        }
-                        MapActivity.this.layoutMapMissing.setVisibility(View.INVISIBLE);
-                        MapActivity.this.layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                });
-            }
-        } else if (notification.equals(DataHandler.Item.FLOOR_1_MAP_CHANGED)) {
-            mapState.floorReady[1] = true;
-            Log.i(LOG_TAG, "Notification - floor 1 map has been changed");
-            if (currentFloorNum == 1) {
-                new MapChangeFloor().execute();
-            }
-        }
-        else if (notification.equals(DataHandler.Item.EXHIBITS)) {
+        if (notification.equals(DataHandler.Item.EXHIBITS)) {
             Log.i(LOG_TAG, "Received exhibits update notification");
             new MapRefreshExhibits().execute();
         }
@@ -571,7 +498,6 @@ public class MapActivity extends Activity implements Observer {
     }
 
     private class MapState {
-        Boolean floorReady[];
         Resolution currentMapSize, originalMapSize;
 
         List<HotSpot> hotSpotsForFloor;
@@ -587,27 +513,12 @@ public class MapActivity extends Activity implements Observer {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
             Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
             Toast.makeText(getApplicationContext(), "Clicked exhibit with id: " + id.toString(), Toast.LENGTH_SHORT).show();
-
-
-            /*Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
-            exhibitWindowIntent.putStringArrayListExtra("Available actions", new ArrayList<String>());
-            startActivityForResult(exhibitWindowIntent, id);*/
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        Toast.makeText(getApplicationContext(), "Back from exhibit with id: " + Integer.toString(requestCode) +
-                " result code: " + Integer.toString(resultCode), Toast.LENGTH_LONG).show();
-
     }
 
     private class FloorsSwitchListener implements CompoundButton.OnCheckedChangeListener {
         @Override
         public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-            //floorsSwitch.setEnabled(false);
             if (tileView != null) {
                 tileView.setVisibility(View.INVISIBLE);
             }
@@ -621,9 +532,11 @@ public class MapActivity extends Activity implements Observer {
                 currentFloorNum = DatabaseHelper.floor0Code;
             }
 
-            if (mapState.floorReady[currentFloorNum]) {
+            if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
                 floorsSwitch.setVisibility(View.INVISIBLE);
                 new MapChangeFloor().execute();
+            } else {
+                layoutMapMissing.setVisibility(View.VISIBLE);
             }
         }
     }
