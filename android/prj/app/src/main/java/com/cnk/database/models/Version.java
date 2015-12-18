@@ -1,4 +1,4 @@
-package com.cnk.database;
+package com.cnk.database.models;
 
 public class Version {
     public enum Item {

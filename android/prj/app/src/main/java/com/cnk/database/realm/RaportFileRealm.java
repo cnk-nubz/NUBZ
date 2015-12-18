@@ -1,19 +1,20 @@
-package com.cnk.database;
+package com.cnk.database.realm;
 
-public class RaportFile {
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
+public class RaportFileRealm extends RealmObject {
+
+    public static final String IN_PROGRESS = "IN_PRGRESS";
+    public static final String SENT = "SENT";
+    public static final String READY_TO_SEND = "READY_TO_SEND";
+
+    @PrimaryKey
     private Integer id;
     private Integer serverId;
     private String fileName;
     // "READY_TO_SEND", "SENT", "IN_PROGRESS", enums are not supported
     private String state;
-
-    public RaportFile(Integer id, Integer serverId, String fileName, String state) {
-        this.id = id;
-        this.serverId = serverId;
-        this.fileName = fileName;
-        this.state = state;
-    }
 
     public Integer getId() {
         return id;
