@@ -15,6 +15,7 @@ import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
 import com.cnk.exceptions.InternalDatabaseError;
+import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -119,12 +120,7 @@ public class DatabaseHelper {
         }
     }
 
-    public static final Integer floor0Code = 0;
-    public static final Integer floor1Code = 1;
-
     public DetailLevelResRealm getDetailLevelResRealmImpl(Realm realm, Integer floor, Integer detailLevel) {
-        List<DetailLevelResRealm> list = realm.where(DetailLevelResRealm.class).findAll();
-
         DetailLevelResRealm result = realm.where(DetailLevelResRealm.class).equalTo("floor", floor)
                 .equalTo("detailLevel", detailLevel).findFirst();
 
@@ -154,11 +150,11 @@ public class DatabaseHelper {
                                        List<DetailLevelResRealm> floor0Resolutions,
                                        List<DetailLevelResRealm> floor1Resolutions) {
         if (floor0Resolutions != null) {
-            realm.where(DetailLevelResRealm.class).equalTo("floor", floor0Code).findAll().clear();
+            realm.where(DetailLevelResRealm.class).equalTo("floor", Consts.FLOOR1).findAll().clear();
             realm.copyToRealm(floor0Resolutions);
         }
         if (floor1Resolutions != null) {
-            realm.where(DetailLevelResRealm.class).equalTo("floor", floor1Code).findAll().clear();
+            realm.where(DetailLevelResRealm.class).equalTo("floor", Consts.FLOOR2).findAll().clear();
             realm.copyToRealm(floor1Resolutions);
         }
     }
@@ -216,11 +212,11 @@ public class DatabaseHelper {
 
         setVersionImpl(realm, Version.Item.MAP, versionNum);
         if (tilesForFloor0 != null) {
-            realm.where(MapTileRealm.class).equalTo("floor", floor0Code).findAll().clear();
+            realm.where(MapTileRealm.class).equalTo("floor", Consts.FLOOR1).findAll().clear();
             realm.copyToRealm(tilesForFloor0);
         }
         if (tilesForFloor1 != null) {
-            realm.where(MapTileRealm.class).equalTo("floor", floor1Code).findAll().clear();
+            realm.where(MapTileRealm.class).equalTo("floor", Consts.FLOOR2).findAll().clear();
             realm.copyToRealm(tilesForFloor1);
         }
     }
@@ -235,19 +231,19 @@ public class DatabaseHelper {
 
         if (floor0Map != null) {
             floor0Tiles = ModelTranslation.realmListFromMapTileList(
-                    ModelTranslation.getMapTilesFromFloorMap(floor0Code, floor0Map));
+                    ModelTranslation.getMapTilesFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(
-                    ModelTranslation.getDetailLevelResFromFloorMap(floor0Code, floor0Map));
+                    ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
-                    new FloorDetailLevels(floor0Code, floor0Map.getLevels().size()));
+                    new FloorDetailLevels(Consts.FLOOR1, floor0Map.getLevels().size()));
         }
         if (floor1Map != null) {
             floor1Tiles = ModelTranslation.realmListFromMapTileList(
-                    ModelTranslation.getMapTilesFromFloorMap(floor1Code, floor1Map));
+                    ModelTranslation.getMapTilesFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(
-                    ModelTranslation.getDetailLevelResFromFloorMap(floor1Code, floor1Map));
+                    ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
-                    new FloorDetailLevels(floor1Code, floor1Map.getLevels().size()));
+                    new FloorDetailLevels(Consts.FLOOR2, floor1Map.getLevels().size()));
         }
 
         Realm r = open();

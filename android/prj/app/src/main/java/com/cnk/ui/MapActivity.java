@@ -2,7 +2,6 @@ package com.cnk.ui;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -24,9 +23,9 @@ import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
-import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.utilities.Consts;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
 
@@ -56,26 +55,31 @@ public class MapActivity extends Activity implements Observer {
 
     // Android activity lifecycle overriden methods:
 
+    public MapActivity() {
+        currentFloorNum = 0;
+
+        changeAndUpdateMutex = new Semaphore(1, true);
+
+        networkHandler = new NetworkHandler();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.i(LOG_TAG, "onCreate execution");
 
-        currentFloorNum = 0;
-
         rlRootLayout = new RelativeLayout(this);
         setContentView(rlRootLayout);
 
-        changeAndUpdateMutex = new Semaphore(1, true);
-
-        mapState = new MapState();
-        mapState.hotSpotsForFloor = new ArrayList<>();
-        mapState.exhibitsOverlay = new RelativeLayout(this);
+        mapState = new MapState(this);
 
         new StartUpTask().execute();
 
-        networkHandler = new NetworkHandler();
+        Log.i(LOG_TAG, "adding to DataHandler observers list");
+        DataHandler.getInstance().addObserver(this);
+
+        Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
     }
 
@@ -101,31 +105,6 @@ public class MapActivity extends Activity implements Observer {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-
-        networkHandler.stopBgDownload();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        Log.i(LOG_TAG, "deleting from DataHandler observers list");
-        DataHandler.getInstance().deleteObserver(this);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        networkHandler.startBgDownload();
-
-        Log.i(LOG_TAG, "adding to DataHandler observers list");
-        DataHandler.getInstance().addObserver(this);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
 
@@ -136,6 +115,9 @@ public class MapActivity extends Activity implements Observer {
         }
 
         networkHandler.stopBgDownload();
+
+        Log.i(LOG_TAG, "deleting from DataHandler observers list");
+        DataHandler.getInstance().deleteObserver(this);
     }
 
 
@@ -170,7 +152,7 @@ public class MapActivity extends Activity implements Observer {
                 tileView.setShouldRecycleBitmaps(false);
                 tileView.setShouldScaleToFit(true);
                 tileView.setScaleLimits(MINIMUM_SCALE, MAXIMUM_SCALE);
-                tileView.setScale(0.01f);
+                tileView.setScale(MINIMUM_SCALE);
 
                 mapState.exhibitsOverlay = new RelativeLayout(MapActivity.this);
                 tileView.addScalingViewGroup(mapState.exhibitsOverlay);
@@ -184,15 +166,17 @@ public class MapActivity extends Activity implements Observer {
         localUISynchronization.acquireUninterruptibly();
     }
 
-    private void setLayout(final Boolean isMapReady) {
+    private void setLayout(final boolean isMapReady) {
         final Semaphore localUISynchronization = new Semaphore(0, true);
+
+        final Boolean currentFloorExists = DataHandler.getInstance().mapForFloorExists(currentFloorNum);
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 rlRootLayout.removeAllViews();
 
-                if (isMapReady != null && isMapReady) {
+                if (isMapReady) {
                     RelativeLayout.LayoutParams lpTileView = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
                             RelativeLayout.LayoutParams.MATCH_PARENT);
                     rlRootLayout.addView(tileView, lpTileView);
@@ -203,7 +187,7 @@ public class MapActivity extends Activity implements Observer {
                 layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
                 floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
 
-                if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
+                if (currentFloorExists) {
                     layoutLoading.setVisibility(View.VISIBLE);
                     layoutMapMissing.setVisibility(View.INVISIBLE);
                 } else {
@@ -318,7 +302,7 @@ public class MapActivity extends Activity implements Observer {
 
             clearAllExhibitsOnMap();
             waitForUIMutex.acquireUninterruptibly();
-            addAllExhibitsToMap(getExhibitsForFloor(currentFloorNum));
+            addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(currentFloorNum));
 
             changeAndUpdateMutex.release();
 
@@ -333,7 +317,6 @@ public class MapActivity extends Activity implements Observer {
         @Override
         protected Void doInBackground(Void... voids) {
             Log.i(LOG_TAG, "map setting beginning");
-            floor = currentFloorNum;
 
             assert (floor == 0 || floor == 1);
 
@@ -342,6 +325,9 @@ public class MapActivity extends Activity implements Observer {
             final Semaphore localUISynchronization = new Semaphore(0, true);
 
             changeAndUpdateMutex.acquireUninterruptibly();
+
+            floor = currentFloorNum;
+
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -375,7 +361,7 @@ public class MapActivity extends Activity implements Observer {
             prepareTileView(ll);
             setLayout(true);
 
-            addAllExhibitsToMap(getExhibitsForFloor(floor));
+            addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
 
             changeAndUpdateMutex.release();
 
@@ -406,10 +392,6 @@ public class MapActivity extends Activity implements Observer {
         });
 
         localUISynchronization.acquireUninterruptibly();
-    }
-
-    private List<Exhibit> getExhibitsForFloor(Integer floor) {
-        return DataHandler.getInstance().getExhibitsOfFloor(floor);
     }
 
     private void addAllExhibitsToMap(List<Exhibit> exhibits) {
@@ -498,6 +480,11 @@ public class MapActivity extends Activity implements Observer {
     }
 
     private class MapState {
+        public MapState(MapActivity activity) {
+            hotSpotsForFloor = new ArrayList<>();
+            exhibitsOverlay = new RelativeLayout(activity);
+        }
+
         Resolution currentMapSize, originalMapSize;
 
         List<HotSpot> hotSpotsForFloor;
@@ -524,12 +511,12 @@ public class MapActivity extends Activity implements Observer {
             }
             if (b) {
                 // Change to 1 floor
-                Log.i(LOG_TAG, "switching floor to 1");
-                currentFloorNum = DatabaseHelper.floor1Code;
+                Log.i(LOG_TAG, "switching floor to 2");
+                currentFloorNum = Consts.FLOOR2;
             } else {
                 // Change to 0 floor
-                Log.i(LOG_TAG, "switching floor to 0");
-                currentFloorNum = DatabaseHelper.floor0Code;
+                Log.i(LOG_TAG, "switching floor to 1");
+                currentFloorNum = Consts.FLOOR1;
             }
 
             if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {

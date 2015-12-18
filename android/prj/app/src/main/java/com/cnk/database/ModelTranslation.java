@@ -74,6 +74,8 @@ public class ModelTranslation {
     }
 
     public static RaportFileRealm realmFromRaportFile(RaportFile file) {
+        assert(file != null);
+
         RaportFileRealm realmRaport = new RaportFileRealm();
         realmRaport.setFileName(file.getFileName());
         realmRaport.setId(file.getId());
@@ -88,6 +90,7 @@ public class ModelTranslation {
             file = new RaportFile(realmFile.getId(), realmFile.getServerId(),
                        realmFile.getFileName(), realmFile.getState());
         }
+
         return file;
     }
 
@@ -131,9 +134,7 @@ public class ModelTranslation {
     }
 
     public static MapTileRealm realmFromMapTile(MapTile mt) {
-        if (mt == null) {
-            return null;
-        }
+        assert(mt != null);
 
         MapTileRealm mtr = new MapTileRealm();
         mtr.setFloor(mt.getFloor());
@@ -155,9 +156,7 @@ public class ModelTranslation {
     }
 
     public static List<MapTileRealm> realmListFromMapTileList(List<MapTile> mtl) {
-        if (mtl == null) {
-            return null;
-        }
+        assert(mtl != null);
 
         ArrayList<MapTileRealm> mtrl = new ArrayList<>();
 
@@ -183,9 +182,7 @@ public class ModelTranslation {
     }
 
     public static DetailLevelResRealm realmFromDetailLevelRes(DetailLevelRes dlr) {
-        if (dlr == null) {
-            return null;
-        }
+        assert(dlr != null);
 
         DetailLevelResRealm dlrr = new DetailLevelResRealm();
         dlrr.setFloor(dlr.getFloor());
@@ -209,9 +206,7 @@ public class ModelTranslation {
     }
 
     public static List<DetailLevelResRealm> realmListFromDetailLevelResList(List<DetailLevelRes> dlrl) {
-        if (dlrl == null) {
-            return null;
-        }
+        assert(dlrl != null);
 
         ArrayList<DetailLevelResRealm> dlrrl = new ArrayList<>();
 
@@ -236,14 +231,17 @@ public class ModelTranslation {
         return dlrl;
     }
 
-    public static FloorDetailLevels detailLevelsFromRealm(FloorDetailLevelsRealm realm) {
-        return realm == null ? null : new FloorDetailLevels(realm.getFloorNo(), realm.getDetailLevels());
+    public static FloorDetailLevels detailLevelsFromRealm(FloorDetailLevelsRealm fdlr) {
+        if (fdlr == null) {
+            return null;
+        }
+
+        return new FloorDetailLevels(fdlr.getFloorNo(), fdlr.getDetailLevels());
     }
 
     public static FloorDetailLevelsRealm realmFromDetailLevels(FloorDetailLevels floorDetails) {
-        if (floorDetails == null) {
-            return null;
-        }
+        assert(floorDetails != null);
+
         FloorDetailLevelsRealm floorDetailRealm = new FloorDetailLevelsRealm();
         floorDetailRealm.setFloorNo(floorDetails.getFloorNo());
         floorDetailRealm.setDetailLevels(floorDetails.getDetailLevels());
