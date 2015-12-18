@@ -3,6 +3,7 @@
 
 #include "InvalidInput.h"
 #include "GetMapImagesCommand.h"
+#include "GetMapImageTilesCommand.h"
 #include "SetMapImageCommand.h"
 #include "GetExhibitsCommand.h"
 #include "SaveRawReportCommand.h"
