@@ -29,6 +29,14 @@ class MapImagesRequest;
 
 class MapImagesResponse;
 
+class MapImageTilesRequest;
+
+class Size;
+
+class ImageTiles;
+
+class MapImageTilesResponse;
+
 class SetMapImageRequest;
 
 class ExhibitsRequest;
@@ -264,6 +272,214 @@ class MapImagesResponse {
 void swap(MapImagesResponse &a, MapImagesResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const MapImagesResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _MapImageTilesRequest__isset {
+  _MapImageTilesRequest__isset() : floor(false) {}
+  bool floor :1;
+} _MapImageTilesRequest__isset;
+
+class MapImageTilesRequest {
+ public:
+
+  MapImageTilesRequest(const MapImageTilesRequest&);
+  MapImageTilesRequest& operator=(const MapImageTilesRequest&);
+  MapImageTilesRequest() : floor(0) {
+  }
+
+  virtual ~MapImageTilesRequest() throw();
+  int32_t floor;
+
+  _MapImageTilesRequest__isset __isset;
+
+  void __set_floor(const int32_t val);
+
+  bool operator == (const MapImageTilesRequest & rhs) const
+  {
+    if (!(floor == rhs.floor))
+      return false;
+    return true;
+  }
+  bool operator != (const MapImageTilesRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MapImageTilesRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MapImageTilesRequest &a, MapImageTilesRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const MapImageTilesRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _Size__isset {
+  _Size__isset() : width(false), height(false) {}
+  bool width :1;
+  bool height :1;
+} _Size__isset;
+
+class Size {
+ public:
+
+  Size(const Size&);
+  Size& operator=(const Size&);
+  Size() : width(0), height(0) {
+  }
+
+  virtual ~Size() throw();
+  int32_t width;
+  int32_t height;
+
+  _Size__isset __isset;
+
+  void __set_width(const int32_t val);
+
+  void __set_height(const int32_t val);
+
+  bool operator == (const Size & rhs) const
+  {
+    if (!(width == rhs.width))
+      return false;
+    if (!(height == rhs.height))
+      return false;
+    return true;
+  }
+  bool operator != (const Size &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Size & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Size &a, Size &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Size& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _ImageTiles__isset {
+  _ImageTiles__isset() : scaledSize(false), tileSize(false), tilesUrls(false) {}
+  bool scaledSize :1;
+  bool tileSize :1;
+  bool tilesUrls :1;
+} _ImageTiles__isset;
+
+class ImageTiles {
+ public:
+
+  ImageTiles(const ImageTiles&);
+  ImageTiles& operator=(const ImageTiles&);
+  ImageTiles() {
+  }
+
+  virtual ~ImageTiles() throw();
+  Size scaledSize;
+  Size tileSize;
+  std::vector<std::vector<std::string> >  tilesUrls;
+
+  _ImageTiles__isset __isset;
+
+  void __set_scaledSize(const Size& val);
+
+  void __set_tileSize(const Size& val);
+
+  void __set_tilesUrls(const std::vector<std::vector<std::string> > & val);
+
+  bool operator == (const ImageTiles & rhs) const
+  {
+    if (!(scaledSize == rhs.scaledSize))
+      return false;
+    if (!(tileSize == rhs.tileSize))
+      return false;
+    if (!(tilesUrls == rhs.tilesUrls))
+      return false;
+    return true;
+  }
+  bool operator != (const ImageTiles &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ImageTiles & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ImageTiles &a, ImageTiles &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ImageTiles& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _MapImageTilesResponse__isset {
+  _MapImageTilesResponse__isset() : originalSize(false), zoomLevels(false) {}
+  bool originalSize :1;
+  bool zoomLevels :1;
+} _MapImageTilesResponse__isset;
+
+class MapImageTilesResponse {
+ public:
+
+  MapImageTilesResponse(const MapImageTilesResponse&);
+  MapImageTilesResponse& operator=(const MapImageTilesResponse&);
+  MapImageTilesResponse() {
+  }
+
+  virtual ~MapImageTilesResponse() throw();
+  Size originalSize;
+  std::vector<ImageTiles>  zoomLevels;
+
+  _MapImageTilesResponse__isset __isset;
+
+  void __set_originalSize(const Size& val);
+
+  void __set_zoomLevels(const std::vector<ImageTiles> & val);
+
+  bool operator == (const MapImageTilesResponse & rhs) const
+  {
+    if (!(originalSize == rhs.originalSize))
+      return false;
+    if (!(zoomLevels == rhs.zoomLevels))
+      return false;
+    return true;
+  }
+  bool operator != (const MapImageTilesResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const MapImageTilesResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(MapImageTilesResponse &a, MapImageTilesResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const MapImageTilesResponse& obj)
 {
   obj.printTo(out);
   return out;

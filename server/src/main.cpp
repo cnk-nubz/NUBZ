@@ -2,9 +2,10 @@
 #include <cstdlib>
 
 #include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/server/TSimpleServer.h>
+#include <thrift/server/TNonblockingServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TTransportUtils.h>
+#include <thrift/concurrency/ThreadManager.h>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 
@@ -15,6 +16,7 @@
 #include "FileHelper.h"
 #include "db/Database.h"
 #include "command/GetMapImagesCommand.h"
+#include "command/GetMapImageTilesCommand.h"
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -30,6 +32,7 @@ int main(int argc, char *argv[]) {
 
     FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath);
     command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
+    command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
 
     db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
     runServer(cfg->serverPort, db);
@@ -73,14 +76,19 @@ void runServer(std::uint16_t port, db::Database &db) {
     using namespace apache::thrift::protocol;
     using namespace apache::thrift::transport;
     using namespace apache::thrift::server;
+    using namespace apache::thrift::concurrency;
 
     boost::shared_ptr<CommandHandler> handler(new CommandHandler(db));
     boost::shared_ptr<TProcessor> processor(new communication::ServerProcessor(handler));
-    boost::shared_ptr<TServerTransport> serverTransport(new TServerSocket(port));
-    boost::shared_ptr<TTransportFactory> transportFactory(new TBufferedTransportFactory());
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
-    TSimpleServer server(processor, serverTransport, transportFactory, protocolFactory);
+    boost::shared_ptr<ThreadManager> threadManager = ThreadManager::newSimpleThreadManager(4);
+    boost::shared_ptr<PosixThreadFactory> threadFactory =
+        boost::shared_ptr<PosixThreadFactory>(new PosixThreadFactory());
+    threadManager->threadFactory(threadFactory);
+    threadManager->start();
+
+    TNonblockingServer server(processor, protocolFactory, port, threadManager);
     handler->setServer(&server);
 
     LOG(INFO) << "Starting server...";

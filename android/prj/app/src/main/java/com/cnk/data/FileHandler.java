@@ -1,21 +1,21 @@
 package com.cnk.data;
 
-import android.os.Environment;
+import android.util.Log;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 public class FileHandler {
 
-    private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
-    private static final String RAPORT_DIRECTORY = "raports/";
-    private static final String RAPORT_FILE_PREFIX = "raport";
-    private static final String TMP = "TMP";
     private static final String LOG_TAG = "FILE_HANDLER";
 
     private static FileHandler instance;
@@ -29,63 +29,45 @@ public class FileHandler {
 
     private FileHandler() {}
 
-    public String saveRaportToFile(Raport raport) {
-        File dir = new File(DATA_PATH + RAPORT_DIRECTORY);
-        dir.mkdirs();
-        File tmpFile = new File(dir, TMP);
-        try {
-            FileOutputStream out = new FileOutputStream(tmpFile);
-            ObjectOutputStream objectOut = new ObjectOutputStream(out);
-            objectOut.writeObject(raport);
-            objectOut.close();
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException();
-        }
-        renameFile(tmpFile, RAPORT_FILE_PREFIX + raport.getId().toString());
-        return RAPORT_FILE_PREFIX + raport.getId().toString();
+    public void saveInputStream(InputStream in, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
+        IOUtils.copy(in, out);
+        out.close();
+        in.close();
     }
 
-    public Raport getRaport(String filename) {
-        FileInputStream in = null;
-        ObjectInputStream objectIn = null;
-        File dir = new File(DATA_PATH + RAPORT_DIRECTORY);
-        Raport curRaport;
-        try {
-            in = new FileInputStream(dir.toString() + "/" + filename);
-            objectIn = new ObjectInputStream(in);
-            curRaport = (Raport) objectIn.readObject();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        } finally {
-            closeInputStream(in, objectIn);
-        }
-        return curRaport;
+    public void saveSerializable(Serializable toSave, String filename) throws IOException {
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
+        FileOutputStream out = new FileOutputStream(file);
+        ObjectOutputStream objOut = new ObjectOutputStream(out);
+        objOut.writeObject(toSave);
+        out.close();
+        objOut.close();
     }
 
-    private void closeInputStream(InputStream in, ObjectInputStream objectIn) {
-        try {
-            if (objectIn != null) {
-                objectIn.close();
-            }
-            if (in != null) {
-                in.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public FileInputStream getFile(String filename) throws FileNotFoundException {
+        File file = new File(filename);
+        return new FileInputStream(file);
     }
 
-    private void renameFile(File from, String to) {
-        File dir = from.getParentFile();
+    public void renameFile(String from, String to) throws IOException {
+        if (from == null) {
+            return;
+        }
+        File file = new File(from);
+        File dir = file.getParentFile();
         File newFile = new File(dir, to);
+        Log.i(LOG_TAG, "Renaming " + from + " to " + to);
         if (newFile.exists()) {
-            newFile.delete();
+            if (newFile.isDirectory()) {
+                FileUtils.deleteDirectory(newFile);
+            } else {
+                newFile.delete();
+            }
         }
-        from.renameTo(newFile);
+        file.renameTo(newFile);
     }
-
-
 }

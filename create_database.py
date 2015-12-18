@@ -7,6 +7,8 @@ cur = con.cursor()
 
 ######### drop
 cur.execute('DROP TABLE IF EXISTS map_images')
+cur.execute('DROP TABLE IF EXISTS map_tiles')
+cur.execute('DROP TABLE IF EXISTS map_tiles_info')
 cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
 cur.execute('DROP TABLE IF EXISTS reports')
@@ -15,16 +17,44 @@ cur.execute('DROP TABLE IF EXISTS reports')
 cur.execute('''
 	CREATE TABLE map_images (
 		filename VARCHAR NOT NULL,
-		version INT NOT NULL UNIQUE,
-		level INT NOT NULL UNIQUE
+		width INT NOT NULL,
+		height INT NOT NULL,
+		floor INT NOT NULL UNIQUE,
+		version INT NOT NULL UNIQUE
 	)
 ''')
+
+cur.execute('''
+	CREATE TABLE map_tiles (
+		floor INT NOT NULL,
+		zoom_level INT NOT NULL,
+		row INT NOT NULL,
+		col INT NOT NULL,
+		filename VARCHAR NOT NULL,
+		UNIQUE(floor, zoom_level, row, col)
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE map_tiles_info (
+		floor INT NOT NULL,
+		zoom_level INT NOT NULL,
+		rows_count INT NOT NULL,
+		columns_count INT NOT NULL,
+		img_width INT NOT NULL,
+		img_height INT NOT NULL,
+		tile_size INT NOT NULL,
+		UNIQUE(floor, zoom_level)
+	)
+''')
+
 cur.execute('''
 	CREATE TABLE counters (
 		element VARCHAR NOT NULL UNIQUE,
 		counter INT NOT NULL
 	)
 ''')
+
 cur.execute('''
 	CREATE TABLE exhibits (
 		id SERIAL PRIMARY KEY,
@@ -38,6 +68,7 @@ cur.execute('''
 		map_level INT NULL
 	)
 ''')
+
 cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
@@ -49,8 +80,8 @@ cur.execute('''
 # map_images
 cur.execute('''
 	INSERT INTO map_images VALUES
-		('floorplan0.jpg', 1, 0),
-		('floorplan0.jpg', 2, 1)
+		('floorplan0.jpg', 2200, 1700, 0, 1),
+		('floorplan0.jpg', 2200, 1700, 1, 2)
 ''')
 
 # counters

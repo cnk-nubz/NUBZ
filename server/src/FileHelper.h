@@ -14,6 +14,8 @@ public:
     boost::filesystem::path pathForTmpFile(const std::string &filename) const;
     boost::filesystem::path pathForPublicFile(const std::string &filename) const;
 
+    std::string pathPrefixForImageTile(std::int32_t floor, std::int32_t level) const;
+
 private:
     FileHelper(const std::string &tmpDirPath, const std::string &publicDirPath);
 

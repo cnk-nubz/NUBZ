@@ -23,7 +23,7 @@ namespace db {
             boost::format where(" WHERE %1% = %2%");
 
             from % tableName;
-            where % colLevel % mapImage.level;
+            where % colFloor % mapImage.floor;
 
             return select.str() + from.str() + where.str();
         }
@@ -32,12 +32,13 @@ namespace db {
             using namespace db::info::map_images;
 
             boost::format insert("INSERT INTO %1%");
-            boost::format into(" (%1%, %2%, %3%)");
-            boost::format values(" VALUES ('%1%', %2%, %3%)");
+            boost::format into(" (%1%, %2%, %3%, %4%, %5%)");
+            boost::format values(" VALUES ('%1%', %2%, %3%, %4%, %5%)");
 
             insert % tableName;
-            into % colFilename % colLevel % colVersion;
-            values % mapImage.filename % mapImage.level % mapImage.version;
+            into % colFilename % colWidth % colHeight % colFloor % colVersion;
+            values % mapImage.filename % mapImage.width % mapImage.height % mapImage.floor %
+                mapImage.version;
 
             return insert.str() + into.str() + values.str();
         }
@@ -46,13 +47,15 @@ namespace db {
             using namespace db::info::map_images;
 
             boost::format update("UPDATE %1%");
-            boost::format set(" SET %1% = '%2%', %3% = %4%");
+            boost::format set(" SET %1% = '%2%', %3% = %4%, %5% = %6%, %7% = %8%");
             boost::format where(" WHERE %1% = %2%");
 
             update % tableName;
             set % colFilename % mapImage.filename;
             set % colVersion % mapImage.version;
-            where % colLevel % mapImage.level;
+            set % colWidth % mapImage.width;
+            set % colHeight % mapImage.height;
+            where % colFloor % mapImage.floor;
 
             return update.str() + set.str() + where.str();
         }

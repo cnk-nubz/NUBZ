@@ -2,7 +2,6 @@
 #define IO__MAP_IMAGES_REQUEST__H
 
 #include <cstdint>
-#include <iostream>
 
 #include <boost/optional.hpp>
 

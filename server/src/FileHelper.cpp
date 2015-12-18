@@ -30,3 +30,10 @@ boost::filesystem::path FileHelper::pathForPublicFile(const std::string &filenam
     result /= filename;
     return result;
 }
+
+std::string FileHelper::pathPrefixForImageTile(std::int32_t floor, std::int32_t level) const {
+    namespace fs = boost::filesystem;
+    fs::path result(publicDirPath);
+    result /= "tile__map_f" + std::to_string(floor) + "_l" + std::to_string(level);
+    return result.string();
+}

@@ -1,23 +1,39 @@
 root = exports ? this
 
 setThFloor = (n) ->
-	root.activeFloor = n
-	d3.select "#floorButton#{n}"
-		.classed(
-			"active": true
-		)
-	d3.select "#floorButton#{1-n}"
-		.classed(
-			"active": false
-		)
-	d3.select "#floorImage"
-		.style("fill", "url(#floor#{n})")
-	return
+  root.activeFloor = n
+  root.resetZoom()
+  d3.select "#floorButton#{n}"
+    .classed(
+      "active": true
+    )
+
+  d3.select "#exhibitsFloor#{n}"
+    .style(
+      "display": "initial"
+    )
+
+  d3.select "#exhibitsFloor#{1-n}"
+    .style(
+      "display": "none"
+    )
+
+  d3.select "#floorButton#{1-n}"
+    .classed(
+      "active": false
+    )
+
+  d3.select "#floorImage"
+    .attr(
+      "fill": "url(#floor#{n})"
+    )
+  return
+
 
 root.setThFloor = setThFloor
 
 div = d3.select "#mapContainer"
-   .append "div"
+	 .append "div"
 	.style(
 		"position": "absolute"
 		"top": "0px"
@@ -29,7 +45,7 @@ div.append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": "floorButton0"
 	)
@@ -51,7 +67,7 @@ div.append "div"
 	.style(
 		"padding-top": "5px"
 	)
-	.append "button"
+	 .append "button"
 	.attr(
 		"id": "floorButton1"
 	)
@@ -67,6 +83,3 @@ div.append "div"
 	)
 	.html "Piętro 1"
 	.on("click", ->setThFloor(1))
-
-#set default active floor
-setThFloor(root.activeFloor)

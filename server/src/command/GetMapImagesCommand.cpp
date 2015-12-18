@@ -32,7 +32,7 @@ namespace command {
         io::output::MapImagesResponse response;
         response.version = getCounter.getResult();
         for (const auto &mapImage : getMapImages->getResult()) {
-            response.levelImageUrls[mapImage.level] = createFullUrl(mapImage.filename);
+            response.levelImageUrls[mapImage.floor] = createFullUrl(mapImage.filename);
         }
 
         return response;

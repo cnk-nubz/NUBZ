@@ -6,11 +6,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" href="{%static "favicon.ico" %}">
+	<link rel="icon" href="{% static "favicon.ico" %}">
 
 	<title>Tajny Projekt NUBZ</title>
 
     <script src="{% static "js/jquery.min.js" %}"></script>
+    <script src="{% static "js/jquery.boxfit.js" %}"></script>
     <script src="{% static "js/bootstrap.min.js" %}"></script>
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
     <link href="{% static "css/base.css" %}" rel="stylesheet">
@@ -20,18 +21,39 @@
 	<!-- load django variables globally -->
 	{% compress js %}
 	<script type="text/coffeescript">
+		class Exhibit
+			constructor: (@x, @y, @width, @height, @exhibitName, @mapLevel) ->
+
 		root = exports ? this
-		root.maxZoomScale = 5
+		root.maxZoomScale = 15
 		root.minZoomScale = 1
 		root.url_floor0 = "{{url_floor0}}"
 		root.url_floor1 = "{{url_floor1}}"
 		root.csrf_token = "{% csrf_token %}"
-		root.activeFloor = +"{{floor}}"
+		root.activeFloor = 0
+		root.svgWidth = [0, 0]
+		root.svgHeight = [0, 0]
+		root.floorRealImageWidth = [0, 0]
+		root.floorRealImageHeight = [0, 0]
+		root.floorImageX = [0, 0]
+		root.floorImageY = [0, 0]
+		root.floorScaledImageWidth = [0, 0]
+		root.floorScaledImageHeight = [0, 0]
+
+
+		root.exhibits = []
+		{% for key in exhibits %}
+		root.exhibits.push(new Exhibit({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, "{{key.name}}", {{key.mapLevel}}))
+		{% endfor %}
+		root.floorExhibits = [0, 0]
+		root.floorExhibits[0] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 0)
+		root.floorExhibits[1] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 1)
 	</script>
 	{% endcompress %}
 </head>
 
 <body>
+
 {% compress js %}
 
 <script src="{% static "coffee/navbar.coffee"%}" type="text/coffeescript">
@@ -69,9 +91,23 @@
 </script>
 {% endcompress %}
 {% compress js %}
+<script src = "{% static "coffee/spawnExhibits.coffee" %}" type="text/coffeescript">
+###
+# SPAWN EXHIBITS
+###
+</script>
+{% endcompress %}
+{% compress js %}
 <script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
 ###
 # CREATE BUTTONS TO CHANGE FLOOR
+###
+</script>
+{% endcompress %}
+{% compress js %}
+<script src = "{% static "coffee/onSiteReady.coffee" %}" type="text/coffeescript">
+###
+# LOAD IMAGES OR SETTINGS AFTER SITE IS READY
 ###
 </script>
 {% endcompress %}
