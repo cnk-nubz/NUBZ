@@ -318,8 +318,6 @@ public class MapActivity extends Activity implements Observer {
         protected Void doInBackground(Void... voids) {
             Log.i(LOG_TAG, "map setting beginning");
 
-            assert (floor == 0 || floor == 1);
-
             System.gc();
 
             final Semaphore localUISynchronization = new Semaphore(0, true);
