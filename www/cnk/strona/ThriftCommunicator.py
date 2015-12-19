@@ -21,7 +21,7 @@ class ThriftCommunicator:
 	def start_connection(self):
 		try:
 			socket = TSocket.TSocket(self.host, self.port)
-			self.transport = TTransport.TBufferedTransport(socket)
+			self.transport = TTransport.TFramedTransport(socket)
 			self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
 			self.transport.open()
 			self.client = Server.Client(self.protocol)
