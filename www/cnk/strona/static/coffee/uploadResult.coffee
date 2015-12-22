@@ -14,35 +14,40 @@ errorData = [
 ]
 root.setActiveAlert = (err) ->
 
-	alert = d3.select "body"
-		.insert("div", ":first-child")
-		.classed(
-			"alert": true
-			"alert-#{errorData[err - 1].type}": true
-			"alert-dismissible": true
-		)
-		.attr(
-			"id": "uploadAlert"
-			"role": "alert"
-		)
+  alert = d3.select "body"
+    .insert("div", ":first-child")
+    .classed(
+      "alert": true
+      "alert-#{errorData[err - 1].type}": true
+      "alert-dismissible": true
+    )
+    .attr(
+      "id": "uploadAlert"
+      "role": "alert"
+    )
 
-	alert.append "button"
-		.attr(
-			"type": "button"
-			"data-dismiss": "alert"
-			"aria-label": "Close"
-		)
-		.classed(
-			"close": true
-		)
-		 .append "span"
-		.attr(
-			"aria-hidden": "true"
-		)
-		.html "&times;"
+  alert.append "button"
+    .attr(
+      "type": "button"
+      "data-dismiss": "alert"
+      "aria-label": "Close"
+    )
+    .classed(
+      "close": true
+    )
+     .append "span"
+    .attr(
+      "aria-hidden": "true"
+    )
+    .html "&times;"
 
-	alert.append "span"
+  alert.append "span"
     .style(
       "font-weight": "bold"
     )
-		.html "#{errorData[err - 1].info}"
+    .html "#{errorData[err - 1].info}"
+
+  d3.select ".progress"
+    .style(
+      "display": "none"
+    )

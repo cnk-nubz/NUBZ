@@ -1,7 +1,33 @@
 body {
     padding-top: 50px;
+    overflow: hidden;
+}
+/* Redefining bootstrap classes */
+.alert {
+	margin-bottom: 0px;
 }
 
-.alert { /* Redefining margin for alert bootstrap class */
-	margin-bottom: 0px;
+.progress {
+  margin-bottom: 0px;
+  margin-top: 1px;
+}
+.progress-bar {
+  padding-bottom: 0px;
+}
+/* end of redefining bootstrap classes */
+.exhibit {
+  fill: lightblue;
+  stroke: blue;
+  pointer: default;
+}
+
+.exhibit rect.dragging {
+  fill: #ff9999;
+  stroke: red;
+}
+
+#map {
+  width: 100vw;
+  height: calc(100vh - 50px);
+  display: block;
 }

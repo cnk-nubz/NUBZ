@@ -12,56 +12,65 @@ div = d3.select "body"
 		.append "div"
 
 form = div.append "div"
-	.style(
-		"display": "inline"
-	)
-	 .append "form"
-	.attr(
-		"id": "imageUploadForm"
-	)
-	.classed(
-		"form-inline": true
-	)
-	.style(
-		"display": "none"
-		"padding-top": "5px"
-	)
-	.html root.csrf_token
-	 .append "div" #spacer
-	.style(
-		"padding-bottom": "5px"
-	)
-	 .append "div"
-	.style(
-		"padding-top": "5px"
-	)
-
+  .style(
+    "display": "inline"
+  )
+   .append "form"
+  .attr(
+    "id": "imageUploadForm"
+  )
+  .classed(
+    "form-inline": true
+  )
+  .style(
+    "display": "none"
+  )
+  .html root.csrf_token
+   .append "div" #spacer
+  .style(
+    "padding-bottom": "5px"
+  )
+   .append "div"
+  .style(
+    "padding-top": "5px"
+  )
 (($) ->
 
 ) jQuery #safe use of $
 
 # Set ajax action for form submit
 $("#imageUploadForm").submit((e) ->
-	$.ajax(
-		type: "POST"
-		url: "/uploadImage/"
-		data: new FormData(@)
-		processData: false
-		contentType: false
-		success: (data) ->
-			d3.select "#uploadAlert"
-				.remove()
-			root.setActiveAlert data.err #set error
-			root.setThFloor data.floor  #set active floor
-			root.loadFloorImage(0, data.url_floor0) #refresh images
-			root.loadFloorImage(1, data.url_floor1)
-			root.resetZoom()
-			$ "#uploadImage" #reset input value
-				.val ''
-			return
-	)
-	e.preventDefault()
-	return
+  d3.select "#uploadAlert"
+    .remove()
+
+  d3.select "input[type=submit]"
+    .property(
+      "disabled": true
+    )
+
+  $.ajax(
+    type: "POST"
+    url: "/uploadImage/"
+    data: new FormData(this)
+    processData: false
+    contentType: false
+
+    success: (data) ->
+      root.setActiveAlert data.err
+      $ "#uploadImage" #reset input value
+        .val ''
+      root.refreshMap(data.floor, data.tileSize, data.scaledSize) if data.tileSize? and data.scaledSize?
+      return
+
+    complete: ->
+      d3.select "input[type=submit]"
+        .property(
+          "disabled": false
+        )
+      return
+  )
+  e.preventDefault()
+  return
 )
 
 form.append "div"
@@ -81,21 +90,21 @@ form.append "div"
 	)
 
 form.append "input"
-	.attr(
-		"type": "submit",
-		"value": "Prześlij",
-	)
-	.classed(
-		"btn": true
-		"btn-default": true
-		"btn-xs": true
-	)
-	.on("click", ->
-		d3.select "#hiddenFloorLevel"
-			.attr(
-				"value": root.activeFloor
-			)
-	)
+  .attr(
+    "type": "submit",
+    "value": "Prześlij",
+  )
+  .classed(
+    "btn": true
+    "btn-default": true
+    "btn-xs": true
+  )
+  .on("click", ->
+    d3.select "#hiddenFloorLevel"
+      .attr(
+        "value": root.activeFloor
+      )
+  )
 
 form.append "input"
 	.attr(

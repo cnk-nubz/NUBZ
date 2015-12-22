@@ -1,40 +1,43 @@
 removeAlert = ->
-	d3.select "#uploadAlert"
-		.remove()
-	return
+  d3.select "#uploadAlert"
+    .remove()
+  return
 
 removeActiveClass = ->
-	d3.selectAll "#navJustMap, #navEditMap"
-		.classed(
-			"active": false
-		)
-	removeAlert()
-	return
+  d3.selectAll "#navJustMap, #navEditMap"
+    .classed(
+      "active": false
+    )
+  removeAlert()
+  return
 
 getJustMap = ->
-	d3.select "#imageUploadForm"
-		.style(
-			"display": "none"
-		)
-	removeActiveClass()
-	d3.select "#navJustMap"
-		.classed(
-			"active": true
-		)
-	removeAlert()
-	return
+  d3.selectAll "#imageUploadForm"
+    .style(
+      "display": "none"
+    )
+
+  removeActiveClass()
+  d3.select "#navJustMap"
+    .classed(
+      "active": true
+    )
+  removeAlert()
+  return
 
 getEditMap = ->
-	d3.select "#imageUploadForm"
-		.style(
-			"display": "initial"
-		)
-	removeActiveClass()
-	d3.select "#navEditMap"
-		.classed(
-			"active": true
-		)
-	return
+  d3.select "#imageUploadForm"
+    .style(
+      "display": "initial"
+    )
+
+  removeActiveClass()
+
+  d3.select "#navEditMap"
+    .classed(
+      "active": true
+    )
+  return
 
 navigationBar = d3.select "body"
 	 .append "nav"

@@ -6,53 +6,65 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
+from django.conf import settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
-def _getFloorImages():
+def _pingServer():
 	tc = ThriftCommunicator()
-	result = tc.getMapImages()
+	result = tc.ping(1, 'x')
+	return result == 1
 
-	if not result:
-		raise Exception()
+def _getMapImageTilesSize():
+	tc = ThriftCommunicator()
+	floorTiles = [
+		tc.getMapImageTiles(0),
+		tc.getMapImageTiles(1)
+	]
+	if not floorTiles[0] and floorTiles[1]:
+		raise
+	floorTilesInfo = {}
+	if not floorTiles:
+		return floorTilesInfo
 
-	result = result.levelImageUrls
-	urls = [None, None]
+	for i in xrange(0, 2):
+		if not floorTiles[i]:
+			continue
 
-	try:
-		urls[0] = result[0][result[0].find('/'):]
-	except KeyError:
-		pass
+		if not floorTiles[i].zoomLevels:
+			floorTilesInfo[i] = {
+				"tileSize": {"width": 2200, "height": 1700},
+				"scaledSize": {"width": 2200, "height": 1700}
+			}
+		else:
+			#zooms are sorted in decreasing order
+			biggestZoom = floorTiles[i].zoomLevels[2]
+			floorTilesInfo[i] = {
+				'tileSize': {"width": biggestZoom.tileSize.width, "height": biggestZoom.tileSize.height },
+				'scaledSize': {"width": biggestZoom.scaledSize.width, "height": biggestZoom.scaledSize.height }
+			}
 
-	try:
-		urls[1] = result[1][result[1].find('/'):]
-	except KeyError:
-		pass
-
-	return urls
+	floorTilesInfoList = list()
+	for i in floorTilesInfo.keys():
+		floorTilesInfoList.append({
+			"tileWidth": floorTilesInfo[i]['tileSize']['width'],
+			"tileHeight": floorTilesInfo[i]['tileSize']['height'],
+			"scaledWidth": floorTilesInfo[i]['scaledSize']['width'],
+			"scaledHeight": floorTilesInfo[i]['scaledSize']['height'],
+		})
+	return floorTilesInfoList
 
 def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
 
 	if not result:
-		raise Exception()
-
-	return result.exhibits
-
-def index(request):
-	try:
-		urls = _getFloorImages()
-	except:
-		return HttpResponse('<h1>Nie mozna zaladowac map, sprawdz czy serwer jest wlaczony</h1>')
-
-	try:
-		exhibits = _getExhibits()
-	except:
-		exhibits = {}
+		return {}
 
 	exhibitList = list()
+	exhibits = result.exhibits
 	for i in exhibits.keys():
 		if exhibits[i].frame:
 			e = exhibits[i].frame
@@ -61,16 +73,25 @@ def index(request):
 				"y": e.y,
 				"height": e.height,
 				"width": e.width,
-                		"name": "{}".format(exhibits[i].name),
+				"name": "{}".format(exhibits[i].name),
 				"mapLevel": e.mapLevel,
 			})
+	return exhibitList
+
+def index(request):
+	if not _pingServer():
+		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
+
+	floorTilesInfo = _getMapImageTilesSize()
+	exhibitList = _getExhibits()
 
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {
-		"url_floor0" : urls[0],
-		"url_floor1" : urls[1],
-		"floor": 0,
-		"exhibits": exhibitList
+		"activeFloor": 0,
+		"exhibits": exhibitList,
+		"floorTilesInfo": floorTilesInfo,
+		"urlFloor0": getattr(settings, 'FLOOR0_TILES_DIRECTORY', ''),
+		"urlFloor1": getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
 	})
 	return HttpResponse(template.render(context))
 
@@ -105,23 +126,20 @@ def uploadImage(request):
 	filename = m.image.name
 	#extract filename
 	set_result = tc.setMapImage(floor, os.path.basename(filename))
-	try:
-		urls = _getFloorImages()
-	except:
-		urls = [None, None]
+
+	floorTilesInfo = _getMapImageTilesSize()
+
 	if not set_result:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
 			"floor": floor,
-			"url_floor0": urls[0],
-			"url_floor1": urls[1]
 		}
 		return JsonResponse(data)
 
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
-		"url_floor0": urls[0],
-		"url_floor1": urls[1]
+        "tileSize": {"width": floorTilesInfo[floor]['tileWidth'], "height": floorTilesInfo[floor]['tileHeight']},
+        "scaledSize": {"width": floorTilesInfo[floor]['scaledWidth'], "height": floorTilesInfo[floor]['scaledHeight']}
 	}
 	return JsonResponse(data)
