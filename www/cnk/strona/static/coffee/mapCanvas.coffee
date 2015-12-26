@@ -4,54 +4,60 @@ d3.select "body"
   .attr(
     "id": "map"
   )
+  .classed(
+    'without-form': true
+  )
 
 map = L.map('map', {
   minZoom: 1
-  maxZoom: 4
+  maxZoom: 3
   zoom: 1
   crs: L.CRS.Simple
 })
-
-w = (root.floorTilesInfo[i].scaledWidth for i in [0..1])
-h = (root.floorTilesInfo[i].scaledHeight for i in [0..1])
-console.log w
-console.log h
+#boundaries will be set according to highest zoom
+mapWidth = (root.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
+mapHeight = (root.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
+mapMargin = {left: 190}
+console.log 'mapWidth'
+console.log mapWidth
+console.log 'mapHeight'
+console.log mapHeight
 exhibits = [new L.LayerGroup(), new L.LayerGroup()]
 mapBounds = [
-  new L.LatLngBounds(map.unproject([0, h[0]], 3), map.unproject([w[0], 0], 3)),
-  new L.LatLngBounds(map.unproject([0, h[1]], 3), map.unproject([w[1], 0], 3))
+  new L.LatLngBounds(map.unproject([-mapMargin.left, mapHeight[0]], 3), map.unproject([mapWidth[0], 0], 3)),
+  new L.LatLngBounds(map.unproject([-mapMargin.left, mapHeight[1]], 3), map.unproject([mapWidth[1], 0], 3))
 ]
+console.log 'mapBounds'
 console.log mapBounds
 
-#TODO: Attach ?id=(next_generated_id) at the end of url to force browser to re-render
-floorLayer = [
-    L.tileLayer(root.urlFloor[0], {
-      maxNativeZoom: 3
-      tileSize: root.floorTilesInfo[0].tileWidth
-      continuousWorld: true
-      crs: L.CRS.Simple
-      bounds: mapBounds[0]
-    }),
-    L.tileLayer(root.urlFloor[1], {
-      maxNativeZoom: 3
-      tileSize: root.floorTilesInfo[1].tileWidth
-      continuousWorld: true
-      crs: L.CRS.Simple
-      bounds: mapBounds[1]
+floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
+for i in [0..1]
+  len = root.floorTilesInfo[i].length
+  for j in [0...len]
+    zoomLayer = L.tileLayer(root.urlFloor[i].replace('{z}', "#{j+1}"), {
+        minZoom: j+1
+        maxZoom: j+1
+        tileSize: root.floorTilesInfo[i][j].tileWidth
+        errorTileUrl: '/static/inactiveTile.png'
+        continuousWorld: true
+        crs: L.CRS.Simple
+        bounds: mapBounds[i]
     })
-]
+    floorLayer[i].addLayer zoomLayer
 
+console.log 'floorLayer'
 console.log floorLayer
+
 
 labelsButton = L.easyButton({
   states:[
       {
         stateName: 'setLabels'
-        icon: 'fa-tags'
+        icon: 'fa-comment-o'
         title: 'Pokaż etykiety'
         onClick: (btn, map) ->
           btn.state('removeLabels')
-          activeFloor = if map.hasLayer floorLayer[0] then 0 else 1
+          activeFloor = root.activeFloor
           exhibits[activeFloor].eachLayer((layer) ->
             layer.showLabel()
           )
@@ -59,7 +65,7 @@ labelsButton = L.easyButton({
       },
       {
         stateName: 'removeLabels'
-        icon: 'fa-times'
+        icon: 'fa-comment'
         title: 'Ukryj etykiety'
         onClick: (btn, map) ->
           btn.state('setLabels')
@@ -76,6 +82,7 @@ labelsButton.state 'removeLabels'
 
 setFloorLayer = (floor) ->
   (btn, map) ->
+    root.activeFloor = floor
     map.removeLayer exhibits[1 - floor]
     map.removeLayer floorLayer[1 - floor]
     map.addLayer floorLayer[floor]
@@ -97,19 +104,13 @@ floorButton = [
   L.easyButton('<strong>0</strong>', setFloorLayer 0, 'Piętro 0')
   L.easyButton('<strong>1</strong>', setFloorLayer 1, 'Piętro 1')
 ]
-floorButton[0].button.onclick = ->
-  root.activeFloor = 1 - root.activeFloor
-floorButton[1].button.onclick = ->
-  root.activeFloor = 1 - root.activeFloor
-
 
 floorButton[0].addTo map
 floorButton[1].addTo map
 
 # SPAWN EXHIBITS
-exhibitCnt = 0
 spawnExhibits = (floor) ->
-  for e in root.floorExhibits[floor]
+  for e in root.visibleExhibits[floor]
     X = e.frame.x
     Y = e.frame.y
     polygonBounds = [
@@ -121,40 +122,24 @@ spawnExhibits = (floor) ->
     r = L.polygon(polygonBounds, {
         color: "#ff7800"
         weight: 1
-      }).bindLabel(e.exhibitName, {
+      }).bindLabel(e.name, {
         noHide: true
         direction: 'auto'
       })
-    r._leaflet_id = "exhibit#{exhibitCnt++}"
-    console.log r
     exhibits[floor].addLayer(r)
   return
 
 jQuery(document).ready( ->
   spawnExhibits 0
   spawnExhibits 1
-  exhibits[0].eachLayer((layer) ->
-    layer.on('click', ->
-      console.log "hej jestem"
-    )
-  )
   #set initial state
+  #TODO: somehow fire click on active floor's button
   activeFloor = root.activeFloor
   map.addLayer floorLayer[activeFloor]
   map.addLayer exhibits[activeFloor]
-  exhibits[activeFloor].eachLayer((layer) ->
-    layer.showLabel()
-  )
   map.setMaxBounds mapBounds[activeFloor]
   map.setView(map.unproject([0, 0], 1), 1)
 )
 
-root.refreshMap = (floor, tileSize, scaledSize) ->
-  mapBounds = new L.LatLngBounds(
-    map.unproject([0, scaledSize.height], 3),
-    map.unproject([scaledSize.width, 0], 3)
-  )
-  map.setMaxBounds mapBounds
-  floorLayer[floor]._tileSize = L.point(tileSize.width, tileSize.height)
-  map.invalidateSize()
-  map._onResize()
+root.refreshMap = (floor) ->
+  floorLayer[floor].setUrl("#{urlFloor[floor]}?t=#{Math.floor(Math.random() * 1024)}")

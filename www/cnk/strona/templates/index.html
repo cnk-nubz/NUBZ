@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% load compress %}
 {% load staticfiles %}
+{% load jsvar %}
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -49,27 +50,19 @@
     console.log root.urlFloor
     root.csrf_token = "{% csrf_token %}"
     root.activeFloor = +"{{acitveFloor}}"
-
-    root.exhibits = []
-    root.floorTilesInfo = []
-    {% for key in floorTilesInfo %}
-    root.floorTilesInfo.push({
-      'scaledWidth': {{key.scaledWidth}}
-      'scaledHeight': {{key.scaledHeight}}
-      'tileWidth': {{key.tileWidth}}
-      'tileHeight': {{key.tileHeight}}
-    })
-    {% endfor %}
+    root.exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+    root.floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+    (root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])) for i in [0..1]
+    console.log 'root.exhibits'
+    console.log root.exhibits
+    console.log 'root.floorTilesInfo'
     console.log root.floorTilesInfo
-    {% for key in exhibits %}
-    root.exhibits.push(new Exhibit("{{key.name}}",
-                       new Frame({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, {{key.mapLevel}})))
-    {% endfor %}
-
-    root.floorExhibits = [
-      (e for e in root.exhibits when e.frame.mapLevel is 0),
-      (e for e in root.exhibits when e.frame.mapLevel is 1)
+    root.visibleExhibits = [
+      (e for e in root.exhibits when e.frame? and e.frame.mapLevel is 0),
+      (e for e in root.exhibits when e.frame? and e.frame.mapLevel is 1)
     ]
+    console.log "root.visibleExhibits"
+    console.log root.visibleExhibits
   </script>
   {% endcompress %}
 </head>

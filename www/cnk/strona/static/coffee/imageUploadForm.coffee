@@ -11,10 +11,7 @@ getCookie = (name) ->
 div = d3.select "body"
 		.append "div"
 
-form = div.append "div"
-  .style(
-    "display": "inline"
-  )
+form = div
    .append "form"
   .attr(
     "id": "imageUploadForm"
@@ -29,17 +26,11 @@ form = div.append "div"
    .append "div" #spacer
   .style(
     "padding-bottom": "5px"
-  )
-   .append "div"
-  .style(
     "padding-top": "5px"
   )
-(($) ->
-
-) jQuery #safe use of $
 
 # Set ajax action for form submit
-$("#imageUploadForm").submit((e) ->
+jQuery("#imageUploadForm").submit((e) ->
   d3.select "#uploadAlert"
     .remove()
 
@@ -48,7 +39,7 @@ $("#imageUploadForm").submit((e) ->
       "disabled": true
     )
 
-  $.ajax(
+  jQuery.ajax(
     type: "POST"
     url: "/uploadImage/"
     data: new FormData(this)
@@ -57,9 +48,8 @@ $("#imageUploadForm").submit((e) ->
 
     success: (data) ->
       root.setActiveAlert data.err
-      $ "#uploadImage" #reset input value
+      jQuery "#uploadImage" #reset input value
         .val ''
-      root.refreshMap(data.floor, data.tileSize, data.scaledSize) if data.tileSize? and data.scaledSize?
       return
 
     complete: ->

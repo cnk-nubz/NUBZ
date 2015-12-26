@@ -17,17 +17,24 @@ def _pingServer():
 	result = tc.ping(1, 'x')
 	return result == 1
 
-def _getMapImageTilesSize():
+defaultImage = {
+    'tileWidth': 2200,
+    'tileHeight': 1700,
+    'scaledWidth': 2200,
+    'scaledHeight': 1700
+}
+
+def _getMapImageInfo():
 	tc = ThriftCommunicator()
 	floorTiles = [
 		tc.getMapImageTiles(0),
 		tc.getMapImageTiles(1)
 	]
-	if not floorTiles[0] and floorTiles[1]:
-		raise
-	floorTilesInfo = {}
+
 	if not floorTiles:
-		return floorTilesInfo
+		return {}
+
+	floorTilesInfo = {}
 
 	for i in xrange(0, 2):
 		if not floorTiles[i]:
@@ -35,63 +42,62 @@ def _getMapImageTilesSize():
 
 		if not floorTiles[i].zoomLevels:
 			floorTilesInfo[i] = {
-				"tileSize": {"width": 2200, "height": 1700},
-				"scaledSize": {"width": 2200, "height": 1700}
+				'tileWidth': defaultImage['tileWidth'],
+				'tileHeight': defaultImage['tileHeight'],
+				'scaledWidth': defaultImage['scaledWidth'],
+				'scaledHeight': defaultImage['scaledHeight']
 			}
 		else:
-			#zooms are sorted in decreasing order
-			biggestZoom = floorTiles[i].zoomLevels[2]
 			floorTilesInfo[i] = {
-				'tileSize': {"width": biggestZoom.tileSize.width, "height": biggestZoom.tileSize.height },
-				'scaledSize': {"width": biggestZoom.scaledSize.width, "height": biggestZoom.scaledSize.height }
-			}
+			idx: {
+				'tileWidth': zoom.tileSize.width,
+				'tileHeight': zoom.tileSize.height,
+				'scaledWidth': zoom.scaledSize.width,
+				'scaledHeight': zoom.scaledSize.height
+			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
 
-	floorTilesInfoList = list()
-	for i in floorTilesInfo.keys():
-		floorTilesInfoList.append({
-			"tileWidth": floorTilesInfo[i]['tileSize']['width'],
-			"tileHeight": floorTilesInfo[i]['tileSize']['height'],
-			"scaledWidth": floorTilesInfo[i]['scaledSize']['width'],
-			"scaledHeight": floorTilesInfo[i]['scaledSize']['height'],
-		})
-	return floorTilesInfoList
+	return floorTilesInfo
 
 def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
-
-	if not result:
+	if not result or not result.exhibits:
 		return {}
 
-	exhibitList = list()
-	exhibits = result.exhibits
-	for i in exhibits.keys():
-		if exhibits[i].frame:
-			e = exhibits[i].frame
-			exhibitList.append({
-				"x": e.x,
-				"y": e.y,
-				"height": e.height,
-				"width": e.width,
-				"name": "{}".format(exhibits[i].name),
-				"mapLevel": e.mapLevel,
-			})
-	return exhibitList
+	exhibitDict = {}
+	for k in result.exhibits:
+		e = result.exhibits[k]
+		if e.frame == None:
+			exhibitDict[k] = {
+				'name': e.name,
+				'frame': None
+			}
+			continue
+		exhibitDict[k] = {
+			'name': e.name,
+			'frame': {
+				'x': e.frame.x,
+				'y': e.frame.y,
+				'width': e.frame.width,
+				'height': e.frame.height,
+				'mapLevel': e.frame.mapLevel
+			},
+		}
+	return exhibitDict
 
 def index(request):
 	if not _pingServer():
 		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
 
-	floorTilesInfo = _getMapImageTilesSize()
-	exhibitList = _getExhibits()
-
+	floorTilesInfo = _getMapImageInfo()
+	exhibits = _getExhibits()
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {
-		"activeFloor": 0,
-		"exhibits": exhibitList,
-		"floorTilesInfo": floorTilesInfo,
-		"urlFloor0": getattr(settings, 'FLOOR0_TILES_DIRECTORY', ''),
-		"urlFloor1": getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
+		'activeFloor': 0,
+		'exhibits': exhibits,
+		'floorTilesInfo': floorTilesInfo,
+		'urlFloor0': getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg"),
+		'urlFloor1': getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan0.jpg")
 	})
 	return HttpResponse(template.render(context))
 

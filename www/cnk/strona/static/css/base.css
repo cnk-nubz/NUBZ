@@ -26,8 +26,13 @@ body {
   stroke: red;
 }
 
+.without-form {
+  height: calc(100vh - 50px)
+}
+.with-form {
+  height: calc(100vh - 105px)
+}
 #map {
   width: 100vw;
-  height: calc(100vh - 50px);
   display: block;
 }

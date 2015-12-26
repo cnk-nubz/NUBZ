@@ -1,3 +1,11 @@
+root = exports ? this
+formVisibility = (visible) ->
+  d3.select "#map"
+    .classed(
+      'without-form': if not visible then true else false
+      'with-form': if visible then true else false
+    )
+
 removeAlert = ->
   d3.select "#uploadAlert"
     .remove()
@@ -23,6 +31,7 @@ getJustMap = ->
       "active": true
     )
   removeAlert()
+  formVisibility false
   return
 
 getEditMap = ->
@@ -37,6 +46,8 @@ getEditMap = ->
     .classed(
       "active": true
     )
+
+  formVisibility true
   return
 
 navigationBar = d3.select "body"
