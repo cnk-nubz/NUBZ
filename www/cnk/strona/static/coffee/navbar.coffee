@@ -1,9 +1,17 @@
 root = exports ? this
 formVisibility = (visible) ->
-  d3.select "#map"
+  d3.selectAll "#map, #control-panel"
     .classed(
       'without-form': if not visible then true else false
       'with-form': if visible then true else false
+    )
+  d3.select "#map"
+    .style(
+      "top": if visible then '45px' else '0px'
+    )
+  d3.select "#control-panel"
+    .style(
+      "top": if visible then '95px' else '51px'
     )
 
 removeAlert = ->

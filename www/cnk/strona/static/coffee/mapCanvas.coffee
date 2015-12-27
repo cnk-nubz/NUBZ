@@ -2,11 +2,23 @@ root = exports ? this
 d3.select "body"
    .append "div"
   .attr(
-    "id": "map"
+    'id': 'map'
   )
   .classed(
     'without-form': true
   )
+
+d3.select "body"
+   .append "div"
+  .attr(
+    'id': 'control-panel'
+  )
+  .classed(
+    'detached-control-panel': true
+    'without-form': true
+  )
+  .html "&nbsp;"
+
 
 map = L.map('map', {
   minZoom: 1
@@ -17,15 +29,14 @@ map = L.map('map', {
 #boundaries will be set according to highest zoom
 mapWidth = (root.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
 mapHeight = (root.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
-mapMargin = {left: 190}
 console.log 'mapWidth'
 console.log mapWidth
 console.log 'mapHeight'
 console.log mapHeight
 exhibits = [new L.LayerGroup(), new L.LayerGroup()]
 mapBounds = [
-  new L.LatLngBounds(map.unproject([-mapMargin.left, mapHeight[0]], 3), map.unproject([mapWidth[0], 0], 3)),
-  new L.LatLngBounds(map.unproject([-mapMargin.left, mapHeight[1]], 3), map.unproject([mapWidth[1], 0], 3))
+  new L.LatLngBounds(map.unproject([0, mapHeight[0]], 3), map.unproject([mapWidth[0], 0], 3)),
+  new L.LatLngBounds(map.unproject([0, mapHeight[1]], 3), map.unproject([mapWidth[1], 0], 3))
 ]
 console.log 'mapBounds'
 console.log mapBounds
@@ -38,7 +49,6 @@ for i in [0..1]
         minZoom: j+1
         maxZoom: j+1
         tileSize: root.floorTilesInfo[i][j].tileWidth
-        errorTileUrl: '/static/inactiveTile.png'
         continuousWorld: true
         crs: L.CRS.Simple
         bounds: mapBounds[i]
