@@ -92,6 +92,14 @@ labelsButton.state 'removeLabels'
 
 setFloorLayer = (floor) ->
   (btn, map) ->
+    d3.select btn.button
+    .classed(
+      'clicked': true
+    )
+    d3.select floorButton[1 - floor].button
+    .classed(
+      'clicked': false
+    )
     root.activeFloor = floor
     map.removeLayer exhibits[1 - floor]
     map.removeLayer floorLayer[1 - floor]
@@ -143,12 +151,7 @@ jQuery(document).ready( ->
   spawnExhibits 0
   spawnExhibits 1
   #set initial state
-  #TODO: somehow fire click on active floor's button
-  activeFloor = root.activeFloor
-  map.addLayer floorLayer[activeFloor]
-  map.addLayer exhibits[activeFloor]
-  map.setMaxBounds mapBounds[activeFloor]
-  map.setView(map.unproject([0, 0], 1), 1)
+  setFloorLayer(root.activeFloor)(floorButton[root.activeFloor], map)
 )
 
 root.refreshMap = (floor) ->

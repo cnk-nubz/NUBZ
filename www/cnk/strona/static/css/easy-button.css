@@ -20,7 +20,7 @@
 }
 
 .leaflet-bar button:hover {
-  background-color: #f4f4f4;
+  background-color: #f3f3f3;
 }
 
 .leaflet-bar button:first-of-type {
@@ -39,6 +39,10 @@
   cursor: default;
   pointer-events: none;
   opacity: .4;
+}
+
+.leaflet-bar button.clicked {
+  background-color: lightblue;
 }
 
 .easy-button-button .button-state{
