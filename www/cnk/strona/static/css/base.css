@@ -3,16 +3,8 @@ body {
   overflow: hidden;
 }
 /* Redefining bootstrap classes */
-.alert {
-	margin-bottom: 0px;
-}
-
-.progress {
-  margin-bottom: 0px;
-  margin-top: 1px;
-}
-.progress-bar {
-  padding-bottom: 0px;
+.modal {
+  top: 95px;
 }
 /* end of redefining bootstrap classes */
 /* Redefining leaflet classes */
@@ -56,6 +48,7 @@ body {
   z-index: 1200;
   overflow: hidden;
 }
+
 #imageUploadForm {
   background: rgba(255, 255, 255, 1);
   position: absolute;
@@ -63,4 +56,9 @@ body {
   left: 0px;
   right: 0px;
   z-index: 1200;
+}
+
+#formSpacer {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }

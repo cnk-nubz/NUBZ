@@ -13,7 +13,7 @@
 
   <script src="{% static "js/jquery.min.js" %}"></script>
   <script src="{% static "js/bootstrap.min.js" %}"></script>
-  <script src="{% static "js/d3.v3.min.js" %}"></script>
+  <script src="{% static "js/bootstrap-dialog.js" %}"></script>
   <script src="{% static "js/ie10-viewport-bug-workaround.js" %}"></script>
 
   <!-- LEAFLET -->
@@ -33,66 +33,132 @@
   <link href="{% static "css/easy-button.css" %}" rel="stylesheet" />
   <link href="{% static "css/leaflet.label.css" %}" rel="stylesheet" />
   <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" />
+  <link href="{% static "css/bootstrap-dialog.css" %}" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li id="navJustMap" class="active">
+            <a style="cursor: pointer;">Podgląd mapy</a>
+          </li>
+          <li id="navEditMap">
+            <a style="cursor: pointer;">Edycja mapy</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-  <!-- load django variables globally -->
+  <div>
+    <form id="imageUploadForm" class="form-inline" style="display: none;">
+      {% csrf_token %}
+      <div id="formSpacer">
+        <div class="form-group">
+          <input id="uploadImage" class="form-control" type="file" name="image" required="true" accept="image/*" />
+        </div>
+        <input id="imageFormSubmit" class="btn btn-default btn-xs" type="submit" value="Prześlij" />
+        <input id="hiddenFloorLevel" type="hidden" name="floor" value="{{activeFloor}}" />
+      </div>
+    </form>
+  </div>
+
+  <div id="map" class="without-form"></div>
+  <div id="control-panel" class="without-form detached-control-panel">&nbsp;</div>
+
+  {% compress js %}
+  <script src="{% static "coffee/frame.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+
+  {% compress js %}
+  <script src="{% static "coffee/exhibit.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+
+  {% compress js %}
+  <script src="{% static "coffee/navbar.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+
+  {% compress js %}
+  <script src="{% static "coffee/canvas.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+
   {% compress js %}
   <script type="text/coffeescript">
-    class Frame
-      constructor: (@x, @y, @width, @height, @mapLevel) ->
-    class Exhibit
-      constructor: (@exhibitName, @frame) ->
-
+    errorData = [
+    	{"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
+    	{"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
+    	{"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
+    	{"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
+    ]
     root = exports ? this
-    root.urlFloor = [
+    #DJANGO VARIABLES
+    urlFloor = [
       "{{urlFloor0|escape|safe}}"
       "{{urlFloor1|escape|safe}}"
     ]
-    console.log root.urlFloor
-    root.csrf_token = "{% csrf_token %}"
-    root.activeFloor = +"{{acitveFloor}}"
-    root.exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
-    root.floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
-    (root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])) for i in [0..1]
-    console.log 'root.exhibits'
-    console.log root.exhibits
-    console.log 'root.floorTilesInfo'
-    console.log root.floorTilesInfo
-    root.visibleExhibits = [
-      (e for e in root.exhibits when e.frame? and e.frame.mapLevel is 0),
-      (e for e in root.exhibits when e.frame? and e.frame.mapLevel is 1)
+    activeFloor = +"{{acitveFloor}}"
+    exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+    floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+    (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
+    visibleExhibits = [
+      (e for e in exhibits when e.frame? and e.frame.mapLevel is 0),
+      (e for e in exhibits when e.frame? and e.frame.mapLevel is 1)
     ]
-    console.log "root.visibleExhibits"
-    console.log root.visibleExhibits
-  </script>
-  {% endcompress %}
-</head>
-<body>
-  {% compress js %}
-  <script src="{% static "coffee/navbar.coffee"%}" type="text/coffeescript">
-    ###
-    # CREATE NAVIGATION BAR
-    ###
-  </script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
-    ###
-    # INFORMATION ABOUT UPLOAD RESULT
-    ###
-  </script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
-    ###
-    # CREATE IMAGE UPLOAD FORM
-    ###
-  </script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/mapCanvas.coffee" %}" type="text/coffeescript">
-    ###
-    # CREATE MAP IMAGE CONTAINER
-    ###
+
+    #INIT PAGE WHEN DOM IS READY
+    jQuery(document).ready( ->
+      navbar = new root.Navbar()
+      canvas = new root.Canvas(1, 3, activeFloor)
+      #boundaries will be set according to highest zoom
+      mapWidth = (floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
+      mapHeight = (floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
+      for i in [0..1]
+        canvas.addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
+        canvas.addFloorLayer(i, floorTilesInfo[i], urlFloor[i])
+        canvas.addExhibits(i, visibleExhibits[i])
+
+      canvas.setFloorLayer(activeFloor)(canvas._floorButton[activeFloor])
+
+      #set handler for upload form
+      jQuery("#imageUploadForm").submit((e) ->
+        jQuery "#imageFormSubmit"
+          .prop("disabled", true)
+
+        jQuery.ajax(
+          type: "POST"
+          url: "/uploadImage/"
+          data: new FormData(this)
+          processData: false
+          contentType: false
+
+          success: (data) ->
+            data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
+            errorIdx = data.err - 1
+            BootstrapDialog.show({
+                  message: errorData[errorIdx].message
+                  type: errorData[errorIdx].type
+                  title: errorData[errorIdx].title
+                  closeByBackdrop: false
+                  buttons: [{
+                      label: 'Zamknij',
+                      action: (dialogRef) ->
+                        dialogRef.close();
+                  }]
+            })
+            if errorIdx is 0
+              canvas.refreshMap(data.floor, data.floorTilesInfo[data.floor], urlFloor[data.floor]) 
+            jQuery "#uploadImage" #reset input value
+              .val ''
+            jQuery "#imageFormSubmit"
+              .prop("disabled", false)
+            return
+        )
+        e.preventDefault()
+        return
+      )
+      navbar._init canvas
+    )
   </script>
   {% endcompress %}
 </body>

@@ -133,7 +133,7 @@ def uploadImage(request):
 	#extract filename
 	set_result = tc.setMapImage(floor, os.path.basename(filename))
 
-	floorTilesInfo = _getMapImageTilesSize()
+	floorTilesInfo = _getMapImageInfo()
 
 	if not set_result:
 		data = {
@@ -145,7 +145,6 @@ def uploadImage(request):
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
-        "tileSize": {"width": floorTilesInfo[floor]['tileWidth'], "height": floorTilesInfo[floor]['tileHeight']},
-        "scaledSize": {"width": floorTilesInfo[floor]['scaledWidth'], "height": floorTilesInfo[floor]['scaledHeight']}
+        "floorTilesInfo": floorTilesInfo
 	}
 	return JsonResponse(data)
