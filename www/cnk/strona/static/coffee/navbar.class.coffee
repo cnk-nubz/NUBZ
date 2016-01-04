@@ -1,67 +1,72 @@
 root = exports ? this
-root.Navbar = class Navbar
+root.Navbar = class Navbar extends root.ControllerEmitter
   constructor: ->
+    super
 
-  getJustMap: (canvas) ->
-    jQuery "#imageUploadForm"
-      .css(
-        "display": "none"
-      )
-    @_removeActiveClass()
-    jQuery "#navJustMap"
-      .addClass "active"
+  spawn: (selection) =>
+    d3.select "body"
+      .append -> selection.node()
+    nav = selection
+      .append "nav"
+       .classed "navbar navbar-inverse navbar-fixed-top", true
+      .append "div"
+       .classed "container", true
+      .append "div"
+       .classed "collapse navbar-collapse", true
+      .append "ul"
+       .classed "nav navbar-nav", true
+       .attr(
+         id: "navbar-list"
+       )
 
-    @_handleFormVisibility false
-    canvas.rescaleToContainer()
-    return
+    #HERE ADD NEXT NAV-LINKS
 
+    navLink = [
+      {
+        id: 'nav-1'
+        text: 'Podgląd mapy'
+        onclick: =>
+          @setActiveView "justMap"
+          @destroyView "editMap"
+          @materializeView "justMap"
+          @refreshView "justMap"
+          return
+      },
+      {
+        id: "nav-2"
+        text: 'Edycja mapy'
+        onclick: =>
+          @setActiveView "editMap"
+          @destroyView "justMap"
+          @materializeView "editMap"
+          @refreshView "editMap"
+          return
+      }
+    ]
 
+    d3.map(navLink, (e) =>
+      nav.append "li"
+        .attr(
+          id: e.id
+        )
+        .append "a"
+         .classed "nav-link", true
+         .html e.text
+         .on "click", =>
+           @setActiveButton e.id
+           e.onclick()
+    )
+    #initial state
+    d3.select "#nav-1"
+      .classed "active", true
+    @refreshView "justMap"
+    @_lastClicked = "nav-1"
+    @setActiveView "justMap"
 
-  getEditMap: (canvas) =>
-    jQuery "#imageUploadForm"
-      .css(
-        "display": "initial"
-      )
-
-    @_removeActiveClass()
-    jQuery "#navEditMap"
-      .addClass "active"
-
-    @_handleFormVisibility true
-    canvas.rescaleToContainer()
-    return
-
-
-
-  _removeActiveClass: ->
-    jQuery "#navJustMap, #navEditMap"
-      .removeClass "active"
-    return
-
-
-
-  _handleFormVisibility: (visible) ->
-    if visible
-      jQuery "#map, #control-panel"
-        .addClass "with-form"
-        .removeClass "without-form"
-    else
-      jQuery "#map, #control-panel"
-        .addClass "without-form"
-        .removeClass "with-form
-        "
-    jQuery "#map"
-      .css(
-        "top": if visible then '45px' else '0px'
-      )
-    jQuery "#control-panel"
-      .css(
-        "top": if visible then '95px' else '51px'
-      )
-
-  _init: (canvas) ->
-    jQuery "#navJustMap"
-      .on('click', @getJustMap.bind(this, canvas))
-
-    jQuery "#navEditMap"
-      .on('click', @getEditMap.bind(this, canvas))
+  setActiveButton: (id) ->
+    d3.select "##{id}"
+      .classed "active", true
+    d3.select "##{@_lastClicked}"
+      .classed "active", false
+    @_lastClicked = id
+    @

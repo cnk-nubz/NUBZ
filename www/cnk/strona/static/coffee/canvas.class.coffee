@@ -1,7 +1,11 @@
 root = exports ? this
-root.Canvas = class Canvas
-  constructor: (@_minZoom, @_maxZoom, @_activeFloor) ->
-    @_map = L.map('map', {
+root.Canvas = class Canvas extends root.ControllerEmitter
+  constructor: (@_containerMap, @_url, @_containerId) ->
+    super @_containerId
+    @_minZoom = 1
+    @_maxZoom = 3
+    @_activeFloor = 0
+    @_map = L.map(@_containerMap, {
       minZoom: @_minZoom
       maxZoom: @_maxZoom
       zoom: @_minZoom
@@ -14,10 +18,31 @@ root.Canvas = class Canvas
 
 
 
+  spawn: (selection) =>
+    if not d3.select(@_containerId).empty() #already attached to DOM
+      return @
+    canvas = d3.select "body"
+      .append -> selection.node()
+
+    canvas.append "div"
+      .classed(
+        "detached-control-panel": true
+      )
+
+    map = document.detached[@_containerMap]
+    canvas.append -> map.node()
+    @
+
+
+  destroy: =>
+    d3.select @_containerId
+      .remove()
+    @
+
   addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom),
                                             @_map.unproject(southWest, @_maxZoom))
-    return
+    @
 
 
 
@@ -33,14 +58,12 @@ root.Canvas = class Canvas
           bounds: @_mapBounds[floor]
       })
       @_floorLayer[floor].addLayer zoomLayer
-    return
+    @
 
 
 
   setFloorLayer: (floor) =>
     (btn) =>
-      console.log "jestem w setFloorLayer"
-      console.log "floor #{floor}"
       jQuery btn.button
         .addClass "clicked"
       jQuery @_floorButton[1 - floor].button
@@ -60,10 +83,9 @@ root.Canvas = class Canvas
           layer.showLabel()
         )
 
-      console.log @_mapBounds[floor]
       @_map.setMaxBounds @_mapBounds[floor]
       @_map.setView(@_map.unproject([0, 0], 1), 1)
-      return
+      @
 
 
 
@@ -85,29 +107,23 @@ root.Canvas = class Canvas
           direction: 'auto'
         })
       @_exhibits[floor].addLayer(r)
-    return
+    @
 
 
 
-  refreshMap: (floor, tileInfo, url) =>
-    console.log tileInfo
-    console.log url
+  refreshTiles: (floor, tileInfo) =>
     rand = Math.floor(Math.random() * 1024)
-    newUrl = "#{url}?t=#{rand}"
-    console.log newUrl
-    @_floorLayer[floor].eachLayer((layer) ->
-      layer.setUrl(newUrl)
-    )
+    newUrl = "#{@_url[floor]}?t=#{rand}"
     @_floorLayer[floor].clearLayers()
     @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
     @setFloorLayer(floor)(@_floorButton[floor])
+    @
 
-
-  rescaleToContainer: =>
+  refresh: =>
+    @_map.setView([0, 0], 1)
     @_map.invalidateSize()
-
-
+    @
 
   _initButtons: =>
     @_labelsButton = L.easyButton({

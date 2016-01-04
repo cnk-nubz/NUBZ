@@ -10,32 +10,17 @@ body {
 /* Redefining leaflet classes */
 .leaflet-top.leaflet-left {
   left: -46px;
-  z-index: 1300;
+  z-index: 1030;
 }
 /* end of redefining leaflet classes */
-.exhibit {
-  fill: lightblue;
-  stroke: blue;
-  pointer: default;
-}
-
-.exhibit rect.dragging {
-  fill: #ff9999;
-  stroke: red;
-}
-
-/* 50px - navbar, 45px - form */
-.without-form {
-  height: calc(100vh - 50px);
-}
-
-.with-form {
-  height: calc(100vh - 95px);
+.nav-link {
+  cursor: pointer;
 }
 
 /* 46 - detached-control-panel width */
-#map {
+#map, #map2 {
   width: calc(100vw - 46px);
+  height: calc(100vh - 50px);
   left: 46px;
   overflow: visible;
 }
@@ -43,22 +28,8 @@ body {
 .detached-control-panel {
   background: rgba(255, 255, 255, 1);
   position: absolute;
-  top: 51px;
+  top: 50px;
   width: 46px;
-  z-index: 1200;
-  overflow: hidden;
-}
-
-#imageUploadForm {
-  background: rgba(255, 255, 255, 1);
-  position: absolute;
-  top: 51px;
-  left: 0px;
-  right: 0px;
-  z-index: 1200;
-}
-
-#formSpacer {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  height: calc(100vh - 50px);
+  z-index: 1029;
 }

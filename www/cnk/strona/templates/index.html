@@ -12,9 +12,11 @@
   <title>Tajny Projekt NUBZ</title>
 
   <script src="{% static "js/jquery.min.js" %}"></script>
+  <script src="{% static "js/d3.v3.min.js" %}"></script>
   <script src="{% static "js/bootstrap.min.js" %}"></script>
   <script src="{% static "js/bootstrap-dialog.js" %}"></script>
   <script src="{% static "js/ie10-viewport-bug-workaround.js" %}"></script>
+  <script src="{% static "js/csrf.js" %}"></script>
 
   <!-- LEAFLET -->
   <script src="{% static "js/leaflet-src.js" %}"></script>
@@ -34,65 +36,44 @@
   <link href="{% static "css/leaflet.label.css" %}" rel="stylesheet" />
   <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" />
   <link href="{% static "css/bootstrap-dialog.css" %}" rel="stylesheet" />
+  {% compress js %}
+  <script type="text/coffeescript">
+    root = exports ? this
+    root.csrf_form = "{% csrf_token %}"
+  </script>
+  {% endcompress %}
 </head>
 <body>
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container">
-      <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav">
-          <li id="navJustMap" class="active">
-            <a style="cursor: pointer;">Podgląd mapy</a>
-          </li>
-          <li id="navEditMap">
-            <a style="cursor: pointer;">Edycja mapy</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div>
-    <form id="imageUploadForm" class="form-inline" style="display: none;">
-      {% csrf_token %}
-      <div id="formSpacer">
-        <div class="form-group">
-          <input id="uploadImage" class="form-control" type="file" name="image" required="true" accept="image/*" />
-        </div>
-        <input id="imageFormSubmit" class="btn btn-default btn-xs" type="submit" value="Prześlij" />
-        <input id="hiddenFloorLevel" type="hidden" name="floor" value="{{activeFloor}}" />
-      </div>
-    </form>
-  </div>
-
-  <div id="map" class="without-form"></div>
-  <div id="control-panel" class="without-form detached-control-panel">&nbsp;</div>
-
+  <div id="map2"></div>
+  <div id="map"></div>
   {% compress js %}
-  <script src="{% static "coffee/frame.class.coffee"%}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/controller.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
-
   {% compress js %}
-  <script src="{% static "coffee/exhibit.class.coffee"%}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/controlleremitter.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
-
+  {% compress js %}
+  <script src="{% static "coffee/mainpage.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/navbar.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
-
   {% compress js %}
   <script src="{% static "coffee/canvas.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
-
+  {% compress js %}
+  <script src="{% static "coffee/editablecanvas.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
   {% compress js %}
   <script type="text/coffeescript">
-    errorData = [
-    	{"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
-    	{"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
-    	{"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
-    	{"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
-    ]
+    document.detached = {}
     root = exports ? this
-    #DJANGO VARIABLES
+    errorData = [
+      {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
+      {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
+      {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
+      {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
+    ]
     urlFloor = [
       "{{urlFloor0|escape|safe}}"
       "{{urlFloor1|escape|safe}}"
@@ -102,62 +83,72 @@
     floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
     (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
     visibleExhibits = [
-      (e for e in exhibits when e.frame? and e.frame.mapLevel is 0),
-      (e for e in exhibits when e.frame? and e.frame.mapLevel is 1)
+      (e for e in exhibits when e.frame?.mapLevel is 0),
+      (e for e in exhibits when e.frame?.mapLevel is 1)
     ]
+    canvas = new root.Canvas("map", urlFloor, "#canvas")
+    editCanvas = new root.EditableCanvas("map2", urlFloor , "#canvas2")
+    #detach map and map2
+    document.detached["map"] = d3.select("#map")
+    document.detached["map2"] = d3.select("#map2")
+    d3.selectAll("#map, #map2").remove()
+    #boundaries will be set according to highest zoom
+    mapWidth = (floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
+    mapHeight = (floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
+    for i in [0..1]
+      editCanvas.addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
+                .addFloorLayer(i, floorTilesInfo[i], urlFloor[i])
+                .addExhibits(i, visibleExhibits[i])
+      canvas.addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
+            .addFloorLayer(i, floorTilesInfo[i], urlFloor[i])
+            .addExhibits(i, visibleExhibits[i])
 
-    #INIT PAGE WHEN DOM IS READY
+    editCanvas.setFloorLayer(activeFloor)(canvas._floorButton[activeFloor])
+    canvas.setFloorLayer(activeFloor)(canvas._floorButton[activeFloor])
+
+
     jQuery(document).ready( ->
-      navbar = new root.Navbar()
-      canvas = new root.Canvas(1, 3, activeFloor)
-      #boundaries will be set according to highest zoom
-      mapWidth = (floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
-      mapHeight = (floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
-      for i in [0..1]
-        canvas.addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
-        canvas.addFloorLayer(i, floorTilesInfo[i], urlFloor[i])
-        canvas.addExhibits(i, visibleExhibits[i])
+      page = new root.MainPage "body"
+      navbar = new root.Navbar "#navbar"
 
-      canvas.setFloorLayer(activeFloor)(canvas._floorButton[activeFloor])
+      page.addView("navbar", navbar)
+          .materializeView "navbar"
 
-      #set handler for upload form
-      jQuery("#imageUploadForm").submit((e) ->
-        jQuery "#imageFormSubmit"
-          .prop("disabled", true)
+      navbar.addView("justMap", canvas)
+            .addView("editMap", editCanvas)
+            .materializeView "justMap"
+            .refreshView "justMap"
 
+
+      editCanvas.on("submit", (e) =>
+        jQuery.ajaxSetup(
+          headers: { "X-CSRFToken": getCookie("csrftoken") }
+        )
+        console.log this
         jQuery.ajax(
           type: "POST"
           url: "/uploadImage/"
-          data: new FormData(this)
+          data: new FormData(jQuery("#dialogForm")[0])
           processData: false
           contentType: false
 
           success: (data) ->
-            data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-            errorIdx = data.err - 1
-            BootstrapDialog.show({
-                  message: errorData[errorIdx].message
-                  type: errorData[errorIdx].type
-                  title: errorData[errorIdx].title
-                  closeByBackdrop: false
-                  buttons: [{
-                      label: 'Zamknij',
-                      action: (dialogRef) ->
-                        dialogRef.close();
-                  }]
-            })
-            if errorIdx is 0
-              canvas.refreshMap(data.floor, data.floorTilesInfo[data.floor], urlFloor[data.floor]) 
-            jQuery "#uploadImage" #reset input value
-              .val ''
-            jQuery "#imageFormSubmit"
-              .prop("disabled", false)
+            console.log data
+            location.reload()
             return
-        )
+            # TODO: refresh tiles with given data
+            #data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
+            #errorIdx = data.err - 1
+            #console.log data
+            #if errorIdx is 0
+            #  TODO: bind correct location
+            #  view = @getView(@_activeView)
+            #  view.refreshTiles(data.floor, data.floorTilesInfo)
+            #return
+          )
         e.preventDefault()
         return
-      )
-      navbar._init canvas
+        )
     )
   </script>
   {% endcompress %}
