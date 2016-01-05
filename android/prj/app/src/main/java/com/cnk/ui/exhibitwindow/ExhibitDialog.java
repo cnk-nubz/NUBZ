@@ -10,6 +10,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.ui.AutoResizeTextView;
 
 import java.util.List;
 
@@ -38,12 +39,12 @@ public class ExhibitDialog extends Activity {
         Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
         cancel.setOnClickListener(new CancelListener());
 
-        TextView tvExhibitDialogName = (TextView) findViewById(R.id.tvExhibitDialogName);
-        tvExhibitDialogName.setText(name);
-        tvExhibitDialogName.setTextAppearance(this, android.R.style.TextAppearance_Large);
-
         Button finish = (Button) findViewById(R.id.bExbibitDialogFinish);
         finish.setOnClickListener(new FinishListener());
+
+        AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) findViewById(R.id.tvExhibitDialogName);
+        tvExhibitDialogName.setText(name);
+        tvExhibitDialogName.setTextSize(100f);
 
         GridView gridView = (GridView) findViewById(R.id.gvActions);
         actionsAdapter = new ExhibitActionsAdapter(this, actions);
