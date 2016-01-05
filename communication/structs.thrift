@@ -80,3 +80,13 @@ struct RawReport {
 	1: i32 reportId,
 	2: list<RawReportEvent> history,
 }
+
+struct Action {
+	1: i32 actionId,
+	2: string text,
+}
+
+struct ExperimentData {
+	1: list<Action> exhibitActions,
+	2: list<Action> breakActions,
+}

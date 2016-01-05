@@ -129,3 +129,12 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
 
     LOG(INFO) << "saveReport end";
 }
+
+void CommandHandler::getExperimentData(communication::ExperimentData &experimentData) {
+    LOG(INFO) << "getExperimentData start";
+    
+    LOG(INFO) << "not implemented";
+    
+    LOG(INFO) << "output: " << experimentData;
+    LOG(INFO) << "getExperimentData end";
+}
