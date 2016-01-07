@@ -1,7 +1,7 @@
 #ifndef DB_SQL__SQL__H
 #define DB_SQL__SQL__H
 
-#include "elements.h"
-#include "statements.h"
+#include "sql/elements.h"
+#include "sql/statements.h"
 
 #endif

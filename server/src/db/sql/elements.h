@@ -11,7 +11,7 @@ namespace db {
     namespace sql {
         class E;
         class Cond;
-        class Null;
+        struct Null;
         class SqlString;
     }
 }
@@ -127,13 +127,13 @@ namespace db {
         template <class T>
         Cond C::operator==(const T &arg) const {
             static_assert(std::is_integral<T>::value, "arg must be integral type");
-            return Cond(colName, "==", SqlString(arg));
+            return Cond(colName, "=", SqlString(arg));
         }
 
         template <class T>
         Cond C::operator!=(const T &arg) const {
             static_assert(std::is_integral<T>::value, "arg must be integral type");
-            return Cond(colName, "!=", SqlString(arg));
+            return Cond(colName, "<>", SqlString(arg));
         }
 
         inline C::C(const std::string &colName) : colName(colName) {
@@ -148,11 +148,11 @@ namespace db {
         }
 
         inline Cond C::operator==(const std::string &arg) const {
-            return Cond(colName, "==", SqlString(arg));
+            return Cond(colName, "=", SqlString(arg));
         }
 
         inline Cond C::operator!=(const std::string &arg) const {
-            return Cond(colName, "!=", SqlString(arg));
+            return Cond(colName, "<>", SqlString(arg));
         }
 
         inline Cond C::operator==(const Null &arg) const {

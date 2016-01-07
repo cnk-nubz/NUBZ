@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <type_traits>
+#include <utility>
 
 #include <boost/optional.hpp>
 #include <boost/format.hpp>
@@ -84,7 +86,7 @@ namespace db {
 
         public:
             template <class... Ts>
-            auto what(Ts &&... ts) const -> SqlInsert<sizeof...(ts)>;
+            auto what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts)>;
 
         private:
             const std::string &into;
@@ -104,8 +106,8 @@ namespace db {
 
         private:
             std::array<std::string, numOfParams> what;
-            std::vector<std::array<std::string, numOfParams>> vals;
             const std::string into;
+            std::vector<std::array<std::string, numOfParams>> vals;
             SqlInsert(const std::array<std::string, numOfParams> &what, const std::string &into);
         };
 
@@ -242,24 +244,24 @@ namespace db {
         inline SqlInsertBegin::SqlInsertBegin(const std::string &into) : into(into) {
         }
 
-        template <typename... Ts>
-        auto SqlInsertBegin::what(Ts &&... ts) const -> SqlInsert<sizeof...(ts)> {
-            std::array<std::string, sizeof...(ts)> args = {std::forward<std::string>(ts)...};
+        template <class... Ts>
+        auto SqlInsertBegin::what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts)> {
+            std::array<std::string, sizeof...(ts)> args{{std::forward<Ts>(ts)...}};
             return SqlInsert<sizeof...(ts)>(args, into);
         }
 
         template <unsigned numOfParams>
         SqlInsert<numOfParams>::SqlInsert(const std::array<std::string, numOfParams> &what,
                                           const std::string &into)
-            : what(what), into(into) {
+            : what(what), into(into), vals() {
         }
 
         template <unsigned numOfParams>
         template <class... Ts>
         SqlInsert<numOfParams> &SqlInsert<numOfParams>::values(Ts &&... ts) {
             static_assert(sizeof...(ts) == numOfParams, "incorrect number of arguments");
-            std::array<SqlString, numOfParams> sqlStrings = {std::forward<SqlString>(ts)...};
-            vals.push_back({});
+            std::array<SqlString, numOfParams> sqlStrings{{std::forward<Ts>(ts)...}};
+            vals.emplace_back();
             std::copy(sqlStrings.begin(), sqlStrings.end(), vals.back().begin());
             return *this;
         }
