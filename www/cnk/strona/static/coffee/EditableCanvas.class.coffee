@@ -16,7 +16,7 @@ root.EditableCanvas = class EditableCanvas extends root.Canvas
     """
     instance = @
     BootstrapDialog.show(
-      message: formHTML.replace '!activeFloor!', "#{@_activeFloor}"
+      message: formHTML.replace '!activeFloor!', "#{@mapData.activeFloor}"
       title: 'Wybierz plik do zmiany mapy'
       closable: false
       size: BootstrapDialog.SIZE_SMALL

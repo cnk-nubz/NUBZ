@@ -3,9 +3,9 @@ root.Canvas = class Canvas extends root.Controller
   constructor: (@_containerMap, containerId) ->
     super containerId
     @mapData = new MapDataHandler()
+    console.log @mapData
     @_minZoom = 1
     @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
-    @_activeFloor = 0
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
@@ -69,8 +69,7 @@ root.Canvas = class Canvas extends root.Controller
       jQuery @_floorButton[1 - floor].button
         .removeClass "clicked"
 
-      @_activeFloor = floor
-      root.activeFloor = floor
+      @mapData.activeFloor = floor
       @fireEvents "floorChanged"
       @_map.removeLayer(@_exhibits[1 - floor])
       @_map.removeLayer(@_floorLayer[1 - floor])
@@ -84,9 +83,9 @@ root.Canvas = class Canvas extends root.Controller
         @_exhibits[floor].eachLayer((layer) ->
           layer.showLabel()
         )
-
       @_map.setMaxBounds @_mapBounds[floor]
-      @refresh()
+      @_map.setView(@_map.unproject([0, 0], 1), 1)
+      @_map.invalidateSize()
       @
 
 
@@ -125,8 +124,8 @@ root.Canvas = class Canvas extends root.Controller
     @
 
   refresh: =>
-    @_map.invalidateSize()
-    @_map.setView(@_map.unproject([0, 0], 1), 1)
+    #TODO (in case nothing to do): add synchronization of panning between pages
+    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
     @
 
   _initButtons: =>
@@ -138,7 +137,7 @@ root.Canvas = class Canvas extends root.Controller
             title: 'Pokaż etykiety'
             onClick: (btn) =>
               btn.state('removeLabels')
-              @_exhibits[@_activeFloor].eachLayer((layer) ->
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.showLabel()
               )
               return
@@ -149,7 +148,7 @@ root.Canvas = class Canvas extends root.Controller
             title: 'Ukryj etykiety'
             onClick: (btn) =>
               btn.state('setLabels')
-              @_exhibits[@_activeFloor].eachLayer((layer) ->
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.hideLabel()
               )
               return
