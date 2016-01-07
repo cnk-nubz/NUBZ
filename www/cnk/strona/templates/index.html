@@ -60,7 +60,7 @@
   <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/EditableCanvas.class.coffee"%}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/EditMapPage.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script type="text/coffeescript">
@@ -77,6 +77,7 @@
     mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
     jQuery(document).ready( ->
       page = new root.MainPage "body"
+      page.refresh()
     )
   </script>
   {% endcompress %}

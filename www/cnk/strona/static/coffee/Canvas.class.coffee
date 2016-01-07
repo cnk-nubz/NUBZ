@@ -3,17 +3,16 @@ root.Canvas = class Canvas extends root.Controller
   constructor: (@_containerMap, containerId) ->
     super containerId
     @mapData = new MapDataHandler()
-    console.log @mapData
     @_minZoom = 1
     @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
     d3.select "body"
-    .append "div"
-    .attr(
-      id: @_containerMap[1..]
-    )
+      .append "div"
+      .attr(
+        id: @_containerMap[1..]
+      )
     @_map = L.map(@_containerMap[1..], {
       minZoom: @_minZoom
       zoom: @_minZoom
@@ -30,7 +29,6 @@ root.Canvas = class Canvas extends root.Controller
       @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
       @addExhibits(i, @mapData.visibleExhibits[i])
     @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
-
     map = d3.select "#{@_containerMap}"
     content = @select(@_containerId)
     content.append "div"
@@ -38,13 +36,10 @@ root.Canvas = class Canvas extends root.Controller
     content.append -> map.node()
     @
 
-
   addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
                                             @_map.unproject(southWest, @_maxZoom[floor]))
     @
-
-
 
   addFloorLayer: (floor, tileInfo, url) =>
     len = tileInfo.length
@@ -59,8 +54,6 @@ root.Canvas = class Canvas extends root.Controller
       })
       @_floorLayer[floor].addLayer zoomLayer
     @
-
-
 
   setFloorLayer: (floor) =>
     (btn) =>
@@ -88,8 +81,6 @@ root.Canvas = class Canvas extends root.Controller
       @_map.invalidateSize()
       @
 
-
-
   addExhibits: (floor, exhibits) =>
     for e in exhibits
       X = e.frame.x
@@ -110,8 +101,6 @@ root.Canvas = class Canvas extends root.Controller
       @_exhibits[floor].addLayer(r)
     @
 
-
-
   refreshTiles: =>
     floor = @mapData.activeFloor
     tileInfo = @mapData.floorTilesInfo[floor]
@@ -125,7 +114,7 @@ root.Canvas = class Canvas extends root.Controller
 
   refresh: =>
     #TODO (in case nothing to do): add synchronization of panning between pages
-    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
+    @refreshTiles()
     @
 
   _initButtons: =>

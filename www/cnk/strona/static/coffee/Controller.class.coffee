@@ -10,35 +10,10 @@ root.Controller = class Controller
             id: @_containerId[1..]
           )
 
-
-  getAvaibleContainer: =>
-    @_avaibleContainer
-
-  css: (name, css) =>
-    view = @getView name
-    viewId = view?._containerId
-    if css?
-      jQuery(viewId).css(css)
-      return @
-    else
-      return jQuery(viewId).css()
-
-  addClass: (name, klass) =>
-    view = @getView name
-    viewId = view?._containerId
-    jQuery(viewId).addClass(klass)
-
-  removeClass: (name, klass) =>
-    view = @getView name
-    viewId = view?._containerId
-    jQuery(viewId).removeClass(klass)
-    @
-
   select: (id) =>
     dom = d3.select(id)
-    detached = document.detached[id]
     if dom.empty()
-      return detached
+      return document.detached[id]
     else
       return dom
 
@@ -57,11 +32,7 @@ root.Controller = class Controller
     throw new Error "no view named #{name}"
 
   refresh: =>
-    view.refresh() for name, view in @_views
-    @
-
-  spawn: =>
-    view.spawn() for name, view in @_views
+    view.refresh() for name, view of @_views
     @
 
   on: (name, handler) =>

@@ -19,70 +19,28 @@ root.Navbar = class Navbar extends root.Controller
 
 
     map = new Canvas("#map", "#{@_containerId}-a")
-    editMap = new EditableCanvas("#editMap", "#{@_containerId}-b")
-    submitHandler = (maps...) =>
-      jQuery("#dialogForm").submit((e) =>
-        jQuery.ajaxSetup(
-          headers: { "X-CSRFToken": getCookie("csrftoken") }
-        )
-        jQuery.ajax(
-          type: "POST"
-          url: "/uploadImage/"
-          data: new FormData(jQuery("#dialogForm")[0])
-          processData: false
-          contentType: false
-
-          success: (data) ->
-            errorData = [
-              {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
-              {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
-              {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
-              {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
-            ]
-            if data.err == 1
-              data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-              mapData = new MapDataHandler()
-              mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
-              map.refreshTiles() for map in maps
-
-            err = data.err - 1
-            #close existing dialog
-            jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
-              dialog.close()
-            )
-            BootstrapDialog.show(
-              message: errorData[err].message
-              title: errorData[err].title
-              type: errorData[err].type
-            )
-          )
-        e.preventDefault()
-        return
-      )
-
-    editMap.on("submit", submitHandler.bind(this, map, editMap)) #just add here new maps if needed
+    editMap = new EditMapPage("#{@_containerId}-b")
     #HERE ADD NEXT NAV-LINKS
+    initialPage = 0
     navLink = [
       {
         id: "#nav-1"
         text: 'Podgląd mapy'
         ref: map
-        clicked: true
       },
       {
         id: "#nav-2"
         text: 'Edycja mapy'
         ref: editMap
-        clicked: false
       }
     ]
 
-    d3.map(navLink, (e) =>
+    d3.map(navLink, (e, id) =>
       content.append "li"
         .attr(
           id: e.id[1..]
         )
-        .classed "active", e.clicked
+        .classed "active", (id is initialPage)
         .append "a"
          .classed "nav-link", true
          .html e.text
@@ -90,10 +48,8 @@ root.Navbar = class Navbar extends root.Controller
            @setActiveButton e.id
            @setActiveView e
     )
-    @addView(navLink[0].ref._containerId, navLink[0].ref)
-    #initial state
-    @_activeView = navLink[0]
-    @_lastClicked = navLink[0].id
+    @setActiveView navLink[initialPage]
+    @_lastClicked = navLink[initialPage].id
 
   setActiveButton: (id) ->
     return if @_lastClicked is id
@@ -105,8 +61,8 @@ root.Navbar = class Navbar extends root.Controller
     @
 
   setActiveView: (link) =>
-    return if @_activeView.id is link.id
-    @destroyView(@_activeView.ref._containerId)
+    return if @_activeView?.id is link.id
+    @destroyView(@_activeView.ref._containerId) if @_activeView?
     @addView(link.ref._containerId, link.ref)
     link.ref.refresh()
     @_activeView = link
