@@ -1,54 +1,54 @@
 root = exports ? this
-root.Canvas = class Canvas extends root.ControllerEmitter
-  constructor: (@_containerMap, @_url, @_containerId) ->
-    super @_containerId
+root.Canvas = class Canvas extends root.Controller
+  constructor: (@_containerMap, containerId) ->
+    super containerId
+    @mapData = new MapDataHandler()
     @_minZoom = 1
-    @_maxZoom = 3
+    @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
     @_activeFloor = 0
-    @_map = L.map(@_containerMap, {
-      minZoom: @_minZoom
-      maxZoom: @_maxZoom
-      zoom: @_minZoom
-      crs: L.CRS.Simple
-    })
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
+    d3.select "body"
+    .append "div"
+    .attr(
+      id: @_containerMap[1..]
+    )
+    @_map = L.map(@_containerMap[1..], {
+      minZoom: @_minZoom
+      zoom: @_minZoom
+      crs: L.CRS.Simple
+    })
     @_initButtons()
+    @_init()
 
+  _init: =>
+    mapWidth = (@mapData.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
+    mapHeight = (@mapData.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
+    for i in [0..1]
+      @addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
+      @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
+      @addExhibits(i, @mapData.visibleExhibits[i])
+    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
 
-
-  spawn: (selection) =>
-    if not d3.select(@_containerId).empty() #already attached to DOM
-      return @
-    canvas = d3.select "body"
-      .append -> selection.node()
-
-    canvas.append "div"
-      .classed(
-        "detached-control-panel": true
-      )
-
-    map = document.detached[@_containerMap]
-    canvas.append -> map.node()
+    map = d3.select "#{@_containerMap}"
+    content = @select(@_containerId)
+    content.append "div"
+      .classed 'detached-control-panel', true
+    content.append -> map.node()
     @
 
-
-  destroy: =>
-    d3.select @_containerId
-      .remove()
-    @
 
   addMapBounds: (floor, northEast, southWest) =>
-    @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom),
-                                            @_map.unproject(southWest, @_maxZoom))
+    @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
+                                            @_map.unproject(southWest, @_maxZoom[floor]))
     @
 
 
 
   addFloorLayer: (floor, tileInfo, url) =>
     len = tileInfo.length
-    for j in [0...Math.min(len, @_maxZoom)]
+    for j in [0...len]
       zoomLayer = L.tileLayer(url.replace('{z}', "#{j + @_minZoom}"), {
           minZoom: j + @_minZoom
           maxZoom: j + @_minZoom
@@ -70,6 +70,8 @@ root.Canvas = class Canvas extends root.ControllerEmitter
         .removeClass "clicked"
 
       @_activeFloor = floor
+      root.activeFloor = floor
+      @fireEvents "floorChanged"
       @_map.removeLayer(@_exhibits[1 - floor])
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
@@ -84,7 +86,7 @@ root.Canvas = class Canvas extends root.ControllerEmitter
         )
 
       @_map.setMaxBounds @_mapBounds[floor]
-      @_map.setView(@_map.unproject([0, 0], 1), 1)
+      @refresh()
       @
 
 
@@ -111,9 +113,11 @@ root.Canvas = class Canvas extends root.ControllerEmitter
 
 
 
-  refreshTiles: (floor, tileInfo) =>
+  refreshTiles: =>
+    floor = @mapData.activeFloor
+    tileInfo = @mapData.floorTilesInfo[floor]
     rand = Math.floor(Math.random() * 1024)
-    newUrl = "#{@_url[floor]}?t=#{rand}"
+    newUrl = "#{@mapData.floorUrl[floor]}?t=#{rand}"
     @_floorLayer[floor].clearLayers()
     @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
@@ -121,8 +125,8 @@ root.Canvas = class Canvas extends root.ControllerEmitter
     @
 
   refresh: =>
-    @_map.setView([0, 0], 1)
     @_map.invalidateSize()
+    @_map.setView(@_map.unproject([0, 0], 1), 1)
     @
 
   _initButtons: =>

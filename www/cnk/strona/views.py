@@ -32,7 +32,7 @@ def _getMapImageInfo():
 	]
 
 	if not floorTiles:
-		return {}
+		return None
 
 	floorTilesInfo = {}
 
@@ -61,27 +61,24 @@ def _getMapImageInfo():
 def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
-	if not result or not result.exhibits:
-		return {}
+	if not result:
+		return None
 
 	exhibitDict = {}
 	for k in result.exhibits:
 		e = result.exhibits[k]
-		if e.frame == None:
-			exhibitDict[k] = {
-				'name': e.name,
-				'frame': None
-			}
-			continue
-		exhibitDict[k] = {
-			'name': e.name,
-			'frame': {
+		frame = None
+		if e.frame != None:
+			frame = {
 				'x': e.frame.x,
 				'y': e.frame.y,
 				'width': e.frame.width,
 				'height': e.frame.height,
 				'mapLevel': e.frame.mapLevel
-			},
+			}
+		exhibitDict[k] = {
+			'name': e.name,
+			'frame': frame
 		}
 	return exhibitDict
 
@@ -91,6 +88,8 @@ def index(request):
 
 	floorTilesInfo = _getMapImageInfo()
 	exhibits = _getExhibits()
+	if not floorTilesInfo and not exhibits:
+		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template('index.html')
 	context = RequestContext(request, {
 		'activeFloor': 0,
@@ -111,7 +110,6 @@ def uploadImage(request):
 	if request.method != 'POST':
 		data = {
 			"err": uploadError.NOT_POST_METHOD.value,
-			"floor": 0
 		}
 		return JsonResponse(data)
 
@@ -119,32 +117,27 @@ def uploadImage(request):
 	if not form.is_valid():
 		data = {
 			"err": uploadError.NOT_AN_IMAGE.value,
-			"floor": 0
 		}
 		return JsonResponse(data)
 
 	m = MapUploader(image = form.cleaned_data['image'])
 	m.save()
-
+	floor = form.cleaned_data['floor']
 	#send information about update
 	tc = ThriftCommunicator()
-	floor = form.cleaned_data['floor']
 	filename = m.image.name
 	#extract filename
 	set_result = tc.setMapImage(floor, os.path.basename(filename))
-
 	floorTilesInfo = _getMapImageInfo()
-
-	if not set_result:
+	if not set_result or not floorTilesInfo:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
-			"floor": floor,
 		}
 		return JsonResponse(data)
 
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
-        "floorTilesInfo": floorTilesInfo
+		"floorTilesInfo": floorTilesInfo
 	}
 	return JsonResponse(data)

@@ -8,7 +8,7 @@ body {
 }
 /* end of redefining bootstrap classes */
 /* Redefining leaflet classes */
-.leaflet-top.leaflet-left {
+.leaflet-top.leaflet-left, .leaflet-bottom.leaflet-left {
   left: -46px;
   z-index: 1030;
 }
@@ -18,7 +18,7 @@ body {
 }
 
 /* 46 - detached-control-panel width */
-#map, #map2 {
+#map, #editMap {
   width: calc(100vw - 46px);
   height: calc(100vh - 50px);
   left: 46px;
