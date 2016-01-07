@@ -12,6 +12,7 @@ cur.execute('DROP TABLE IF EXISTS map_tiles_info')
 cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
 cur.execute('DROP TABLE IF EXISTS reports')
+cur.execute('DROP TABLE IF EXISTS actions')
 
 ######### create
 cur.execute('''
@@ -73,6 +74,15 @@ cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
 		doc JSONB NOT NULL
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE actions (
+		id SERIAL PRIMARY KEY,
+		text VARCHAR NOT NULL,
+		during_break BOOLEAN NOT NULL,
+		in_current_experiment BOOLEAN NOT NULL DEFAULT FALSE
 	)
 ''')
 
@@ -140,6 +150,29 @@ cur.execute('''
 			}
 		')
 ''')
+
+# actions
+cur.execute('''
+	INSERT INTO actions (text, during_break, in_current_experiment) VALUES
+		('biega', false, true),
+		('spiewa', false, true),
+		('recytuje', false, true),
+		('stepuje', false, true),
+		('oglada', false, true),
+		('bawi sie', false, true),
+		('robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami', false, true),
+		('cos poza badaniem', false, false)
+''')
+
+# actions during a break
+cur.execute('''
+	INSERT INTO actions (text, during_break, in_current_experiment) VALUES
+		('biega', true, true),
+		('spiewa', true, true),
+		('dlugi dlugi dlugi dlugi tekst', true, true),
+		('odpoczywa', true, true)
+''')
+
 
 con.commit()
 

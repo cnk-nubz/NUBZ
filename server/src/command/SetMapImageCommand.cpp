@@ -36,7 +36,8 @@ namespace command {
         db.execute([&](db::DatabaseSession &session) {
             // get old images
             {
-                db::cmd::GetMapTiles getMapTiles(input.level);
+                db::cmd::GetMapTiles getMapTiles;
+                getMapTiles.floor = input.level;
                 getMapTiles(session);
                 oldTiles = getMapTiles.getResult();
 

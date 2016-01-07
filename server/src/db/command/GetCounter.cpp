@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include <boost/format.hpp>
-
 #include "GetCounter.h"
 #include "db/db_info.h"
 #include "db/factory/SingleFieldFactory.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -23,16 +22,11 @@ namespace db {
 
         std::string GetCounter::createQuery() const {
             using namespace db::info::counters;
+            using namespace db::sql;
 
-            boost::format select("SELECT %1%");
-            boost::format from(" FROM %1%");
-            boost::format where(" WHERE %1% = '%2%'");
-
-            select % colVersion;
-            from % tableName;
-            where % colElement % colElementType(elementType);
-
-            return select.str() + from.str() + where.str();
+            return Sql::select({colVersion})
+                .from(tableName)
+                .where(C(colElement) == colElementType(elementType));
         }
     }
 }

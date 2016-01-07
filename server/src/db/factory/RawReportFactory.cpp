@@ -10,6 +10,12 @@ namespace db {
         RawReport::Event parseEvent(const rapidjson::Value &jsonEvent);
         std::vector<std::int32_t> parseActions(const rapidjson::Value &jsonActions);
 
+        const std::vector<std::string> &RawReportFactory::fieldsOrder() noexcept {
+            using namespace db::info::reports;
+            static const std::vector<std::string> order = {colId, colDocument};
+            return order;
+        }
+        
         RawReport RawReportFactory::create(
             const std::vector<boost::optional<std::string>> &raw) noexcept {
             using namespace db::info::reports;

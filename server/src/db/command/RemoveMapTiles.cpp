@@ -1,7 +1,6 @@
-#include <boost/format.hpp>
-
 #include "RemoveMapTiles.h"
 #include "db/db_info.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -14,14 +13,9 @@ namespace db {
 
         std::string RemoveMapTiles::createDelete() const {
             using namespace db::info::map_tiles;
+            using namespace db::sql;
 
-            boost::format deleteFrom("DELETE FROM %1%");
-            boost::format where(" WHERE %1% = %2%");
-
-            deleteFrom % tableName;
-            where % colFloor % floor;
-
-            return deleteFrom.str() + where.str();
+            return Sql::deleteFrom(tableName).where(C(colFloor) == floor);
         }
     }
 }

@@ -1,8 +1,7 @@
-#include <boost/format.hpp>
-
 #include "GetMapTilesInfo.h"
 #include "db/factory/MapTilesInfoFactory.h"
 #include "db/db_info.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -19,18 +18,11 @@ namespace db {
 
         std::string GetMapTilesInfo::createQuery() const {
             using namespace db::info::map_tiles_info;
+            using namespace db::sql;
 
-            boost::format select("SELECT %1%, %2%, %3%, %4%, %5%, %6%, %7%");
-            boost::format from(" FROM %1%");
-            boost::format where(" WHERE %1% = %2%");
-
-            for (const auto &col : db::factory::MapTilesInfoFactory::fieldsOrder()) {
-                select % col;
-            }
-            from % tableName;
-            where % colFloor % floor;
-
-            return select.str() + from.str() + where.str();
+            return Sql::select(db::factory::MapTilesInfoFactory::fieldsOrder())
+                .from(tableName)
+                .where(C(colFloor) == floor);
         }
     }
 }
