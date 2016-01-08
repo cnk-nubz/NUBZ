@@ -125,6 +125,11 @@ root.Canvas = class Canvas extends root.View
       @_exhibits[floor].addLayer(r)
     @
 
+  refresh: =>
+    #TODO (in case nothing to do): add synchronization of panning between pages
+    @refreshTiles()
+    @
+
   refreshTiles: =>
     floor = @mapData.activeFloor
     tileInfo = @mapData.floorTilesInfo[floor]
@@ -134,9 +139,4 @@ root.Canvas = class Canvas extends root.View
     @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
     @setFloorLayer(floor)(@_floorButton[floor])
-    @
-
-  refresh: =>
-    #TODO (in case nothing to do): add synchronization of panning between pages
-    @refreshTiles()
     @

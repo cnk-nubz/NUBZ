@@ -2,6 +2,18 @@ root = exports ? this
 root.Navbar = class Navbar extends root.View
   constructor: ->
     super
+    @navLinks = [
+          {
+            id: "#nav-1"
+            text: 'Podgląd mapy'
+            ref: null
+          },
+          {
+            id: "#nav-2"
+            text: 'Edycja mapy'
+            ref: null
+          }
+    ]
     @_init()
 
   _init: =>
@@ -21,26 +33,14 @@ root.Navbar = class Navbar extends root.View
          id: "navbar-list"
        )
 
-
     map = new JustMapPage("#{@_containerId}-a")
     editMap = new EditMapPage("#{@_containerId}-b")
+    @navLinks[0].ref = map
+    @navLinks[1].ref = editMap
     @_initCss()
-    #HERE ADD NEXT NAV-LINKS
-    initialPage = 0
-    navLink = [
-      {
-        id: "#nav-1"
-        text: 'Podgląd mapy'
-        ref: map
-      },
-      {
-        id: "#nav-2"
-        text: 'Edycja mapy'
-        ref: editMap
-      }
-    ]
 
-    d3.map(navLink, (e, id) =>
+    initialPage = 0
+    d3.map(@navLinks, (e, id) =>
       content.append "li"
         .attr(
           id: e.id[1..]
@@ -53,8 +53,8 @@ root.Navbar = class Navbar extends root.View
            @setActiveButton e.id
            @setActiveView e
     )
-    @setActiveView navLink[initialPage]
-    @_lastClicked = navLink[initialPage].id
+    @setActiveView @navLinks[initialPage]
+    @_lastClicked = @navLinks[initialPage].id
 
   _initCss: =>
     navbarStyle = {

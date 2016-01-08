@@ -4,7 +4,7 @@ root.EditMapPage = class EditMapPage extends root.View
     super
     @mapData = new MapDataHandler()
     @canvas = new MutableCanvas("#{@_containerId}-a")
-    @canvas.on("mapChangeRequest", => @_showChangeMapPopup())
+    @canvas.on("mapChangeRequest", @_showChangeMapPopup.bind(this))
     @_init()
     @addView("map", @canvas)
 
@@ -35,10 +35,66 @@ root.EditMapPage = class EditMapPage extends root.View
       .style(canvasStyle)
     @
 
+  _dialogCloseButton: ->
+    {
+      label: 'Zamknij'
+      action: (dialog) ->
+        dialog.close()
+    }
 
-  refresh: =>
-    @canvas.refresh()
-    @
+  _ajaxSuccessHandler: (data) ->
+    errorData = [
+      {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
+      {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
+      {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
+      {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
+    ]
+    if data.err == 1
+      data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
+      instance.mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
+      instance.mapData.floorUrl[data.floor] = data.floorUrl
+
+    err = data.err - 1
+    #close existing dialog
+    jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
+      dialog.close()
+    )
+    BootstrapDialog.show(
+      message: errorData[err].message
+      title: errorData[err].title
+      type: errorData[err].type
+    )
+    instance.canvas.refresh()
+    return
+
+  _dialogSendButton: ->
+    {
+      label: 'Wyślij'
+      action: (dialog) ->
+        if jQuery("#dialogImage").val() is ""
+          return
+        dialog.enableButtons false
+        jQuery("#dialogForm").off "submit"
+        jQuery("#dialogForm").submit((e) =>
+          jQuery.ajaxSetup(
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
+          )
+          jQuery.ajax(
+            type: "POST"
+            url: "/uploadImage/"
+            data: new FormData(jQuery("#dialogForm")[0])
+            processData: false
+            contentType: false
+            success: @_ajaxSuccessHandler
+          )
+          e.preventDefault()
+          return
+        )
+        jQuery("#dialogSubmit").click()
+        dialog.setMessage('<p align="center">Trwa przetwarzanie mapy</p>')
+        dialog.options.buttons = []
+        dialog.updateButtons()
+    }
 
   _showChangeMapPopup: =>
     formHTML =
@@ -77,71 +133,9 @@ root.EditMapPage = class EditMapPage extends root.View
     formHTML = formHTML[0][0].outerHTML
     instance = @
 
-    dialogCloseButton = ->
-      {
-        label: 'Zamknij'
-        action: (dialog) ->
-          dialog.close()
-      }
-
-    ajaxSuccessHandler = (data) ->
-      errorData = [
-        {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
-        {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
-        {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
-        {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
-      ]
-      if data.err == 1
-        data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-        instance.mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
-        instance.mapData.floorUrl[data.floor] = data.floorUrl
-
-      err = data.err - 1
-      #close existing dialog
-      jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
-        dialog.close()
-      )
-      BootstrapDialog.show(
-        message: errorData[err].message
-        title: errorData[err].title
-        type: errorData[err].type
-      )
-      instance.canvas.refresh()
-      return
-
-
-    dialogSendButton = ->
-      {
-      label: 'Wyślij'
-      action: (dialog) ->
-        if jQuery("#dialogImage").val() is ""
-          return
-        dialog.enableButtons false
-        jQuery("#dialogForm").off "submit"
-        jQuery("#dialogForm").submit((e) =>
-          jQuery.ajaxSetup(
-            headers: { "X-CSRFToken": getCookie("csrftoken") }
-          )
-          jQuery.ajax(
-            type: "POST"
-            url: "/uploadImage/"
-            data: new FormData(jQuery("#dialogForm")[0])
-            processData: false
-            contentType: false
-            success: ajaxSuccessHandler
-          )
-          e.preventDefault()
-          return
-        )
-        jQuery("#dialogSubmit").click()
-        dialog.setMessage('<p align="center">Trwa przetwarzanie mapy</p>')
-        dialog.options.buttons = []
-        dialog.updateButtons()
-      }
-
     dialogButtons = [
-      dialogCloseButton()
-      dialogSendButton()
+      @_dialogCloseButton()
+      @_dialogSendButton()
     ]
 
     BootstrapDialog.show(
