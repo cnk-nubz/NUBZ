@@ -30,9 +30,9 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath);
+    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
     command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
-    command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
+    command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
 
     db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
     runServer(cfg->serverPort, db);

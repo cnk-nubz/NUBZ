@@ -14,9 +14,11 @@ const std::string Config::argDatabaseName = "databaseName";
 const std::string Config::argDatabasePort = "databasePort";
 
 const std::string Config::argUrlPrefixForMapImage = "urlPrefixForMapImage";
+const std::string Config::argUrlPrefixForMapImageTiles = "urlPrefixForMapImageTiles";
 
 const std::string Config::argPublicFolderPath = "publicFolderPath";
 const std::string Config::argTmpFolderPath = "tmpFolderPath";
+const std::string Config::argMapTilesFolderPath = "mapTilesFolderPath";
 
 Config::Config(const std::string &configPath) {
     loadFromFile(configPath);
@@ -36,9 +38,12 @@ void Config::loadFromFile(const std::string &path) {
 
     opts.add_options()(argUrlPrefixForMapImage.c_str(),
                        po::value(&urlPrefixForMapImage)->required());
+    opts.add_options()(argUrlPrefixForMapImageTiles.c_str(),
+                       po::value(&urlPrefixForMapImageTiles)->required());
 
     opts.add_options()(argPublicFolderPath.c_str(), po::value(&publicFolderPath)->required());
     opts.add_options()(argTmpFolderPath.c_str(), po::value(&tmpFolderPath)->required());
+    opts.add_options()(argMapTilesFolderPath.c_str(), po::value(&mapTilesFolderPath)->required());
 
     po::variables_map vm;
 
@@ -52,6 +57,7 @@ void Config::loadFromFile(const std::string &path) {
 void Config::validate() const {
     validateDirectory(publicFolderPath);
     validateDirectory(tmpFolderPath);
+    validateDirectory(mapTilesFolderPath);
 }
 
 void Config::validateDirectory(const std::string &path) const {

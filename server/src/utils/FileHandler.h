@@ -3,10 +3,13 @@
 
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 namespace utils {
     class FileHandler {
     public:
         FileHandler(const std::string &path);
+        FileHandler(const boost::filesystem::path &path);
         ~FileHandler();
         FileHandler(const FileHandler &) = delete;
         FileHandler(FileHandler &&);
@@ -18,7 +21,7 @@ namespace utils {
 
     private:
         bool released;
-        const std::string path;
+        const boost::filesystem::path path;
     };
 }
 

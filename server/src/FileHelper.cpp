@@ -4,17 +4,19 @@
 
 std::unique_ptr<FileHelper> FileHelper::instance{};
 
-void FileHelper::configure(const std::string &tmpDirPath, const std::string &publicDirPath) {
-    FileHelper::instance.reset(new FileHelper(tmpDirPath, publicDirPath));
+void FileHelper::configure(const std::string &tmpDirPath, const std::string &publicDirPath,
+                           const std::string &mapTilesDirPath) {
+    FileHelper::instance.reset(new FileHelper(tmpDirPath, publicDirPath, mapTilesDirPath));
 }
 
 const FileHelper &FileHelper::getInstance() {
-    assert(instance);
+    assert(instance && "not configured");
     return *instance;
 }
 
-FileHelper::FileHelper(const std::string &tmpDirPath, const std::string &publicDirPath)
-    : tmpDirPath(tmpDirPath), publicDirPath(publicDirPath) {
+FileHelper::FileHelper(const std::string &tmpDirPath, const std::string &publicDirPath,
+                       const std::string &mapTilesDirPath)
+    : tmpDirPath(tmpDirPath), publicDirPath(publicDirPath), mapTilesDirPath(mapTilesDirPath) {
 }
 
 boost::filesystem::path FileHelper::pathForTmpFile(const std::string &filename) const {
@@ -31,9 +33,6 @@ boost::filesystem::path FileHelper::pathForPublicFile(const std::string &filenam
     return result;
 }
 
-std::string FileHelper::pathPrefixForImageTile(std::int32_t floor, std::int32_t level) const {
-    namespace fs = boost::filesystem;
-    fs::path result(publicDirPath);
-    result /= "tile__map_f" + std::to_string(floor) + "_l" + std::to_string(level);
-    return result.string();
+boost::filesystem::path FileHelper::pathForMapTilesDirectory() const {
+    return boost::filesystem::path(mapTilesDirPath);
 }
