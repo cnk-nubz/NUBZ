@@ -1,5 +1,5 @@
 root = exports ? this
-root.Controller = class Controller
+root.View = class View
   constructor: (@_containerId) ->
     @_views = {}
     @_handlers = {}

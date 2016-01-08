@@ -42,11 +42,12 @@ def _getMapImageInfo():
 
 		if not floorTiles[i].zoomLevels:
 			floorTilesInfo[i] = {
+			0: {
 				'tileWidth': defaultImage['tileWidth'],
 				'tileHeight': defaultImage['tileHeight'],
 				'scaledWidth': defaultImage['scaledWidth'],
 				'scaledHeight': defaultImage['scaledHeight']
-			}
+			}}
 		else:
 			floorTilesInfo[i] = {
 			idx: {
@@ -91,12 +92,23 @@ def index(request):
 	if not floorTilesInfo or not exhibits:
 		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template('index.html')
+
+	if len(floorTilesInfo[0]) == 1: #just default image
+		urlFloor0 = r"static/floorplan0.jpg"
+	else: #get from config file
+		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+
+	if len(floorTilesInfo[1]) == 1:
+		urlFloor1 = r"static/floorplan1.jpg"
+	else:
+		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
+
 	context = RequestContext(request, {
 		'activeFloor': 0,
 		'exhibits': exhibits,
 		'floorTilesInfo': floorTilesInfo,
-		'urlFloor0': getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg"),
-		'urlFloor1': getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan0.jpg")
+		'urlFloor0': urlFloor0,
+		'urlFloor1': urlFloor1
 	})
 	return HttpResponse(template.render(context))
 
@@ -135,9 +147,17 @@ def uploadImage(request):
 		}
 		return JsonResponse(data)
 
+	if len(floorTilesInfo[floor]) == 1: #just default image
+		floorUrl = r"static/floorplan0.jpg"
+	else: #get from config file
+		if floor == 0:
+			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+		else:
+			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
-		"floorTilesInfo": floorTilesInfo
+		"floorTilesInfo": floorTilesInfo,
+		"floorUrl": floorUrl
 	}
 	return JsonResponse(data)

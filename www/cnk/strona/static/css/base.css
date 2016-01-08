@@ -1,8 +1,7 @@
 body {
-  padding-top: 50px;
   overflow: hidden;
 }
-/* Redefining bootstrap classes */
+
 .modal {
   top: 95px;
 }
@@ -15,21 +14,4 @@ body {
 /* end of redefining leaflet classes */
 .nav-link {
   cursor: pointer;
-}
-
-/* 46 - detached-control-panel width */
-#map, #editMap {
-  width: calc(100vw - 46px);
-  height: calc(100vh - 50px);
-  left: 46px;
-  overflow: visible;
-}
-
-.detached-control-panel {
-  background: rgba(255, 255, 255, 1);
-  position: absolute;
-  top: 50px;
-  width: 46px;
-  height: calc(100vh - 50px);
-  z-index: 1029;
 }

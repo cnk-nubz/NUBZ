@@ -1,11 +1,29 @@
 root = exports ? this
-root.Navbar = class Navbar extends root.Controller
+root.Navbar = class Navbar extends root.View
   constructor: ->
     super
     @_init()
 
   _init: =>
-    content = @select(@_containerId).append "nav"
+    navbarStyle = {
+      "position": "absolute"
+      "top": "0px"
+      "left": "0px"
+      "height": "50px"
+      "width": "100%"
+    }
+    mapStyle = {
+      "position": "relative"
+      "padding-top": "50px"
+      "height": "100%"
+      "width": "100%"
+    }
+    content = @select(@_containerId).append "div"
+      .attr(
+        id: 'navbar'
+      )
+      .style(navbarStyle)
+      .append "nav"
        .classed "navbar navbar-inverse navbar-fixed-top", true
       .append "div"
        .classed "container", true
@@ -18,8 +36,12 @@ root.Navbar = class Navbar extends root.Controller
        )
 
 
-    map = new Canvas("#map", "#{@_containerId}-a")
+    map = new JustMapPage("#{@_containerId}-a")
     editMap = new EditMapPage("#{@_containerId}-b")
+    @select("#{@_containerId}-a")
+      .style(mapStyle)
+    @select("#{@_containerId}-b")
+      .style(mapStyle)
     #HERE ADD NEXT NAV-LINKS
     initialPage = 0
     navLink = [
@@ -62,8 +84,8 @@ root.Navbar = class Navbar extends root.Controller
 
   setActiveView: (link) =>
     return if @_activeView?.id is link.id
-    @destroyView(@_activeView.ref._containerId) if @_activeView?
-    @addView(link.ref._containerId, link.ref)
+    @destroyView("content") if @_activeView?
+    @addView("content", link.ref)
     link.ref.refresh()
     @_activeView = link
     @

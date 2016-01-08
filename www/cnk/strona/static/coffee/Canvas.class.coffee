@@ -1,19 +1,14 @@
 root = exports ? this
-root.Canvas = class Canvas extends root.Controller
-  constructor: (@_containerMap, containerId) ->
-    super containerId
+root.Canvas = class Canvas extends root.View
+  constructor: (@_containerMap) ->
+    super @_containerMap
     @mapData = new MapDataHandler()
     @_minZoom = 1
     @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
-    d3.select "body"
-      .append "div"
-      .attr(
-        id: @_containerMap[1..]
-      )
-    @_map = L.map(@_containerMap[1..], {
+    @_map = L.map(@select(@_containerMap).node(), {
       minZoom: @_minZoom
       zoom: @_minZoom
       crs: L.CRS.Simple
@@ -29,12 +24,42 @@ root.Canvas = class Canvas extends root.Controller
       @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
       @addExhibits(i, @mapData.visibleExhibits[i])
     @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
-    map = d3.select "#{@_containerMap}"
-    content = @select(@_containerId)
-    content.append "div"
-      .classed 'detached-control-panel', true
-    content.append -> map.node()
     @
+
+  _initButtons: =>
+    @_labelsButton = L.easyButton({
+      states:[
+          {
+            stateName: 'setLabels'
+            icon: 'fa-comment-o'
+            title: 'Pokaż etykiety'
+            onClick: (btn) =>
+              btn.state('removeLabels')
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+                layer.showLabel()
+              )
+              return
+          },
+          {
+            stateName: 'removeLabels'
+            icon: 'fa-comment'
+            title: 'Ukryj etykiety'
+            onClick: (btn) =>
+              btn.state('setLabels')
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+                layer.hideLabel()
+              )
+              return
+          }
+      ]
+    })
+    @_labelsButton.state 'removeLabels'
+    @_labelsButton.addTo @_map
+    @_floorButton = [
+      L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
+      L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
+    ]
+    return
 
   addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
@@ -63,7 +88,6 @@ root.Canvas = class Canvas extends root.Controller
         .removeClass "clicked"
 
       @mapData.activeFloor = floor
-      @fireEvents "floorChanged"
       @_map.removeLayer(@_exhibits[1 - floor])
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
@@ -116,38 +140,3 @@ root.Canvas = class Canvas extends root.Controller
     #TODO (in case nothing to do): add synchronization of panning between pages
     @refreshTiles()
     @
-
-  _initButtons: =>
-    @_labelsButton = L.easyButton({
-      states:[
-          {
-            stateName: 'setLabels'
-            icon: 'fa-comment-o'
-            title: 'Pokaż etykiety'
-            onClick: (btn) =>
-              btn.state('removeLabels')
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.showLabel()
-              )
-              return
-          },
-          {
-            stateName: 'removeLabels'
-            icon: 'fa-comment'
-            title: 'Ukryj etykiety'
-            onClick: (btn) =>
-              btn.state('setLabels')
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.hideLabel()
-              )
-              return
-          }
-      ]
-    })
-    @_labelsButton.state 'removeLabels'
-    @_labelsButton.addTo @_map
-    @_floorButton = [
-      L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
-      L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
-    ]
-    return
