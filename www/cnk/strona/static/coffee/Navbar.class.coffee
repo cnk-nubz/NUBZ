@@ -5,24 +5,10 @@ root.Navbar = class Navbar extends root.View
     @_init()
 
   _init: =>
-    navbarStyle = {
-      "position": "absolute"
-      "top": "0px"
-      "left": "0px"
-      "height": "50px"
-      "width": "100%"
-    }
-    mapStyle = {
-      "position": "relative"
-      "padding-top": "50px"
-      "height": "100%"
-      "width": "100%"
-    }
     content = @select(@_containerId).append "div"
       .attr(
         id: 'navbar'
       )
-      .style(navbarStyle)
       .append "nav"
        .classed "navbar navbar-inverse navbar-fixed-top", true
       .append "div"
@@ -38,10 +24,7 @@ root.Navbar = class Navbar extends root.View
 
     map = new JustMapPage("#{@_containerId}-a")
     editMap = new EditMapPage("#{@_containerId}-b")
-    @select("#{@_containerId}-a")
-      .style(mapStyle)
-    @select("#{@_containerId}-b")
-      .style(mapStyle)
+    @_initCss()
     #HERE ADD NEXT NAV-LINKS
     initialPage = 0
     navLink = [
@@ -72,6 +55,28 @@ root.Navbar = class Navbar extends root.View
     )
     @setActiveView navLink[initialPage]
     @_lastClicked = navLink[initialPage].id
+
+  _initCss: =>
+    navbarStyle = {
+      "position": "absolute"
+      "top": "0px"
+      "left": "0px"
+      "height": "50px"
+      "width": "100%"
+    }
+    mapStyle = {
+      "position": "relative"
+      "padding-top": "50px"
+      "height": "100%"
+      "width": "100%"
+    }
+    @select("#{@_containerId}-a")
+      .style(mapStyle)
+    @select("#{@_containerId}-b")
+      .style(mapStyle)
+    @select(@_containerId).select("#navbar")
+      .style(navbarStyle)
+    @
 
   setActiveButton: (id) ->
     return if @_lastClicked is id

@@ -5,11 +5,14 @@ root.MainPage = class MainPage extends root.View
     @_init()
 
   _init: =>
+    @addView("navbar", new Navbar "#a")
+    @_initCss()
+
+  _initCss: =>
     mainPageStyle = {
       "overflow": "hidden"
       "width": "100vw"
       "height": "100vh"
     }
-    @addView("navbar", new Navbar "#a")
     d3.select("#a")
       .style(mainPageStyle)

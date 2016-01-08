@@ -6,8 +6,17 @@ root.JustMapPage = class JustMapPage extends root.View
     @_init()
     @addView("map", @canvas)
 
-
   _init: =>
+    @select(@_containerId)
+      .append "div"
+      .attr(
+        id: "left-panel"
+      )
+      .html "&nbsp;"
+    @_initCss()
+    @
+
+  _initCss: =>
     leftPanelStyle = {
       "background": "rgba(255, 255, 255, 1)"
       "position": "absolute"
@@ -22,19 +31,9 @@ root.JustMapPage = class JustMapPage extends root.View
       "height": "100%"
       "overflow": "visible"
     }
-
-    @select(@_containerId)
-      .append "div"
-      .attr(
-        id: "left-panel"
-      )
+    @select(@_containerId).select("#left-panel")
       .style(leftPanelStyle)
-      .html "&nbsp;"
-
     @select("#{@_containerId}-a")
       .style(canvasStyle)
-    @
 
-  refresh: =>
-    @canvas.refresh()
     @

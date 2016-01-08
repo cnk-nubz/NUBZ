@@ -16,16 +16,6 @@ root.Canvas = class Canvas extends root.View
     @_initButtons()
     @_init()
 
-  _init: =>
-    mapWidth = (@mapData.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
-    mapHeight = (@mapData.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
-    for i in [0..1]
-      @addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
-      @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
-      @addExhibits(i, @mapData.visibleExhibits[i])
-    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
-    @
-
   _initButtons: =>
     @_labelsButton = L.easyButton({
       states:[
@@ -60,6 +50,16 @@ root.Canvas = class Canvas extends root.View
       L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
     ]
     return
+
+  _init: =>
+    mapWidth = (@mapData.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
+    mapHeight = (@mapData.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
+    for i in [0..1]
+      @addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
+      @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
+      @addExhibits(i, @mapData.visibleExhibits[i])
+    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
+    @
 
   addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),

@@ -3,15 +3,12 @@ root.EditMapPage = class EditMapPage extends root.View
   constructor: ->
     super
     @mapData = new MapDataHandler()
-    @canvas = new Canvas("#{@_containerId}-a")
+    @canvas = new MutableCanvas("#{@_containerId}-a")
+    @canvas.on("mapChangeRequest", => @_showChangeMapPopup())
     @_init()
     @addView("map", @canvas)
 
   _init: =>
-    @changeMapButton = L.easyButton('fa-map-o',
-                                    @_showChangeMapPopup,
-                                    'Zmień obrazek piętra',
-                                    {position: 'bottomleft'}).addTo(@canvas._map)
     leftPanelStyle = {
       "background": "rgba(255, 255, 255, 1)"
       "position": "absolute"
@@ -44,9 +41,40 @@ root.EditMapPage = class EditMapPage extends root.View
     @
 
   _showChangeMapPopup: =>
-    formHTML = """
-    <div><form id="dialogForm" style="width: 268px;"><input id="dialogImage" class="form-control" type="file" name="image" required="true" accept="image/*" /><input type="hidden" value="!activeFloor!" name="floor" /><input id="dialogSubmit" type="submit" style="display: none;" /></form></div>
-    """
+    formHTML =
+      d3.select(document.createElement("div"))
+        .append "form"
+          .attr(
+            id: "dialogForm"
+          )
+          .style(
+            "width": "268px"
+          )
+    formHTML.append "input"
+        .attr(
+          id: "dialogImage"
+          type: "file"
+          name: "image"
+          required: "true"
+          accept: "image/*"
+        )
+        .classed "form-control", true
+    formHTML.append "input"
+        .attr(
+          type: "hidden"
+          value: "!activeFloor!"
+          name: "floor"
+        )
+    formHTML.append "input"
+        .attr(
+          id: "dialogSubmit"
+          type: "submit"
+        )
+        .style(
+          "display": "none"
+        )
+
+    formHTML = formHTML[0][0].outerHTML
     instance = @
 
     dialogCloseButton = ->
@@ -79,7 +107,6 @@ root.EditMapPage = class EditMapPage extends root.View
         type: errorData[err].type
       )
       instance.canvas.refresh()
-      jQuery("#dialogSubmit").click()
       return
 
 
@@ -107,6 +134,9 @@ root.EditMapPage = class EditMapPage extends root.View
           return
         )
         jQuery("#dialogSubmit").click()
+        dialog.setMessage('<p align="center">Trwa przetwarzanie mapy</p>')
+        dialog.options.buttons = []
+        dialog.updateButtons()
       }
 
     dialogButtons = [
