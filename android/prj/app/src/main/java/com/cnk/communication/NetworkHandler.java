@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
+import com.cnk.communication.task.ExperimantDataDownloadTask;
 import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
@@ -28,6 +29,7 @@ public class NetworkHandler implements Observer {
     private Notificator exhibitsDownload;
     private Notificator bgDownload;
     private Notificator bgRaportUpload;
+    private Notificator experimentDataDownload;
     private boolean downloadInBg;
     private boolean uploadInBg;
 
@@ -57,6 +59,7 @@ public class NetworkHandler implements Observer {
         exhibitsDownload = new Notificator(this);
         bgRaportUpload = new Notificator(this);
         bgDownload = new Notificator(this);
+        experimentDataDownload = new Notificator(this);
         downloadInBg = false;
         bgDelaySeconds = 30;
         tasks = new LinkedBlockingQueue<>();
@@ -65,6 +68,11 @@ public class NetworkHandler implements Observer {
         Thread bgQueuer = new Thread(new QueueThread(bgTasks));
         bgQueuer.start();
         onDemendQueuer.start();
+    }
+
+    public synchronized void downloadExperimentData() {
+        Task task = new ExperimantDataDownloadTask(experimentDataDownload);
+        tasks.add(task);
     }
 
     public synchronized void downloadMap() {
@@ -162,6 +170,9 @@ public class NetworkHandler implements Observer {
         } else if (o == exhibitsDownload) {
             Log.e(LOG_TAG, "Exhibits download task failed");
             downloadExhibits();
+        } else if (o == experimentDataDownload) {
+            Log.e(LOG_TAG, "Experiment data download task failed");
+            downloadExperimentData();
         }
     }
 
