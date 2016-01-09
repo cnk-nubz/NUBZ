@@ -1,6 +1,10 @@
 #ifndef COMMAND__SET_MAP_IMAGE_COMMAND__H
 #define COMMAND__SET_MAP_IMAGE_COMMAND__H
 
+#include <memory>
+
+#include <boost/filesystem.hpp>
+
 #include "commands_common.h"
 #include "io/input/SetMapImageRequest.h"
 #include "db/Database.h"
@@ -21,19 +25,33 @@ namespace command {
         void operator()(const io::input::SetMapImageRequest &input);
 
     private:
+        struct ZoomLevelInfo {
+            std::int32_t levelIdx;
+            std::size_t size;
+            std::size_t tileSize;
+        };
+        static const std::vector<ZoomLevelInfo> zoomLevels;
+
         db::Database &db;
+        std::unique_ptr<img::ImageProcessor> imgProc;
         std::vector<db::MapTile> tiles;
         std::vector<db::MapTilesInfo> tilesInfo;
-        int randVal;
+
+        void prepareImageProcessor(const std::string &originalMapFilename);
+        db::MapImage createFullMapImage(std::int32_t floor);
+
+        utils::FileHandler createTiles(std::int32_t floor);
+        void addTiles(const std::vector<std::vector<std::string>> &tilesNames, std::int32_t floor,
+                      std::int32_t zoomLevel, const std::string &pathPrefix);
+
+        boost::optional<boost::filesystem::path> getOldMap(std::int32_t floor,
+                                                           db::DatabaseSession &session) const;
 
         std::int32_t getCurrentVersion(db::DatabaseSession &session) const;
-        std::string createFilename(const std::string &srcFilename, std::int32_t level) const;
-        void setSize(db::MapImage &mapImage, const std::string imgPath) const;
-        void moveFileToPublic(const std::string &srcFilename,
-                              const std::string &destFilename) const;
-        std::vector<utils::FileHandler> createTiles(const std::string &filePath,
-                                                    std::int32_t floor);
-        std::string getFilename(const std::string &path) const;
+
+        void switchToNewTiles(const boost::filesystem::path &tmpDir, std::int32_t floor) const;
+        
+        boost::filesystem::path finalTilesDir(std::int32_t floor) const;
     };
 }
 

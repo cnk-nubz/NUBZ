@@ -8,21 +8,24 @@
 
 class FileHelper {
 public:
-    static void configure(const std::string &tmpDirPath, const std::string &publicDirPath);
+    static void configure(const std::string &tmpDirPath, const std::string &publicDirPath,
+                          const std::string &mapTilesDirPath);
+
     static const FileHelper &getInstance();
 
     boost::filesystem::path pathForTmpFile(const std::string &filename) const;
     boost::filesystem::path pathForPublicFile(const std::string &filename) const;
-
-    std::string pathPrefixForImageTile(std::int32_t floor, std::int32_t level) const;
+    boost::filesystem::path pathForMapTilesDirectory() const;
 
 private:
-    FileHelper(const std::string &tmpDirPath, const std::string &publicDirPath);
+    FileHelper(const std::string &tmpDirPath, const std::string &publicDirPath,
+               const std::string &mapTilesDirPath);
 
     static std::unique_ptr<FileHelper> instance;
 
     std::string tmpDirPath;
     std::string publicDirPath;
+    std::string mapTilesDirPath;
 };
 
 #endif

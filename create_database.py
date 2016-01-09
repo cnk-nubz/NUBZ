@@ -81,7 +81,7 @@ cur.execute('''
 cur.execute('''
 	INSERT INTO map_images VALUES
 		('floorplan0.jpg', 2200, 1700, 0, 1),
-		('floorplan0.jpg', 2200, 1700, 1, 2)
+		('floorplan1.jpg', 2200, 1700, 1, 2)
 ''')
 
 # counters

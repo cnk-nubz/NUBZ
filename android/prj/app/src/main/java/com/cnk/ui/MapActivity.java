@@ -1,7 +1,10 @@
 package com.cnk.ui;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -9,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
@@ -25,6 +29,7 @@ import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.ui.exhibitwindow.ExhibitDialog;
 import com.cnk.utilities.Consts;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
@@ -46,7 +51,9 @@ public class MapActivity extends Activity implements Observer {
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
-    RelativeLayout rlRootLayout;
+    private RelativeLayout rlRootLayout;
+    private RelativeLayout voidLayout;
+    private Point lastClick;
 
     private static final Float MAXIMUM_SCALE = 4.0f;
     private static final Float MINIMUM_SCALE = 0.01f;
@@ -102,6 +109,12 @@ public class MapActivity extends Activity implements Observer {
                 new MapChangeFloor().execute();
             }
         }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        lastClick = new Point((int) ev.getX(), (int) ev.getY());
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override
@@ -183,6 +196,7 @@ public class MapActivity extends Activity implements Observer {
                     tileView.setVisibility(View.INVISIBLE);
                 }
 
+                voidLayout = addVoidLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
                 floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
@@ -200,6 +214,15 @@ public class MapActivity extends Activity implements Observer {
         });
 
         localUISynchronization.acquireUninterruptibly();
+    }
+
+    private RelativeLayout addVoidLayout(RelativeLayout parent, Context c) {
+        RelativeLayout rl = new RelativeLayout(c);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
+        parent.addView(rl, lp);
+
+        return rl;
     }
 
     private Switch addFloorsSwitch(RelativeLayout parent, Context c) {
@@ -433,7 +456,7 @@ public class MapActivity extends Activity implements Observer {
 
             viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
 
-            es = new ExhibitSpot(e.getId());
+            es = new ExhibitSpot(e.getId(), e.getName(), artv);
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
             es.setHotSpotTapListener(exhibitsListener);
@@ -466,14 +489,26 @@ public class MapActivity extends Activity implements Observer {
 
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
+        private String name;
+        private AutoResizeTextView exhibitTextView;
 
-        public ExhibitSpot(Integer exhibitId) {
+        public ExhibitSpot(Integer exhibitId, String name, AutoResizeTextView exhibitTextView) {
             super();
             this.exhibitId = exhibitId;
+            this.name = name;
+            this.exhibitTextView = exhibitTextView;
         }
 
         public Integer getExhibitId() {
             return exhibitId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public AutoResizeTextView getExhibitTextView() {
+            return exhibitTextView;
         }
     }
 
@@ -487,6 +522,8 @@ public class MapActivity extends Activity implements Observer {
 
         List<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
+
+        AutoResizeTextView lastExhibitTextView;
     }
 
 
@@ -498,6 +535,50 @@ public class MapActivity extends Activity implements Observer {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
             Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
             Toast.makeText(getApplicationContext(), "Clicked exhibit with id: " + id.toString(), Toast.LENGTH_SHORT).show();
+
+            if (mapState.lastExhibitTextView != null) {
+                mapState.lastExhibitTextView
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+            }
+
+            mapState.lastExhibitTextView = ((ExhibitSpot) hotSpot).getExhibitTextView();
+            ((ExhibitSpot) hotSpot).getExhibitTextView()
+                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+            ArrayList<String> availableActions = new ArrayList<>();
+            availableActions.add("asdf");
+            availableActions.add("jakas akcja");
+            availableActions.add("akcja o dluzszej nazwie, test zawijania tekstu");
+            availableActions.add("spam");
+            availableActions.add("spamspam");
+            availableActions.add("spam3");
+            availableActions.add("spam5");
+            availableActions.add("next spam");
+            availableActions.add("asdf asdf ddd as");
+            availableActions.add("action number X");
+            availableActions.add("another longer a little bit action");
+            availableActions.add("something more");
+            availableActions.add("more actions");
+            availableActions.add("last action");
+
+            Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
+            exhibitWindowIntent.putExtra(ExhibitDialog.NAME, ((ExhibitSpot) hotSpot).getName());
+            exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, availableActions);
+            ActivityOptions activityOptions =
+                    ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+            startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Toast.makeText(getApplicationContext(), "Back from exhibit with id: " + Integer.toString(requestCode) +
+                " result code: " + Integer.toString(resultCode), Toast.LENGTH_LONG).show();
+
+        if (resultCode == RESULT_OK) {
+            ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
         }
     }
 
