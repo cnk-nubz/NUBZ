@@ -24,4 +24,7 @@ service Server {
 
 	void saveReport(1: structs.RawReport report)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 }
