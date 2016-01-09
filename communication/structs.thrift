@@ -80,3 +80,9 @@ struct RawReport {
 	1: i32 reportId,
 	2: list<RawReportEvent> history,
 }
+
+struct SetExhibitFrameRequest {
+	1: i32 exhibitId,
+	2: i32 x,
+	3: i32 y,
+}

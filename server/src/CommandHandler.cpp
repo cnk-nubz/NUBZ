@@ -129,3 +129,12 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
 
     LOG(INFO) << "saveReport end";
 }
+
+void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest &request) {
+    LOG(INFO) << "setExhibitsFrames start";
+    LOG(INFO) << "input: " << request;
+    
+    LOG(INFO) << "not implemented";
+    
+    LOG(INFO) << "setExhibitsFrames end";
+}
