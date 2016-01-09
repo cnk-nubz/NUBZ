@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include "communication/structs_types.h"
-#include "Action.h"
+#include "io/Action.h"
 
 namespace io {
     namespace output {
