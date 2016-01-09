@@ -37,7 +37,7 @@ public class StartScreen extends AppCompatActivity {
     public void testClick(View view) {
         List<Action> actions = DataHandler.getInstance().getAllExhibitActions();
         for (Action a : actions) {
-            Log.i("TEST", a.toString());
+            Log.i("TEST", a.getText());
         }
     }
 
