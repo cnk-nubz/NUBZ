@@ -1,7 +1,17 @@
 body {
-    padding-top: 50px;
+  overflow: hidden;
 }
 
-.alert { /* Redefining margin for alert bootstrap class */
-	margin-bottom: 0px;
+.modal {
+  top: 95px;
+}
+/* end of redefining bootstrap classes */
+/* Redefining leaflet classes */
+.leaflet-top.leaflet-left, .leaflet-bottom.leaflet-left {
+  left: -46px;
+  z-index: 1030;
+}
+/* end of redefining leaflet classes */
+.nav-link {
+  cursor: pointer;
 }

@@ -32,6 +32,7 @@ public class DataHandler extends Observable {
         FLOOR_1_MAP_CHANGING("Map changing 1"),
         BOTH_FLOORS_MAP_CHANGED("Map changed both"),
         BOTH_FLOORS_MAP_CHANGING("Map changing both"),
+        EXPERIMENT_DATA("Experiment data"),
         EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
 
@@ -73,8 +74,8 @@ public class DataHandler extends Observable {
 
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
-
     private Raport currentRaport;
+    private ExperimentData experimentData;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -89,6 +90,19 @@ public class DataHandler extends Observable {
 
     private DataHandler() {
         cachedTileAdresses = new ConcurrentHashMap<>();
+    }
+
+    public void setNewExperimentData(ExperimentData newData) {
+        experimentData = newData;
+        setChanged();
+        notifyObservers(Item.EXPERIMENT_DATA);
+    }
+
+    public List<Action> getAllExhibitActions() {
+        return experimentData.getExhibitActions();
+    }
+    public List<Action> getAllBreakActions() {
+        return experimentData.getBreakActions();
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else
