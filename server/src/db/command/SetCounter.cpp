@@ -1,10 +1,9 @@
 #include <iostream>
 
-#include <boost/format.hpp>
-
 #include "SetCounter.h"
 #include "db/db_info.h"
 #include "db/factory/SingleFieldFactory.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -18,16 +17,11 @@ namespace db {
 
         std::string SetCounter::createUpdate() const {
             using namespace db::info::counters;
+            using namespace db::sql;
 
-            boost::format update("UPDATE %1%");
-            boost::format set(" SET %1% = %2%");
-            boost::format where(" WHERE %1% = '%2%'");
-
-            update % tableName;
-            set % colVersion % newValue;
-            where % colElement % db::info::counters::colElementType(elementType);
-
-            return update.str() + set.str() + where.str();
+            return Sql::update(tableName)
+                .set(colVersion, newValue)
+                .where(C(colElement) == colElementType(elementType));
         }
     }
 }

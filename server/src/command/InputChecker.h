@@ -4,6 +4,7 @@
 #include "commands_common.h"
 #include "db/DatabaseSession.h"
 #include "db/command/GetExhibits.h"
+#include "db/command/GetActions.h"
 
 namespace command {
     class InputChecker {
@@ -33,9 +34,10 @@ namespace command {
         static_assert(std::is_same<typename Container::value_type, std::int32_t>::value,
                       "exhibit id type should be std::int32_t");
 
-        std::unordered_set<std::int32_t> correctIds;
         db::cmd::GetExhibits cmd;
         cmd(session);
+        
+        std::unordered_set<std::int32_t> correctIds;
         for (const auto &exhibit : cmd.getResult()) {
             correctIds.insert(exhibit.ID);
         }
@@ -49,18 +51,48 @@ namespace command {
     }
 
     template <class Container>
-    bool InputChecker::checkExhibitsActionsIds(const Container &) {
+    bool InputChecker::checkExhibitsActionsIds(const Container &actionsIds) {
         static_assert(std::is_same<typename Container::value_type, std::int32_t>::value,
                       "action id type should be std::int32_t");
 
+        db::cmd::GetActions cmd;
+        cmd.duringBreakCondition = false;
+        cmd(session);
+        
+        std::unordered_set<std::int32_t> correctIds;
+        for (const auto &action : cmd.getResult()) {
+            correctIds.insert(action.ID);
+        }
+        
+        for (const auto actionId : actionsIds) {
+            if (!correctIds.count(actionId)) {
+                return false;
+            }
+        }
+        
         return true;
     }
 
     template <class Container>
-    bool InputChecker::checkBreakActionsIds(const Container &) {
+    bool InputChecker::checkBreakActionsIds(const Container &actionsIds) {
         static_assert(std::is_same<typename Container::value_type, std::int32_t>::value,
                       "action id type should be std::int32_t");
 
+        db::cmd::GetActions cmd;
+        cmd.duringBreakCondition = true;
+        cmd(session);
+        
+        std::unordered_set<std::int32_t> correctIds;
+        for (const auto &action : cmd.getResult()) {
+            correctIds.insert(action.ID);
+        }
+        
+        for (const auto actionId : actionsIds) {
+            if (!correctIds.count(actionId)) {
+                return false;
+            }
+        }
+        
         return true;
     }
 }

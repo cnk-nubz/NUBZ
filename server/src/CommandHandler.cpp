@@ -130,11 +130,12 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << "saveReport end";
 }
 
-void CommandHandler::getExperimentData(communication::ExperimentData &experimentData) {
+void CommandHandler::getExperimentData(communication::ExperimentData &response) {
     LOG(INFO) << "getExperimentData start";
     
-    LOG(INFO) << "not implemented";
+    io::output::ExperimentData output = command::GetExperimentDataCommand{db}();
+    response = output.toThrift();
     
-    LOG(INFO) << "output: " << experimentData;
+    LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExperimentData end";
 }

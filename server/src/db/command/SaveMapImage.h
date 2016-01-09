@@ -3,7 +3,6 @@
 
 #include "db/DatabaseSession.h"
 #include "db/struct/MapImage.h"
-#include "db/db_info.h"
 
 namespace db {
     namespace cmd {

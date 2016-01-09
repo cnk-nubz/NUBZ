@@ -1,10 +1,9 @@
 #include <string>
 
-#include <boost/format.hpp>
-
 #include "GetMapImages.h"
 #include "db/db_info.h"
 #include "db/factory/MapImageFactory.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -24,19 +23,11 @@ namespace db {
 
         std::string GetMapImages::createQuery() const {
             using namespace db::info::map_images;
+            using namespace db::sql;
 
-            boost::format select("SELECT %1%, %2%, %3%, %4%, %5%");
-            boost::format from(" FROM %1%");
-            boost::format where(" WHERE %1% %2% %3%");
-
-            const auto &cols = db::factory::MapImageFactory::fieldsOrder();
-            for (const auto &col : cols) {
-                select % col;
-            }
-            from % tableName;
-            where % colVersion % ">=" % minVersion;
-
-            return select.str() + from.str() + where.str();
+            return Sql::select(db::factory::MapImageFactory::fieldsOrder())
+                .from(tableName)
+                .where(C(colVersion) >= minVersion);
         }
     }
 }

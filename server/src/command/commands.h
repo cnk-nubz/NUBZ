@@ -8,5 +8,6 @@
 #include "GetExhibitsCommand.h"
 #include "SaveRawReportCommand.h"
 #include "ReserveIdForReportCommand.h"
+#include "GetExperimentDataCommand.h"
 
 #endif

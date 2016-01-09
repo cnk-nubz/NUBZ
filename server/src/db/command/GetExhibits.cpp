@@ -1,10 +1,7 @@
-#include <string>
-
-#include <boost/format.hpp>
-
 #include "GetExhibits.h"
 #include "db/db_info.h"
 #include "db/factory/ExhibitFactory.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -24,18 +21,11 @@ namespace db {
 
         std::string GetExhibits::createQuery() const {
             using namespace db::info::exhibits;
+            using namespace db::sql;
 
-            boost::format select("SELECT %1%, %2%, %3%, %4%, %5%, %6%, %7%, %8%");
-            boost::format from(" FROM %1%");
-            boost::format where(" WHERE %1% %2% %3%");
-
-            for (const auto &colName : db::factory::ExhibitFactory::fieldsOrder()) {
-                select % colName;
-            }
-            from % tableName;
-            where % colVersion % ">=" % minVersion;
-
-            return select.str() + from.str() + where.str();
+            return Sql::select(db::factory::ExhibitFactory::fieldsOrder())
+                .from(tableName)
+                .where(C(colVersion) >= minVersion);
         }
     }
 }
