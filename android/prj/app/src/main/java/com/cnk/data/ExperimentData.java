@@ -15,15 +15,7 @@ public class ExperimentData {
         return exhibitActions;
     }
 
-    public void setExhibitActions(List<Action> exhibitActions) {
-        this.exhibitActions = exhibitActions;
-    }
-
     public List<Action> getBreakActions() {
         return breakActions;
-    }
-
-    public void setBreakActions(List<Action> breakActions) {
-        this.breakActions = breakActions;
     }
 }

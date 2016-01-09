@@ -29,16 +29,11 @@ public class StartScreen extends AppCompatActivity {
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
         net = new NetworkHandler();
-        net.downloadExperimentData();
         bMapActivity = (Button) findViewById(R.id.bMapActivity);
         bMapActivity.setOnClickListener(new MapActivityClick());
     }
 
     public void testClick(View view) {
-        List<Action> actions = DataHandler.getInstance().getAllExhibitActions();
-        for (Action a : actions) {
-            Log.i("TEST", a.getText());
-        }
     }
 
     public void mapClick(View view) {

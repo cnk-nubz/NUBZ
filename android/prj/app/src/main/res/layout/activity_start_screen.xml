@@ -9,26 +9,16 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TEST"
-        android:id="@+id/testButton"
+        android:text="Download Map"
+        android:id="@+id/mapButton"
+        android:onClick="mapClick"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="testClick"/>
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Map"
-        android:id="@+id/mapButton"
-        android:onClick="mapClick"
-        android:layout_below="@+id/testButton"
-        android:layout_alignLeft="@+id/testButton"
-        android:layout_alignStart="@+id/testButton" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Map activity"
         android:id="@+id/bMapActivity"
         android:layout_below="@+id/mapButton"
         android:layout_centerHorizontal="true"/>
