@@ -1,7 +1,6 @@
-#include <boost/format.hpp>
-
 #include "GetRawReports.h"
 #include "db/factory/RawReportFactory.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -18,22 +17,14 @@ namespace db {
 
         std::string GetRawReports::createQuery() const {
             using namespace db::info::reports;
-
-            boost::format select("SELECT %1%, %2%");
-            boost::format from(" FROM %1%");
-
-            select % colId % colDocument;
-            from % tableName;
-
-            std::string query = select.str() + from.str();
-
+            using namespace db::sql;
+            
+            auto select = Sql::select(db::factory::RawReportFactory::fieldsOrder()).from(tableName);
             if (reportId) {
-                boost::format where(" WHERE %1%=%2%");
-                where % colId % reportId.value();
-                query += where.str();
+                select.where(C(colId) == reportId.value());
             }
-
-            return query;
+            
+            return select;
         }
     }
 }

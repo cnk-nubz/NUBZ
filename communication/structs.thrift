@@ -86,3 +86,13 @@ struct SetExhibitFrameRequest {
 	2: i32 x,
 	3: i32 y,
 }
+
+struct Action {
+	1: i32 actionId,
+	2: string text,
+}
+
+struct ExperimentData {
+	1: list<Action> exhibitActions,
+	2: list<Action> breakActions,
+}

@@ -11,16 +11,14 @@ namespace db {
         class GetMapTiles {
         public:
             GetMapTiles() = default;
-            GetMapTiles(std::int32_t floor);
-            GetMapTiles(std::int32_t floor, std::int32_t zoomLevel);
             ~GetMapTiles() = default;
 
             void operator()(DatabaseSession &session);
             const std::vector<MapTile> &getResult() const;
 
-        private:
             boost::optional<std::int32_t> floor;
             boost::optional<std::int32_t> zoomLevel;
+        private:
             std::vector<MapTile> result;
 
             std::string createQuery() const;

@@ -133,8 +133,18 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
 void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest &request) {
     LOG(INFO) << "setExhibitsFrames start";
     LOG(INFO) << "input: " << request;
-    
+
     LOG(INFO) << "not implemented";
-    
+
     LOG(INFO) << "setExhibitsFrames end";
+}
+
+void CommandHandler::getExperimentData(communication::ExperimentData &response) {
+    LOG(INFO) << "getExperimentData start";
+
+    io::output::ExperimentData output = command::GetExperimentDataCommand{db}();
+    response = output.toThrift();
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getExperimentData end";
 }

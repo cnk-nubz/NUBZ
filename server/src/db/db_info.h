@@ -1,6 +1,8 @@
 #ifndef DB__DB_INFO__H
 #define DB__DB_INFO__H
 
+#include <string>
+
 namespace db {
     namespace info {
         namespace map_images {
@@ -84,6 +86,15 @@ namespace db {
             static const std::string field1ExhibitId = "exhibitId";
             static const std::string field1DurationInSecs = "durationInSecs";
             static const std::string field1Actions = "actions";
+        }
+        
+        namespace actions {
+            static const std::string tableName = "actions";
+            
+            static const std::string colId = "id";
+            static const std::string colText = "text";
+            static const std::string colDuringBreak = "during_break";
+            static const std::string colInCurrentExperiment = "in_current_experiment";
         }
     }
 }

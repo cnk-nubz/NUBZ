@@ -14,5 +14,6 @@
 #include "output/MapImagesResponse.h"
 #include "output/MapImageTilesResponse.h"
 #include "output/ExhibitsResponse.h"
+#include "output/ExperimentData.h"
 
 #endif

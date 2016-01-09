@@ -2,6 +2,7 @@ package com.cnk.ui;
 
 import android.app.Activity;
 import android.app.ActivityOptions;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
+import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
@@ -54,6 +56,7 @@ public class MapActivity extends Activity implements Observer {
     private RelativeLayout rlRootLayout;
     private RelativeLayout voidLayout;
     private Point lastClick;
+    private ProgressDialog spinner;
 
     private static final Float MAXIMUM_SCALE = 4.0f;
     private static final Float MINIMUM_SCALE = 0.01f;
@@ -62,32 +65,37 @@ public class MapActivity extends Activity implements Observer {
 
     // Android activity lifecycle overriden methods:
 
-    public MapActivity() {
-        currentFloorNum = 0;
-
-        changeAndUpdateMutex = new Semaphore(1, true);
-
-        networkHandler = new NetworkHandler();
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.i(LOG_TAG, "onCreate execution");
 
-        rlRootLayout = new RelativeLayout(this);
-        setContentView(rlRootLayout);
-
-        mapState = new MapState(this);
-
-        new StartUpTask().execute();
+        currentFloorNum = 0;
+        changeAndUpdateMutex = new Semaphore(1, true);
+        networkHandler = new NetworkHandler();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
 
+        rlRootLayout = new RelativeLayout(this);
+        setContentView(rlRootLayout);
+
+        spinner = new ProgressDialog(this);
+        spinner.setTitle("Ładowanie");
+        spinner.setMessage("Oczekiwanie na pobranie akcji");
+        spinner.show();
+
+        networkHandler.downloadExperimentData();
+    }
+
+    private void experimentDataDownloaded() {
+        spinner.dismiss();
+        mapState = new MapState(this);
+        new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
+        spinner.dismiss();
     }
 
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
@@ -294,6 +302,8 @@ public class MapActivity extends Activity implements Observer {
         if (notification.equals(DataHandler.Item.EXHIBITS)) {
             Log.i(LOG_TAG, "Received exhibits update notification");
             new MapRefreshExhibits().execute();
+        } else if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
+            experimentDataDownloaded();
         }
     }
 
@@ -545,25 +555,15 @@ public class MapActivity extends Activity implements Observer {
             ((ExhibitSpot) hotSpot).getExhibitTextView()
                     .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
-            ArrayList<String> availableActions = new ArrayList<>();
-            availableActions.add("asdf");
-            availableActions.add("jakas akcja");
-            availableActions.add("akcja o dluzszej nazwie, test zawijania tekstu");
-            availableActions.add("spam");
-            availableActions.add("spamspam");
-            availableActions.add("spam3");
-            availableActions.add("spam5");
-            availableActions.add("next spam");
-            availableActions.add("asdf asdf ddd as");
-            availableActions.add("action number X");
-            availableActions.add("another longer a little bit action");
-            availableActions.add("something more");
-            availableActions.add("more actions");
-            availableActions.add("last action");
+            ArrayList<String> actionStrings = new ArrayList<>();
+            List<Action> exhibitActions = DataHandler.getInstance().getAllExhibitActions();
+            for (Action a : exhibitActions) {
+                actionStrings.add(a.getText());
+            }
 
             Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
             exhibitWindowIntent.putExtra(ExhibitDialog.NAME, ((ExhibitSpot) hotSpot).getName());
-            exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, availableActions);
+            exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
             ActivityOptions activityOptions =
                     ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
             startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());

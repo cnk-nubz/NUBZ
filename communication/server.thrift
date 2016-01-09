@@ -27,4 +27,7 @@ service Server {
 
 	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		
+	structs.ExperimentData getExperimentData()
+		throws (1: structs.InternalError err),
 }

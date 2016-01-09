@@ -28,7 +28,9 @@ public:
     virtual std::int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
-    void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
+    virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
+
+    virtual void getExperimentData(communication::ExperimentData &response) override;
 
 private:
     db::Database &db;
