@@ -24,4 +24,7 @@ service Server {
 
 	void saveReport(1: structs.RawReport report)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.ExperimentData getExperimentData()
+		throws (1: structs.InternalError err),
 }

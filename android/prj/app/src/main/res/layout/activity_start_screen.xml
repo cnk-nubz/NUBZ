@@ -9,26 +9,16 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="PING"
-        android:id="@+id/pingButton"
+        android:text="Download Map"
+        android:id="@+id/mapButton"
+        android:onClick="mapClick"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="pingClick"/>
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Map"
-        android:id="@+id/mapButton"
-        android:onClick="mapClick"
-        android:layout_below="@+id/pingButton"
-        android:layout_alignLeft="@+id/pingButton"
-        android:layout_alignStart="@+id/pingButton" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Map activity"
         android:id="@+id/bMapActivity"
         android:layout_below="@+id/mapButton"
         android:layout_centerHorizontal="true"/>

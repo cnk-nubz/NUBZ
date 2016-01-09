@@ -69,7 +69,9 @@ namespace command {
         imageTiles.tileSize.width = tilesInfo.tileSize;
         imageTiles.tileSize.height = tilesInfo.tileSize;
 
-        db::cmd::GetMapTiles getTilesCmd(floor, tilesInfo.zoomLevel);
+        db::cmd::GetMapTiles getTilesCmd;
+        getTilesCmd.floor = floor;
+        getTilesCmd.zoomLevel = tilesInfo.zoomLevel;
         getTilesCmd(session);
         for (const auto &tile : getTilesCmd.getResult()) {
             imageTiles.tilesUrls[tile.row][tile.col] = createFullUrl(tile.filename);

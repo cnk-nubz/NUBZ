@@ -1,7 +1,6 @@
-#include <boost/format.hpp>
-
 #include "db/db_info.h"
 #include "SaveMapTile.h"
+#include "db/sql.h"
 
 namespace db {
     namespace cmd {
@@ -14,17 +13,12 @@ namespace db {
 
         std::string SaveMapTile::createInsert() const {
             using namespace db::info::map_tiles;
+            using namespace db::sql;
 
-            boost::format insert("INSERT INTO %1%");
-            boost::format into(" (%1%, %2%, %3%, %4%, %5%)");
-            boost::format values(" VALUES ('%1%', %2%, %3%, %4%, %5%)");
-
-            insert % tableName;
-            into % colFilename % colFloor % colZoomLevel % colRow % colColumn;
-            values % mapTile.filename % mapTile.floor % mapTile.zoomLevel % mapTile.row %
-                mapTile.col;
-
-            return insert.str() + into.str() + values.str();
+            return Sql::insertInto(tableName)
+                .what(colFilename, colFloor, colZoomLevel, colRow, colColumn)
+                .values(
+                    mapTile.filename, mapTile.floor, mapTile.zoomLevel, mapTile.row, mapTile.col);
         }
     }
 }

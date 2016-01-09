@@ -28,6 +28,8 @@ public:
     virtual std::int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
+    virtual void getExperimentData(communication::ExperimentData &response) override;
+
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;
