@@ -4,7 +4,7 @@ root.EditMapPage = class EditMapPage extends root.View
     super
     @mapData = new MapDataHandler()
     @canvas = new MutableCanvas("#{@_containerId}-a")
-    @canvas.on("mapChangeRequest", @_showChangeMapPopup.bind(this))
+    @canvas.on("mapChangeRequest", @_showChangeMapPopup)
     @_init()
     @addView("map", @canvas)
 
@@ -42,7 +42,7 @@ root.EditMapPage = class EditMapPage extends root.View
         dialog.close()
     }
 
-  _ajaxSuccessHandler: (data) ->
+  _ajaxSuccessHandler: (data) =>
     errorData = [
       {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
       {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
@@ -51,8 +51,8 @@ root.EditMapPage = class EditMapPage extends root.View
     ]
     if data.err == 1
       data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-      instance.mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
-      instance.mapData.floorUrl[data.floor] = data.floorUrl
+      @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
+      @mapData.floorUrl[data.floor] = data.floorUrl
 
     err = data.err - 1
     #close existing dialog
@@ -64,11 +64,13 @@ root.EditMapPage = class EditMapPage extends root.View
       title: errorData[err].title
       type: errorData[err].type
     )
-    instance.canvas.refresh()
+    @canvas.refresh()
     return
 
-  _dialogSendButton: ->
-    {
+  _dialogSendButton: =>
+    instance = @
+    handler = @_ajaxSuccessHandler
+    return {
       label: 'Wyślij'
       action: (dialog) ->
         if jQuery("#dialogImage").val() is ""
@@ -85,7 +87,7 @@ root.EditMapPage = class EditMapPage extends root.View
             data: new FormData(jQuery("#dialogForm")[0])
             processData: false
             contentType: false
-            success: @_ajaxSuccessHandler
+            success: handler.bind(instance)
           )
           e.preventDefault()
           return
@@ -131,8 +133,6 @@ root.EditMapPage = class EditMapPage extends root.View
         )
 
     formHTML = formHTML[0][0].outerHTML
-    instance = @
-
     dialogButtons = [
       @_dialogCloseButton()
       @_dialogSendButton()
@@ -140,7 +140,7 @@ root.EditMapPage = class EditMapPage extends root.View
 
     BootstrapDialog.show(
       message: formHTML.replace '!activeFloor!', "#{@mapData.activeFloor}"
-      title: 'Wybierz plik do zmiany mapy'
+      title: 'Zmiana mapy'
       closable: false
       size: BootstrapDialog.SIZE_SMALL
       buttons: dialogButtons
