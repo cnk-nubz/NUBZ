@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
-import com.cnk.communication.task.ExperimantDataDownloadTask;
+import com.cnk.communication.task.ExperimentDataDownloadTask;
 import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
@@ -71,7 +71,7 @@ public class NetworkHandler implements Observer {
     }
 
     public synchronized void downloadExperimentData() {
-        Task task = new ExperimantDataDownloadTask(experimentDataDownload);
+        Task task = new ExperimentDataDownloadTask(experimentDataDownload);
         tasks.add(task);
     }
 

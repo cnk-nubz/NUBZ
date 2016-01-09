@@ -11,11 +11,11 @@ import com.cnk.notificators.Notificator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExperimantDataDownloadTask extends ServerTask {
+public class ExperimentDataDownloadTask extends ServerTask {
 
-    private static final String LOG_TAG = "ExperimantDataDownloadTask";
+    private static final String LOG_TAG = "ExperimentDownloadTask";
 
-    public ExperimantDataDownloadTask(Notificator notificator) {
+    public ExperimentDataDownloadTask(Notificator notificator) {
         super(notificator);
     }
 
@@ -24,7 +24,7 @@ public class ExperimantDataDownloadTask extends ServerTask {
         Log.i(LOG_TAG, "Downloading actions");
         ExperimentData thriftData = client.getExperimentData();
         Log.i(LOG_TAG, "Downloaded actions");
-        com.cnk.data.ExperimentData experimentData = translateDataFromThrift(thriftData);
+        updateDataHandler(thriftData);
     }
 
     private com.cnk.data.ExperimentData translateDataFromThrift(ExperimentData thriftData) {
@@ -41,7 +41,8 @@ public class ExperimantDataDownloadTask extends ServerTask {
         return actions;
     }
 
-    private void updateDataHandler(com.cnk.data.ExperimentData experimentData) {
+    private void updateDataHandler(ExperimentData thriftData) {
+        com.cnk.data.ExperimentData experimentData = translateDataFromThrift(thriftData);
         DataHandler.getInstance().setNewExperimentData(experimentData);
     }
 }
