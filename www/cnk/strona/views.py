@@ -6,71 +6,109 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.core.urlresolvers import reverse
+from django.conf import settings
+os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
-def _getFloorImages():
+def _pingServer():
 	tc = ThriftCommunicator()
-	result = tc.getMapImages()
+	result = tc.ping(1, 'x')
+	return result == 1
 
-	if not result:
-		raise Exception()
+defaultImage = {
+    'tileWidth': 2200,
+    'tileHeight': 1700,
+    'scaledWidth': 2200,
+    'scaledHeight': 1700
+}
 
-	result = result.levelImageUrls
-	urls = [None, None]
+def _getMapImageInfo():
+	tc = ThriftCommunicator()
+	floorTiles = [
+		tc.getMapImageTiles(0),
+		tc.getMapImageTiles(1)
+	]
 
-	try:
-		urls[0] = result[0][result[0].find('/'):]
-	except KeyError:
-		pass
+	if not floorTiles:
+		return None
 
-	try:
-		urls[1] = result[1][result[1].find('/'):]
-	except KeyError:
-		pass
+	floorTilesInfo = {}
 
-	return urls
+	for i in xrange(0, 2):
+		if not floorTiles[i]:
+			continue
+
+		if not floorTiles[i].zoomLevels:
+			floorTilesInfo[i] = {
+			0: {
+				'tileWidth': defaultImage['tileWidth'],
+				'tileHeight': defaultImage['tileHeight'],
+				'scaledWidth': defaultImage['scaledWidth'],
+				'scaledHeight': defaultImage['scaledHeight']
+			}}
+		else:
+			floorTilesInfo[i] = {
+			idx: {
+				'tileWidth': zoom.tileSize.width,
+				'tileHeight': zoom.tileSize.height,
+				'scaledWidth': zoom.scaledSize.width,
+				'scaledHeight': zoom.scaledSize.height
+			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
+
+	return floorTilesInfo
 
 def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
-
 	if not result:
-		raise Exception()
+		return None
 
-	return result.exhibits
+	exhibitDict = {}
+	for k in result.exhibits:
+		e = result.exhibits[k]
+		frame = None
+		if e.frame != None:
+			frame = {
+				'x': e.frame.x,
+				'y': e.frame.y,
+				'width': e.frame.width,
+				'height': e.frame.height,
+				'mapLevel': e.frame.mapLevel
+			}
+		exhibitDict[k] = {
+			'name': e.name,
+			'frame': frame
+		}
+	return exhibitDict
 
 def index(request):
-	try:
-		urls = _getFloorImages()
-	except:
-		return HttpResponse('<h1>Nie mozna zaladowac map, sprawdz czy serwer jest wlaczony</h1>')
+	if not _pingServer():
+		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
 
-	try:
-		exhibits = _getExhibits()
-	except:
-		exhibits = {}
-
-	exhibitList = list()
-	for i in exhibits.keys():
-		if exhibits[i].frame:
-			e = exhibits[i].frame
-			exhibitList.append({
-				"x": e.x,
-				"y": e.y,
-				"height": e.height,
-				"width": e.width,
-                		"name": "{}".format(exhibits[i].name),
-				"mapLevel": e.mapLevel,
-			})
-
+	floorTilesInfo = _getMapImageInfo()
+	exhibits = _getExhibits()
+	if not floorTilesInfo or not exhibits:
+		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template('index.html')
+
+	if len(floorTilesInfo[0]) == 1: #just default image
+		urlFloor0 = r"static/floorplan0.jpg"
+	else: #get from config file
+		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+
+	if len(floorTilesInfo[1]) == 1:
+		urlFloor1 = r"static/floorplan1.jpg"
+	else:
+		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
+
 	context = RequestContext(request, {
-		"url_floor0" : urls[0],
-		"url_floor1" : urls[1],
-		"floor": 0,
-		"exhibits": exhibitList
+		'activeFloor': 0,
+		'exhibits': exhibits,
+		'floorTilesInfo': floorTilesInfo,
+		'urlFloor0': urlFloor0,
+		'urlFloor1': urlFloor1
 	})
 	return HttpResponse(template.render(context))
 
@@ -84,7 +122,6 @@ def uploadImage(request):
 	if request.method != 'POST':
 		data = {
 			"err": uploadError.NOT_POST_METHOD.value,
-			"floor": 0
 		}
 		return JsonResponse(data)
 
@@ -92,36 +129,35 @@ def uploadImage(request):
 	if not form.is_valid():
 		data = {
 			"err": uploadError.NOT_AN_IMAGE.value,
-			"floor": 0
 		}
 		return JsonResponse(data)
 
 	m = MapUploader(image = form.cleaned_data['image'])
 	m.save()
-
+	floor = form.cleaned_data['floor']
 	#send information about update
 	tc = ThriftCommunicator()
-	floor = form.cleaned_data['floor']
 	filename = m.image.name
 	#extract filename
 	set_result = tc.setMapImage(floor, os.path.basename(filename))
-	try:
-		urls = _getFloorImages()
-	except:
-		urls = [None, None]
-	if not set_result:
+	floorTilesInfo = _getMapImageInfo()
+	if not set_result or not floorTilesInfo:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
-			"floor": floor,
-			"url_floor0": urls[0],
-			"url_floor1": urls[1]
 		}
 		return JsonResponse(data)
 
+	if len(floorTilesInfo[floor]) == 1: #just default image
+		floorUrl = r"static/floorplan0.jpg"
+	else: #get from config file
+		if floor == 0:
+			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+		else:
+			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
-		"url_floor0": urls[0],
-		"url_floor1": urls[1]
+		"floorTilesInfo": floorTilesInfo,
+		"floorUrl": floorUrl
 	}
 	return JsonResponse(data)

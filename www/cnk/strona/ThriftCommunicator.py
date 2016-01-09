@@ -12,8 +12,8 @@ from structs.ttypes import *
 
 class ThriftCommunicator:
 	def __init__(self):
-		self.host = getattr('settings', 'THRIFT_HOST', 'localhost')
-		self.port = int(getattr('settings', 'THRIFT_PORT', 9090))
+		self.host = getattr(settings, 'THRIFT_HOST', 'localhost')
+		self.port = int(getattr(settings, 'THRIFT_PORT', 9090))
 		self.transport = None
 		self.protocol = None
 		self.client = None
@@ -83,7 +83,21 @@ class ThriftCommunicator:
 			ret = self.client.getExhibits(msg)
 		except:
 			return None
-			
+
+		if not self.end_connection():
+			return None
+		return ret
+
+	def getMapImageTiles(self, floor):
+		msg = MapImageTilesRequest(floor)
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.getMapImageTiles(msg)
+		except:
+			return None
+
 		if not self.end_connection():
 			return None
 		return ret
