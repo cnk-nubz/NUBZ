@@ -134,7 +134,8 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << "setExhibitsFrames start";
     LOG(INFO) << "input: " << request;
 
-    LOG(INFO) << "not implemented";
+    io::input::SetExhibitFrameRequest input(request);
+    command::SetExhibitFrameCommand{db}(input);
 
     LOG(INFO) << "setExhibitsFrames end";
 }

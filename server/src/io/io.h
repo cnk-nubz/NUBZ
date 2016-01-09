@@ -10,6 +10,7 @@
 #include "input/SetMapImageRequest.h"
 #include "input/ExhibitsRequest.h"
 #include "input/RawReport.h"
+#include "input/SetExhibitFrameRequest.h"
 
 #include "output/MapImagesResponse.h"
 #include "output/MapImageTilesResponse.h"
