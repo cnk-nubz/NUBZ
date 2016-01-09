@@ -1,115 +1,91 @@
 <!DOCTYPE html>
 {% load compress %}
 {% load staticfiles %}
+{% load jsvar %}
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" href="{% static "favicon.ico" %}">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="{% static "favicon.ico" %}">
 
-	<title>Tajny Projekt NUBZ</title>
+  <title>Tajny Projekt NUBZ</title>
 
-    <script src="{% static "js/jquery.min.js" %}"></script>
-    <script src="{% static "js/jquery.boxfit.js" %}"></script>
-    <script src="{% static "js/bootstrap.min.js" %}"></script>
-    <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
-    <link href="{% static "css/base.css" %}" rel="stylesheet">
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="{% static "js/ie10-viewport-bug-workaround.js" %}"></script>
-    <script src="{% static "js/d3.v3.min.js" %}"></script>
-	<!-- load django variables globally -->
-	{% compress js %}
-	<script type="text/coffeescript">
-		class Exhibit
-			constructor: (@x, @y, @width, @height, @exhibitName, @mapLevel) ->
+  <script src="{% static "js/jquery.min.js" %}"></script>
+  <script src="{% static "js/d3.v3.min.js" %}"></script>
+  <script src="{% static "js/bootstrap.min.js" %}"></script>
+  <script src="{% static "js/bootstrap-dialog.js" %}"></script>
+  <script src="{% static "js/ie10-viewport-bug-workaround.js" %}"></script>
+  <script src="{% static "js/csrf.js" %}"></script>
 
-		root = exports ? this
-		root.maxZoomScale = 15
-		root.minZoomScale = 1
-		root.url_floor0 = "{{url_floor0}}"
-		root.url_floor1 = "{{url_floor1}}"
-		root.csrf_token = "{% csrf_token %}"
-		root.activeFloor = 0
-		root.svgWidth = [0, 0]
-		root.svgHeight = [0, 0]
-		root.floorRealImageWidth = [0, 0]
-		root.floorRealImageHeight = [0, 0]
-		root.floorImageX = [0, 0]
-		root.floorImageY = [0, 0]
-		root.floorScaledImageWidth = [0, 0]
-		root.floorScaledImageHeight = [0, 0]
+  <!-- LEAFLET -->
+  <script src="{% static "js/leaflet-src.js" %}"></script>
+  <script src="{% static "js/easy-button.js" %}"></script>
+  <script src="{% static "js/Label.js" %}"></script>
+  <script src="{% static "js/BaseMarkerMethods.js" %}"></script>
+  <script src="{% static "js/Marker.Label.js" %}"></script>
+  <script src="{% static "js/Path.Label.js" %}"></script>
+  <script src="{% static "js/Map.Label.js" %}"></script>
+  <script src="{% static "js/FeatureGroup.Label.js" %}"></script>
 
-
-		root.exhibits = []
-		{% for key in exhibits %}
-		root.exhibits.push(new Exhibit({{key.x}}, {{key.y}}, {{key.width}}, {{key.height}}, "{{key.name}}", {{key.mapLevel}}))
-		{% endfor %}
-		root.floorExhibits = [0, 0]
-		root.floorExhibits[0] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 0)
-		root.floorExhibits[1] = (exhibit for exhibit in exhibits when exhibit.mapLevel is 1)
-	</script>
-	{% endcompress %}
+  <!-- CSS -->
+  <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet" />
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  <link href="{% static "css/leaflet.css" %}" rel="stylesheet" />
+  <link href="{% static "css/easy-button.css" %}" rel="stylesheet" />
+  <link href="{% static "css/leaflet.label.css" %}" rel="stylesheet" />
+  <link href="{% static "css/font-awesome.min.css" %}" rel="stylesheet" />
+  <link href="{% static "css/bootstrap-dialog.css" %}" rel="stylesheet" />
+  {% compress js %}
+  <script type="text/coffeescript">
+    root = exports ? this
+    root.csrf_form = "{% csrf_token %}"
+  </script>
+  {% endcompress %}
 </head>
-
 <body>
-
-{% compress js %}
-
-<script src="{% static "coffee/navbar.coffee"%}" type="text/coffeescript">
-###
-# CREATE NAVIGATION BAR
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/uploadResult.coffee" %}" type="text/coffeescript">
-###
-# INFORMATION ABOUT UPLOAD RESULT
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/imageUploadForm.coffee" %}" type="text/coffeescript">
-###
-# CREATE IMAGE UPLOAD FORM
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/mapImage.coffee" %}" type="text/coffeescript">
-###
-# CREATE MAP IMAGE CONTAINER
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/zoomButtons.coffee" %}" type="text/coffeescript">
-###
-# CREATE ZOOM BUTTONS
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src = "{% static "coffee/spawnExhibits.coffee" %}" type="text/coffeescript">
-###
-# SPAWN EXHIBITS
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src = "{% static "coffee/changeFloor.coffee" %}" type="text/coffeescript">
-###
-# CREATE BUTTONS TO CHANGE FLOOR
-###
-</script>
-{% endcompress %}
-{% compress js %}
-<script src = "{% static "coffee/onSiteReady.coffee" %}" type="text/coffeescript">
-###
-# LOAD IMAGES OR SETTINGS AFTER SITE IS READY
-###
-</script>
-{% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/MainPage.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/Navbar.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/MutableCanvas.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/JustMapPage.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/EditMapPage.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script type="text/coffeescript">
+    document.detached = {}
+    root = exports ? this
+    floorUrl = [
+      "{{urlFloor0|escape|safe}}"
+      "{{urlFloor1|escape|safe}}"
+    ]
+    activeFloor = +"{{acitveFloor}}"
+    exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+    floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+    (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
+    mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
+    jQuery(document).ready( ->
+      page = new root.MainPage "body"
+      page.refresh()
+    )
+  </script>
+  {% endcompress %}
 </body>
 </html>
