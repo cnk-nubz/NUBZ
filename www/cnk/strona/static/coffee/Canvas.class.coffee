@@ -110,16 +110,15 @@ root.Canvas = class Canvas extends root.View
       X = e.frame.x
       Y = e.frame.y
       polygonBounds = [
-        @_map.unproject([X, Y], 3),
-        @_map.unproject([X, Y + e.frame.width], 3),
-        @_map.unproject([X + e.frame.height, Y + e.frame.height], 3),
-        @_map.unproject([X + e.frame.height, Y], 3)
+        @_map.unproject([X, Y], @_maxZoom[floor]),
+        @_map.unproject([X, Y + e.frame.width], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.height, Y], @_maxZoom[floor])
       ]
       r = L.polygon(polygonBounds, {
           color: "#ff7800"
           weight: 1
         }).bindLabel(e.name, {
-          noHide: true
           direction: 'auto'
         })
       @_exhibits[floor].addLayer(r)
