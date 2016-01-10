@@ -101,3 +101,17 @@ class ThriftCommunicator:
 		if not self.end_connection():
 			return None
 		return ret
+
+	def setExhibitFrame(self, frame):
+		msg = SetExhibitFrameRequest(int(frame['id']), int(frame['x']), int(frame['y']))
+		if not self.start_connection():
+			return None
+
+		try:
+			self.client.setExhibitFrame(msg)
+		except:
+			return None
+
+		if not self.end_connection():
+			return None
+		return True

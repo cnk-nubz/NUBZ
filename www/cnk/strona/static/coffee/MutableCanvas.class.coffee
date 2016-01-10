@@ -28,7 +28,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         })
       r.on('dragstart', @_onDragStart)
       #IDEA (in case nothing to do): move bouncing from boundaries to @_onDrag
-      # plus somehow refresh event latlangs in @_onDrag (leaflet or L.Path.Drag problem?)
+      # plus somehow refresh event's latlangs in @_onDrag (leaflet or L.Path.Drag problem?)
       r.on('dragend', @_onDragEnd)
       @_exhibits[floor].addLayer(r)
     @
@@ -46,7 +46,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     #points are sorted in clockwise order, starting with top left point
     exhibitPoints = (map.project(ll) for ll in newLatLng)
     [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[2], maxX, maxY)
-    #update points in case of overflow
+    #update points in edge cases
     exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
     polygonBounds = (map.unproject(p) for p in exhibitPoints)
     e.target.setLatLngs(polygonBounds)
@@ -54,8 +54,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibitId = e.target.options.id
     geoPoint = map.unproject(exhibitPoints[0])
     scaledPoint = map.project(geoPoint, @mapData.maxZoom[@mapData.activeFloor])
-    @mapData.exhibits[exhibitId].frame.x = scaledPoint.x
-    @mapData.exhibits[exhibitId].frame.y = scaledPoint.y
+    @_changeExhibitPositionRequest(exhibitId, scaledPoint)
     if @_labelsButton._currentState.stateName is 'removeLabels'
       e.target.showLabel()
     @
@@ -70,3 +69,37 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     else if bottomRight.y > maxY
       dy = maxY - bottomRight.y
     [dx ? 0, dy ? 0]
+
+  _changeExhibitPositionRequest: (id, topLeft) =>
+    toSend = {
+      jsonData:
+        JSON.stringify(
+          id: id
+          x: topLeft.x
+          y: topLeft.y
+        )
+    }
+    instance = @
+    handler = @_ajaxSuccessHandler
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/updateExhibitPosition/'
+      data: toSend
+      success: handler.bind(instance)
+    )
+
+  _ajaxSuccessHandler: (data) =>
+    if data.success is true
+      @mapData.exhibits[data.id].frame.x = data.x
+      @mapData.exhibits[data.id].frame.y = data.y
+    else
+      @refresh()
+      BootstrapDialog.alert(
+        message: '<p align="center">Nie można zaktualizować eksponatu. Sprawdź czy serwer jest włączony</p>'
+        type: BootstrapDialog.TYPE_DANGER
+        title: 'Błąd wewnętrzny serwera'
+      )
