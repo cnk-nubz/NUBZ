@@ -79,6 +79,7 @@ def _getExhibits():
 			}
 		exhibitDict[k] = {
 			'name': e.name,
+			'id': k,
 			'frame': frame
 		}
 	return exhibitDict

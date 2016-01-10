@@ -3,8 +3,8 @@ root.Canvas = class Canvas extends root.View
   constructor: (@_containerMap) ->
     super @_containerMap
     @mapData = new MapDataHandler()
-    @_minZoom = 1
-    @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
+    @_minZoom = @mapData.minZoom
+    @_maxZoom = @mapData.maxZoom
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
@@ -57,7 +57,7 @@ root.Canvas = class Canvas extends root.View
     for i in [0..1]
       @addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
       @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
-      @addExhibits(i, @mapData.visibleExhibits[i])
+      @addExhibits(i, @mapData.exhibits)
     @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
     @
 
@@ -106,7 +106,8 @@ root.Canvas = class Canvas extends root.View
       @
 
   addExhibits: (floor, exhibits) =>
-    for e in exhibits
+    for idx, e of exhibits
+      continue unless e.frame?.mapLevel is floor
       X = e.frame.x
       Y = e.frame.y
       polygonBounds = [
@@ -118,6 +119,7 @@ root.Canvas = class Canvas extends root.View
       r = L.polygon(polygonBounds, {
           color: "#ff7800"
           weight: 1
+          id: idx
         }).bindLabel(e.name, {
           direction: 'auto'
         })
