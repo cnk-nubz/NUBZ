@@ -1,6 +1,6 @@
 #include "SetExhibitFrameCommand.h"
 #include "InputChecker.h"
-#include "InvalidInput.h"
+#include "io/InvalidInput.h"
 #include "db/command/GetExhibits.h"
 #include "db/command/GetCounter.h"
 #include "db/command/SetCounter.h"
@@ -41,13 +41,13 @@ namespace command {
         getExhibit(session);
 
         if (getExhibit.getResult().empty()) {
-            throw InvalidInput("incorrect exhibit id");
+            throw io::InvalidInput("incorrect exhibit id");
         }
 
         db::Exhibit exhibit = getExhibit.getResult().front();
 
         if (!exhibit.frame) {
-            throw InvalidInput("given exhibit doesn't belong to any floor");
+            throw io::InvalidInput("given exhibit doesn't belong to any floor");
         }
 
         db::MapElementFrame frame = exhibit.frame.value();
@@ -55,7 +55,7 @@ namespace command {
         InputChecker checker(session);
         if (!checker.checkExhibitFrame(
                 frame.mapLevel, input.newX, input.newY, frame.width, frame.height)) {
-            throw InvalidInput("incorrect frame");
+            throw io::InvalidInput("incorrect frame");
         }
     }
 }

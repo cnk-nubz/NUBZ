@@ -1,7 +1,5 @@
 #include <iostream>
 
-#include "external/easylogging++.h"
-
 #include "CommandHandler.h"
 #include "command/commands.h"
 #include "io/io.h"
@@ -26,8 +24,10 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     LOG(INFO) << "ping start";
     LOG(INFO) << "input: " << msg;
 
-    io::input::HelloMsg input(msg);
-    std::int32_t output = input.num;
+    std::int32_t output = withExceptionTranslation([&]() {
+        io::input::HelloMsg input(msg);
+        return input.num;
+    });
 
     LOG(INFO) << "output: " << output;
     LOG(INFO) << "ping end";
@@ -40,14 +40,11 @@ void CommandHandler::getMapImages(communication::MapImagesResponse &response,
     LOG(INFO) << "getMapImages start";
     LOG(INFO) << "input: " << request;
 
-    try {
+    withExceptionTranslation([&]() {
         io::input::MapImagesRequest input(request);
         io::output::MapImagesResponse output = command::GetMapImagesCommand{db}(input);
         response = output.toThrift();
-    } catch (std::exception &e) {
-        LOG(ERROR) << e.what();
-        throw communication::InternalError{};
-    }
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getMapImages end";
@@ -59,16 +56,10 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
     LOG(INFO) << "setMapImage start";
     LOG(INFO) << "input: " << request;
 
-    try {
+    withExceptionTranslation([&]() {
         io::input::SetMapImageRequest input(request);
         command::SetMapImageCommand{db}(input);
-    } catch (command::InvalidInput &e) {
-        LOG(ERROR) << e.what();
-        throw communication::InvalidData{};
-    } catch (std::exception &e) {
-        LOG(ERROR) << e.what();
-        throw communication::InternalError{};
-    }
+    });
 
     LOG(INFO) << "setMapImage end";
 }
@@ -78,14 +69,11 @@ void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &resp
     LOG(INFO) << "getMapImageTiles start";
     LOG(INFO) << "input: " << request;
 
-    try {
+    withExceptionTranslation([&]() {
         io::input::MapImageTilesRequest input(request);
         io::output::MapImageTilesResponse output = command::GetMapImageTilesCommand{db}(input);
         response = output.toThrift();
-    } catch (std::exception &e) {
-        LOG(ERROR) << e.what();
-        throw communication::InternalError{};
-    }
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getMapImageTiles end";
@@ -96,14 +84,11 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
     LOG(INFO) << "getExhibits start";
     LOG(INFO) << "input: " << request;
 
-    try {
+    withExceptionTranslation([&]() {
         io::input::ExhibitsRequest input(request);
         io::output::ExhibitsResponse output = command::GetExhibitsCommand{db}(input);
         response = output.toThrift();
-    } catch (std::exception &e) {
-        LOG(ERROR) << e.what();
-        throw communication::InternalError{};
-    }
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExhibits end";
@@ -112,7 +97,8 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
 std::int32_t CommandHandler::getIdForNewReport() {
     LOG(INFO) << "getIdForNewReport start";
 
-    std::int32_t response = command::ReserveIdForReportCommand{db}();
+    std::int32_t response =
+        withExceptionTranslation([&]() { return command::ReserveIdForReportCommand{db}(); });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getIdForNewReport end";
@@ -124,8 +110,10 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << "saveReport start";
     LOG(INFO) << "input: " << report;
 
-    io::input::RawReport input(report);
-    command::SaveRawReportCommand{db}(input);
+    withExceptionTranslation([&]() {
+        io::input::RawReport input(report);
+        command::SaveRawReportCommand{db}(input);
+    });
 
     LOG(INFO) << "saveReport end";
 }
@@ -134,8 +122,10 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << "setExhibitsFrames start";
     LOG(INFO) << "input: " << request;
 
-    io::input::SetExhibitFrameRequest input(request);
-    command::SetExhibitFrameCommand{db}(input);
+    withExceptionTranslation([&]() {
+        io::input::SetExhibitFrameRequest input(request);
+        command::SetExhibitFrameCommand{db}(input);
+    });
 
     LOG(INFO) << "setExhibitsFrames end";
 }
@@ -143,8 +133,10 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
 void CommandHandler::getExperimentData(communication::ExperimentData &response) {
     LOG(INFO) << "getExperimentData start";
 
-    io::output::ExperimentData output = command::GetExperimentDataCommand{db}();
-    response = output.toThrift();
+    withExceptionTranslation([&]() {
+        io::output::ExperimentData output = command::GetExperimentDataCommand{db}();
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExperimentData end";
