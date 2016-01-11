@@ -1,6 +1,5 @@
 package com.cnk.ui;
 
-import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -10,14 +9,20 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
@@ -43,8 +48,10 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
-public class MapActivity extends Activity implements Observer {
+public class MapActivity extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "MapActivity";
+    private static final Float MAXIMUM_SCALE = 4.0f;
+    private static final Float MINIMUM_SCALE = 0.01f;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
@@ -58,19 +65,14 @@ public class MapActivity extends Activity implements Observer {
     private Point lastClick;
     private ProgressDialog spinner;
 
-    private static final Float MAXIMUM_SCALE = 4.0f;
-    private static final Float MINIMUM_SCALE = 0.01f;
-
     public static final Integer TILE_SIDE_LEN = 256;
 
     // Android activity lifecycle overriden methods:
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.i(LOG_TAG, "onCreate execution");
-
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         networkHandler = new NetworkHandler();
@@ -78,15 +80,29 @@ public class MapActivity extends Activity implements Observer {
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
 
-        rlRootLayout = new RelativeLayout(this);
-        setContentView(rlRootLayout);
+        setViews();
+        setSpinner();
 
+        networkHandler.downloadExperimentData();
+    }
+
+    private void setViews() {
+        Log.i(LOG_TAG, "Setting views");
+        setContentView(R.layout.map_activity_layout);
+        rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
+        setDrawer();
+        Log.i(LOG_TAG, "Views set");
+    }
+
+    private void setDrawer() {
+        ((Chronometer) findViewById(R.id.chronometer)).start();
+    }
+
+    private void setSpinner() {
         spinner = new ProgressDialog(this);
         spinner.setTitle("Ładowanie");
         spinner.setMessage("Oczekiwanie na pobranie akcji");
         spinner.show();
-
-        networkHandler.downloadExperimentData();
     }
 
     private void experimentDataDownloaded() {
@@ -96,6 +112,10 @@ public class MapActivity extends Activity implements Observer {
         Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
         spinner.dismiss();
+    }
+
+    @Override
+    public void onBackPressed() {
     }
 
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
