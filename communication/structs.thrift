@@ -81,6 +81,12 @@ struct RawReport {
 	2: list<RawReportEvent> history,
 }
 
+struct SetExhibitFrameRequest {
+	1: i32 exhibitId,
+	2: i32 x,
+	3: i32 y,
+}
+
 struct Action {
 	1: i32 actionId,
 	2: string text,

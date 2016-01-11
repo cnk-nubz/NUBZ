@@ -1,6 +1,8 @@
 #ifndef COMMAND__INPUT_CHECKER__H
 #define COMMAND__INPUT_CHECKER__H
 
+#include <unordered_set>
+
 #include "commands_common.h"
 #include "db/DatabaseSession.h"
 #include "db/command/GetExhibits.h"
@@ -25,6 +27,9 @@ namespace command {
         template <class Container>
         bool checkBreakActionsIds(const Container &actionsIds);
 
+        bool checkExhibitFrame(std::int32_t floor, std::int32_t x, std::int32_t y,
+                               std::int32_t width, std::int32_t height);
+
     private:
         db::DatabaseSession &session;
     };
@@ -36,7 +41,7 @@ namespace command {
 
         db::cmd::GetExhibits cmd;
         cmd(session);
-        
+
         std::unordered_set<std::int32_t> correctIds;
         for (const auto &exhibit : cmd.getResult()) {
             correctIds.insert(exhibit.ID);
@@ -58,18 +63,18 @@ namespace command {
         db::cmd::GetActions cmd;
         cmd.duringBreakCondition = false;
         cmd(session);
-        
+
         std::unordered_set<std::int32_t> correctIds;
         for (const auto &action : cmd.getResult()) {
             correctIds.insert(action.ID);
         }
-        
+
         for (const auto actionId : actionsIds) {
             if (!correctIds.count(actionId)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -81,18 +86,18 @@ namespace command {
         db::cmd::GetActions cmd;
         cmd.duringBreakCondition = true;
         cmd(session);
-        
+
         std::unordered_set<std::int32_t> correctIds;
         for (const auto &action : cmd.getResult()) {
             correctIds.insert(action.ID);
         }
-        
+
         for (const auto actionId : actionsIds) {
             if (!correctIds.count(actionId)) {
                 return false;
             }
         }
-        
+
         return true;
     }
 }

@@ -162,15 +162,15 @@ namespace command {
 
     boost::optional<boost::filesystem::path> SetMapImageCommand::getOldMap(
         std::int32_t floor, db::DatabaseSession &session) const {
-        db::cmd::GetMapImages getMapImages;
+        db::cmd::GetMapImages getMapImages(floor);
         getMapImages(session);
-        for (const auto &mapImage : getMapImages.getResult()) {
-            if (mapImage.floor == floor) {
-                return FileHelper::getInstance().pathForPublicFile(mapImage.filename);
-            }
+        
+        if (!getMapImages.getResult().empty()) {
+            auto mapImage = getMapImages.getResult().front();
+            return FileHelper::getInstance().pathForPublicFile(mapImage.filename);
+        } else {
+            return {};
         }
-
-        return {};
     }
 
     std::int32_t SetMapImageCommand::getCurrentVersion(db::DatabaseSession &session) const {

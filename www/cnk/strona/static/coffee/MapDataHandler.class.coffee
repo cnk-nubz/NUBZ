@@ -7,9 +7,12 @@ root.MapDataHandler = class MapDataHandler
     instance = this
     @activeFloor = activeFloor
     @floorUrl = floorUrl
-    @exhibits = exhibits
+    @exhibits = {}
+    for e in exhibits
+      @exhibits[e.id] = {
+        frame: e.frame
+        name: e.name
+      }
     @floorTilesInfo = floorTilesInfo
-    @visibleExhibits = [
-      (e for e in @exhibits when e.frame?.mapLevel is 0),
-      (e for e in @exhibits when e.frame?.mapLevel is 1)
-    ]
+    @minZoom = 1
+    @maxZoom = [@floorTilesInfo[0].length, @floorTilesInfo[1].length]

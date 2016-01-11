@@ -3,8 +3,11 @@
 
 #include <thrift/server/TServer.h>
 
+#include "external/easylogging++.h"
+
 #include "communication/Server.h"
 #include "db/Database.h"
+#include "io/InvalidInput.h"
 
 class CommandHandler : public communication::ServerIf {
 public:
@@ -28,6 +31,8 @@ public:
     virtual std::int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
+    virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
+
     virtual void getExperimentData(communication::ExperimentData &response) override;
 
 private:
@@ -35,6 +40,25 @@ private:
     apache::thrift::server::TServer *srv;
 
     std::mutex setMapLock;
+
+    template <class F>
+    typename std::result_of<F()>::type withExceptionTranslation(F &&f);
 };
+
+template <class F>
+typename std::result_of<F()>::type CommandHandler::withExceptionTranslation(F &&f) {
+    try {
+        return f();
+    } catch (io::InvalidInput &e) {
+        LOG(INFO) << "InvalidInput: " << e.what();
+        throw e.toThrift();
+    } catch (std::exception &e) {
+        LOG(INFO) << "InternalError: " << e.what();
+        throw communication::InternalError{};
+    } catch (...) {
+        LOG(INFO) << "InternalError";
+        throw communication::InternalError();
+    }
+}
 
 #endif
