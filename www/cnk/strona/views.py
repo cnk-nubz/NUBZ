@@ -79,6 +79,7 @@ def _getExhibits():
 			}
 		exhibitDict[k] = {
 			'name': e.name,
+			'id': k,
 			'frame': frame
 		}
 	return exhibitDict
@@ -116,12 +117,13 @@ class uploadError(Enum):
 	SUCCESS = 1
 	NOT_AN_IMAGE = 2
 	SERVER_PROBLEM = 3
-	NOT_POST_METHOD = 4
+	WRONG_REQUEST_METHOD = 4
+	INVALID_DATA = 5
 
 def uploadImage(request):
 	if request.method != 'POST':
 		data = {
-			"err": uploadError.NOT_POST_METHOD.value,
+			"err": uploadError.WRONG_REQUEST_METHOD.value,
 		}
 		return JsonResponse(data)
 
@@ -139,9 +141,9 @@ def uploadImage(request):
 	tc = ThriftCommunicator()
 	filename = m.image.name
 	#extract filename
-	set_result = tc.setMapImage(floor, os.path.basename(filename))
+	setResult = tc.setMapImage(floor, os.path.basename(filename))
 	floorTilesInfo = _getMapImageInfo()
-	if not set_result or not floorTilesInfo:
+	if not setResult or not floorTilesInfo:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
 		}
@@ -159,5 +161,25 @@ def uploadImage(request):
 		"floor": floor,
 		"floorTilesInfo": floorTilesInfo,
 		"floorUrl": floorUrl
+	}
+	return JsonResponse(data)
+
+def updateExhibitPosition(request):
+	data = {
+		"success": False
+	}
+	if request.method != 'POST':
+		return JsonResponse(data)
+	jsonData = request.POST.get("jsonData")
+	frame = json.loads(jsonData)
+	tc = ThriftCommunicator()
+	setPosition = tc.setExhibitFrame(frame)
+	if not setPosition:
+		return JsonResponse(data)
+	data = {
+		"success": True,
+		"id": int(frame['id']),
+		"x": frame['x'],
+		"y": frame['y']
 	}
 	return JsonResponse(data)

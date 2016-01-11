@@ -42,31 +42,6 @@ root.EditMapPage = class EditMapPage extends root.View
         dialog.close()
     }
 
-  _ajaxSuccessHandler: (data) =>
-    errorData = [
-      {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
-      {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
-      {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
-      {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
-    ]
-    if data.err == 1
-      data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-      @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
-      @mapData.floorUrl[data.floor] = data.floorUrl
-
-    err = data.err - 1
-    #close existing dialog
-    jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
-      dialog.close()
-    )
-    BootstrapDialog.show(
-      message: errorData[err].message
-      title: errorData[err].title
-      type: errorData[err].type
-    )
-    @canvas.refresh()
-    return
-
   _dialogSendButton: =>
     instance = @
     handler = @_ajaxSuccessHandler
@@ -97,6 +72,31 @@ root.EditMapPage = class EditMapPage extends root.View
         dialog.options.buttons = []
         dialog.updateButtons()
     }
+
+  _ajaxSuccessHandler: (data) =>
+    errorData = [
+      {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
+      {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
+      {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
+      {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
+    ]
+    if data.err == 1
+      data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
+      @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
+      @mapData.floorUrl[data.floor] = data.floorUrl
+
+    err = data.err - 1
+    #close existing dialog
+    jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
+      dialog.close()
+    )
+    BootstrapDialog.show(
+      message: errorData[err].message
+      title: errorData[err].title
+      type: errorData[err].type
+    )
+    @canvas.refresh()
+    return
 
   _showChangeMapPopup: =>
     formHTML =

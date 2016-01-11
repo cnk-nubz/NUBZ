@@ -3,8 +3,8 @@ root.Canvas = class Canvas extends root.View
   constructor: (@_containerMap) ->
     super @_containerMap
     @mapData = new MapDataHandler()
-    @_minZoom = 1
-    @_maxZoom = [@mapData.floorTilesInfo[0].length, @mapData.floorTilesInfo[1].length]
+    @_minZoom = @mapData.minZoom
+    @_maxZoom = @mapData.maxZoom
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
@@ -52,13 +52,20 @@ root.Canvas = class Canvas extends root.View
     return
 
   _init: =>
-    mapWidth = (@mapData.floorTilesInfo[i][-1..][0].scaledWidth for i in [0..1])
-    mapHeight = (@mapData.floorTilesInfo[i][-1..][0].scaledHeight for i in [0..1])
-    for i in [0..1]
-      @addMapBounds(i, [0, mapHeight[i]], [mapWidth[i], 0])
-      @addFloorLayer(i, @mapData.floorTilesInfo[i], @mapData.floorUrl[i])
-      @addExhibits(i, @mapData.visibleExhibits[i])
-    @setFloorLayer(@mapData.activeFloor)(@_floorButton[@mapData.activeFloor])
+    actv = @mapData.activeFloor
+    @loadData i for i in [1-actv..actv]
+    @
+
+  loadData: (floor) =>
+    tileInfo = @mapData.floorTilesInfo[floor]
+    rand = Math.floor(Math.random() * 1024)
+    newUrl = "#{@mapData.floorUrl[floor]}?t=#{rand}"
+    @_floorLayer[floor].clearLayers()
+    @_exhibits[floor].clearLayers()
+    @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
+    @addFloorLayer(floor, tileInfo, newUrl)
+    @addExhibits(floor, @mapData.exhibits)
+    @setFloorLayer(floor)(@_floorButton[floor])
     @
 
   addMapBounds: (floor, northEast, southWest) =>
@@ -78,6 +85,27 @@ root.Canvas = class Canvas extends root.View
           bounds: @_mapBounds[floor]
       })
       @_floorLayer[floor].addLayer zoomLayer
+    @
+
+  addExhibits: (floor, exhibits) =>
+    for idx, e of exhibits
+      continue unless e.frame?.mapLevel is floor
+      X = e.frame.x
+      Y = e.frame.y
+      polygonBounds = [
+        @_map.unproject([X, Y], @_maxZoom[floor]),
+        @_map.unproject([X, Y + e.frame.width], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.height, Y], @_maxZoom[floor])
+      ]
+      r = L.polygon(polygonBounds, {
+          color: "#ff7800"
+          weight: 1
+          id: idx
+        }).bindLabel(e.name, {
+          direction: 'auto'
+        })
+      @_exhibits[floor].addLayer(r)
     @
 
   setFloorLayer: (floor) =>
@@ -105,38 +133,7 @@ root.Canvas = class Canvas extends root.View
       @_map.invalidateSize()
       @
 
-  addExhibits: (floor, exhibits) =>
-    for e in exhibits
-      X = e.frame.x
-      Y = e.frame.y
-      polygonBounds = [
-        @_map.unproject([X, Y], 3),
-        @_map.unproject([X, Y + e.frame.width], 3),
-        @_map.unproject([X + e.frame.height, Y + e.frame.height], 3),
-        @_map.unproject([X + e.frame.height, Y], 3)
-      ]
-      r = L.polygon(polygonBounds, {
-          color: "#ff7800"
-          weight: 1
-        }).bindLabel(e.name, {
-          noHide: true
-          direction: 'auto'
-        })
-      @_exhibits[floor].addLayer(r)
-    @
-
   refresh: =>
     #TODO (in case nothing to do): add synchronization of panning between pages
-    @refreshTiles()
-    @
-
-  refreshTiles: =>
-    floor = @mapData.activeFloor
-    tileInfo = @mapData.floorTilesInfo[floor]
-    rand = Math.floor(Math.random() * 1024)
-    newUrl = "#{@mapData.floorUrl[floor]}?t=#{rand}"
-    @_floorLayer[floor].clearLayers()
-    @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
-    @addFloorLayer(floor, tileInfo, newUrl)
-    @setFloorLayer(floor)(@_floorButton[floor])
+    @loadData(@mapData.activeFloor)
     @

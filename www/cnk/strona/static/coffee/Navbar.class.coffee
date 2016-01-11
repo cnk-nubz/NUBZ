@@ -2,16 +2,19 @@ root = exports ? this
 root.Navbar = class Navbar extends root.View
   constructor: ->
     super
+    #here add next navbar links
     @navLinks = [
           {
             id: "#nav-1"
             text: 'Podgląd mapy'
-            ref: null
+            ref: root.JustMapPage
+            refDiv: "#{@_containerId}-a"
           },
           {
             id: "#nav-2"
             text: 'Edycja mapy'
-            ref: null
+            ref: root.EditMapPage
+            refDiv: "#{@_containerId}-b"
           }
     ]
     @_init()
@@ -33,12 +36,7 @@ root.Navbar = class Navbar extends root.View
          id: "navbar-list"
        )
 
-    map = new JustMapPage("#{@_containerId}-a")
-    editMap = new EditMapPage("#{@_containerId}-b")
-    @navLinks[0].ref = map
-    @navLinks[1].ref = editMap
     @_initCss()
-
     initialPage = 0
     d3.map(@navLinks, (e, id) =>
       content.append "li"
@@ -71,9 +69,9 @@ root.Navbar = class Navbar extends root.View
       "width": "100%"
     }
     @select("#{@_containerId}-a")
-      .style(mapStyle)
+      ?.style(mapStyle)
     @select("#{@_containerId}-b")
-      .style(mapStyle)
+      ?.style(mapStyle)
     @select(@_containerId).select("#navbar")
       .style(navbarStyle)
     @
@@ -90,7 +88,9 @@ root.Navbar = class Navbar extends root.View
   setActiveView: (link) =>
     return if @_activeView?.id is link.id
     @destroyView("content") if @_activeView?
-    @addView("content", link.ref)
-    link.ref.refresh()
+    view = new link.ref(link.refDiv)
+    @addView("content", view)
+    @_initCss()
+    view.refresh()
     @_activeView = link
     @
