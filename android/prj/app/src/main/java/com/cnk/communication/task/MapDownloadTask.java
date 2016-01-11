@@ -38,6 +38,8 @@ public class MapDownloadTask extends ServerTask {
         boolean floor2Update = (response.getLevelImageUrls().get(Consts.FLOOR2) != null);
         if (floor1Update || floor2Update) {
             downloadTilesUpdate(client, floor1Update, floor2Update, version);
+        } else {
+            DataHandler.getInstance().notifyMapUpdated();
         }
         Log.i(LOG_TAG, "Map update complete");
     }

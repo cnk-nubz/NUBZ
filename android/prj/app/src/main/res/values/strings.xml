@@ -6,7 +6,10 @@
     <string name="loading_map">Trwa ładowanie mapy</string>
     <string name="map_wait">Oczekiwanie na pobranie mapy</string>
     <string name="map_missing">Brak mapy dla piętra.</string>
-
+    <string name="drawer_open">Wysunięto</string>
+    <string name="drawer_close">Zamknięto</string>
+    <string name="break_action">Przerwa</string>
+    <string name="end_action">Koniec badania</string>
     <string name="cancel">Anuluj</string>
     <string name="finish">Koniec</string>
 </resources>
