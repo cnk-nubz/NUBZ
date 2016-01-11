@@ -39,25 +39,30 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     @
 
   _onDragEnd: (e) =>
-    map = e.target._map
-    newLatLng = e.target.getLatLngs()[0]
-    maxX = map.project(map.getBounds()._northEast).x
-    maxY = map.project(map.getBounds()._southWest).y
-    #points are sorted in clockwise order, starting with top left point
-    exhibitPoints = (map.project(ll) for ll in newLatLng)
-    [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[2], maxX, maxY)
-    #update points in edge cases
-    exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
-    polygonBounds = (map.unproject(p) for p in exhibitPoints)
-    e.target.setLatLngs(polygonBounds)
-    #scale point back with respect to maxZoom
-    exhibitId = e.target.options.id
-    geoPoint = map.unproject(exhibitPoints[0])
-    scaledPoint = map.project(geoPoint, @mapData.maxZoom[@mapData.activeFloor])
+    @_fixExhibitPosition(e)
+    exhibit = e.target
+    exhibitId = exhibit.options.id
+    geoPoint = exhibit.getLatLngs()[0][0]
+    scaledPoint = @_map.project(geoPoint, @mapData.maxZoom[@mapData.activeFloor])
     @_changeExhibitPositionRequest(exhibitId, scaledPoint)
     if @_labelsButton._currentState.stateName is 'removeLabels'
-      e.target.showLabel()
+      exhibit.showLabel()
     @
+
+  _fixExhibitPosition: (e) =>
+    exhibit = e.target
+    maxX = @_map.project(@_mapBounds[@mapData.activeFloor].getNorthEast()).x
+    maxY = @_map.project(@_mapBounds[@mapData.activeFloor].getSouthWest()).y
+
+    #points are sorted in clockwise order, starting with top left point
+    latLng = exhibit.getLatLngs()[0]
+    exhibitPoints = (@_map.project(ll) for ll in latLng)
+
+    #update points in edge cases
+    [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[2], maxX, maxY)
+    exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
+    newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
+    exhibit.setLatLngs(newGeoPoints)
 
   _getExhibitProtrusion: (topLeft, bottomRight, maxX, maxY) ->
     if topLeft.x < 0
@@ -99,7 +104,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     else
       @refresh()
       BootstrapDialog.alert(
-        message: '<p align="center">Nie można zaktualizować eksponatu. Sprawdź czy serwer jest włączony</p>'
+        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
         type: BootstrapDialog.TYPE_DANGER
-        title: 'Błąd wewnętrzny serwera'
+        title: 'Błąd serwera'
       )
