@@ -85,6 +85,8 @@ struct SetExhibitFrameRequest {
 	1: i32 exhibitId,
 	2: i32 x,
 	3: i32 y,
+	4: i32 width,
+	5: i32 height,
 }
 
 struct Action {
