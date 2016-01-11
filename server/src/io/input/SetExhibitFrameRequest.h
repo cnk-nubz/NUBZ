@@ -4,8 +4,6 @@
 #include <cstdint>
 #include <iostream>
 
-#include <boost/optional.hpp>
-
 #include "communication/structs_types.h"
 
 namespace io {
@@ -25,6 +23,8 @@ namespace io {
             std::int32_t exhibitId;
             std::int32_t newX;
             std::int32_t newY;
+            std::int32_t newWidth;
+            std::int32_t newHeight;
         };
     }
 }

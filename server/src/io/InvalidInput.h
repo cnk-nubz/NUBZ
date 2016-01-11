@@ -1,5 +1,5 @@
-#ifndef COMMAND__INVALID_INPUT__H
-#define COMMAND__INVALID_INPUT__H
+#ifndef IO__INVALID_INPUT__H
+#define IO__INVALID_INPUT__H
 
 #include <stdexcept>
 

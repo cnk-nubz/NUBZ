@@ -1,7 +1,6 @@
 #ifndef COMMAND__COMMANDS__H
 #define COMMAND__COMMANDS__H
 
-#include "InvalidInput.h"
 #include "GetMapImagesCommand.h"
 #include "GetMapImageTilesCommand.h"
 #include "SetMapImageCommand.h"
