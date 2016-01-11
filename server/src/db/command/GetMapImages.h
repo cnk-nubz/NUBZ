@@ -9,14 +9,16 @@ namespace db {
         class GetMapImages {
         public:
             GetMapImages();
-            GetMapImages(std::int32_t minVersion);
+            GetMapImages(std::int32_t floor);
             ~GetMapImages() = default;
 
             void operator()(DatabaseSession &session);
             const std::vector<MapImage> &getResult() const;
 
+            boost::optional<std::int32_t> minVersion;
+            boost::optional<std::int32_t> floor;
+
         private:
-            const std::int32_t minVersion;
             std::vector<MapImage> result;
 
             std::string createQuery() const;

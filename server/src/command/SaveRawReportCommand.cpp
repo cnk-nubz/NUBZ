@@ -3,8 +3,8 @@
 #include "SaveRawReportCommand.h"
 #include "db/command/GetRawReports.h"
 #include "db/command/SaveRawReport.h"
+#include "io/InvalidInput.h"
 #include "InputChecker.h"
-#include "InvalidInput.h"
 
 namespace command {
     SaveRawReportCommand::SaveRawReportCommand(db::Database &db) : db(db) {
@@ -34,7 +34,7 @@ namespace command {
         InputChecker checker(session);
 
         if (!checker.checkReportId(input.reportId)) {
-            throw InvalidInput("incorrect report ID");
+            throw io::InvalidInput("incorrect report ID");
         }
 
         std::unordered_set<std::int32_t> exhibitsActions;
@@ -53,20 +53,20 @@ namespace command {
             }
 
             if (event.durationInSecs < 0) {
-                throw InvalidInput("action with duration under 0 seconds?");
+                throw io::InvalidInput("action with duration under 0 seconds?");
             }
         }
 
         if (!checker.checkExhibitsActionsIds(exhibitsActions)) {
-            throw InvalidInput("incorrect exhibit action");
+            throw io::InvalidInput("incorrect exhibit action");
         }
 
         if (!checker.checkBreakActionsIds(breakActions)) {
-            throw InvalidInput("incorrect break action");
+            throw io::InvalidInput("incorrect break action");
         }
 
         if (!checker.checkExhibitsIds(exhibits)) {
-            throw InvalidInput("incorrect exhibit ID");
+            throw io::InvalidInput("incorrect exhibit ID");
         }
     }
 }

@@ -7,10 +7,10 @@
 
 namespace db {
     namespace cmd {
-        GetMapImages::GetMapImages() : GetMapImages(0) {
+        GetMapImages::GetMapImages() {
         }
 
-        GetMapImages::GetMapImages(std::int32_t minVersion) : minVersion(minVersion) {
+        GetMapImages::GetMapImages(std::int32_t floor) : floor(floor) {
         }
 
         void GetMapImages::operator()(DatabaseSession &session) {
@@ -25,9 +25,16 @@ namespace db {
             using namespace db::info::map_images;
             using namespace db::sql;
 
-            return Sql::select(db::factory::MapImageFactory::fieldsOrder())
-                .from(tableName)
-                .where(C(colVersion) >= minVersion);
+            auto select = Sql::select(db::factory::MapImageFactory::fieldsOrder()).from(tableName);
+
+            if (minVersion) {
+                select.where(C(colVersion) >= minVersion.value());
+            }
+            if (floor) {
+                select.where(C(colFloor) >= floor.value());
+            }
+
+            return select;
         }
     }
 }

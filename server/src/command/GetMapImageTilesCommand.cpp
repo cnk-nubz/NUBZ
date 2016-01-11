@@ -32,17 +32,17 @@ namespace command {
     }
 
     void GetMapImageTilesCommand::getOriginalSize(db::DatabaseSession &session) {
-        db::cmd::GetMapImages getMapImages;
+        db::cmd::GetMapImages getMapImages(floor);
         getMapImages(session);
-        for (const auto &mapImg : getMapImages.getResult()) {
-            if (mapImg.floor == floor) {
-                answer->originalSize.width = mapImg.width;
-                answer->originalSize.height = mapImg.height;
-                return;
-            }
+        
+        if (!getMapImages.getResult().empty()) {
+            auto mapImg = getMapImages.getResult().front();
+            answer->originalSize.width = mapImg.width;
+            answer->originalSize.height = mapImg.height;
+        } else {
+            answer->originalSize.width = 0;
+            answer->originalSize.height = 0;
         }
-        answer->originalSize.width = 0;
-        answer->originalSize.height = 0;
     }
 
     void GetMapImageTilesCommand::getZoomLevels(db::DatabaseSession &session) {

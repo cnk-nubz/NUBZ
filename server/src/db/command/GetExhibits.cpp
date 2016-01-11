@@ -5,10 +5,10 @@
 
 namespace db {
     namespace cmd {
-        GetExhibits::GetExhibits() : GetExhibits(0) {
+        GetExhibits::GetExhibits() {
         }
 
-        GetExhibits::GetExhibits(std::int32_t minVersion) : minVersion(minVersion) {
+        GetExhibits::GetExhibits(std::int32_t exhibitId) : exhibitId(exhibitId) {
         }
 
         void GetExhibits::operator()(DatabaseSession &session) {
@@ -23,9 +23,16 @@ namespace db {
             using namespace db::info::exhibits;
             using namespace db::sql;
 
-            return Sql::select(db::factory::ExhibitFactory::fieldsOrder())
-                .from(tableName)
-                .where(C(colVersion) >= minVersion);
+            auto select = Sql::select(db::factory::ExhibitFactory::fieldsOrder()).from(tableName);
+
+            if (minVersion) {
+                select.where(C(colVersion) >= minVersion.value());
+            }
+            if (exhibitId) {
+                select.where(C(colId) == exhibitId.value());
+            }
+
+            return select;
         }
     }
 }
