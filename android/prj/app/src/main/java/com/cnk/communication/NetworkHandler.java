@@ -2,6 +2,7 @@ package com.cnk.communication;
 
 import android.util.Log;
 
+import com.cnk.utilities.Consts;
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;
@@ -133,20 +134,20 @@ public class NetworkHandler implements Observer {
     }
 
     private synchronized void addWaitTask() {
-        Task task = new WaitTask(SECONDS_DELAY * 1000);
+        Task task = new WaitTask(SECONDS_DELAY * Consts.SECOND);
         tasks.add(task);
     }
 
     private synchronized void addBgUploadTask() {
         Task task = new RaportUploadTask(bgRaportUpload);
-        Task wait = new WaitTask(bgDelaySeconds * 1000);
+        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
         bgTasks.add(task);
         bgTasks.add(wait);
     }
 
     private synchronized void addBgDownloadTask() {
         Task task = new BackgroundDownloadTask(bgDownload);
-        Task wait = new WaitTask(bgDelaySeconds * 1000);
+        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
         bgTasks.add(task);
         bgTasks.add(wait);
     }

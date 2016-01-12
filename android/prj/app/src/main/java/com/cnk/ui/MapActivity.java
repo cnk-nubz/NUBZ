@@ -26,7 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnk.R;
 import com.cnk.StartScreen;
@@ -54,10 +53,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private static final String LOG_TAG = "MapActivity";
     private static final String BREAK_NAME = "Przerwa";
+    private static final String TITLE_PREFIX = "Piętro";
     private static final Integer BREAK_ID = 0;
     private static final Float MAXIMUM_SCALE = 4.0f;
     private static final Float MINIMUM_SCALE = 0.01f;
-    private static final long SECOND = 1000;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
@@ -133,6 +132,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "Setting views");
         setContentView(R.layout.map_activity_layout);
         rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
+        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
         setDrawer();
         Log.i(LOG_TAG, "Views set");
     }
@@ -170,16 +170,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         spinner.setTitle("Ładowanie");
         spinner.setMessage("Oczekiwanie na pobranie akcji");
         spinner.show();
-    }
-
-    private void experimentDataDownloaded() {
-        Util.waitDelay(SECOND);
-        spinner.dismiss();
-        mapState = new MapState(this);
-        new StartUpTask().execute();
-        Log.i(LOG_TAG, "starting background download");
-        networkHandler.startBgDownload();
-        spinner.dismiss();
     }
 
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
@@ -237,6 +227,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             Log.i(LOG_TAG, "switching floor to 1");
             currentFloorNum = Consts.FLOOR1;
         }
+        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
         if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
             new MapChangeFloor().execute();
         } else {
@@ -380,13 +371,22 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable observable, Object o) {
         DataHandler.Item notification = (DataHandler.Item) o;
-
         if (notification.equals(DataHandler.Item.EXHIBITS)) {
             Log.i(LOG_TAG, "Received exhibits update notification");
             new MapRefreshExhibits().execute();
         } else if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
             experimentDataDownloaded();
         }
+    }
+
+    private void experimentDataDownloaded() {
+        Util.waitDelay(Consts.SECOND);
+        spinner.dismiss();
+        mapState = new MapState(this);
+        new StartUpTask().execute();
+        Log.i(LOG_TAG, "starting background download");
+        networkHandler.startBgDownload();
+        spinner.dismiss();
     }
 
     // Map changing:
@@ -621,7 +621,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
             Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
-            Toast.makeText(getApplicationContext(), "Clicked exhibit with id: " + id.toString(), Toast.LENGTH_SHORT).show();
 
             if (mapState.lastExhibitTextView != null) {
                 mapState.lastExhibitTextView
@@ -646,7 +645,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void showExhibitDialog(boolean isBreak, String name, Integer id) {
         ArrayList<String> actionStrings = new ArrayList<>();
-        List<Action> actions = null;
+        List<Action> actions;
         if (isBreak) {
             actions = DataHandler.getInstance().getAllBreakActions();
         } else {
