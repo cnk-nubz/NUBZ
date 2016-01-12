@@ -32,6 +32,7 @@ public class DataHandler extends Observable {
         FLOOR_1_MAP_CHANGING("Map changing 1"),
         BOTH_FLOORS_MAP_CHANGED("Map changed both"),
         BOTH_FLOORS_MAP_CHANGING("Map changing both"),
+        MAP_UPDATE_COMPLETED("Map update completed"),
         EXPERIMENT_DATA("Experiment data"),
         EXHIBITS("Exhibits"),
         UNKNOWN("Unknown");
@@ -193,7 +194,14 @@ public class DataHandler extends Observable {
             notifyObservers(Item.FLOOR_1_MAP_CHANGED);
         }
 
+        notifyMapUpdated();
+
         Log.i(LOG_TAG, "New maps set");
+    }
+
+    public void notifyMapUpdated() {
+        setChanged();
+        notifyObservers(Item.MAP_UPDATE_COMPLETED);
     }
 
     private Integer getTileCode(Integer floor, Integer detailLevel, Integer row, Integer column) {

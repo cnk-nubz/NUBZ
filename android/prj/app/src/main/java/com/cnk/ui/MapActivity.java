@@ -1,6 +1,5 @@
 package com.cnk.ui;
 
-import android.app.Activity;
 import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -10,21 +9,26 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CompoundButton;
+import android.widget.Chronometer;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnk.R;
+import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
@@ -33,6 +37,7 @@ import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.ui.exhibitwindow.ExhibitDialog;
 import com.cnk.utilities.Consts;
+import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
 
@@ -43,13 +48,19 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
-public class MapActivity extends Activity implements Observer {
+public class MapActivity extends AppCompatActivity implements Observer {
+    public static final Integer TILE_SIDE_LEN = 256;
+
     private static final String LOG_TAG = "MapActivity";
+    private static final String BREAK_NAME = "Przerwa";
+    private static final String TITLE_PREFIX = "Piętro";
+    private static final Integer BREAK_ID = 0;
+    private static final Float MAXIMUM_SCALE = 4.0f;
+    private static final Float MINIMUM_SCALE = 0.01f;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
     private MapState mapState;
-    private Switch floorsSwitch;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
@@ -57,20 +68,13 @@ public class MapActivity extends Activity implements Observer {
     private RelativeLayout voidLayout;
     private Point lastClick;
     private ProgressDialog spinner;
-
-    private static final Float MAXIMUM_SCALE = 4.0f;
-    private static final Float MINIMUM_SCALE = 0.01f;
-
-    public static final Integer TILE_SIDE_LEN = 256;
-
-    // Android activity lifecycle overriden methods:
+    private ActionBarDrawerToggle drawerToggle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.i(LOG_TAG, "onCreate execution");
-
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         networkHandler = new NetworkHandler();
@@ -78,24 +82,94 @@ public class MapActivity extends Activity implements Observer {
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
 
-        rlRootLayout = new RelativeLayout(this);
-        setContentView(rlRootLayout);
-
-        spinner = new ProgressDialog(this);
-        spinner.setTitle("Ładowanie");
-        spinner.setMessage("Oczekiwanie na pobranie akcji");
-        spinner.show();
+        setViews();
+        setActionBar();
+        setSpinner();
 
         networkHandler.downloadExperimentData();
     }
 
-    private void experimentDataDownloaded() {
-        spinner.dismiss();
-        mapState = new MapState(this);
-        new StartUpTask().execute();
-        Log.i(LOG_TAG, "starting background download");
-        networkHandler.startBgDownload();
-        spinner.dismiss();
+    public void pauseClick(View view) {
+        Log.i(LOG_TAG, "Clicked break button");
+        showExhibitDialog(true, BREAK_NAME, BREAK_ID);
+    }
+
+    public void endClick(View view) {
+        Log.i(LOG_TAG, "Clicked end button");
+        Intent startScreenIntent = new Intent(getApplicationContext(), StartScreen.class);
+        startActivity(startScreenIntent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // overriden to stop back button from working
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.map_activity_menu, menu);
+        return true;
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        drawerToggle.syncState();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        if (drawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        } else if (item.getItemId() == R.id.action_next_floor) {
+            changeFloor();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setViews() {
+        Log.i(LOG_TAG, "Setting views");
+        setContentView(R.layout.map_activity_layout);
+        rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
+        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
+        setDrawer();
+        Log.i(LOG_TAG, "Views set");
+    }
+
+    private void setDrawer() {
+        ((Chronometer) findViewById(R.id.chronometer)).start();
+    }
+
+    private void setActionBar() {
+        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawerToggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                R.string.drawer_open,
+                R.string.drawer_close
+        ) {
+
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+            }
+
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+        };
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeButtonEnabled(true);
+        }
+        drawerLayout.setDrawerListener(drawerToggle);
+    }
+
+    private void setSpinner() {
+        spinner = new ProgressDialog(this);
+        spinner.setTitle("Ładowanie");
+        spinner.setMessage("Oczekiwanie na pobranie akcji");
+        spinner.show();
     }
 
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
@@ -112,7 +186,6 @@ public class MapActivity extends Activity implements Observer {
         @Override
         protected void onPostExecute(Boolean b) {
             super.onPostExecute(b);
-
             if (b) {
                 new MapChangeFloor().execute();
             }
@@ -141,9 +214,29 @@ public class MapActivity extends Activity implements Observer {
         DataHandler.getInstance().deleteObserver(this);
     }
 
+    private void changeFloor() {
+        if (tileView != null) {
+            tileView.setVisibility(View.INVISIBLE);
+        }
+        if (currentFloorNum.equals(Consts.FLOOR1)) {
+            // Change to 1 floor
+            Log.i(LOG_TAG, "switching floor to 2");
+            currentFloorNum = Consts.FLOOR2;
+        } else {
+            // Change to 0 floor
+            Log.i(LOG_TAG, "switching floor to 1");
+            currentFloorNum = Consts.FLOOR1;
+        }
+        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
+        if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
+            new MapChangeFloor().execute();
+        } else {
+            layoutMapMissing.setVisibility(View.VISIBLE);
+        }
+    }
+
 
     // Layout setting:
-
     private void prepareTileView(final List<ScaleData> scalesList) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
@@ -207,8 +300,6 @@ public class MapActivity extends Activity implements Observer {
                 voidLayout = addVoidLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
-                floorsSwitch = addFloorsSwitch(rlRootLayout, rlRootLayout.getContext());
-
                 if (currentFloorExists) {
                     layoutLoading.setVisibility(View.VISIBLE);
                     layoutMapMissing.setVisibility(View.INVISIBLE);
@@ -231,23 +322,6 @@ public class MapActivity extends Activity implements Observer {
         parent.addView(rl, lp);
 
         return rl;
-    }
-
-    private Switch addFloorsSwitch(RelativeLayout parent, Context c) {
-        Switch s = new Switch(c);
-        s.setTextOff(getResources().getString(R.string.pietro1));
-        s.setTextOn(getResources().getString(R.string.pietro2));
-        s.setChecked(currentFloorNum == 1);
-        s.setOnCheckedChangeListener(new FloorsSwitchListener());
-
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-        lp.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        lp.setMargins(20, 20, 20, 20);
-
-        //s.setVisibility(View.INVISIBLE);
-        parent.addView(s, lp);
-        return s;
     }
 
     private LinearLayout addLoadingLayout(RelativeLayout parent, Context c) {
@@ -294,11 +368,9 @@ public class MapActivity extends Activity implements Observer {
 
 
     // Data updating:
-
     @Override
     public void update(Observable observable, Object o) {
         DataHandler.Item notification = (DataHandler.Item) o;
-
         if (notification.equals(DataHandler.Item.EXHIBITS)) {
             Log.i(LOG_TAG, "Received exhibits update notification");
             new MapRefreshExhibits().execute();
@@ -307,8 +379,17 @@ public class MapActivity extends Activity implements Observer {
         }
     }
 
-    // Map changing:
+    private void experimentDataDownloaded() {
+        Util.waitDelay(Consts.SECOND);
+        spinner.dismiss();
+        mapState = new MapState(this);
+        new StartUpTask().execute();
+        Log.i(LOG_TAG, "starting background download");
+        networkHandler.startBgDownload();
+        spinner.dismiss();
+    }
 
+    // Map changing:
     private class MapRefreshExhibits extends AsyncTask<Void, Void, Void> {
         @Override
         protected Void doInBackground(Void... voids) {
@@ -485,8 +566,6 @@ public class MapActivity extends Activity implements Observer {
 
                 layoutLoading.setVisibility(View.INVISIBLE);
                 tileView.setVisibility(View.VISIBLE);
-                floorsSwitch.setVisibility(View.VISIBLE);
-
                 waitOnUI.release();
             }
         });
@@ -496,7 +575,6 @@ public class MapActivity extends Activity implements Observer {
 
 
     // Private classes declarations:
-
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
         private String name;
@@ -538,13 +616,11 @@ public class MapActivity extends Activity implements Observer {
 
 
     // Action listeners:
-
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
         public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
             Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
-            Toast.makeText(getApplicationContext(), "Clicked exhibit with id: " + id.toString(), Toast.LENGTH_SHORT).show();
 
             if (mapState.lastExhibitTextView != null) {
                 mapState.lastExhibitTextView
@@ -555,55 +631,34 @@ public class MapActivity extends Activity implements Observer {
             ((ExhibitSpot) hotSpot).getExhibitTextView()
                     .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
-            ArrayList<String> actionStrings = new ArrayList<>();
-            List<Action> exhibitActions = DataHandler.getInstance().getAllExhibitActions();
-            for (Action a : exhibitActions) {
-                actionStrings.add(a.getText());
-            }
-
-            Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
-            exhibitWindowIntent.putExtra(ExhibitDialog.NAME, ((ExhibitSpot) hotSpot).getName());
-            exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
-            ActivityOptions activityOptions =
-                    ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-            startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
+            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), id);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        Toast.makeText(getApplicationContext(), "Back from exhibit with id: " + Integer.toString(requestCode) +
-                " result code: " + Integer.toString(resultCode), Toast.LENGTH_LONG).show();
-
         if (resultCode == RESULT_OK) {
             ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
         }
     }
 
-    private class FloorsSwitchListener implements CompoundButton.OnCheckedChangeListener {
-        @Override
-        public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-            if (tileView != null) {
-                tileView.setVisibility(View.INVISIBLE);
-            }
-            if (b) {
-                // Change to 1 floor
-                Log.i(LOG_TAG, "switching floor to 2");
-                currentFloorNum = Consts.FLOOR2;
-            } else {
-                // Change to 0 floor
-                Log.i(LOG_TAG, "switching floor to 1");
-                currentFloorNum = Consts.FLOOR1;
-            }
-
-            if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
-                floorsSwitch.setVisibility(View.INVISIBLE);
-                new MapChangeFloor().execute();
-            } else {
-                layoutMapMissing.setVisibility(View.VISIBLE);
-            }
+    private void showExhibitDialog(boolean isBreak, String name, Integer id) {
+        ArrayList<String> actionStrings = new ArrayList<>();
+        List<Action> actions;
+        if (isBreak) {
+            actions = DataHandler.getInstance().getAllBreakActions();
+        } else {
+            actions = DataHandler.getInstance().getAllExhibitActions();
         }
+        for (Action a : actions) {
+            actionStrings.add(a.getText());
+        }
+        Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
+        exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
+        exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
+        ActivityOptions activityOptions =
+                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+        startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
     }
 }
