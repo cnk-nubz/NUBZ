@@ -12,13 +12,11 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       continue unless e.frame?.mapLevel is floor
       X = e.frame.x
       Y = e.frame.y
-      polygonBounds = [
-        @_map.unproject([X, Y], 3),
-        @_map.unproject([X, Y + e.frame.width], 3),
-        @_map.unproject([X + e.frame.height, Y + e.frame.height], 3),
-        @_map.unproject([X + e.frame.height, Y], 3)
-      ]
-      r = L.polygon(polygonBounds, {
+      polygonBounds = new L.LatLngBounds(
+        @_map.unproject([X, Y], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
+      )
+      r = L.rectangle(polygonBounds, {
           color: "#ff7800"
           weight: 1
           draggable: true
@@ -26,6 +24,9 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         }).bindLabel(e.name, {
           direction: 'auto'
         })
+      r.editing.enable()
+      r.on('editstart', @_onEditStart)
+      r.on('edit', @_onEditEnd) #wtf this event name, speak up leaflet developers
       r.on('dragstart', @_onDragStart)
       #IDEA (in case nothing to do): move bouncing from boundaries to @_onDrag
       # plus somehow refresh event's latlangs in @_onDrag (leaflet or L.Path.Drag problem?)
@@ -33,36 +34,51 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       @_exhibits[floor].addLayer(r)
     @
 
+  _onEditStart: (e) ->
+    exhibit = e.target
+    exhibit.hideLabel()
+    exhibit.bringToFront()
+    return
+
+  _onEditEnd: (e) =>
+    exhibit = e.target
+    @_fixExhibitPosition(exhibit)
+    exhibit.editing._repositionCornerMarkers()
+    #TODO: add synchronization with server -> @_changeExhibitPositionRequest
+    return
+
   _onDragStart: (e) ->
-    e.target.hideLabel()
-    e.target.bringToFront()
-    @
+    exhibit = e.target
+    exhibit.hideLabel()
+    exhibit.editing.disable()
+    exhibit.bringToFront()
+    return
 
   _onDragEnd: (e) =>
-    @_fixExhibitPosition(e)
+    return unless e.target._dragMoved
     exhibit = e.target
+    @_fixExhibitPosition(exhibit)
     exhibitId = exhibit.options.id
     geoPoint = exhibit.getLatLngs()[0][0]
     scaledPoint = @_map.project(geoPoint, @mapData.maxZoom[@mapData.activeFloor])
     @_changeExhibitPositionRequest(exhibitId, scaledPoint)
     if @_labelsButton._currentState.stateName is 'removeLabels'
       exhibit.showLabel()
-    @
+    exhibit.editing.enable()
+    return
 
-  _fixExhibitPosition: (e) =>
-    exhibit = e.target
+  _fixExhibitPosition: (exhibit) =>
     maxX = @_map.project(@_mapBounds[@mapData.activeFloor].getNorthEast()).x
     maxY = @_map.project(@_mapBounds[@mapData.activeFloor].getSouthWest()).y
 
-    #points are sorted in clockwise order, starting with top left point
-    latLng = exhibit.getLatLngs()[0]
+    latLng = [exhibit.getBounds().getNorthWest(), exhibit.getBounds().getSouthEast()]
     exhibitPoints = (@_map.project(ll) for ll in latLng)
-
     #update points in edge cases
-    [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[2], maxX, maxY)
+    [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[1], maxX, maxY)
     exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
     newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
-    exhibit.setLatLngs(newGeoPoints)
+    exhibit.setBounds(newGeoPoints)
+    return
 
   _getExhibitProtrusion: (topLeft, bottomRight, maxX, maxY) ->
     if topLeft.x < 0
@@ -96,6 +112,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       data: toSend
       success: handler.bind(instance)
     )
+    return
 
   _ajaxSuccessHandler: (data) =>
     if data.success is true
@@ -108,3 +125,4 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         type: BootstrapDialog.TYPE_DANGER
         title: 'Błąd serwera'
       )
+    return

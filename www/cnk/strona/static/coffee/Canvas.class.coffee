@@ -92,13 +92,11 @@ root.Canvas = class Canvas extends root.View
       continue unless e.frame?.mapLevel is floor
       X = e.frame.x
       Y = e.frame.y
-      polygonBounds = [
+      polygonBounds = new L.LatLngBounds(
         @_map.unproject([X, Y], @_maxZoom[floor]),
-        @_map.unproject([X, Y + e.frame.width], @_maxZoom[floor]),
         @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
-        @_map.unproject([X + e.frame.height, Y], @_maxZoom[floor])
-      ]
-      r = L.polygon(polygonBounds, {
+      )
+      r = L.rectangle(polygonBounds, {
           color: "#ff7800"
           weight: 1
           id: idx
