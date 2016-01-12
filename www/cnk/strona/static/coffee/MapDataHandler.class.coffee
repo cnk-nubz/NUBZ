@@ -6,6 +6,7 @@ root.MapDataHandler = class MapDataHandler
     return instance if instance
     instance = this
     @activeFloor = activeFloor
+    @activeLabels = true
     @floorUrl = floorUrl
     @exhibits = {}
     for e in exhibits

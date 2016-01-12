@@ -26,6 +26,8 @@ namespace command {
             db::Exhibit newExhibit = getExhibit.getResult().front();
             newExhibit.frame.value().x = input.newX;
             newExhibit.frame.value().y = input.newY;
+            newExhibit.frame.value().width = input.newWidth;
+            newExhibit.frame.value().height = input.newHeight;
             newExhibit.version = getCounter.getResult() + 1;
 
             // update
@@ -54,7 +56,7 @@ namespace command {
 
         InputChecker checker(session);
         if (!checker.checkExhibitFrame(
-                frame.mapLevel, input.newX, input.newY, frame.width, frame.height)) {
+                frame.mapLevel, input.newX, input.newY, input.newWidth, input.newHeight)) {
             throw io::InvalidInput("incorrect frame");
         }
     }
