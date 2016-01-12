@@ -180,6 +180,8 @@ def updateExhibitPosition(request):
 		"success": True,
 		"id": int(frame['id']),
 		"x": frame['x'],
-		"y": frame['y']
+		"y": frame['y'],
+        "width": frame['width'],
+        "height": frame['height']
 	}
 	return JsonResponse(data)
