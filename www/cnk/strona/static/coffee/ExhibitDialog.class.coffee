@@ -1,5 +1,5 @@
 root = exports ? this
-root.ExhibitDialog = class ExhibitDialog extends root.View
+root.ExhibitDialog = class ExhibitDialog
 	@nameEditable: false
 	constructor: (@_name, @_floor, @_handler) ->
 
@@ -8,16 +8,27 @@ root.ExhibitDialog = class ExhibitDialog extends root.View
 			d3.select(document.createElement("div"))
 			.append "div"
 				.classed "container-fluid", true
+		@_createFirstRow(_message, @_name, @nameEditable)
+		@_createSecondRow(_message)
+		_message = _message[0][0].outerHTML
+		_dialog_buttons = [@_dialogCancel(), @_dialogSave()]
+		@_dialog = new BootstrapDialog(
+			title: "Edycja eksponatu"
+			message: _message
+			closable: false
+			buttons: _dialog_buttons
+		)
+		@_dialog.realize()
+		@_dialog.open()
 
-		line1 = _message
+	_createFirstRow: (parent, exhibitName, isNameEditable) =>
+		line1 = parent
 			.append "form"
 				.classed "form-group row", true
-
-		line1_title = line1
+		line1Title = line1
 			.append "div"
 				.classed "col-sm-2", true
-
-		line1_title
+		line1Title
 			.append "label"
 				.text("Nazwa:")
 				.attr(
@@ -26,134 +37,65 @@ root.ExhibitDialog = class ExhibitDialog extends root.View
 				.style(
 					"padding-top" : "0.5em"
 				)
-
-		line1_input = line1
+		line1Input = line1
 			.append "div"
 				.classed "col-sm-10", true
-
-		line1_input_field = line1_input
+		line1Input
 			.append "input"
 				.attr(
 					id: "name"
 					type: "text"
-					value: @_name
-					disabled: "true" if not @nameEditable
+					value: exhibitName
+					disabled: "true" if not isNameEditable
 				)
 				.classed "form-control", true
-
-		line1_input
+		line1Input
 			.append "div"
 				.attr(
 					id: "error"
 				)
 
-		line2 = _message
+	_createSecondRow: (parent) =>
+		line2 = parent
 			.append "div"
 				.style(
 					"margin-top" : "0.5em"
 				)
 				.classed "row", true
-
-		line2_label = line2
+		line2Label = line2
 			.append "div"
 				.classed "col-sm-2", true
-
-		line2_label
+		line2Label
 			.append "label"
 				.text("Piętro:")
 				.style(
 					"padding-top" : "0.5em"
 				)
-
-		line2_radios = line2
+		line2Radios = line2
 			.append "div"
 				.attr(
 					role: "group"
 					'data-toggle': "buttons"
 				)
 				.classed "btn-group col-sm-10", true
+		@_createRadio(line2Radios, "radio1", @_floor is 0, "0")
+		@_createRadio(line2Radios, "radio2", @_floor is 1, "1")
+		@_createRadio(line2Radios, "radio3", @_floor is null, "brak")
 
-		line2_radios_label1 = line2_radios
+	_createRadio: (parent, radioId, isActive, radioText) =>
+		radioLabel = parent
 			.append "label"
 				.attr(
-					id: 'radio1'
+					id: radioId
 				)
-				.text "0"
-				.classed "btn btn-default" + (if @_floor is 0 then " active" else ""), true
-
-		line2_radios_label1
+				.text radioText
+				.classed "btn btn-default" + (if isActive then " active" else ""), true
+		radioLabel
 			.append "input"
 				.attr(
 					type: "radio"
 					name: "rfloor"
 				)
-
-		line2_radios_label2 = line2_radios
-			.append "label"
-				.attr(
-					id: 'radio2'
-				)
-				.text "1"
-				.classed "btn btn-default" + (if @_floor is 1 then " active" else ""), true
-
-		line2_radios_label2
-			.append "input"
-				.attr(
-					type: "radio"
-					name: "rfloor"
-				)
-
-		line2_radios_label3 = line2_radios
-			.append "label"
-				.attr(
-					id: 'radio3'
-				)
-				.text "break"
-				.classed "btn btn-default" + (if @_floor is null then " active" else ""), true
-
-		line2_radios_label3
-			.append "input"
-				.attr(
-					type: "radio"
-					name: "rfloor"
-				)
-
-		_message = _message[0][0].outerHTML
-
-		_dialog_buttons = [
-											 @_dialogCancel()
-											 @_dialogSave()
-											 ]
-
-		@_dialog = new BootstrapDialog(
-																	title: "Edycja eksponatu"
-																	message: _message
-																	closable: false
-																	buttons: _dialog_buttons
-																	)
-		@_dialog.realize()
-		@_dialog.open()
-
-	_verifyName: (editedName) =>
-		namePattern = /^[a-zA-Z\ ]+$/
-		if editedName.match(namePattern)
-			return true
-		else
-			return false
-
-	_sendDataToHandler: (wasCanceled) =>
-		editedName = jQuery('#name').val();
-		floorVal = null
-		if jQuery('#radio1').hasClass("active")
-			floorVal = 0
-		else if jQuery('#radio2').hasClass("active")
-			floorVal = 1
-
-		changedData =
-			name: editedName
-			floor: floorVal
-
-		@_handler(changedData, wasCanceled)
 
 	_dialogCancel: =>
 		label: "Anuluj"
@@ -170,3 +112,24 @@ root.ExhibitDialog = class ExhibitDialog extends root.View
 				dialog.close()
 			else
 				jQuery('#error').html('<span style="color: #D8000C">Nazwa może składać się tylko z liter alfabetu angielskiego i spacji.</span>')
+
+	_verifyName: (editedName) =>
+			namePattern = /^[a-zA-Z\ ]+$/
+			if editedName.match(namePattern)
+				return true
+			else
+				return false
+
+	_sendDataToHandler: (wasCanceled) =>
+		editedName = jQuery('#name').val();
+		floorVal = null
+		if jQuery('#radio1').hasClass("active")
+			floorVal = 0
+		else if jQuery('#radio2').hasClass("active")
+			floorVal = 1
+
+		changedData =
+			name: editedName
+			floor: floorVal
+
+		@_handler(changedData, wasCanceled)
