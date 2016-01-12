@@ -32,7 +32,7 @@ root.ExhibitDialog = class ExhibitDialog
       .append "label"
         .text("Nazwa:")
         .attr(
-          for: "name"
+          for: "dialogName"
         )
         .style(
           "padding-top" : "0.5em"
@@ -43,16 +43,16 @@ root.ExhibitDialog = class ExhibitDialog
     line1Input
       .append "input"
         .attr(
-          id: "name"
+          id: "dialogName"
           type: "text"
           value: exhibitName
-          disabled: "true" if not isNameEditable
+          disabled: "true" unless isNameEditable
         )
         .classed "form-control", true
     line1Input
       .append "div"
         .attr(
-          id: "error"
+          id: "dialogError"
         )
 
   _createSecondRow: (parent) =>
@@ -106,12 +106,12 @@ root.ExhibitDialog = class ExhibitDialog
   _dialogSave: =>
     label: "Zapisz"
     action: (dialog) =>
-      editedName = jQuery("#name").val();
+      editedName = jQuery("#dialogName").val();
       if @_verifyName(editedName) is true
         @_sendDataToHandler(false)
         dialog.close()
       else
-        jQuery("#error").html("<span style=\"color: #D8000C\">Nazwa może składać się tylko z liter alfabetu angielskiego i spacji.</span>")
+        jQuery("#dialogError").html("<span style=\"color: #D8000C\">Nazwa może składać się tylko z liter alfabetu angielskiego i spacji.</span>")
 
   _verifyName: (editedName) =>
       namePattern = /^[a-zA-Z\ ]+$/
@@ -121,7 +121,7 @@ root.ExhibitDialog = class ExhibitDialog
         return false
 
   _sendDataToHandler: (wasCanceled) =>
-    editedName = jQuery("#name").val();
+    editedName = jQuery("#dialogName").val();
     if jQuery("#radio1").hasClass("active")
       floorVal = 0
     else if jQuery("#radio2").hasClass("active")
