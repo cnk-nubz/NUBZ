@@ -2,10 +2,40 @@ root = exports ? this
 root.MutableCanvas = class MutableCanvas extends root.Canvas
   constructor: ->
     super
-    @changeMapButton = L.easyButton('fa-map-o',
+    @_changeMapButton = L.easyButton('fa-map-o',
                                     => @fireEvents "mapChangeRequest",
                                     'Zmień obrazek piętra',
-                                    {position: 'bottomleft'}).addTo(@_map)
+                                    {position: 'bottomleft'}).addTo @_map
+
+    @_enableResizingButton = L.easyButton({
+        states:[
+          {
+            stateName: 'enableResizing'
+            icon: 'fa-arrows-alt'
+            title: 'Wyłącz rozciąganie eksponatów'
+            onClick: (btn) =>
+              jQuery btn.button
+                .addClass "clicked"
+              btn.state('disableResizing')
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+                layer.editing.enable()
+              )
+          },
+          {
+            stateName: 'disableResizing'
+            icon: 'fa-arrows-alt'
+            title: 'Włącz rozciąganie eksponatów'
+            onClick: (btn) =>
+              jQuery btn.button
+                .removeClass "clicked"
+              btn.state('enableResizing')
+              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+                layer.editing.disable()
+              )
+          }
+        ]
+    }).addTo @_map
+    @_enableResizingButton.state 'enableResizing'
 
   addExhibits: (floor, exhibits) =>
     for idx, e of exhibits
@@ -14,7 +44,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       Y = e.frame.y
       polygonBounds = new L.LatLngBounds(
         @_map.unproject([X, Y], @_maxZoom[floor]),
-        @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       r = L.rectangle(polygonBounds, {
           color: "#ff7800"
@@ -24,7 +54,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         }).bindLabel(e.name, {
           direction: 'auto'
         })
-      r.editing.enable()
+      r.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
       r.on('editstart', @_onEditStart)
       r.on('edit', @_onEditEnd) #wtf this event name, speak up leaflet developers
       r.on('dragstart', @_onDragStart)
@@ -44,7 +74,9 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibit = e.target
     @_fixExhibitPosition(exhibit)
     exhibit.editing._repositionCornerMarkers()
-    #TODO: add synchronization with server -> @_changeExhibitPositionRequest
+    @_updateExhibitPosition(exhibit)
+    if @_labelsButton._currentState.stateName is 'removeLabels'
+      exhibit.showLabel()
     return
 
   _onDragStart: (e) ->
@@ -57,24 +89,31 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
   _onDragEnd: (e) =>
     return unless e.target._dragMoved
     exhibit = e.target
-    @_fixExhibitPosition(exhibit)
-    exhibitId = exhibit.options.id
-    geoPoint = exhibit.getLatLngs()[0][0]
-    scaledPoint = @_map.project(geoPoint, @mapData.maxZoom[@mapData.activeFloor])
-    @_changeExhibitPositionRequest(exhibitId, scaledPoint)
+    @_updateExhibitPosition(exhibit)
     if @_labelsButton._currentState.stateName is 'removeLabels'
       exhibit.showLabel()
-    exhibit.editing.enable()
+    if @_enableResizingButton._currentState.stateName is 'disableResizing'
+      exhibit.editing.enable()
+    return
+
+  _updateExhibitPosition: (exhibit) =>
+    @_fixExhibitPosition(exhibit)
+    exhibitId = exhibit.options.id
+    geoPoints = exhibit.getLatLngs()[0]
+    scaledPoints = (@_map.project(p, @mapData.maxZoom[@mapData.activeFloor]) for p in geoPoints)
+    [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
+    @_changeExhibitPositionRequest(exhibitId, topLeft, bottomRight)
     return
 
   _fixExhibitPosition: (exhibit) =>
     maxX = @_map.project(@_mapBounds[@mapData.activeFloor].getNorthEast()).x
     maxY = @_map.project(@_mapBounds[@mapData.activeFloor].getSouthWest()).y
 
-    latLng = [exhibit.getBounds().getNorthWest(), exhibit.getBounds().getSouthEast()]
+    latLng = exhibit.getLatLngs()[0]
     exhibitPoints = (@_map.project(ll) for ll in latLng)
     #update points in edge cases
-    [dx, dy] = @_getExhibitProtrusion(exhibitPoints[0], exhibitPoints[1], maxX, maxY)
+    [topLeft, bottomRight] = [@_getTopLeft(exhibitPoints), @_getBottomRight(exhibitPoints)]
+    [dx, dy] = @_getExhibitProtrusion(topLeft, bottomRight, maxX, maxY)
     exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
     newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
     exhibit.setBounds(newGeoPoints)
@@ -91,13 +130,15 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       dy = maxY - bottomRight.y
     [dx ? 0, dy ? 0]
 
-  _changeExhibitPositionRequest: (id, topLeft) =>
+  _changeExhibitPositionRequest: (id, topLeft, bottomRight) =>
     toSend = {
       jsonData:
         JSON.stringify(
           id: id
           x: topLeft.x
           y: topLeft.y
+          width: bottomRight.x - topLeft.x
+          height: bottomRight.y - topLeft.y
         )
     }
     instance = @
@@ -118,6 +159,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     if data.success is true
       @mapData.exhibits[data.id].frame.x = data.x
       @mapData.exhibits[data.id].frame.y = data.y
+      @mapData.exhibits[data.id].frame.width = data.width
+      @mapData.exhibits[data.id].frame.height = data.height
     else
       @refresh()
       BootstrapDialog.alert(
@@ -126,3 +169,13 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         title: 'Błąd serwera'
       )
     return
+
+  _getTopLeft: (arr) ->
+    top = arr[0]
+    (top = p if p.x <= top.x and p.y <= top.y) for p in arr[1..]
+    top
+
+  _getBottomRight: (arr) ->
+    bot = arr[0]
+    (bot = p if p.x >= bot.x and p.y >= bot.y) for p in arr[1..]
+    bot

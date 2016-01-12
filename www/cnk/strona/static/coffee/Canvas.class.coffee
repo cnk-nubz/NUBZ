@@ -24,7 +24,10 @@ root.Canvas = class Canvas extends root.View
             icon: 'fa-comment-o'
             title: 'Pokaż etykiety'
             onClick: (btn) =>
+              jQuery btn.button
+                .addClass "clicked"
               btn.state('removeLabels')
+              @mapData.activeLabels = true
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.showLabel()
               )
@@ -32,10 +35,13 @@ root.Canvas = class Canvas extends root.View
           },
           {
             stateName: 'removeLabels'
-            icon: 'fa-comment'
+            icon: 'fa-comment-o'
             title: 'Ukryj etykiety'
             onClick: (btn) =>
+              jQuery btn.button
+                .removeClass "clicked"
               btn.state('setLabels')
+              @mapData.activeLabels = false
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.hideLabel()
               )
@@ -43,12 +49,15 @@ root.Canvas = class Canvas extends root.View
           }
       ]
     })
-    @_labelsButton.state 'removeLabels'
-    @_labelsButton.addTo @_map
+    activeLabelState = "#{if @mapData.activeLabels then "removeLabels" else "setLabels"}"
+    activeLabelButton = @_labelsButton.state(activeLabelState).button
+    jQuery(activeLabelButton).addClass("clicked") if @mapData.activeLabels
+    @_labelsButton.state
     @_floorButton = [
       L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
       L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
     ]
+    @_labelsButton.addTo @_map
     return
 
   _init: =>
@@ -94,7 +103,7 @@ root.Canvas = class Canvas extends root.View
       Y = e.frame.y
       polygonBounds = new L.LatLngBounds(
         @_map.unproject([X, Y], @_maxZoom[floor]),
-        @_map.unproject([X + e.frame.height, Y + e.frame.height], @_maxZoom[floor]),
+        @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       r = L.rectangle(polygonBounds, {
           color: "#ff7800"

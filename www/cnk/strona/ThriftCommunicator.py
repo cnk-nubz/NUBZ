@@ -103,7 +103,7 @@ class ThriftCommunicator:
 		return ret
 
 	def setExhibitFrame(self, frame):
-		msg = SetExhibitFrameRequest(int(frame['id']), int(frame['x']), int(frame['y']))
+		msg = SetExhibitFrameRequest(int(frame['id']), int(frame['x']), int(frame['y']), int(frame['width']), int(frame['height']))
 		if not self.start_connection():
 			return None
 
