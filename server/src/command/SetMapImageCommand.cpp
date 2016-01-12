@@ -4,7 +4,7 @@
 #include "external/easylogging++.h"
 
 #include "SetMapImageCommand.h"
-#include "InvalidInput.h"
+#include "io/InvalidInput.h"
 #include "db/command/GetMapImages.h"
 #include "db/command/GetCounter.h"
 #include "db/command/SetCounter.h"
