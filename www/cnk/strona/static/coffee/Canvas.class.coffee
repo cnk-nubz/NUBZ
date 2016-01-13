@@ -3,6 +3,7 @@ root.Canvas = class Canvas extends root.View
   constructor: (@_containerMap) ->
     super @_containerMap
     @mapData = new MapDataHandler()
+    @appearance = new Appearance()
     @_minZoom = @mapData.minZoom
     @_maxZoom = @mapData.maxZoom
     @_mapBounds = [null, null]
@@ -105,11 +106,10 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X, Y], @_maxZoom[floor]),
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
-      r = L.rectangle(polygonBounds, {
-          color: "#ff7800"
-          weight: 1
-          id: idx
-        }).bindLabel(e.name, {
+      r = L.rectangle(polygonBounds, jQuery.extend(
+        @appearance.exhibit,
+        { id: idx }
+      )).bindLabel(e.name, {
           direction: 'auto'
         })
       @_exhibits[floor].addLayer(r)
@@ -123,11 +123,15 @@ root.Canvas = class Canvas extends root.View
         .removeClass "clicked"
 
       @mapData.activeFloor = floor
+      @_updateState()
+      @
+
+  _updateState: =>
+      floor = @mapData.activeFloor
       @_map.removeLayer(@_exhibits[1 - floor])
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
       @_map.addLayer(@_exhibits[floor])
-
       if @_labelsButton._currentState.stateName is 'removeLabels' #setLabels is active
         @_exhibits[1 - floor].eachLayer((layer) ->
           layer.hideLabel()

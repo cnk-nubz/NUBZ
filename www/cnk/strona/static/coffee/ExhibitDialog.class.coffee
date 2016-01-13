@@ -1,7 +1,8 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog
   nameEditable: false
-  constructor: (@_name, @_floor, @_handler) ->
+  onCloseHandler: -> return
+  constructor: (@_name, @_floor, @_onSaveHandler) ->
 
   show: =>
     _message =
@@ -13,7 +14,7 @@ root.ExhibitDialog = class ExhibitDialog
     _message = _message[0][0].outerHTML
     _dialog_buttons = [@_dialogCancel(), @_dialogSave()]
     @_dialog = new BootstrapDialog(
-      title: "Edycja eksponatu"
+      title: if @_name then "Edycja eksponatu" else "Tworzenie eksponatu"
       message: _message
       closable: false
       buttons: _dialog_buttons
@@ -100,7 +101,7 @@ root.ExhibitDialog = class ExhibitDialog
   _dialogCancel: =>
     label: "Anuluj"
     action: (dialog) =>
-      @_sendDataToHandler(true)
+      @onCloseHandler()
       dialog.close()
 
   _dialogSave: =>
@@ -120,7 +121,7 @@ root.ExhibitDialog = class ExhibitDialog
       else
         return false
 
-  _sendDataToHandler: (wasCanceled) =>
+  _sendDataToHandler: =>
     editedName = jQuery("#dialogName").val();
     if jQuery("#radio1").hasClass("active")
       floorVal = 0
@@ -129,4 +130,4 @@ root.ExhibitDialog = class ExhibitDialog
     changedData =
       name: editedName
       floor: floorVal ? null
-    @_handler(changedData, wasCanceled)
+    @_onSaveHandler(changedData)

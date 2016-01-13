@@ -3,23 +3,59 @@ root.EditMapPage = class EditMapPage extends root.View
   constructor: ->
     super
     @mapData = new MapDataHandler()
-    @canvas = new MutableCanvas("#{@_containerId}-a")
+    @appearance = new Appearance()
+    @canvasId = "#{@_containerId}-a"
+    @exhibitPanelId = "#{@_containerId}-b"
+    @canvas = new MutableCanvas(@canvasId)
+    @exhibitPanel = new ExhibitPanel(@exhibitPanelId)
     @canvas.on("mapChangeRequest", @_showChangeMapPopup)
+    #TODO: add synchronization with server, handle exhibits without appended floor
+    addNewExhibitHandler = (data) =>
+      exhibit =
+        42:
+          name: data.name
+          frame:
+            x: 0
+            y: 0
+            width: 200
+            height: 200
+            mapLevel: data.floor
+      @canvas.addExhibits(data.floor, exhibit)
+
+    @dialog = new ExhibitDialog(null, null, addNewExhibitHandler)
+    @dialog.nameEditable = true
+    @exhibitPanel.on("addExhibit", => @dialog.show())
     @_init()
+    @addView("rightPanel", @exhibitPanel)
     @addView("map", @canvas)
 
   _init: =>
+    @_initCss()
+    @
+
+  _initCss: =>
+    leftPanelWidth = "46px"
+    exhibitPanelWidth = "250px"
     leftPanelStyle = {
-      "background": "rgba(255, 255, 255, 1)"
+      "background": @appearance.panelBackground
       "position": "absolute"
       "left": "0px"
       "width": "46px"
       "height": "100%"
       "z-index": "1029"
     }
+    exhibitPanelStyle = {
+      "background": @appearance.panelBackground
+      "position": "absolute"
+      "width": exhibitPanelWidth
+      "right": "0px"
+      "height": "100%"
+      "z-index": "1029"
+    }
     canvasStyle = {
       "position": "relative"
-      "margin-left": "46px"
+      "margin-left": leftPanelWidth
+      "margin-right": exhibitPanelWidth
       "height": "100%"
       "overflow": "visible"
     }
@@ -31,9 +67,11 @@ root.EditMapPage = class EditMapPage extends root.View
       .style(leftPanelStyle)
       .html "&nbsp;"
 
-    @select("#{@_containerId}-a")
+    @select(@canvasId)
       .style(canvasStyle)
-    @
+
+    @select(@exhibitPanelId)
+      .style(exhibitPanelStyle)
 
   _dialogCloseButton: ->
     {

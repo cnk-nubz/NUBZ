@@ -2,6 +2,7 @@ root = exports ? this
 root.JustMapPage = class JustMapPage extends root.View
   constructor: (@_containerId) ->
     super
+    @appearance = new Appearance()
     @canvas = new Canvas("#{@_containerId}-a")
     @_init()
     @addView("map", @canvas)
@@ -18,7 +19,7 @@ root.JustMapPage = class JustMapPage extends root.View
 
   _initCss: =>
     leftPanelStyle = {
-      "background": "rgba(255, 255, 255, 1)"
+      "background": @appearance.panelBackground
       "position": "absolute"
       "left": "0px"
       "width": "46px"

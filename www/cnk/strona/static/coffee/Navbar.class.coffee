@@ -68,9 +68,9 @@ root.Navbar = class Navbar extends root.View
       "height": "100%"
       "width": "100%"
     }
-    @select("#{@_containerId}-a")
+    @select(@navLinks[0].refDiv)
       ?.style(mapStyle)
-    @select("#{@_containerId}-b")
+    @select(@navLinks[1].refDiv)
       ?.style(mapStyle)
     @select(@_containerId).select("#navbar")
       .style(navbarStyle)

@@ -61,6 +61,12 @@
   <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
+  <script src="{% static "coffee/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/Appearance.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
   <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
@@ -80,6 +86,9 @@
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/EditMapPage.class.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/ExhibitPanel.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script type="text/coffeescript">

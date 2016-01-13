@@ -14,8 +14,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
             icon: 'fa-arrows-alt'
             title: 'Wyłącz rozciąganie eksponatów'
             onClick: (btn) =>
-              jQuery btn.button
-                .addClass "clicked"
+              jQuery(btn.button).addClass "clicked"
               btn.state('disableResizing')
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.editing.enable()
@@ -26,8 +25,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
             icon: 'fa-arrows-alt'
             title: 'Włącz rozciąganie eksponatów'
             onClick: (btn) =>
-              jQuery btn.button
-                .removeClass "clicked"
+              jQuery(btn.button).removeClass "clicked"
               btn.state('enableResizing')
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.editing.disable()
@@ -36,6 +34,14 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         ]
     }).addTo @_map
     @_enableResizingButton.state 'enableResizing'
+
+  _updateState: =>
+    super
+    floor = @mapData.activeFloor
+    if @_enableResizingButton?._currentState.stateName is 'disableResizing'
+      @_exhibits[floor].eachLayer((layer) ->
+        layer.editing.enable()
+      )
 
   addExhibits: (floor, exhibits) =>
     for idx, e of exhibits
@@ -46,12 +52,10 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         @_map.unproject([X, Y], @_maxZoom[floor]),
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
-      r = L.rectangle(polygonBounds, {
-          color: "#ff7800"
-          weight: 1
-          draggable: true
-          id: idx
-        }).bindLabel(e.name, {
+      r = L.rectangle(polygonBounds, jQuery.extend(
+        @appearance.exhibit,
+        { id: idx, draggable: true }
+      )).bindLabel(e.name, {
           direction: 'auto'
         })
       r.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
@@ -97,12 +101,10 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     return
 
   _updateExhibitPosition: (exhibit) =>
-    @_fixExhibitPosition(exhibit)
-    exhibitId = exhibit.options.id
-    geoPoints = exhibit.getLatLngs()[0]
+    geoPoints = @_fixExhibitPosition(exhibit)
     scaledPoints = (@_map.project(p, @mapData.maxZoom[@mapData.activeFloor]) for p in geoPoints)
     [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
-    @_changeExhibitPositionRequest(exhibitId, topLeft, bottomRight)
+    @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
     return
 
   _fixExhibitPosition: (exhibit) =>
@@ -117,17 +119,17 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
     newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
     exhibit.setBounds(newGeoPoints)
-    return
+    return newGeoPoints
 
   _getExhibitProtrusion: (topLeft, bottomRight, maxX, maxY) ->
     if topLeft.x < 0
       dx = -topLeft.x
     else if bottomRight.x > maxX
-      dx = maxX - bottomRight.x
+      dx = maxX - bottomRight.x - 1
     if topLeft.y < 0
       dy = -topLeft.y
     else if bottomRight.y > maxY
-      dy = maxY - bottomRight.y
+      dy = maxY - bottomRight.y - 1
     [dx ? 0, dy ? 0]
 
   _changeExhibitPositionRequest: (id, topLeft, bottomRight) =>
