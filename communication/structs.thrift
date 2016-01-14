@@ -98,3 +98,9 @@ struct ExperimentData {
 	1: list<Action> exhibitActions,
 	2: list<Action> breakActions,
 }
+
+struct NewExhibitRequest {
+	1: string name,
+	2: optional i32 floor,
+	3: optional MapElementFrame visibleMapFrame,
+}
