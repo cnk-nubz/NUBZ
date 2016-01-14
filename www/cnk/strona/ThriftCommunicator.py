@@ -115,3 +115,32 @@ class ThriftCommunicator:
 		if not self.end_connection():
 			return None
 		return True
+
+	def createNewExhibit(self, request):
+		if 'floor' in request.keys():
+			floor = request['floor']
+		else:
+			floor = None
+		if 'visibleMapFrame' in request.keys():
+			t = request['visibleMapFrame']
+			frame = MapElementFrame(
+				t['x'],
+				t['y'],
+				t['width'],
+				t['height'],
+				t['mapLevel']
+			)
+		else:
+			frame = None
+		msg = NewExhibitRequest(request['name'], floor, frame)
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.createNewExhibit(msg)
+		except:
+			return None
+
+		if not self.end_connection():
+			return None
+		return ret

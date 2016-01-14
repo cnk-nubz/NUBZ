@@ -148,3 +148,8 @@ root.Canvas = class Canvas extends root.View
     #TODO (in case nothing to do): add synchronization of panning between pages
     @loadData(@mapData.activeFloor)
     @
+
+  getVisibleFrame: =>
+    topLeft = @_map.latLngToLayerPoint(@_map.getBounds().getNorthWest())
+    bottomRight = @_map.latLngToLayerPoint(@_map.getBounds().getSouthEast())
+    [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]

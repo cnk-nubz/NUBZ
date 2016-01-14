@@ -9,25 +9,59 @@ root.EditMapPage = class EditMapPage extends root.View
     @canvas = new MutableCanvas(@canvasId)
     @exhibitPanel = new ExhibitPanel(@exhibitPanelId)
     @canvas.on("mapChangeRequest", @_showChangeMapPopup)
-    #TODO: add synchronization with server, handle exhibits without appended floor
-    addNewExhibitHandler = (data) =>
-      exhibit =
-        42:
-          name: data.name
-          frame:
-            x: 0
-            y: 0
-            width: 200
-            height: 200
-            mapLevel: data.floor
-      @canvas.addExhibits(data.floor, exhibit)
-
-    @dialog = new ExhibitDialog(null, null, addNewExhibitHandler)
+    @dialog = new ExhibitDialog(null, @mapData.activeFloor, @_addNewExhibitHandler.bind(this))
     @dialog.nameEditable = true
     @exhibitPanel.on("addExhibit", => @dialog.show())
     @_init()
     @addView("rightPanel", @exhibitPanel)
     @addView("map", @canvas)
+
+  _addNewExhibitHandler: (data) =>
+    return unless data.floor?
+    [topLeft, ViewportWidth, ViewportHeight] = @canvas.getVisibleFrame()
+    toSend = {
+      jsonData:
+        JSON.stringify(
+          name: data.name
+          floor: data.floor
+          visibleMapFrame:
+            x: topLeft.x
+            y: topLeft.y
+            width: ViewportWidth
+            height: ViewportHeight
+            mapLevel: @mapData.activeFloor
+        )
+    }
+    instance = @
+    handler = @_ajaxNewExhibitSuccess
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/createNewExhibit/'
+      data: toSend
+      success: handler.bind(instance)
+    )
+    return
+
+  _ajaxNewExhibitSuccess: (data) =>
+    return unless data.success
+    id = data.id
+    @mapData.exhibits[id] ?= {name: null, frame: {}}
+    #TODO: change when server will respond
+    @mapData.exhibits[id].name = "tmp"
+    @mapData.exhibits[id].frame.x = data.frame?.x ? 0
+    @mapData.exhibits[id].frame.y = data.frame?.y ? 0
+    @mapData.exhibits[id].frame.width = data.frame?.width ? 200
+    @mapData.exhibits[id].frame.height = data.frame?.height ? 200
+    @mapData.exhibits[id].frame.mapLevel = data.frame?.mapLevel ? 0
+    t = {}
+    t[id] = @mapData.exhibits[id]
+    @canvas.addExhibits(0, t)
+    @canvas._updateState()
+    return
 
   _init: =>
     @_initCss()
@@ -82,7 +116,7 @@ root.EditMapPage = class EditMapPage extends root.View
 
   _dialogSendButton: =>
     instance = @
-    handler = @_ajaxSuccessHandler
+    handler = @_ajaxDialogSuccess
     return {
       label: 'Wyślij'
       action: (dialog) ->
@@ -111,7 +145,7 @@ root.EditMapPage = class EditMapPage extends root.View
         dialog.updateButtons()
     }
 
-  _ajaxSuccessHandler: (data) =>
+  _ajaxDialogSuccess: (data) =>
     errorData = [
       {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
       {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
