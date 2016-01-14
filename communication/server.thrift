@@ -31,6 +31,6 @@ service Server {
 	structs.ExperimentData getExperimentData()
 		throws (1: structs.InternalError err),
 
-	structs.Exhibit createNewExhibit(1: structs.NewExhibitRequest request)
+	structs.NewExhibitResponse createNewExhibit(1: structs.NewExhibitRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 }

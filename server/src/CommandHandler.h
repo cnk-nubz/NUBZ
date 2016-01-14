@@ -31,7 +31,7 @@ public:
     virtual std::int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
-    virtual void createNewExhibit(communication::Exhibit &exhibit,
+    virtual void createNewExhibit(communication::NewExhibitResponse &response,
                                   const communication::NewExhibitRequest &request) override;
     virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
 

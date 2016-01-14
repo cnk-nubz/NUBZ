@@ -104,3 +104,8 @@ struct NewExhibitRequest {
 	2: optional i32 floor,
 	3: optional MapElementFrame visibleMapFrame,
 }
+
+struct NewExhibitResponse {
+	1: i32 exhibitId,
+	2: Exhibit exhibit,
+}

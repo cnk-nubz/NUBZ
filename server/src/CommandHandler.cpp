@@ -118,14 +118,14 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << "saveReport end";
 }
 
-void CommandHandler::createNewExhibit(communication::Exhibit &exhibit,
+void CommandHandler::createNewExhibit(communication::NewExhibitResponse &response,
                                       const communication::NewExhibitRequest &request) {
     LOG(INFO) << "createNewExhibit start";
     LOG(INFO) << "input: " << request;
 
     LOG(INFO) << "not implemented";
 
-    LOG(INFO) << "output: " << exhibit;
+    LOG(INFO) << "output: " << response;
     LOG(INFO) << "createNewExhibit end";
 }
 
