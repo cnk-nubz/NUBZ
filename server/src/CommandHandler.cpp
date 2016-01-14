@@ -118,6 +118,17 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << "saveReport end";
 }
 
+void CommandHandler::createNewExhibit(communication::NewExhibitResponse &response,
+                                      const communication::NewExhibitRequest &request) {
+    LOG(INFO) << "createNewExhibit start";
+    LOG(INFO) << "input: " << request;
+
+    LOG(INFO) << "not implemented";
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "createNewExhibit end";
+}
+
 void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest &request) {
     LOG(INFO) << "setExhibitsFrames start";
     LOG(INFO) << "input: " << request;
