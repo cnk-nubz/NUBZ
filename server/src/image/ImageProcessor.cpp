@@ -20,7 +20,13 @@ namespace img {
     }
 
     void ImageProcessor::addFrameToBeDivisibleBy(std::size_t x) {
-        img.frame((width() % x) / 2, (height() % x) / 2);
+        std::size_t dx = (x - (width() % x)) % x;
+        std::size_t dy = (x - (height() % x)) % x;
+        
+        Magick::Image newImg(Magick::Geometry(width() + dx, height() + dy),
+                             Magick::ColorRGB(1.0, 1.0, 1.0));
+        newImg.composite(img, dx / 2, dy / 2);
+        img = newImg;
     }
 
     void ImageProcessor::scale(std::size_t maxSize) {
@@ -31,7 +37,7 @@ namespace img {
         img.zoom(Magick::Geometry((double(orgWidth) * maxSize) / maxOrgSize,
                                   (double(orgHeight) * maxSize) / maxOrgSize));
     }
-    
+
     void ImageProcessor::saveImageTo(const std::string &path) {
         img.write(path);
     }
@@ -42,7 +48,7 @@ namespace img {
 
     std::vector<std::vector<std::string>> ImageProcessor::generateTiles(
         const boost::filesystem::path &dstDir) {
-        static const std::size_t minSize = 32;
+        static const std::size_t minSize = 16;
 
         const std::size_t width = this->width();
         const std::size_t height = this->height();
@@ -56,24 +62,24 @@ namespace img {
                     // ignore remnants
                     break;
                 }
-                
+
                 std::string pathSuffix = std::to_string(x / tileSize);
                 boost::filesystem::path xPath = dstDir / pathSuffix;
                 boost::filesystem::path xPathShort = pathSuffix;
                 boost::filesystem::create_directory(xPath);
                 handlers.emplace_back(xPath.string());
-                
+
                 result.emplace_back();
                 for (std::size_t y = 0; y < height; y += tileSize) {
                     if (height - y < minSize) {
                         // ignore remnants
                         break;
                     }
-                    
+
                     std::string filename = std::to_string(y / tileSize) + ".jpg";
                     boost::filesystem::path yPath = xPath / filename;
                     boost::filesystem::path yPathShort = xPathShort / filename;
-                    
+
                     Magick::Image img = cutFromScaledAt(x, y);
                     img.magick("JPEG");
 
@@ -103,15 +109,15 @@ namespace img {
 
         return tile;
     }
-    
+
     Magick::Image ImageProcessor::curFromScaled() const {
         Magick::Image tile = img;
-        
+
         std::size_t tileWidth = std::min(tileSize, tile.columns());
         std::size_t tileHeight = std::min(tileSize, tile.rows());
-        
+
         tile.crop(Magick::Geometry(tileWidth, tileHeight));
-        
+
         return tile;
     }
 }

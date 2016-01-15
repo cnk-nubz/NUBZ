@@ -19,7 +19,7 @@
 
 namespace command {
     const std::vector<SetMapImageCommand::ZoomLevelInfo> SetMapImageCommand::zoomLevels = {
-        {1, 2048, 256}, {2, 4096, 256}, {3, 8192, 256}};
+        {1, 1024, 64}, {2, 2048, 128}, {3, 4096, 256}, {4, 8192, 512}};
 
     SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
     }
@@ -86,7 +86,7 @@ namespace command {
         LOG(INFO) << "Preparing full map image";
         imgProc->reset();
         imgProc->scale(zoomLevels.back().size);
-        // imgProc->addFrameToBeDivisibleBy(zoomLevels.back().tileSize);
+        imgProc->addFrameToBeDivisibleBy(zoomLevels.back().tileSize);
 
         db::MapImage mapImage;
         mapImage.width = (std::int32_t)imgProc->width();
@@ -119,7 +119,7 @@ namespace command {
             imgProc->reset();
             imgProc->scale(zoomLevelInfo.size);
             imgProc->setTileSize(zoomLevelInfo.tileSize);
-            // imgProc->addFrameToBeDivisibleBy(zoomLevelInfo.tileSize);
+            imgProc->addFrameToBeDivisibleBy(zoomLevelInfo.tileSize);
 
             boost::filesystem::path levelDir = mapTilesDir / std::to_string(zoomLevelInfo.levelIdx);
             boost::filesystem::path levelDirShort =
@@ -164,7 +164,7 @@ namespace command {
         std::int32_t floor, db::DatabaseSession &session) const {
         db::cmd::GetMapImages getMapImages(floor);
         getMapImages(session);
-        
+
         if (!getMapImages.getResult().empty()) {
             auto mapImage = getMapImages.getResult().front();
             return FileHelper::getInstance().pathForPublicFile(mapImage.filename);
