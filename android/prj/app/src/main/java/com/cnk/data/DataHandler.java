@@ -8,7 +8,7 @@ import android.util.Log;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
-import com.cnk.database.models.FloorTileSize;
+import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.RaportFileRealm;
@@ -273,7 +273,7 @@ public class DataHandler extends Observable {
     }
 
     public Resolution getTileSizeForDetailLevel(Integer floor, Integer detailLevel) {
-        FloorTileSize size = dbHelper.getTileSizeForDetailLevel(floor, detailLevel);
+        MapTileInfo size = dbHelper.getTileSizeForDetailLevel(floor, detailLevel);
         return size != null ? size.getTileSize() : null;
     }
 

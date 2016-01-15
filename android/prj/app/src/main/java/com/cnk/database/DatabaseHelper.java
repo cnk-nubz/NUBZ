@@ -3,17 +3,16 @@ package com.cnk.database;
 import android.content.Context;
 
 import com.cnk.data.FloorMap;
-import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;
-import com.cnk.database.models.FloorTileSize;
+import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
 import com.cnk.database.realm.FloorDetailLevelsRealm;
-import com.cnk.database.realm.FloorTileSizeRealm;
+import com.cnk.database.realm.MapTileInfoRealm;
 import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
@@ -224,13 +223,13 @@ public class DatabaseHelper {
         }
     }
 
-    private void setTileSizesForDetailLevelImpl(Realm realm, List<FloorTileSizeRealm> sizes) {
-        if (sizes != null) {
-            for (FloorTileSizeRealm size : sizes) {
-                realm.where(FloorTileSizeRealm.class)
-                        .equalTo("floor", size.getFloor())
-                        .equalTo("detailLevel", size.getDetailLevel()).findAll().clear();
-                realm.copyToRealm(size);
+    private void setMapTileInfo(Realm realm, List<MapTileInfoRealm> floorInfo) {
+        if (floorInfo != null) {
+            for (MapTileInfoRealm tileInfo : floorInfo) {
+                realm.where(MapTileInfoRealm.class)
+                        .equalTo("floor", tileInfo.getFloor())
+                        .equalTo("detailLevel", tileInfo.getDetailLevel()).findAll().clear();
+                realm.copyToRealm(tileInfo);
             }
         }
     }
@@ -242,8 +241,8 @@ public class DatabaseHelper {
         List<DetailLevelResRealm> floor1Resolutions = null;
         FloorDetailLevelsRealm floor0DetailLevels = null;
         FloorDetailLevelsRealm floor1DetailLevels = null;
-        List<FloorTileSizeRealm> floor0TileSizes = null;
-        List<FloorTileSizeRealm> floor1TileSizes = null;
+        List<MapTileInfoRealm> floor0TileInfo = null;
+        List<MapTileInfoRealm> floor1TileInfo = null;
 
         if (floor0Map != null) {
             floor0Tiles = ModelTranslation.realmListFromMapTileList(
@@ -252,7 +251,7 @@ public class DatabaseHelper {
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
                     new FloorDetailLevels(Consts.FLOOR1, floor0Map.getLevels().size()));
-            floor0TileSizes = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR1);
+            floor0TileInfo = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR1);
         }
         if (floor1Map != null) {
             floor1Tiles = ModelTranslation.realmListFromMapTileList(
@@ -261,7 +260,7 @@ public class DatabaseHelper {
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
                     new FloorDetailLevels(Consts.FLOOR2, floor1Map.getLevels().size()));
-            floor1TileSizes = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR2);
+            floor1TileInfo = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR2);
         }
 
         Realm r = open();
@@ -271,8 +270,8 @@ public class DatabaseHelper {
             setMapResolutionsImpl(r, floor0Resolutions, floor1Resolutions);
             setMapsImpl(r, versionNum, floor0Tiles, floor1Tiles);
             setDetailLevelsImpl(r, floor0DetailLevels, floor1DetailLevels);
-            setTileSizesForDetailLevelImpl(r, floor0TileSizes);
-            setTileSizesForDetailLevelImpl(r, floor1TileSizes);
+            setMapTileInfo(r, floor0TileInfo);
+            setMapTileInfo(r, floor1TileInfo);
             commitTransaction(r);
         } catch (RuntimeException re) {
             cancelTransaction(r);
@@ -306,15 +305,15 @@ public class DatabaseHelper {
         return detailLevels;
     }
 
-    private FloorTileSizeRealm getTileSizeForDetailLevelImpl(Realm r, Integer floorNo, Integer detailLevel) {
-        FloorTileSizeRealm res = r.where(FloorTileSizeRealm.class)
+    private MapTileInfoRealm getTileSizeForDetailLevelImpl(Realm r, Integer floorNo, Integer detailLevel) {
+        MapTileInfoRealm res = r.where(MapTileInfoRealm.class)
                 .equalTo("floor", floorNo)
                 .equalTo("detailLevel", detailLevel).findFirst();
         return res;
     }
 
-    public FloorTileSize getTileSizeForDetailLevel(Integer floorNo, Integer detailLevel) {
-        FloorTileSize res = null;
+    public MapTileInfo getTileSizeForDetailLevel(Integer floorNo, Integer detailLevel) {
+        MapTileInfo res = null;
         Realm r = open();
 
         try {

@@ -250,7 +250,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     tileView.destroy();
                 }
 
+                tileView = new TileView(MapActivity.this);
+
                 for (int i = 0; i < scalesList.size(); i++) {
+                    Log.i(LOG_TAG, tileSizes.get(i).toString() + " " + Integer.toString(i));
                     ScaleData scale = scalesList.get(i);
                     Resolution res = tileSizes.get(i);
                     tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),

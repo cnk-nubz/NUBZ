@@ -2,12 +2,12 @@ package com.cnk.database.models;
 
 import com.cnk.data.Resolution;
 
-public class FloorTileSize {
+public class MapTileInfo {
     private Integer floor;
     private Integer detailLevel;
     private Resolution tileSize;
 
-    public FloorTileSize(Integer floor, Integer detailLevel, Resolution tileSize) {
+    public MapTileInfo(Integer floor, Integer detailLevel, Resolution tileSize) {
         this.floor = floor;
         this.detailLevel = detailLevel;
         this.tileSize = tileSize;

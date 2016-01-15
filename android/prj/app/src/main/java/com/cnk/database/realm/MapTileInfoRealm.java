@@ -5,7 +5,7 @@ import com.cnk.data.Resolution;
 import io.realm.RealmObject;
 
 
-public class FloorTileSizeRealm extends RealmObject {
+public class MapTileInfoRealm extends RealmObject {
     private Integer floor;
     private Integer detailLevel;
     private Integer width;

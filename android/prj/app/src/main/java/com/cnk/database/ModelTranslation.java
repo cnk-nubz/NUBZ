@@ -6,14 +6,14 @@ import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;
-import com.cnk.database.models.FloorTileSize;
+import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.MapTile;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
 import com.cnk.database.realm.FloorDetailLevelsRealm;
-import com.cnk.database.realm.FloorTileSizeRealm;
+import com.cnk.database.realm.MapTileInfoRealm;
 import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
@@ -250,10 +250,10 @@ public class ModelTranslation {
         return floorDetailRealm;
     }
 
-    public static List<FloorTileSizeRealm> getTileSizeForDetailLevel(FloorMap map, Integer floorNo) {
-        ArrayList<FloorTileSizeRealm> res = new ArrayList<>();
+    public static List<MapTileInfoRealm> getTileSizeForDetailLevel(FloorMap map, Integer floorNo) {
+        ArrayList<MapTileInfoRealm> res = new ArrayList<>();
         for (int i = 0; i < map.getLevels().size(); i++) {
-            FloorTileSizeRealm current = new FloorTileSizeRealm();
+            MapTileInfoRealm current = new MapTileInfoRealm();
             current.setFloor(floorNo);
             current.setDetailLevel(i);
             current.setWidth(map.getLevels().get(i).getTileSize().getWidth());
@@ -263,11 +263,11 @@ public class ModelTranslation {
         return res;
     }
 
-    public static FloorTileSize tileSizeFromRealm(FloorTileSizeRealm realm) {
+    public static MapTileInfo tileSizeFromRealm(MapTileInfoRealm realm) {
         if (realm == null) {
             return null;
         }
-        return new FloorTileSize(realm.getFloor(), realm.getDetailLevel(),
+        return new MapTileInfo(realm.getFloor(), realm.getDetailLevel(),
                                  new Resolution(realm.getWidth(), realm.getLength()));
     }
 }
