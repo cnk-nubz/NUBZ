@@ -475,7 +475,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             ArrayList<Resolution> tileSizes = new ArrayList<>();
             for (int i = 0; i < detailLevels; i++) {
-                Resolution current = DataHandler.getInstance().getTileSizeForDetailLevel(floor, i);
+                Resolution current = DataHandler.getInstance().getTileSize(floor, i);
                 tileSizes.add(current);
             }
 

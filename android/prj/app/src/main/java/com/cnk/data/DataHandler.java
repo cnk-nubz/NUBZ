@@ -272,8 +272,8 @@ public class DataHandler extends Observable {
         return res;
     }
 
-    public Resolution getTileSizeForDetailLevel(Integer floor, Integer detailLevel) {
-        MapTileInfo size = dbHelper.getTileSizeForDetailLevel(floor, detailLevel);
+    public Resolution getTileSize(Integer floor, Integer detailLevel) {
+        MapTileInfo size = dbHelper.getMapTileInfo(floor, detailLevel);
         return size != null ? size.getTileSize() : null;
     }
 

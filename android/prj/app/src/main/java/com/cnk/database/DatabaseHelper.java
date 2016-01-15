@@ -251,7 +251,7 @@ public class DatabaseHelper {
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
                     new FloorDetailLevels(Consts.FLOOR1, floor0Map.getLevels().size()));
-            floor0TileInfo = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR1);
+            floor0TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR1);
         }
         if (floor1Map != null) {
             floor1Tiles = ModelTranslation.realmListFromMapTileList(
@@ -260,7 +260,7 @@ public class DatabaseHelper {
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
                     new FloorDetailLevels(Consts.FLOOR2, floor1Map.getLevels().size()));
-            floor1TileInfo = ModelTranslation.getTileSizeForDetailLevel(floor0Map, Consts.FLOOR2);
+            floor1TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR2);
         }
 
         Realm r = open();
@@ -305,20 +305,20 @@ public class DatabaseHelper {
         return detailLevels;
     }
 
-    private MapTileInfoRealm getTileSizeForDetailLevelImpl(Realm r, Integer floorNo, Integer detailLevel) {
+    private MapTileInfoRealm getMapTileInfoImpl(Realm r, Integer floorNo, Integer detailLevel) {
         MapTileInfoRealm res = r.where(MapTileInfoRealm.class)
                 .equalTo("floor", floorNo)
                 .equalTo("detailLevel", detailLevel).findFirst();
         return res;
     }
 
-    public MapTileInfo getTileSizeForDetailLevel(Integer floorNo, Integer detailLevel) {
+    public MapTileInfo getMapTileInfo(Integer floorNo, Integer detailLevel) {
         MapTileInfo res = null;
         Realm r = open();
 
         try {
             beginTransaction(r);
-            res = ModelTranslation.tileSizeFromRealm(getTileSizeForDetailLevelImpl(r, floorNo, detailLevel));
+            res = ModelTranslation.mapTileInfoFromRealm(getMapTileInfoImpl(r, floorNo, detailLevel));
             commitTransaction(r);
         } catch (RuntimeException re) {
             cancelTransaction(r);
@@ -689,7 +689,7 @@ public class DatabaseHelper {
     }
 
     public void changeRaportServerId(Integer id, Integer serverId) {
-        Realm r =open();
+        Realm r = open();
 
         try {
             beginTransaction(r);

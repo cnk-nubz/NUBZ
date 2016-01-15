@@ -250,7 +250,7 @@ public class ModelTranslation {
         return floorDetailRealm;
     }
 
-    public static List<MapTileInfoRealm> getTileSizeForDetailLevel(FloorMap map, Integer floorNo) {
+    public static List<MapTileInfoRealm> getMapTileInfo(FloorMap map, Integer floorNo) {
         ArrayList<MapTileInfoRealm> res = new ArrayList<>();
         for (int i = 0; i < map.getLevels().size(); i++) {
             MapTileInfoRealm current = new MapTileInfoRealm();
@@ -263,7 +263,7 @@ public class ModelTranslation {
         return res;
     }
 
-    public static MapTileInfo tileSizeFromRealm(MapTileInfoRealm realm) {
+    public static MapTileInfo mapTileInfoFromRealm(MapTileInfoRealm realm) {
         if (realm == null) {
             return null;
         }
