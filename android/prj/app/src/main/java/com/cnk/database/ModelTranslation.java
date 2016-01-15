@@ -6,12 +6,14 @@ import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;
+import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.MapTile;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
 import com.cnk.database.realm.FloorDetailLevelsRealm;
+import com.cnk.database.realm.MapTileInfoRealm;
 import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
@@ -246,5 +248,26 @@ public class ModelTranslation {
         floorDetailRealm.setFloorNo(floorDetails.getFloorNo());
         floorDetailRealm.setDetailLevels(floorDetails.getDetailLevels());
         return floorDetailRealm;
+    }
+
+    public static List<MapTileInfoRealm> getMapTileInfo(FloorMap map, Integer floorNo) {
+        ArrayList<MapTileInfoRealm> res = new ArrayList<>();
+        for (int i = 0; i < map.getLevels().size(); i++) {
+            MapTileInfoRealm current = new MapTileInfoRealm();
+            current.setFloor(floorNo);
+            current.setDetailLevel(i);
+            current.setWidth(map.getLevels().get(i).getTileSize().getWidth());
+            current.setLength(map.getLevels().get(i).getTileSize().getHeight());
+            res.add(current);
+        }
+        return res;
+    }
+
+    public static MapTileInfo mapTileInfoFromRealm(MapTileInfoRealm realm) {
+        if (realm == null) {
+            return null;
+        }
+        return new MapTileInfo(realm.getFloor(), realm.getDetailLevel(),
+                                 new Resolution(realm.getWidth(), realm.getLength()));
     }
 }
