@@ -237,7 +237,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
 
     // Layout setting:
-    private void prepareTileView(final List<ScaleData> scalesList) {
+    private void prepareTileView(final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
         runOnUiThread(new Runnable() {
@@ -250,11 +250,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     tileView.destroy();
                 }
 
-                tileView = new TileView(MapActivity.this);
-
-                for (ScaleData scale : scalesList) {
+                for (int i = 0; i < scalesList.size(); i++) {
+                    ScaleData scale = scalesList.get(i);
+                    Resolution res = tileSizes.get(i);
                     tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),
-                            TILE_SIDE_LEN, TILE_SIDE_LEN);
+                            res.getWidth(), res.getHeight());
                 }
 
                 tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
@@ -470,7 +470,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 ll.add(new ScaleData((float) current.getScaledRes().getWidth() / biggestResolution.getScaledRes().getWidth(), i));
             }
 
-            prepareTileView(ll);
+            ArrayList<Resolution> tileSizes = new ArrayList<>();
+            for (int i = 0; i < detailLevels; i++) {
+                Resolution current = DataHandler.getInstance().getTileSizeForDetailLevel(floor, i);
+                tileSizes.add(current);
+            }
+
+            prepareTileView(ll, tileSizes);
             setLayout(true);
 
             addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
