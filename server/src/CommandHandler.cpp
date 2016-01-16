@@ -123,7 +123,11 @@ void CommandHandler::createNewExhibit(communication::NewExhibitResponse &respons
     LOG(INFO) << "createNewExhibit start";
     LOG(INFO) << "input: " << request;
 
-    LOG(INFO) << "not implemented";
+    withExceptionTranslation([&]() {
+        io::input::NewExhibitRequest input(request);
+        io::output::NewExhibitResponse output = command::CreateNewExhibitCommand{db}(input);
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "createNewExhibit end";

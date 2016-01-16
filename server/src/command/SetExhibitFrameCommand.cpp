@@ -55,7 +55,7 @@ namespace command {
         db::MapElementFrame frame = exhibit.frame.value();
 
         InputChecker checker(session);
-        if (!checker.checkExhibitFrame(
+        if (!checker.checkFrame(
                 frame.mapLevel, input.newX, input.newY, input.newWidth, input.newHeight)) {
             throw io::InvalidInput("incorrect frame");
         }

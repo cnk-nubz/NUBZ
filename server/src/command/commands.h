@@ -9,5 +9,6 @@
 #include "ReserveIdForReportCommand.h"
 #include "GetExperimentDataCommand.h"
 #include "SetExhibitFrameCommand.h"
+#include "CreateNewExhibitCommand.h"
 
 #endif
