@@ -17,3 +17,5 @@ root.MapDataHandler = class MapDataHandler
     @floorTilesInfo = floorTilesInfo
     @minZoom = 1
     @maxZoom = [@floorTilesInfo[0].length, @floorTilesInfo[1].length]
+    @currentZoom = [1, 1]
+    @currentCenter = [[0, 0], [0, 0]]

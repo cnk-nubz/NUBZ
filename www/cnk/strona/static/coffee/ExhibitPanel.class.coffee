@@ -13,9 +13,10 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       .append "div"
       .style(
         "padding": "5px 10px 5px 10px"
+        "font-family": "OpenSans-Semibold"
       )
       .append "button"
-      .style(addExhibitButtonStyle)
       .classed "leaflet-bar", true
+      .style(addExhibitButtonStyle)
       .text "Dodaj eksponat"
       .on("click", => @fireEvents("addExhibit"))

@@ -54,16 +54,29 @@ root.Canvas = class Canvas extends root.View
     activeLabelButton = @_labelsButton.state(activeLabelState).button
     jQuery(activeLabelButton).addClass("clicked") if @mapData.activeLabels
     @_labelsButton.state
+
     @_floorButton = [
       L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
       L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
     ]
+
+    toAddButton = @select(@_floorButton[1].getContainer())
+    mainButton = @select(@_floorButton[0].getContainer())
+        .append -> toAddButton[0][0].firstChild
     @_labelsButton.addTo @_map
     return
 
   _init: =>
+    @_map.on('moveend', @_getCurrentView)
+    @_map.on('zoomend', @_getCurrentView)
     actv = @mapData.activeFloor
     @loadData i for i in [1-actv..actv]
+    @
+
+  _getCurrentView: =>
+    floor = @mapData.activeFloor
+    @mapData.currentZoom[floor] = @_map.getZoom()
+    @mapData.currentCenter[floor] = @_map.getBounds().getCenter()
     @
 
   loadData: (floor) =>
@@ -123,10 +136,10 @@ root.Canvas = class Canvas extends root.View
         .removeClass "clicked"
 
       @mapData.activeFloor = floor
-      @_updateState()
+      @updateState()
       @
 
-  _updateState: =>
+  updateState: =>
       floor = @mapData.activeFloor
       @_map.removeLayer(@_exhibits[1 - floor])
       @_map.removeLayer(@_floorLayer[1 - floor])
@@ -140,16 +153,16 @@ root.Canvas = class Canvas extends root.View
           layer.showLabel()
         )
       @_map.setMaxBounds @_mapBounds[floor]
-      @_map.setView(@_map.unproject([0, 0], 1), 1)
       @_map.invalidateSize()
+      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor])
       @
 
   refresh: =>
-    #TODO (in case nothing to do): add synchronization of panning between pages
     @loadData(@mapData.activeFloor)
     @
 
   getVisibleFrame: =>
-    topLeft = @_map.latLngToLayerPoint(@_map.getBounds().getNorthWest())
-    bottomRight = @_map.latLngToLayerPoint(@_map.getBounds().getSouthEast())
+    bounds = @_map.getPixelBounds()
+    topLeft = new L.Point(Math.max(0, bounds.min.x), Math.max(0, bounds.min.y))
+    bottomRight = new L.Point(Math.max(0, bounds.max.x), Math.max(0, bounds.max.y))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]

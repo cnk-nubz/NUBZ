@@ -117,11 +117,11 @@ class ThriftCommunicator:
 		return True
 
 	def createNewExhibit(self, request):
-		if 'floor' in request.keys():
+		if 'floor' in request.keys() and request['floor']:
 			floor = request['floor']
 		else:
 			floor = None
-		if 'visibleMapFrame' in request.keys():
+		if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
 			t = request['visibleMapFrame']
 			frame = MapElementFrame(
 				t['x'],

@@ -19,12 +19,14 @@ root.JustMapPage = class JustMapPage extends root.View
 
   _initCss: =>
     leftPanelStyle = {
-      "background": @appearance.panelBackground
+      "background": @appearance.panel.background
       "position": "absolute"
+      "top": @appearance.navbar.height
       "left": "0px"
-      "width": "46px"
-      "height": "100%"
+      "bottom": "0px"
+      "width": @appearance.panel.left.width
       "z-index": "1029"
+      "border-right": "1px solid #080808"
     }
     canvasStyle = {
       "position": "relative"

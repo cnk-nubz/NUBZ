@@ -35,7 +35,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     }).addTo @_map
     @_enableResizingButton.state 'enableResizing'
 
-  _updateState: =>
+  updateState: =>
     super
     floor = @mapData.activeFloor
     if @_enableResizingButton?._currentState.stateName is 'disableResizing'
@@ -125,11 +125,11 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     if topLeft.x < 0
       dx = -topLeft.x
     else if bottomRight.x > maxX
-      dx = maxX - bottomRight.x - 1
+      dx = maxX - bottomRight.x
     if topLeft.y < 0
       dy = -topLeft.y
     else if bottomRight.y > maxY
-      dy = maxY - bottomRight.y - 1
+      dy = maxY - bottomRight.y
     [dx ? 0, dy ? 0]
 
   _changeExhibitPositionRequest: (id, topLeft, bottomRight) =>

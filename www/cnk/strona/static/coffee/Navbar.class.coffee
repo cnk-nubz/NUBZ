@@ -1,6 +1,7 @@
 root = exports ? this
 root.Navbar = class Navbar extends root.View
   constructor: ->
+    @appearance = new Appearance()
     super
     #here add next navbar links
     @navLinks = [
@@ -59,14 +60,16 @@ root.Navbar = class Navbar extends root.View
       "position": "absolute"
       "top": "0px"
       "left": "0px"
-      "height": "50px"
+      "height": @appearance.navbar.height
       "width": "100%"
     }
     mapStyle = {
       "position": "relative"
-      "padding-top": "50px"
+      "padding-top": @appearance.navbar.height
       "height": "100%"
       "width": "100%"
+      "-moz-box-sizing": "border-box"
+      "box-sizing": "border-box"
     }
     @select(@navLinks[0].refDiv)
       ?.style(mapStyle)

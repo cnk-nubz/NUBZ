@@ -17,19 +17,20 @@ root.EditMapPage = class EditMapPage extends root.View
     @addView("map", @canvas)
 
   _addNewExhibitHandler: (data) =>
-    return unless data.floor?
     [topLeft, ViewportWidth, ViewportHeight] = @canvas.getVisibleFrame()
+    if data.floor?
+      frame =
+        x: topLeft.x
+        y: topLeft.y
+        width: ViewportWidth
+        height: ViewportHeight
+        mapLevel: @mapData.activeFloor
     toSend = {
       jsonData:
         JSON.stringify(
           name: data.name
-          floor: data.floor
-          visibleMapFrame:
-            x: topLeft.x
-            y: topLeft.y
-            width: ViewportWidth
-            height: ViewportHeight
-            mapLevel: @mapData.activeFloor
+          floor: data.floor ? null
+          visibleMapFrame: frame ? null
         )
     }
     instance = @
@@ -51,7 +52,7 @@ root.EditMapPage = class EditMapPage extends root.View
     id = data.id
     @mapData.exhibits[id] ?= {name: null, frame: {}}
     #TODO: change when server will respond
-    @mapData.exhibits[id].name = "tmp"
+    @mapData.exhibits[id].name = data.name ? "brak nazwy"
     @mapData.exhibits[id].frame.x = data.frame?.x ? 0
     @mapData.exhibits[id].frame.y = data.frame?.y ? 0
     @mapData.exhibits[id].frame.width = data.frame?.width ? 200
@@ -59,8 +60,9 @@ root.EditMapPage = class EditMapPage extends root.View
     @mapData.exhibits[id].frame.mapLevel = data.frame?.mapLevel ? 0
     t = {}
     t[id] = @mapData.exhibits[id]
-    @canvas.addExhibits(0, t)
-    @canvas._updateState()
+    if data.frame?.mapLevel?
+      @canvas.addExhibits(data.frame.mapLevel, t)
+      @canvas.updateState()
     return
 
   _init: =>
@@ -68,28 +70,30 @@ root.EditMapPage = class EditMapPage extends root.View
     @
 
   _initCss: =>
-    leftPanelWidth = "46px"
-    exhibitPanelWidth = "250px"
     leftPanelStyle = {
-      "background": @appearance.panelBackground
+      "background": @appearance.panel.background
       "position": "absolute"
+      "top": @appearance.navbar.height
       "left": "0px"
-      "width": "46px"
-      "height": "100%"
+      "bottom": "0"
+      "width": @appearance.panel.left.width
       "z-index": "1029"
+      "border-right": "1px solid #080808"
     }
     exhibitPanelStyle = {
-      "background": @appearance.panelBackground
+      "background": @appearance.panel.background
       "position": "absolute"
-      "width": exhibitPanelWidth
+      "top": @appearance.navbar.height
       "right": "0px"
-      "height": "100%"
+      "bottom": "0px"
+      "width": @appearance.panel.right.width
       "z-index": "1029"
+      "border-left": "1px solid #080808"
     }
     canvasStyle = {
       "position": "relative"
-      "margin-left": leftPanelWidth
-      "margin-right": exhibitPanelWidth
+      "margin-left": @appearance.panel.left.width
+      "margin-right": @appearance.panel.right.width
       "height": "100%"
       "overflow": "visible"
     }
