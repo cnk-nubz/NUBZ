@@ -22,22 +22,22 @@ namespace db {
         public:
             C(const std::string &colName);
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
             Cond operator<(const T &arg) const;
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
             Cond operator<=(const T &arg) const;
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
             Cond operator>(const T &arg) const;
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
             Cond operator>=(const T &arg) const;
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
             Cond operator==(const T &arg) const;
 
-            template <class T>
+            template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
             Cond operator!=(const T &arg) const;
 
             Cond operator==(const std::string &arg) const;
@@ -83,9 +83,8 @@ namespace db {
             SqlString(bool raw);
             SqlString(const Null &null);
 
-            template <class T>
-            SqlString(const T &t,
-                      typename std::enable_if<std::is_arithmetic<T>::value>::type * = nullptr);
+            template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+            SqlString(const T &t);
 
             operator std::string() const;
             std::string str() const;
@@ -100,39 +99,33 @@ namespace db {
 
 namespace db {
     namespace sql {
-        template <class T>
+        template <class T, class>
         Cond C::operator<(const T &arg) const {
-            static_assert(std::is_arithmetic<T>::value, "arg must be arithmetic type");
             return Cond(colName, "<", SqlString(arg));
         }
 
-        template <class T>
+        template <class T, class>
         Cond C::operator<=(const T &arg) const {
-            static_assert(std::is_integral<T>::value, "arg must be integral type");
             return Cond(colName, "<=", SqlString(arg));
         }
 
-        template <class T>
+        template <class T, class>
         Cond C::operator>(const T &arg) const {
-            static_assert(std::is_arithmetic<T>::value, "arg must be arithmetic type");
             return Cond(colName, ">", SqlString(arg));
         }
 
-        template <class T>
+        template <class T, class>
         Cond C::operator>=(const T &arg) const {
-            static_assert(std::is_integral<T>::value, "arg must be integral type");
             return Cond(colName, ">=", SqlString(arg));
         }
 
-        template <class T>
+        template <class T, class>
         Cond C::operator==(const T &arg) const {
-            static_assert(std::is_integral<T>::value, "arg must be integral type");
             return Cond(colName, "=", SqlString(arg));
         }
 
-        template <class T>
+        template <class T, class>
         Cond C::operator!=(const T &arg) const {
-            static_assert(std::is_integral<T>::value, "arg must be integral type");
             return Cond(colName, "<>", SqlString(arg));
         }
 
@@ -210,9 +203,8 @@ namespace db {
         inline SqlString::SqlString(bool raw) : safe(raw ? "true" : "false") {
         }
 
-        template <class T>
-        SqlString::SqlString(const T &t,
-                             typename std::enable_if<std::is_arithmetic<T>::value>::type *)
+        template <class T, class>
+        SqlString::SqlString(const T &t)
             : safe(std::to_string(t)) {
         }
 
