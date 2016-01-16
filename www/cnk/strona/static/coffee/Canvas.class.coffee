@@ -119,14 +119,17 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X, Y], @_maxZoom[floor]),
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
-      r = L.rectangle(polygonBounds, jQuery.extend(
-        @appearance.exhibit,
-        { id: idx }
-      )).bindLabel(e.name, {
-          direction: 'auto'
-        })
+      r = L.rectangle(polygonBounds, @_exhibitOptions(@appearance.exhibit, { id: idx }))
+      r.bindLabel(e.name, { direction: 'auto' })
+      @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
     @
+
+  _exhibitOptions: (options...) =>
+    jQuery.extend({}, options...)
+
+  _prepareExhibit: (exh) =>
+    return
 
   setFloorLayer: (floor) =>
     (btn) =>

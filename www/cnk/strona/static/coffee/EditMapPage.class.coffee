@@ -51,7 +51,6 @@ root.EditMapPage = class EditMapPage extends root.View
     return unless data.success
     id = data.id
     @mapData.exhibits[id] ?= {name: null, frame: {}}
-    #TODO: change when server will respond
     @mapData.exhibits[id].name = data.name ? "brak nazwy"
     @mapData.exhibits[id].frame.x = data.frame?.x ? 0
     @mapData.exhibits[id].frame.y = data.frame?.y ? 0
@@ -70,13 +69,14 @@ root.EditMapPage = class EditMapPage extends root.View
     @
 
   _initCss: =>
+    exhibitPanelWidth = "200px"
     leftPanelStyle = {
       "background": @appearance.panel.background
       "position": "absolute"
       "top": @appearance.navbar.height
       "left": "0px"
-      "bottom": "0"
-      "width": @appearance.panel.left.width
+      "bottom": "0px"
+      "width": @appearance.panel.mapControls.width
       "z-index": "1029"
       "border-right": "1px solid #080808"
     }
@@ -86,14 +86,14 @@ root.EditMapPage = class EditMapPage extends root.View
       "top": @appearance.navbar.height
       "right": "0px"
       "bottom": "0px"
-      "width": @appearance.panel.right.width
+      "width": exhibitPanelWidth
       "z-index": "1029"
       "border-left": "1px solid #080808"
     }
     canvasStyle = {
       "position": "relative"
-      "margin-left": @appearance.panel.left.width
-      "margin-right": @appearance.panel.right.width
+      "margin-left": @appearance.panel.mapControls.width
+      "margin-right": exhibitPanelWidth
       "height": "100%"
       "overflow": "visible"
     }

@@ -4,7 +4,6 @@ root.Appearance = class Appearance
   constructor: ->
     return instance if instance
     instance = this
-    @panelBackground =
     @exhibit = {
       fillColor: '#ff7800'
       fillOpacity: 0.7
@@ -16,9 +15,7 @@ root.Appearance = class Appearance
       height: "50px"
     }
     @panel = {
-      background: "rgba(91, 91, 91, 1)"
-      left:
+      background: "rgba(221, 221, 221, 1)"
+      mapControls:
         width: "46px"
-      right:
-        width: "250px"
     }

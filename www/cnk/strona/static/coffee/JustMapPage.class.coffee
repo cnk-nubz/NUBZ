@@ -24,13 +24,13 @@ root.JustMapPage = class JustMapPage extends root.View
       "top": @appearance.navbar.height
       "left": "0px"
       "bottom": "0px"
-      "width": @appearance.panel.left.width
+      "width": @appearance.panel.mapControls.width
       "z-index": "1029"
       "border-right": "1px solid #080808"
     }
     canvasStyle = {
       "position": "relative"
-      "margin-left": "46px"
+      "margin-left": @appearance.panel.mapControls.width
       "height": "100%"
       "overflow": "visible"
     }

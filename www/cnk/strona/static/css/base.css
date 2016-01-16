@@ -10,6 +10,7 @@
 
 * {
   font-family: OpenSans;
+  box-sizing: border-box;
 }
 
 body {
@@ -25,52 +26,13 @@ body {
   font-size: 14px;
 }
 
-.navbar-inverse {
-  background-color: #3d3d3d;
-}
-
-.navbar-inverse .navbar-nav > .active > a {
-  background-color: #212121;
-}
 /* end of redefining bootstrap classes */
 /* Redefining leaflet classes */
 .leaflet-top.leaflet-left, .leaflet-bottom.leaflet-left {
   left: -46px;
   z-index: 1030;
 }
-
-.leaflet-control-zoom a.leaflet-control-zoom-in,
-.leaflet-control-zoom a.leaflet-control-zoom-out {
-  color: #222222;
-  background-color: #6F6F6F;
-}
-
-.leaflet-control-zoom a.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom a.leaflet-control-zoom-out:hover {
-  background-color: #908f8f;
-}
-
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  border-bottom: 1px solid #080808;
-}
-
-.leaflet-control-zoom a.leaflet-control-zoom-out.leaflet-disabled,
-.leaflet-control-zoom a.leaflet-control-zoom-in.leaflet-disabled {
-  color: black;
-  background-color: #474747;
-  opacity: 0.1;
-}
-
-.leaflet-bar {
-  border-radius: 2px;
-}
-
 /* end of redefining leaflet classes */
 .nav-link {
   cursor: pointer;
-}
-
-.addExhibitButton {
-
 }

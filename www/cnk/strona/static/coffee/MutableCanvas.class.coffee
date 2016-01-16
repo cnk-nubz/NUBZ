@@ -43,30 +43,16 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         layer.editing.enable()
       )
 
-  addExhibits: (floor, exhibits) =>
-    for idx, e of exhibits
-      continue unless e.frame?.mapLevel is floor
-      X = e.frame.x
-      Y = e.frame.y
-      polygonBounds = new L.LatLngBounds(
-        @_map.unproject([X, Y], @_maxZoom[floor]),
-        @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
-      )
-      r = L.rectangle(polygonBounds, jQuery.extend(
-        @appearance.exhibit,
-        { id: idx, draggable: true }
-      )).bindLabel(e.name, {
-          direction: 'auto'
-        })
-      r.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
-      r.on('editstart', @_onEditStart)
-      r.on('edit', @_onEditEnd) #wtf this event name, speak up leaflet developers
-      r.on('dragstart', @_onDragStart)
-      #IDEA (in case nothing to do): move bouncing from boundaries to @_onDrag
-      # plus somehow refresh event's latlangs in @_onDrag (leaflet or L.Path.Drag problem?)
-      r.on('dragend', @_onDragEnd)
-      @_exhibits[floor].addLayer(r)
-    @
+  _exhibitOptions: (options...) =>
+    jQuery.extend({}, options..., { draggable: true })
+
+  _prepareExhibit: (exh) =>
+    exh.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
+    exh.on('editstart', @_onEditStart)
+    exh.on('edit', @_onEditEnd)
+    exh.on('dragstart', @_onDragStart)
+    exh.on('dragend', @_onDragEnd)
+    return
 
   _onEditStart: (e) ->
     exhibit = e.target
