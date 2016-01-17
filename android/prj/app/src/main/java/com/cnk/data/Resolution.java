@@ -25,4 +25,10 @@ public class Resolution {
     public void setHeight(Integer height) {
         this.height = height;
     }
+
+    @Override
+    public String toString() {
+        return "width=" + width +
+                ", height=" + height;
+    }
 }
