@@ -148,6 +148,7 @@ root.Canvas = class Canvas extends root.View
 
       @mapData.activeFloor = floor
       @updateState()
+      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor])
       @
 
   updateState: =>
@@ -165,7 +166,6 @@ root.Canvas = class Canvas extends root.View
         )
       @_map.setMaxBounds @_mapBounds[floor]
       @_map.invalidateSize()
-      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor])
       @
 
   refresh: =>
