@@ -103,7 +103,7 @@ class ThriftCommunicator:
 		return ret
 
 	def setExhibitFrame(self, frame):
-		msg = SetExhibitFrameRequest(int(frame['id']), int(frame['x']), int(frame['y']), int(frame['width']), int(frame['height']))
+		msg = SetExhibitFrameRequest(int(frame['id']), frame['x'], frame['y'], frame['width'], frame['height'])
 		if not self.start_connection():
 			return None
 
@@ -115,3 +115,32 @@ class ThriftCommunicator:
 		if not self.end_connection():
 			return None
 		return True
+
+	def createNewExhibit(self, request):
+		if 'floor' in request.keys() and request['floor'] != None:
+			floor = request['floor']
+		else:
+			floor = None
+		if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
+			t = request['visibleMapFrame']
+			frame = MapElementFrame(
+				t['x'],
+				t['y'],
+				t['width'],
+				t['height'],
+				t['mapLevel']
+			)
+		else:
+			frame = None
+		msg = NewExhibitRequest(request['name'], floor, frame)
+		if not self.start_connection():
+			return None
+
+		try:
+			ret = self.client.createNewExhibit(msg)
+		except:
+			return None
+
+		if not self.end_connection():
+			return None
+		return ret

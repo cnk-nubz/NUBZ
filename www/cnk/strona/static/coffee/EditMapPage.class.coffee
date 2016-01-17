@@ -3,23 +3,106 @@ root.EditMapPage = class EditMapPage extends root.View
   constructor: ->
     super
     @mapData = new MapDataHandler()
-    @canvas = new MutableCanvas("#{@_containerId}-a")
+    @appearance = new Appearance()
+    @canvasId = "#{@_containerId}-a"
+    @exhibitPanelId = "#{@_containerId}-b"
+    @canvas = new MutableCanvas(@canvasId)
+    @exhibitPanel = new ExhibitPanel(@exhibitPanelId)
     @canvas.on("mapChangeRequest", @_showChangeMapPopup)
+    @exhibitPanel.on("addExhibit", =>
+      dialog = new ExhibitDialog(null, @mapData.activeFloor, @_addNewExhibitHandler.bind(this))
+      dialog.nameEditable = true
+      dialog.show()
+    )
     @_init()
+    @addView("rightPanel", @exhibitPanel)
     @addView("map", @canvas)
 
+  _addNewExhibitHandler: (data) =>
+    if data.floor?
+      [topLeft, ViewportWidth, ViewportHeight] = @canvas.getVisibleFrame()
+      frame =
+        x: topLeft.x
+        y: topLeft.y
+        width: ViewportWidth
+        height: ViewportHeight
+        mapLevel: @mapData.activeFloor
+    toSend = {
+      jsonData:
+        JSON.stringify(
+          name: data.name
+          floor: data.floor if data.floor?
+          visibleMapFrame: frame
+        )
+    }
+    instance = @
+    handler = @_ajaxNewExhibitSuccess
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/createNewExhibit/'
+      data: toSend
+      success: handler.bind(instance)
+    )
+    return
+
+  _ajaxNewExhibitSuccess: (data) =>
+    if not data.success
+      BootstrapDialog.alert(
+        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
+        type: BootstrapDialog.TYPE_DANGER
+        title: 'Błąd serwera'
+      )
+      return
+    id = data.id
+    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id].name = data.name
+    if data.frame?
+      @mapData.exhibits[id].frame.x = data.frame.x
+      @mapData.exhibits[id].frame.y = data.frame.y
+      @mapData.exhibits[id].frame.width = data.frame.width
+      @mapData.exhibits[id].frame.height = data.frame.height
+      @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
+      t = {}
+      t[id] = @mapData.exhibits[id]
+      @canvas.addExhibits(data.frame.mapLevel, t)
+      if data.frame.mapLevel is @mapData.activeFloor
+        @canvas.updateState()
+    return
+
   _init: =>
+    @_initCss()
+    @
+
+  _initCss: =>
+    exhibitPanelWidth = "200px"
     leftPanelStyle = {
-      "background": "rgba(255, 255, 255, 1)"
+      "background": @appearance.panel.background
       "position": "absolute"
+      "top": @appearance.navbar.height
       "left": "0px"
-      "width": "46px"
-      "height": "100%"
-      "z-index": "1029"
+      "bottom": "0px"
+      "width": @appearance.panel.mapControls.width
+      "z-index": @appearance.panel.zindex
+      "border-right": @appearance.panel.border
+    }
+    exhibitPanelStyle = {
+      "background": @appearance.panel.background
+      "position": "absolute"
+      "top": @appearance.navbar.height
+      "right": "0px"
+      "bottom": "0px"
+      "width": exhibitPanelWidth
+      "z-index": @appearance.panel.zindex
+      "border-left": @appearance.panel.border
     }
     canvasStyle = {
       "position": "relative"
-      "margin-left": "46px"
+      "margin-left": @appearance.panel.mapControls.width
+      "margin-right": exhibitPanelWidth
       "height": "100%"
       "overflow": "visible"
     }
@@ -31,9 +114,11 @@ root.EditMapPage = class EditMapPage extends root.View
       .style(leftPanelStyle)
       .html "&nbsp;"
 
-    @select("#{@_containerId}-a")
+    @select(@canvasId)
       .style(canvasStyle)
-    @
+
+    @select(@exhibitPanelId)
+      .style(exhibitPanelStyle)
 
   _dialogCloseButton: ->
     {
@@ -44,7 +129,7 @@ root.EditMapPage = class EditMapPage extends root.View
 
   _dialogSendButton: =>
     instance = @
-    handler = @_ajaxSuccessHandler
+    handler = @_ajaxDialogSuccess
     return {
       label: 'Wyślij'
       action: (dialog) ->
@@ -73,7 +158,7 @@ root.EditMapPage = class EditMapPage extends root.View
         dialog.updateButtons()
     }
 
-  _ajaxSuccessHandler: (data) =>
+  _ajaxDialogSuccess: (data) =>
     errorData = [
       {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
       {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}

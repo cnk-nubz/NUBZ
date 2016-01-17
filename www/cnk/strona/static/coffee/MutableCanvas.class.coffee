@@ -14,8 +14,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
             icon: 'fa-arrows-alt'
             title: 'Wyłącz rozciąganie eksponatów'
             onClick: (btn) =>
-              jQuery btn.button
-                .addClass "clicked"
+              jQuery(btn.button).addClass "clicked"
               btn.state('disableResizing')
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.editing.enable()
@@ -26,8 +25,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
             icon: 'fa-arrows-alt'
             title: 'Włącz rozciąganie eksponatów'
             onClick: (btn) =>
-              jQuery btn.button
-                .removeClass "clicked"
+              jQuery(btn.button).removeClass "clicked"
               btn.state('enableResizing')
               @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
                 layer.editing.disable()
@@ -37,32 +35,28 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     }).addTo @_map
     @_enableResizingButton.state 'enableResizing'
 
-  addExhibits: (floor, exhibits) =>
-    for idx, e of exhibits
-      continue unless e.frame?.mapLevel is floor
-      X = e.frame.x
-      Y = e.frame.y
-      polygonBounds = new L.LatLngBounds(
-        @_map.unproject([X, Y], @_maxZoom[floor]),
-        @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
+  updateState: =>
+    super
+    floor = @mapData.activeFloor
+    if @_enableResizingButton?._currentState.stateName is 'disableResizing'
+      @_exhibits[floor].eachLayer((layer) ->
+        layer.editing.enable()
       )
-      r = L.rectangle(polygonBounds, {
-          color: "#ff7800"
-          weight: 1
-          draggable: true
-          id: idx
-        }).bindLabel(e.name, {
-          direction: 'auto'
-        })
-      r.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
-      r.on('editstart', @_onEditStart)
-      r.on('edit', @_onEditEnd) #wtf this event name, speak up leaflet developers
-      r.on('dragstart', @_onDragStart)
-      #IDEA (in case nothing to do): move bouncing from boundaries to @_onDrag
-      # plus somehow refresh event's latlangs in @_onDrag (leaflet or L.Path.Drag problem?)
-      r.on('dragend', @_onDragEnd)
-      @_exhibits[floor].addLayer(r)
-    @
+    if @_enableResizingButton?._currentState.stateName is 'enableResizing'
+      @_exhibits[floor].eachLayer((layer) ->
+        layer.editing.disable()
+      )
+
+  _exhibitOptions: (options...) =>
+    jQuery.extend(options..., { draggable: true })
+
+  _prepareExhibit: (exh) =>
+    exh.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
+    exh.on('editstart', @_onEditStart)
+    exh.on('edit', @_onEditEnd)
+    exh.on('dragstart', @_onDragStart)
+    exh.on('dragend', @_onDragEnd)
+    return
 
   _onEditStart: (e) ->
     exhibit = e.target
@@ -97,12 +91,10 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     return
 
   _updateExhibitPosition: (exhibit) =>
-    @_fixExhibitPosition(exhibit)
-    exhibitId = exhibit.options.id
-    geoPoints = exhibit.getLatLngs()[0]
+    geoPoints = @_fixExhibitPosition(exhibit)
     scaledPoints = (@_map.project(p, @mapData.maxZoom[@mapData.activeFloor]) for p in geoPoints)
     [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
-    @_changeExhibitPositionRequest(exhibitId, topLeft, bottomRight)
+    @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
     return
 
   _fixExhibitPosition: (exhibit) =>
@@ -117,7 +109,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
     newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
     exhibit.setBounds(newGeoPoints)
-    return
+    return newGeoPoints
 
   _getExhibitProtrusion: (topLeft, bottomRight, maxX, maxY) ->
     if topLeft.x < 0
