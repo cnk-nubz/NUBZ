@@ -68,7 +68,7 @@ namespace command {
 
         db::MapElementFrame frame;
         frame.mapLevel = dstFloor;
-        if (!visibleFrame) {
+        if (!visibleFrame || visibleFrame.value().mapLevel != dstFloor) {
             frame.x = frame.y = 0;
             frame.width = frame.height = minSize + rand() % minSize;
         } else {
