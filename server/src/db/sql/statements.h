@@ -18,7 +18,7 @@ namespace db {
         class SqlDelete;
         class SqlUpdate;
 
-        template <unsigned numOfParams>
+        template <unsigned numOfParams, bool returningAvailable>
         class SqlInsert;
     }
 }
@@ -86,20 +86,25 @@ namespace db {
 
         public:
             template <class... Ts>
-            auto what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts)>;
+            auto what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts), true>;
 
         private:
             const std::string &into;
             SqlInsertBegin(const std::string &into);
         };
 
-        template <unsigned numOfParams>
+        template <unsigned numOfParams, bool returningAvailable>
         class SqlInsert {
+            friend class SqlInsert<numOfParams, true>;
             friend class SqlInsertBegin;
 
         public:
             template <class... Ts>
-            SqlInsert<numOfParams> &values(Ts &&... ts);
+            SqlInsert<numOfParams, returningAvailable> &values(Ts &&... ts);
+
+            template <bool Hack = true,
+                      class = typename std::enable_if<returningAvailable && Hack>::type>
+            SqlInsert<numOfParams, false> returning(const std::string &column) const;
 
             operator std::string() const;
             std::string str() const;
@@ -108,7 +113,10 @@ namespace db {
             std::array<std::string, numOfParams> what;
             const std::string into;
             std::vector<std::array<std::string, numOfParams>> vals;
+            boost::optional<std::string> inReturn;
+
             SqlInsert(const std::array<std::string, numOfParams> &what, const std::string &into);
+            std::string returningStmt() const;
         };
 
         class SqlUpdate : public SqlWhereFunction<SqlUpdate> {
@@ -245,20 +253,21 @@ namespace db {
         }
 
         template <class... Ts>
-        auto SqlInsertBegin::what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts)> {
+        auto SqlInsertBegin::what(Ts &&... ts) const -> SqlInsert<sizeof...(Ts), true> {
             std::array<std::string, sizeof...(ts)> args{{std::forward<Ts>(ts)...}};
-            return SqlInsert<sizeof...(ts)>(args, into);
+            return SqlInsert<sizeof...(ts), true>(args, into);
         }
 
-        template <unsigned numOfParams>
-        SqlInsert<numOfParams>::SqlInsert(const std::array<std::string, numOfParams> &what,
-                                          const std::string &into)
+        template <unsigned numOfParams, bool returningAvailable>
+        SqlInsert<numOfParams, returningAvailable>::SqlInsert(
+            const std::array<std::string, numOfParams> &what, const std::string &into)
             : what(what), into(into), vals() {
         }
 
-        template <unsigned numOfParams>
+        template <unsigned numOfParams, bool returningAvailable>
         template <class... Ts>
-        SqlInsert<numOfParams> &SqlInsert<numOfParams>::values(Ts &&... ts) {
+        SqlInsert<numOfParams, returningAvailable> &
+        SqlInsert<numOfParams, returningAvailable>::values(Ts &&... ts) {
             static_assert(sizeof...(ts) == numOfParams, "incorrect number of arguments");
             std::array<SqlString, numOfParams> sqlStrings{{std::forward<Ts>(ts)...}};
             vals.emplace_back();
@@ -266,16 +275,26 @@ namespace db {
             return *this;
         }
 
-        template <unsigned numOfParams>
-        SqlInsert<numOfParams>::operator std::string() const {
+        template <unsigned numOfParams, bool returningAvailable>
+        template <bool Hack, class>
+        SqlInsert<numOfParams, false> SqlInsert<numOfParams, returningAvailable>::returning(
+            const std::string &column) const {
+            auto insert = SqlInsert<numOfParams, false>(what, into);
+            insert.vals = vals;
+            insert.inReturn = column;
+            return insert;
+        }
+
+        template <unsigned numOfParams, bool returningAvailable>
+        SqlInsert<numOfParams, returningAvailable>::operator std::string() const {
             return str();
         }
 
-        template <unsigned numOfParams>
-        std::string SqlInsert<numOfParams>::str() const {
+        template <unsigned numOfParams, bool returningAvailable>
+        std::string SqlInsert<numOfParams, returningAvailable>::str() const {
             assert(vals.size() > 0);
 
-            boost::format res("INSERT INTO %1% \n(%2%) \nVALUES \n%3%");
+            boost::format res("INSERT INTO %1% \n(%2%) \nVALUES \n%3% \n%4%");
             res % into;
             res % asSqlList(what);
 
@@ -284,7 +303,14 @@ namespace db {
                 rows.push_back("(" + asSqlList(row) + ")");
             }
             res % asSqlList(rows, ",\n");
+            res % returningStmt();
+
             return res.str();
+        }
+
+        template <unsigned numOfParams, bool returningAvailable>
+        std::string SqlInsert<numOfParams, returningAvailable>::returningStmt() const {
+            return (inReturn) ? "RETURNING " + inReturn.value() : "";
         }
 
         // Where

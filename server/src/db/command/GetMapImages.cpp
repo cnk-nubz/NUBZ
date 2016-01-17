@@ -31,7 +31,7 @@ namespace db {
                 select.where(C(colVersion) >= minVersion.value());
             }
             if (floor) {
-                select.where(C(colFloor) >= floor.value());
+                select.where(C(colFloor) == floor.value());
             }
 
             return select;

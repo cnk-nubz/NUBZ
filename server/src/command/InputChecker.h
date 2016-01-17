@@ -27,8 +27,10 @@ namespace command {
         template <class Container>
         bool checkBreakActionsIds(const Container &actionsIds);
 
-        bool checkExhibitFrame(std::int32_t floor, std::int32_t x, std::int32_t y,
-                               std::int32_t width, std::int32_t height);
+        bool checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y, std::int32_t width,
+                        std::int32_t height);
+
+        bool checkText(const std::string &text);
 
     private:
         db::DatabaseSession &session;
