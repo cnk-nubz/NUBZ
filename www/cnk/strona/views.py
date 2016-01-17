@@ -185,3 +185,35 @@ def updateExhibitPosition(request):
         "height": frame['height']
 	}
 	return JsonResponse(data)
+
+def createNewExhibit(request):
+	data = {
+		"success": False
+	}
+	if request.method != 'POST':
+		return JsonResponse(data)
+	jsonData = request.POST.get("jsonData")
+	exhibitRequest = json.loads(jsonData)
+	tc = ThriftCommunicator()
+	newExhibit = tc.createNewExhibit(exhibitRequest)
+	if not newExhibit:
+		return JsonResponse(data)
+
+	if newExhibit.exhibit.frame:
+		frame = newExhibit.exhibit.frame
+		exhibitFrame = {
+			"x": frame.x,
+			"y": frame.y,
+			"width": frame.width,
+			"height": frame.height,
+			"mapLevel": frame.mapLevel
+		}
+	else:
+		exhibitFrame = None
+	data = {
+		"success": True,
+		"id": int(newExhibit.exhibitId),
+		"name": newExhibit.exhibit.name,
+		"frame": exhibitFrame
+	}
+	return JsonResponse(data)
