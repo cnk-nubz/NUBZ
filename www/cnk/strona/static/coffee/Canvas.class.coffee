@@ -67,8 +67,9 @@ root.Canvas = class Canvas extends root.View
     return
 
   _init: =>
-    @_map.on('moveend', @_getCurrentView)
-    @_map.on('zoomend', @_getCurrentView)
+    #TODO
+    #@_map.on('moveend', @_getCurrentView)
+    #@_map.on('zoomend', @_getCurrentView)
     actv = @mapData.activeFloor
     @loadData i for i in [1-actv..actv]
     @
@@ -173,6 +174,9 @@ root.Canvas = class Canvas extends root.View
 
   getVisibleFrame: =>
     bounds = @_map.getBounds()
+    maxZoomTileInfo = @mapData.floorTilesInfo[@mapData.activeFloor][-1..][0]
+    maxX = maxZoomTileInfo.scaledWidth
+    maxY = maxZoomTileInfo.scaledHeight
     maxZoom = @mapData.maxZoom[@mapData.activeFloor]
     castedPixelBounds = [
         @_map.project(bounds.getNorthWest(), maxZoom)
@@ -180,6 +184,6 @@ root.Canvas = class Canvas extends root.View
     ]
     min = castedPixelBounds[0]
     max = castedPixelBounds[1]
-    topLeft = new L.Point(Math.max(0, min.x), Math.max(0, min.y))
-    bottomRight = new L.Point(Math.max(0, max.x), Math.max(0, max.y))
+    topLeft = new L.Point(Math.min(maxX, Math.max(0, min.x)), Math.min(maxY, Math.max(0, min.y)))
+    bottomRight = new L.Point(Math.min(maxX, Math.max(0, max.x)), Math.min(maxY, Math.max(0, max.y)))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]
