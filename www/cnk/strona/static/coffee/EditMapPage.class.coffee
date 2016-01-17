@@ -29,8 +29,8 @@ root.EditMapPage = class EditMapPage extends root.View
       jsonData:
         JSON.stringify(
           name: data.name
-          floor: data.floor ? null
-          visibleMapFrame: frame ? null
+          floor: data.floor if data.floor?
+          visibleMapFrame: frame
         )
     }
     instance = @
@@ -48,20 +48,27 @@ root.EditMapPage = class EditMapPage extends root.View
     return
 
   _ajaxNewExhibitSuccess: (data) =>
-    return unless data.success
+    if not data.success
+      BootstrapDialog.alert(
+        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
+        type: BootstrapDialog.TYPE_DANGER
+        title: 'Błąd serwera'
+      )
+      return
     id = data.id
-    @mapData.exhibits[id] ?= {name: null, frame: {}}
-    @mapData.exhibits[id].name = data.name ? "brak nazwy"
-    @mapData.exhibits[id].frame.x = data.frame?.x ? 0
-    @mapData.exhibits[id].frame.y = data.frame?.y ? 0
-    @mapData.exhibits[id].frame.width = data.frame?.width ? 200
-    @mapData.exhibits[id].frame.height = data.frame?.height ? 200
-    @mapData.exhibits[id].frame.mapLevel = data.frame?.mapLevel ? 0
-    t = {}
-    t[id] = @mapData.exhibits[id]
-    if data.frame?.mapLevel?
-      @canvas.addExhibits(data.frame.mapLevel, t)
-      @canvas.updateState()
+    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id].name = data.name
+    if data.frame?
+      @mapData.exhibits[id].frame.x = data.frame.x
+      @mapData.exhibits[id].frame.y = data.frame.y
+      @mapData.exhibits[id].frame.width = data.frame.width
+      @mapData.exhibits[id].frame.height = data.frame.height
+      @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
+      if data.frame.mapLevel is @mapData.activeFloor
+        t = {}
+        t[id] = @mapData.exhibits[id]
+        @canvas.addExhibits(data.frame.mapLevel, t)
+        @canvas.updateState()
     return
 
   _init: =>
@@ -77,8 +84,8 @@ root.EditMapPage = class EditMapPage extends root.View
       "left": "0px"
       "bottom": "0px"
       "width": @appearance.panel.mapControls.width
-      "z-index": "1029"
-      "border-right": "1px solid #080808"
+      "z-index": @appearance.panel.zindex
+      "border-right": @appearance.panel.border
     }
     exhibitPanelStyle = {
       "background": @appearance.panel.background
@@ -87,8 +94,8 @@ root.EditMapPage = class EditMapPage extends root.View
       "right": "0px"
       "bottom": "0px"
       "width": exhibitPanelWidth
-      "z-index": "1029"
-      "border-left": "1px solid #080808"
+      "z-index": @appearance.panel.zindex
+      "border-left": @appearance.panel.border
     }
     canvasStyle = {
       "position": "relative"

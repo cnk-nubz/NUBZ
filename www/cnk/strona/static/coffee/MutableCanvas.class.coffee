@@ -44,7 +44,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       )
 
   _exhibitOptions: (options...) =>
-    jQuery.extend({}, options..., { draggable: true })
+    jQuery.extend(options..., { draggable: true })
 
   _prepareExhibit: (exh) =>
     exh.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'

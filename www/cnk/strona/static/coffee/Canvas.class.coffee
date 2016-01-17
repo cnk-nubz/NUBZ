@@ -85,13 +85,13 @@ root.Canvas = class Canvas extends root.View
     newUrl = "#{@mapData.floorUrl[floor]}?t=#{rand}"
     @_floorLayer[floor].clearLayers()
     @_exhibits[floor].clearLayers()
-    @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
+    @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
     @addExhibits(floor, @mapData.exhibits)
     @setFloorLayer(floor)(@_floorButton[floor])
     @
 
-  addMapBounds: (floor, northEast, southWest) =>
+  _addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
                                             @_map.unproject(southWest, @_maxZoom[floor]))
     @
@@ -119,14 +119,21 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X, Y], @_maxZoom[floor]),
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
-      r = L.rectangle(polygonBounds, @_exhibitOptions(@appearance.exhibit, { id: idx }))
+      options =
+        color: @appearance.exhibit.strokeColor
+        fillColor: @appearance.exhibit.fillColor
+        fillOpacity: @appearance.exhibit.fillOpacity
+        weight: @appearance.exhibit.weight
+        strokeColor: @appearance.exhibit.strokeColor
+        strokeOpacity: @appearance.exhibit.strokeOpacity
+      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: idx }))
       r.bindLabel(e.name, { direction: 'auto' })
       @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
     @
 
   _exhibitOptions: (options...) =>
-    jQuery.extend({}, options...)
+    jQuery.extend(options...)
 
   _prepareExhibit: (exh) =>
     return
@@ -165,7 +172,14 @@ root.Canvas = class Canvas extends root.View
     @
 
   getVisibleFrame: =>
-    bounds = @_map.getPixelBounds()
-    topLeft = new L.Point(Math.max(0, bounds.min.x), Math.max(0, bounds.min.y))
-    bottomRight = new L.Point(Math.max(0, bounds.max.x), Math.max(0, bounds.max.y))
+    bounds = @_map.getBounds()
+    maxZoom = @mapData.maxZoom[@mapData.activeFloor]
+    castedPixelBounds = [
+        @_map.project(bounds.getNorthWest(), maxZoom)
+        @_map.project(bounds.getSouthEast(), maxZoom)
+    ]
+    min = castedPixelBounds[0]
+    max = castedPixelBounds[1]
+    topLeft = new L.Point(Math.max(0, min.x), Math.max(0, min.y))
+    bottomRight = new L.Point(Math.max(0, max.x), Math.max(0, max.y))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]

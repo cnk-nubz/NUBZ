@@ -25,8 +25,8 @@ root.JustMapPage = class JustMapPage extends root.View
       "left": "0px"
       "bottom": "0px"
       "width": @appearance.panel.mapControls.width
-      "z-index": "1029"
-      "border-right": "1px solid #080808"
+      "z-index": @appearance.panel.zindex
+      "border-right": @appearance.panel.border
     }
     canvasStyle = {
       "position": "relative"

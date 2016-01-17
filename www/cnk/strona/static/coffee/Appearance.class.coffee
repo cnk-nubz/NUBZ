@@ -8,14 +8,16 @@ root.Appearance = class Appearance
       fillColor: '#ff7800'
       fillOpacity: 0.7
       weight: 1
-      color: 'darkblue'
-      opacity: 1
+      strokeColor: 'darkblue'
+      strokeOpacity: 1
     }
     @navbar = {
       height: "50px"
     }
     @panel = {
       background: "rgba(221, 221, 221, 1)"
+      border: "1px solid #080808"
+      zindex: 1029
       mapControls:
         width: "46px"
     }
