@@ -90,7 +90,7 @@ def index(request):
 
 	floorTilesInfo = _getMapImageInfo()
 	exhibits = _getExhibits()
-	if not floorTilesInfo or not exhibits:
+	if not floorTilesInfo or exhibits is None:
 		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template('index.html')
 
