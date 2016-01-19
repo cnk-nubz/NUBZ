@@ -1,26 +1,26 @@
 #ifndef DB_CMD__INSERT_EXHIBIT__H
 #define DB_CMD__INSERT_EXHIBIT__H
 
-#include "db/DatabaseSession.h"
-#include "db/struct/Exhibit.h"
+#include <db/DatabaseSession.h>
+#include <db/struct/Exhibit.h>
 
 namespace db {
-    namespace cmd {
-        class InsertExhibit {
-        public:
-            InsertExhibit(const Exhibit &exhibit);
-            ~InsertExhibit() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
-            std::int32_t getId() const;
+class InsertExhibit {
+public:
+    InsertExhibit(const Exhibit &exhibit);
 
-        private:
-            const Exhibit exhibit;
-            std::int32_t exhibitId;
+    std::int32_t operator()(DatabaseSession &session);
+    std::int32_t getId() const;
 
-            std::string createInsert() const;
-        };
-    }
+private:
+    const Exhibit exhibit;
+    std::int32_t exhibitId;
+
+    std::string createInsert() const;
+};
+}
 }
 
 #endif

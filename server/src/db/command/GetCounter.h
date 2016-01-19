@@ -1,27 +1,27 @@
 #ifndef DB_CMD__GET_COUNTER__H
 #define DB_CMD__GET_COUNTER__H
 
-#include "db/DatabaseSession.h"
-#include "db/struct/MapImage.h"
-#include "db/db_info.h"
+#include <db/struct/MapImage.h>
+#include <db/DatabaseSession.h>
+#include <db/db_info.h>
 
 namespace db {
-    namespace cmd {
-        class GetCounter {
-        public:
-            GetCounter(db::info::counters::element_type elementType);
-            ~GetCounter() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
-            std::int32_t getResult() const;
+class GetCounter {
+public:
+    GetCounter(db::info::counters::element_type elementType);
 
-        private:
-            const db::info::counters::element_type elementType;
-            std::int32_t result;
+    std::int32_t operator()(DatabaseSession &session);
+    std::int32_t getResult() const;
 
-            std::string createQuery() const;
-        };
-    }
+private:
+    const db::info::counters::element_type elementType;
+    std::int32_t result;
+
+    std::string createQuery() const;
+};
+}
 }
 
 #endif

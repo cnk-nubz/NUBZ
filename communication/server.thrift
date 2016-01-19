@@ -33,4 +33,10 @@ service Server {
 
 	structs.NewExhibitResponse createNewExhibit(1: structs.NewExhibitRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.NewActionResponse createNewAction(1: structs.NewActionRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.ActionsResponse getActions()
+		throws (1: structs.InternalError err),
 }

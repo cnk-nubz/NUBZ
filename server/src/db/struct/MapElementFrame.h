@@ -4,13 +4,13 @@
 #include <cstdint>
 
 namespace db {
-    struct MapElementFrame {
-        std::int32_t x;
-        std::int32_t y;
-        std::int32_t width;
-        std::int32_t height;
-        std::int32_t mapLevel;
-    };
+struct MapElementFrame {
+    std::int32_t x;
+    std::int32_t y;
+    std::int32_t width;
+    std::int32_t height;
+    std::int32_t mapLevel;
+};
 }
 
 #endif

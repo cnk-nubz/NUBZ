@@ -109,3 +109,15 @@ struct NewExhibitResponse {
 	1: i32 exhibitId,
 	2: Exhibit exhibit,
 }
+
+struct NewActionRequest {
+	1: string text,
+}
+
+struct NewActionResponse {
+	1: Action action,
+}
+
+struct ActionsResponse {
+	1: list<Action> actions,
+}

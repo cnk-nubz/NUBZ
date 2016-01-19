@@ -5,21 +5,22 @@
 
 #include <boost/optional.hpp>
 
-#include "db/struct/Exhibit.h"
-#include "db/db_info.h"
+#include <db/struct/Exhibit.h>
+#include <db/db_info.h>
 
 namespace db {
-    namespace factory {
-        struct ExhibitFactory {
-            using Product = Exhibit;
+namespace factory {
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
-            static boost::optional<MapElementFrame> createFrame(
-                const std::vector<boost::optional<std::string>> &raw) noexcept;
+struct ExhibitFactory {
+    using Product = Exhibit;
 
-            static const std::vector<std::string> &fieldsOrder() noexcept;
-        };
-    }
+    static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
+    static boost::optional<MapElementFrame> createFrame(
+        const std::vector<boost::optional<std::string>> &raw) noexcept;
+
+    static const std::vector<std::string> &fieldsOrder() noexcept;
+};
+}
 }
 
 #endif

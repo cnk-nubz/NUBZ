@@ -80,9 +80,7 @@ cur.execute('''
 cur.execute('''
 	CREATE TABLE actions (
 		id SERIAL PRIMARY KEY,
-		text VARCHAR NOT NULL,
-		during_break BOOLEAN NOT NULL,
-		in_current_experiment BOOLEAN NOT NULL DEFAULT FALSE
+		text VARCHAR NOT NULL
 	)
 ''')
 
@@ -153,24 +151,19 @@ cur.execute('''
 
 # actions
 cur.execute('''
-	INSERT INTO actions (text, during_break, in_current_experiment) VALUES
-		('biega', false, true),
-		('spiewa', false, true),
-		('recytuje', false, true),
-		('stepuje', false, true),
-		('oglada', false, true),
-		('bawi sie', false, true),
-		('robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami', false, true),
-		('cos poza badaniem', false, false)
-''')
-
-# actions during a break
-cur.execute('''
-	INSERT INTO actions (text, during_break, in_current_experiment) VALUES
-		('biega', true, true),
-		('spiewa', true, true),
-		('dlugi dlugi dlugi dlugi tekst', true, true),
-		('odpoczywa', true, true)
+	INSERT INTO actions (text) VALUES
+		('biega'),
+		('spiewa'),
+		('recytuje'),
+		('stepuje'),
+		('oglada'),
+		('bawi sie'),
+		('robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami'),
+		('cos poza badaniem'),
+		('biega'),
+		('spiewa'),
+		('dlugi dlugi dlugi dlugi tekst'),
+		('odpoczywa')
 ''')
 
 

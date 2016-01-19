@@ -3,27 +3,26 @@
 
 #include <boost/optional.hpp>
 
-#include "db/DatabaseSession.h"
-#include "db/struct/MapTile.h"
+#include <db/DatabaseSession.h>
+#include <db/struct/MapTile.h>
 
 namespace db {
-    namespace cmd {
-        class GetMapTiles {
-        public:
-            GetMapTiles() = default;
-            ~GetMapTiles() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
-            const std::vector<MapTile> &getResult() const;
+class GetMapTiles {
+public:
+    const std::vector<MapTile> &operator()(DatabaseSession &session);
+    const std::vector<MapTile> &getResult() const;
 
-            boost::optional<std::int32_t> floor;
-            boost::optional<std::int32_t> zoomLevel;
-        private:
-            std::vector<MapTile> result;
+    boost::optional<std::int32_t> floor;
+    boost::optional<std::int32_t> zoomLevel;
 
-            std::string createQuery() const;
-        };
-    }
+private:
+    std::vector<MapTile> result;
+
+    std::string createQuery() const;
+};
+}
 }
 
 #endif
