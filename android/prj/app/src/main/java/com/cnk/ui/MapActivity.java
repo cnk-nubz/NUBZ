@@ -89,6 +89,14 @@ public class MapActivity extends AppCompatActivity implements Observer {
         networkHandler.downloadExperimentData();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (tileView != null) {
+            tileView.invalidate();
+        }
+    }
+
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
         showExhibitDialog(true, BREAK_NAME, BREAK_ID);
@@ -526,6 +534,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
+        Integer floorNum = 0;
         for (Exhibit e: exhibits) {
             posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                     mapState.originalMapSize.getWidth(),
@@ -556,7 +565,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
 
-            es = new ExhibitSpot(e.getId(), e.getName(), artv);
+            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
             es.setHotSpotTapListener(exhibitsListener);
@@ -586,11 +595,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Private classes declarations:
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
+        private Integer listId;
         private String name;
         private AutoResizeTextView exhibitTextView;
 
-        public ExhibitSpot(Integer exhibitId, String name, AutoResizeTextView exhibitTextView) {
+        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
             super();
+            this.listId = listId;
             this.exhibitId = exhibitId;
             this.name = name;
             this.exhibitTextView = exhibitTextView;
@@ -607,6 +618,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public AutoResizeTextView getExhibitTextView() {
             return exhibitTextView;
         }
+
+        public Integer getListId() {
+            return listId;
+        }
     }
 
     private class MapState {
@@ -617,7 +632,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         Resolution currentMapSize, originalMapSize;
 
-        List<HotSpot> hotSpotsForFloor;
+        ArrayList<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
 
         AutoResizeTextView lastExhibitTextView;
@@ -631,28 +646,31 @@ public class MapActivity extends AppCompatActivity implements Observer {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
             Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
 
-            if (mapState.lastExhibitTextView != null) {
-                mapState.lastExhibitTextView
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
-            }
-
-            mapState.lastExhibitTextView = ((ExhibitSpot) hotSpot).getExhibitTextView();
-            ((ExhibitSpot) hotSpot).getExhibitTextView()
-                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
-
-            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), id);
+            Integer floorId = ((ExhibitSpot) hotSpot).listId;
+            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        ExhibitSpot es = (ExhibitSpot)  mapState.hotSpotsForFloor.get(requestCode);
+
         if (resultCode == RESULT_OK) {
+            if (mapState.lastExhibitTextView != null) {
+                mapState.lastExhibitTextView
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+            }
+
+            mapState.lastExhibitTextView = es.getExhibitTextView();
+            es.getExhibitTextView()
+                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
             ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
         }
     }
 
-    private void showExhibitDialog(boolean isBreak, String name, Integer id) {
+    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
         ArrayList<String> actionStrings = new ArrayList<>();
         List<Action> actions;
         if (isBreak) {
@@ -668,6 +686,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
         ActivityOptions activityOptions =
                 ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-        startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
+        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 }
