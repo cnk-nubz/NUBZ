@@ -557,8 +557,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
             artv.setBackground(bcgDrawable);
 
             artv.setGravity(Gravity.CENTER);
+            artv.setMinTextSize(2f);
             artv.setTextSize(100f);
-            artv.setMaxLines(10);
+            artv.setSingleLine(false);
 
             tvLP = new RelativeLayout.LayoutParams(width, height);
             tvLP.setMargins(posX, posY, 0, 0);
