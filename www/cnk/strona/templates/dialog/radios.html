@@ -1,0 +1,15 @@
+{% load updateContext %}
+{% updateContext description %}
+<div class="form-group">
+  <label class="col-sm-{{labelSize|default:3}} control-label">{{labelText}}</label>
+  <div class="col-sm-{{groupSize|default:9}} btn-group" role="group" data-toggle="buttons">
+    {% if textList %}
+      {% for text in textList %}
+      <label class="btn btn-default {{radioGroup}} {% if radioSize %}col-sm-{{radioSize}}{% endif %}">
+        {{text}}
+        <input type="radio" name="{{radioGroup}}">
+      </label>
+      {% endfor %}
+    {% endif %}
+  </div>
+</div>

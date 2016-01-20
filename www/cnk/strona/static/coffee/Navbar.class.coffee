@@ -16,6 +16,12 @@ root.Navbar = class Navbar extends root.View
             text: 'Edycja mapy'
             ref: root.EditMapPage
             refDiv: "#{@_containerId}-b"
+          },
+          {
+            id: "#nav-3"
+            text: 'Badania'
+            ref: '/badania'
+            refDiv: null
           }
     ]
     @_init()
@@ -49,8 +55,11 @@ root.Navbar = class Navbar extends root.View
          .classed "nav-link", true
          .html e.text
          .on "click", =>
-           @setActiveButton e.id
-           @setActiveView e
+           if e.ref[0] is '/'
+             location.href = e.ref
+           else
+             @setActiveButton e.id
+             @setActiveView e
     )
     @setActiveView @navLinks[initialPage]
     @_lastClicked = @navLinks[initialPage].id

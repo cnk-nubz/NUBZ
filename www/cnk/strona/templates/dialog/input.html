@@ -1,0 +1,11 @@
+{% load updateContext %}
+{% updateContext description %}
+<div class="form-group">
+  <label class="col-sm-{{labelSize|default:3}} control-label">{{labelText}}</label>
+  <div class="col-sm-{{inputSize|default:9}}">
+    <input class="form-control" type="text" placeholder="{{placeholder|default:""}}">
+  </div>
+  {% if withError %}
+  <div class="col-sm-{{inputSize|default:9}} col-sm-offset-{{labelSize|default:3}} inputError"></div>
+  {% endif %}
+</div>

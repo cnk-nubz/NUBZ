@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load compress %}
+{% load staticfiles %}
+{% block content %}
+<center><button class="btn btn-default">Proste pytanie</button></center>
+{% compress js %}
+<script src="{% static "coffee/dialog/badania.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% endblock %}
