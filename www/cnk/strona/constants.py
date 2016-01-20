@@ -16,7 +16,7 @@ SIMPLE_QUESTION_DIALOG = [
             "radioGroup": "test",
             "labelText": "Typ odpowiedzi",
             "radioSize": "3",
-            "idList": [["t1", "Liczba"], ["t2", "Zdanie"]]
+            "textList": ["Liczba", "Zdanie"]
         }
     ]
 ]
