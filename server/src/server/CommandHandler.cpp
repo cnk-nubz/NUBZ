@@ -147,11 +147,11 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << "setExhibitsFrames end";
 }
 
-void CommandHandler::getExperimentData(communication::ExperimentData &response) {
+void CommandHandler::getCurrentExperiment(communication::CurrentExperimentResponse &response) {
     LOG(INFO) << "getExperimentData start";
 
     withExceptionTranslation([&]() {
-        io::output::ExperimentData output = command::GetExperimentDataCommand{db}();
+        io::output::CurrentExperimentResponse output = command::GetCurrentExperimentCommand{db}();
         response = output.toThrift();
     });
 

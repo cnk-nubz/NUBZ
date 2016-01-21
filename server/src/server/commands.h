@@ -7,7 +7,7 @@
 #include "command/GetExhibitsCommand.h"
 #include "command/SaveRawReportCommand.h"
 #include "command/ReserveIdForReportCommand.h"
-#include "command/GetExperimentDataCommand.h"
+#include "command/GetCurrentExperimentCommand.h"
 #include "command/SetExhibitFrameCommand.h"
 #include "command/CreateNewExhibitCommand.h"
 

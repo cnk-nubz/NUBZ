@@ -7,6 +7,9 @@
 namespace db {
 namespace cmd {
 
+GetActions::GetActions(std::int32_t actionId) : actionId(actionId) {
+}
+
 const std::vector<Action> &GetActions::operator()(db::DatabaseSession &session) {
     return result = session.getResults<db::factory::ActionFactory>(createQuery());
 }
@@ -20,6 +23,9 @@ std::string GetActions::createQuery() const {
     using namespace db::sql;
 
     auto select = Sql::select(db::factory::ActionFactory::fieldsOrder()).from(tableName);
+    if (actionId) {
+        select.where(C(colId) == actionId.value());
+    }
     return select;
 }
 }

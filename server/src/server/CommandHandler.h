@@ -39,7 +39,7 @@ public:
                                   const communication::NewExhibitRequest &request) override;
     virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
 
-    virtual void getExperimentData(communication::ExperimentData &response) override;
+    virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
 
     virtual void createNewAction(communication::NewActionResponse &response,
                                  const communication::NewActionRequest &request) override;
@@ -52,11 +52,11 @@ private:
     std::mutex setMapLock;
 
     template <class F>
-    typename std::result_of<F()>::type withExceptionTranslation(F &&f);
+    std::result_of_t<F()> withExceptionTranslation(F &&f);
 };
 
 template <class F>
-typename std::result_of<F()>::type CommandHandler::withExceptionTranslation(F &&f) {
+std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
     try {
         return f();
     } catch (server::io::InvalidInput &e) {

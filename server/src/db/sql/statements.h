@@ -99,7 +99,7 @@ public:
     template <class... Ts>
     SqlInsert<numOfParams, returningAvailable> &values(Ts &&... ts);
 
-    template <bool Hack = true, class = typename std::enable_if<returningAvailable && Hack>::type>
+    template <bool Hack = true, class = std::enable_if_t<returningAvailable && Hack>>
     SqlInsert<numOfParams, false> returning(const std::string &column) const;
 
     operator std::string() const;

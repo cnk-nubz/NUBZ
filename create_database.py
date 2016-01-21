@@ -13,6 +13,8 @@ cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
 cur.execute('DROP TABLE IF EXISTS reports')
 cur.execute('DROP TABLE IF EXISTS actions')
+cur.execute('DROP TABLE IF EXISTS active_experiment')
+cur.execute('DROP TABLE IF EXISTS experiments')
 
 ######### create
 cur.execute('''
@@ -84,6 +86,26 @@ cur.execute('''
 	)
 ''')
 
+cur.execute('''
+	CREATE TABLE experiments (
+		id INT NOT NULL PRIMARY KEY,
+		name VARCHAR NOT NULL,
+		doc JSONB NOT NULL
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE active_experiment (
+		id INT NULL REFERENCES experiments(id)
+	);
+
+	INSERT INTO active_experiment VALUES
+		(NULL);
+
+	CREATE RULE no_insert AS ON INSERT TO active_experiment DO INSTEAD NOTHING; 
+	CREATE RULE no_delete AS ON DELETE TO active_experiment DO INSTEAD NOTHING;
+''')
+
 ######### sample data
 # map_images
 cur.execute('''
@@ -151,21 +173,37 @@ cur.execute('''
 
 # actions
 cur.execute('''
-	INSERT INTO actions (text) VALUES
-		('biega'),
-		('spiewa'),
-		('recytuje'),
-		('stepuje'),
-		('oglada'),
-		('bawi sie'),
-		('robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami'),
-		('cos poza badaniem'),
-		('biega'),
-		('spiewa'),
-		('dlugi dlugi dlugi dlugi tekst'),
-		('odpoczywa')
+	INSERT INTO actions VALUES
+		(1, 'biega'),
+		(2, 'spiewa'),
+		(3, 'recytuje'),
+		(4, 'stepuje'),
+		(5, 'oglada'),
+		(6, 'bawi sie'),
+		(7, 'robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami'),
+		(8, 'cos poza badaniem'),
+		(9, 'biega'),
+		(10, 'spiewa'),
+		(11, 'dlugi dlugi dlugi dlugi tekst'),
+		(12, 'odpoczywa')
 ''')
 
+# experiments
+cur.execute('''
+	INSERT INTO experiments VALUES
+		(1, 'badanie testowe', '
+			{
+				"actions": [5, 1, 4, 3, 7, 8],
+				"breakActions": [12, 9, 11]
+			}
+		')
+''')
+
+# current experiment
+cur.execute('''
+	UPDATE active_experiment
+	SET id=1
+''')
 
 con.commit()
 

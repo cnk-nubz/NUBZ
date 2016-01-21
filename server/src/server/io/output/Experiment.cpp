@@ -1,17 +1,19 @@
-#include "ExperimentData.h"
+#include "Experiment.h"
 
 namespace server {
 namespace io {
 namespace output {
 
-communication::ExperimentData ExperimentData::toThrift() const {
-    communication::ExperimentData res;
+communication::Experiment Experiment::toThrift() const {
+    communication::Experiment res;
+    res.experimentId = experimentID;
+    res.name = name;
     res.exhibitActions = toThriftActions(exhibitActions);
     res.breakActions = toThriftActions(breakActions);
     return res;
 }
 
-std::vector<communication::Action> ExperimentData::toThriftActions(
+std::vector<communication::Action> Experiment::toThriftActions(
     const std::vector<io::Action> &ioActions) const {
     std::vector<communication::Action> res;
     for (const auto &ioAction : ioActions) {

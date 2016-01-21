@@ -18,7 +18,7 @@
 #include "io/output/MapImagesResponse.h"
 #include "io/output/MapImageTilesResponse.h"
 #include "io/output/ExhibitsResponse.h"
-#include "io/output/ExperimentData.h"
+#include "io/output/CurrentExperimentResponse.h"
 #include "io/output/NewExhibitResponse.h"
 #include "io/output/NewActionResponse.h"
 #include "io/output/ActionsResponse.h"

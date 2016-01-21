@@ -19,22 +19,22 @@ class C {
 public:
     C(const std::string &colName);
 
-    template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    template <class T, class = std::enable_if_t<std::is_arithmetic<T>::value>>
     Cond operator<(const T &arg) const;
 
-    template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
+    template <class T, class = std::enable_if<std::is_integral<T>::value>>
     Cond operator<=(const T &arg) const;
 
-    template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    template <class T, class = std::enable_if<std::is_arithmetic<T>::value>>
     Cond operator>(const T &arg) const;
 
-    template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
+    template <class T, class = std::enable_if<std::is_integral<T>::value>>
     Cond operator>=(const T &arg) const;
 
-    template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
+    template <class T, class = std::enable_if<std::is_integral<T>::value>>
     Cond operator==(const T &arg) const;
 
-    template <class T, class = typename std::enable_if<std::is_integral<T>::value>::type>
+    template <class T, class = std::enable_if<std::is_integral<T>::value>>
     Cond operator!=(const T &arg) const;
 
     Cond operator==(const std::string &arg) const;
@@ -80,7 +80,7 @@ public:
     SqlString(bool raw);
     SqlString(const Null &null);
 
-    template <class T, class = typename std::enable_if<std::is_arithmetic<T>::value>::type>
+    template <class T, class = std::enable_if_t<std::is_arithmetic<T>::value>>
     SqlString(const T &t);
 
     operator std::string() const;

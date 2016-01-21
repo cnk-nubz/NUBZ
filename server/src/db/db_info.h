@@ -14,7 +14,7 @@ static const std::string colWidth = "width";
 static const std::string colHeight = "height";
 static const std::string colVersion = "version";
 static const std::string colFloor = "floor";
-};
+}  // map_images
 
 namespace map_tiles {
 static const std::string tableName = "map_tiles";
@@ -24,7 +24,7 @@ static const std::string colFloor = "floor";
 static const std::string colZoomLevel = "zoom_level";
 static const std::string colRow = "row";
 static const std::string colColumn = "col";
-}
+}  // map_tiles
 
 namespace map_tiles_info {
 static const std::string tableName = "map_tiles_info";
@@ -36,7 +36,7 @@ static const std::string colColumnsCount = "columns_count";
 static const std::string colImgWidth = "img_width";
 static const std::string colImgHeight = "img_height";
 static const std::string colTileSize = "tile_size";
-}
+}  // map_tiles_info
 
 namespace counters {
 static const std::string tableName = "counters";
@@ -60,7 +60,7 @@ inline static std::string colElementType(element_type t) {
             return "reports_last_id";
     }
 }
-}
+}  // counters
 
 namespace exhibits {
 static const std::string tableName = "exhibits";
@@ -73,7 +73,7 @@ static const std::string colMapFrameY = "map_frame_y";
 static const std::string colMapFrameWidth = "map_frame_width";
 static const std::string colMapFrameHeight = "map_frame_height";
 static const std::string colMapLevel = "map_level";
-}
+}  // exhibits
 
 namespace reports {
 static const std::string tableName = "reports";
@@ -87,14 +87,31 @@ static const std::string field0History = "history";
 static const std::string field1ExhibitId = "exhibitId";
 static const std::string field1DurationInSecs = "durationInSecs";
 static const std::string field1Actions = "actions";
-}
+}  // reports
 
 namespace actions {
 static const std::string tableName = "actions";
 
 static const std::string colId = "id";
 static const std::string colText = "text";
-}
+}  // actions
+
+namespace experiments {
+namespace current {
+static const std::string tableName = "active_experiment";
+static const std::string colId = "id";
+}  // current
+
+static const std::string tableName = "experiments";
+
+static const std::string colId = "id";
+static const std::string colName = "name";
+static const std::string colDocument = "doc";
+
+// json keys
+static const std::string fieldActions = "actions";
+static const std::string fieldBreakActions = "breakActions";
+}  // experiments
 }
 }
 

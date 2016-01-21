@@ -94,9 +94,15 @@ struct Action {
 	2: string text,
 }
 
-struct ExperimentData {
-	1: list<Action> exhibitActions,
-	2: list<Action> breakActions,
+struct Experiment {
+	1: i32 experimentId,
+	2: string name,
+	3: list<Action> exhibitActions,
+	4: list<Action> breakActions,
+}
+
+struct CurrentExperimentResponse {
+	1: optional Experiment experiment,
 }
 
 struct NewExhibitRequest {

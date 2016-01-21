@@ -49,8 +49,6 @@ import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
-    public static final Integer TILE_SIDE_LEN = 256;
-
     private static final String LOG_TAG = "MapActivity";
     private static final String BREAK_NAME = "Przerwa";
     private static final String TITLE_PREFIX = "Piętro";

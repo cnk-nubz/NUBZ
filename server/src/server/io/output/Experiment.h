@@ -1,5 +1,5 @@
-#ifndef IO__EXPERIMENT_DATA__H
-#define IO__EXPERIMENT_DATA__H
+#ifndef IO__EXPERIMENT__H
+#define IO__EXPERIMENT__H
 
 #include <cstdint>
 #include <vector>
@@ -11,10 +11,12 @@ namespace server {
 namespace io {
 namespace output {
 
-class ExperimentData {
+class Experiment {
 public:
-    communication::ExperimentData toThrift() const;
+    communication::Experiment toThrift() const;
 
+    std::int32_t experimentID;
+    std::string name;
     std::vector<io::Action> exhibitActions;
     std::vector<io::Action> breakActions;
 

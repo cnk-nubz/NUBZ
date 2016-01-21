@@ -77,7 +77,7 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
     private Raport currentRaport;
-    private ExperimentData experimentData;
+    private Experiment experiment;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -94,17 +94,17 @@ public class DataHandler extends Observable {
         cachedTileAdresses = new ConcurrentHashMap<>();
     }
 
-    public void setNewExperimentData(ExperimentData newData) {
-        experimentData = newData;
+    public void setNewExperimentData(Experiment newData) {
+        experiment = newData;
         setChanged();
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
     public List<Action> getAllExhibitActions() {
-        return experimentData.getExhibitActions();
+        return experiment.getExhibitActions();
     }
     public List<Action> getAllBreakActions() {
-        return experimentData.getBreakActions();
+        return experiment.getBreakActions();
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else
