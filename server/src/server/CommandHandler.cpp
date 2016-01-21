@@ -164,7 +164,11 @@ void CommandHandler::createNewAction(communication::NewActionResponse &response,
     LOG(INFO) << "createNewAction start";
     LOG(INFO) << "input: " << request;
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        io::input::NewActionRequest input(request);
+        io::output::NewActionResponse output = command::CreateNewActionCommand{db}(request);
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "createNewAction end";
@@ -173,7 +177,10 @@ void CommandHandler::createNewAction(communication::NewActionResponse &response,
 void CommandHandler::getActions(communication::ActionsResponse &response) {
     LOG(INFO) << "getActions start";
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        io::output::ActionsResponse output = command::GetActionsCommand{db}();
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getActions end";
