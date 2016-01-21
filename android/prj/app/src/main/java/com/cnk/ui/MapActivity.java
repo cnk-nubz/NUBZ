@@ -89,14 +89,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         networkHandler.downloadExperimentData();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (tileView != null) {
-            tileView.invalidate();
-        }
-    }
-
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
         showExhibitDialog(true, BREAK_NAME, BREAK_ID);
@@ -534,7 +526,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
-        Integer floorNum = 0;
+        Integer floorNum = 1;
         for (Exhibit e: exhibits) {
             posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                     mapState.originalMapSize.getWidth(),
@@ -655,19 +647,24 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ExhibitSpot es = (ExhibitSpot)  mapState.hotSpotsForFloor.get(requestCode);
 
         if (resultCode == RESULT_OK) {
-            if (mapState.lastExhibitTextView != null) {
-                mapState.lastExhibitTextView
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+            if (requestCode != BREAK_ID) {
+                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                if (mapState.lastExhibitTextView != null) {
+                    mapState.lastExhibitTextView
+                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                }
+                mapState.lastExhibitTextView = es.getExhibitTextView();
+                es.getExhibitTextView()
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+                mapState.exhibitsOverlay.invalidate();
+
+                ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            } else {
+                // TODO: after break
             }
-
-            mapState.lastExhibitTextView = es.getExhibitTextView();
-            es.getExhibitTextView()
-                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
-
-            ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
         }
     }
 
