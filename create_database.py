@@ -88,7 +88,7 @@ cur.execute('''
 
 cur.execute('''
 	CREATE TABLE experiments (
-		id INT NOT NULL PRIMARY KEY,
+		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
 		doc JSONB NOT NULL
 	)
@@ -173,25 +173,25 @@ cur.execute('''
 
 # actions
 cur.execute('''
-	INSERT INTO actions VALUES
-		(1, 'biega'),
-		(2, 'spiewa'),
-		(3, 'recytuje'),
-		(4, 'stepuje'),
-		(5, 'oglada'),
-		(6, 'bawi sie'),
-		(7, 'robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami'),
-		(8, 'cos poza badaniem'),
-		(9, 'biega'),
-		(10, 'spiewa'),
-		(11, 'dlugi dlugi dlugi dlugi tekst'),
-		(12, 'odpoczywa')
+	INSERT INTO actions (text) VALUES
+		('biega'),
+		('spiewa'),
+		('recytuje'),
+		('stepuje'),
+		('oglada'),
+		('bawi sie'),
+		('robi jakas bardzo skomplikowana czynnosc opisana wieloma slowami'),
+		('cos poza badaniem'),
+		('biega'),
+		('spiewa2'),
+		('dlugi dlugi dlugi dlugi tekst'),
+		('odpoczywa')
 ''')
 
 # experiments
 cur.execute('''
-	INSERT INTO experiments VALUES
-		(1, 'badanie testowe', '
+	INSERT INTO experiments (name, doc) VALUES
+		('badanie testowe', '
 			{
 				"actions": [5, 1, 4, 3, 7, 8],
 				"breakActions": [12, 9, 11]

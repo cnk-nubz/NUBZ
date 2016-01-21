@@ -10,5 +10,7 @@
 #include "command/GetCurrentExperimentCommand.h"
 #include "command/SetExhibitFrameCommand.h"
 #include "command/CreateNewExhibitCommand.h"
+#include "command/CreateNewActionCommand.h"
+#include "command/GetActionsCommand.h"
 
 #endif
