@@ -30,7 +30,6 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
@@ -59,7 +58,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private static final Float MINIMUM_SCALE = 0.01f;
 
     private TileView tileView;
-    private Semaphore changeAndUpdateMutex;
+    private Semaphore changeAndUpdateMutex, singleDialogMutex;
     private MapState mapState;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
@@ -77,6 +76,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "onCreate execution");
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
+        singleDialogMutex = new Semaphore(1, true);
         networkHandler = new NetworkHandler();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
@@ -636,17 +636,22 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
         public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
-            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
-            Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
+            if (singleDialogMutex.tryAcquire()) {
+                // only if exhibit is clicked first time
+                Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
+                Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
 
-            Integer floorId = ((ExhibitSpot) hotSpot).listId;
-            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
+                Integer floorId = ((ExhibitSpot) hotSpot).listId;
+                showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
+            }
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        singleDialogMutex.release();
 
         if (resultCode == RESULT_OK) {
             if (requestCode != BREAK_ID) {
@@ -669,21 +674,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
-        ArrayList<String> actionStrings = new ArrayList<>();
-        List<Action> actions;
-        if (isBreak) {
-            actions = DataHandler.getInstance().getAllBreakActions();
-        } else {
-            actions = DataHandler.getInstance().getAllExhibitActions();
-        }
-        for (Action a : actions) {
-            actionStrings.add(a.getText());
-        }
         Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
-        exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
+        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
         ActivityOptions activityOptions =
-                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
         startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 }
