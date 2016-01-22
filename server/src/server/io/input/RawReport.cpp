@@ -4,7 +4,8 @@ namespace server {
 namespace io {
 namespace input {
 
-RawReport::RawReport(const communication::RawReport &thrift) : reportId(thrift.reportId) {
+RawReport::RawReport(const communication::RawReport &thrift)
+    : experimentId(thrift.experimentId), reportId(thrift.reportId) {
     for (const auto &event : thrift.history) {
         history.emplace_back(event);
     }

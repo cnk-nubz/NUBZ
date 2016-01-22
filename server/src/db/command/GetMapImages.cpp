@@ -12,7 +12,7 @@ namespace cmd {
 GetMapImages::GetMapImages(std::int32_t floor) : floor(floor) {
 }
 
-const std::vector<MapImage> &GetMapImages::operator()(DatabaseSession &session) {
+const std::vector<MapImage> GetMapImages::operator()(DatabaseSession &session) {
     return result = session.getResults<db::factory::MapImageFactory>(createQuery());
 }
 

@@ -14,7 +14,7 @@ public:
     GetActions() = default;
     GetActions(std::int32_t actionId);
 
-    const std::vector<Action> &operator()(DatabaseSession &session);
+    const std::vector<Action> operator()(DatabaseSession &session);
     const std::vector<Action> &getResult() const;
 
     boost::optional<std::int32_t> actionId;

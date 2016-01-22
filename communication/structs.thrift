@@ -77,8 +77,9 @@ struct RawReportEvent {
 }
 
 struct RawReport {
-	1: i32 reportId,
-	2: list<RawReportEvent> history,
+	1: i32 experimentId,
+	2: i32 reportId,
+	3: list<RawReportEvent> history,
 }
 
 struct SetExhibitFrameRequest {

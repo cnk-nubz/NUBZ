@@ -10,7 +10,7 @@ namespace cmd {
 GetMapTilesInfo::GetMapTilesInfo(std::int32_t floor) : floor(floor) {
 }
 
-const std::vector<MapTilesInfo> &GetMapTilesInfo::operator()(db::DatabaseSession &session) {
+const std::vector<MapTilesInfo> GetMapTilesInfo::operator()(db::DatabaseSession &session) {
     return result = session.getResults<db::factory::MapTilesInfoFactory>(createQuery());
 }
 

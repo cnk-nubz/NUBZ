@@ -12,7 +12,7 @@ public:
     GetMapImages() = default;
     GetMapImages(std::int32_t floor);
 
-    const std::vector<MapImage> &operator()(DatabaseSession &session);
+    const std::vector<MapImage> operator()(DatabaseSession &session);
     const std::vector<MapImage> &getResult() const;
 
     boost::optional<std::int32_t> minVersion;

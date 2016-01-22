@@ -8,7 +8,7 @@
 namespace db {
 namespace cmd {
 
-const boost::optional<Experiment> &GetCurrentExperiment::operator()(DatabaseSession &session) {
+const boost::optional<Experiment> GetCurrentExperiment::operator()(DatabaseSession &session) {
     boost::optional<std::string> currentIdStr = session.getResult(createQuery()).front();
     if (!currentIdStr) {
         return result;

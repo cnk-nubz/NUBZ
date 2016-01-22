@@ -12,7 +12,8 @@ InputChecker::InputChecker(db::DatabaseSession &session) : session(session) {
 }
 
 bool InputChecker::checkReportId(std::int32_t reportId) {
-    return reportId <= db::cmd::GetCounter{db::info::counters::element_type::reports}(session);
+    return reportId >= 0 &&
+           reportId <= db::cmd::GetCounter{db::info::counters::element_type::reports}(session);
 }
 
 bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y,

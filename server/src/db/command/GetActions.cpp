@@ -10,7 +10,7 @@ namespace cmd {
 GetActions::GetActions(std::int32_t actionId) : actionId(actionId) {
 }
 
-const std::vector<Action> &GetActions::operator()(db::DatabaseSession &session) {
+const std::vector<Action> GetActions::operator()(db::DatabaseSession &session) {
     return result = session.getResults<db::factory::ActionFactory>(createQuery());
 }
 

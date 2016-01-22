@@ -20,6 +20,7 @@ public:
 private:
     db::Database &db;
 
+    io::input::RawReport removeDuplicatedIds(io::input::RawReport input) const;
     void validateReport(db::DatabaseSession &session, const io::input::RawReport &input) const;
 };
 }

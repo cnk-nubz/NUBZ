@@ -1,10 +1,11 @@
-#include <unordered_set>
+#include <vector>
 
 #include <db/command/GetRawReports.h>
 #include <db/command/SaveRawReport.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
+#include <server/utils/ReportChecker.h>
 #include <server/utils/io_translation.h>
 
 #include "SaveRawReportCommand.h"
@@ -18,46 +19,60 @@ SaveRawReportCommand::SaveRawReportCommand(db::Database &db) : db(db) {
 void SaveRawReportCommand::operator()(const io::input::RawReport &input) {
     db.execute([&](db::DatabaseSession &session) {
         validateReport(session, input);
+        auto clearInput = removeDuplicatedIds(input);
 
         // already in database?
-        if (!db::cmd::GetRawReports{input.reportId}(session).empty()) {
+        if (!db::cmd::GetRawReports{clearInput.reportId}(session).empty()) {
             return;
         }
 
-        db::cmd::SaveRawReport{utils::toDB(input)}(session);
+        db::cmd::SaveRawReport{utils::toDB(clearInput)}(session);
     });
+}
+
+io::input::RawReport SaveRawReportCommand::removeDuplicatedIds(io::input::RawReport input) const {
+    for (auto &event : input.history) {
+        std::sort(event.actions.begin(), event.actions.end());
+        auto newEnd = std::unique(event.actions.begin(), event.actions.end());
+        event.actions.resize(newEnd - event.actions.begin());
+    }
+    return input;
 }
 
 void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
                                           const io::input::RawReport &input) const {
     utils::InputChecker checker(session);
+    utils::ReportChecker reportChecker(session);
 
     if (!checker.checkReportId(input.reportId)) {
         throw io::InvalidInput("incorrect report ID");
     }
+    if (!reportChecker.loadExperiment(input.experimentId)) {
+        throw io::InvalidInput("incorrect experiment ID");
+    }
 
-    std::unordered_set<std::int32_t> exhibitsActions;
-    std::unordered_set<std::int32_t> breakActions;
-    std::unordered_set<std::int32_t> exhibits;
+    std::vector<std::int32_t> exhibitsActions;
+    std::vector<std::int32_t> breakActions;
+    std::vector<std::int32_t> exhibits;
 
     for (const auto &event : input.history) {
         if (event.durationInSecs < 0) {
             throw io::InvalidInput("action with duration under 0 seconds?");
         }
 
-        if (event.exhibitId) {
-            exhibits.insert(event.exhibitId.value());
-        }
-        auto &dest = event.exhibitId ? breakActions : exhibitsActions;
+        auto &dest = event.exhibitId ? exhibitsActions : breakActions;
         for (auto action : event.actions) {
-            dest.insert(action);
+            dest.push_back(action);
+        }
+        if (event.exhibitId) {
+            exhibits.push_back(event.exhibitId.value());
         }
     }
 
-    if (!checker.checkExhibitsActionsIds(exhibitsActions)) {
+    if (!reportChecker.checkExhibitActionsIds(exhibitsActions)) {
         throw io::InvalidInput("incorrect exhibit action");
     }
-    if (!checker.checkBreakActionsIds(breakActions)) {
+    if (!reportChecker.checkBreakActionsIds(breakActions)) {
         throw io::InvalidInput("incorrect break action");
     }
     if (!checker.checkExhibitsIds(exhibits)) {

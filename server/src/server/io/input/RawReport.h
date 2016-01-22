@@ -27,6 +27,7 @@ public:
 
     RawReport(const communication::RawReport &thrift);
 
+    std::int32_t experimentId;
     std::int32_t reportId;
     std::vector<Event> history;
 };
