@@ -1,61 +1,50 @@
-<!DOCTYPE html>
+{% extends "base.html" %}
 {% load compress %}
 {% load staticfiles %}
 {% load jsvar %}
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% block script %}
+<script src="{% static "include/js/jquery.min.js" %}"></script>
+<script src="{% static "include/js/d3.v3.min.js" %}"></script>
+<script src="{% static "include/js/bootstrap.min.js" %}"></script>
+<script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
+<script src="{% static "include/js/ie10-viewport-bug-workaround.js" %}"></script>
+<script src="{% static "include/js/csrf.js" %}"></script>
 
-  <title>NUBZ</title>
+<!-- LEAFLET -->
+<script src="{% static "include/js/leaflet-src.js" %}"></script>
+<script src="{% static "include/js/easy-button.js" %}"></script>
 
-  <script src="{% static "include/js/jquery.min.js" %}"></script>
-  <script src="{% static "include/js/d3.v3.min.js" %}"></script>
-  <script src="{% static "include/js/bootstrap.min.js" %}"></script>
-  <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
-  <script src="{% static "include/js/ie10-viewport-bug-workaround.js" %}"></script>
-  <script src="{% static "include/js/csrf.js" %}"></script>
+<!-- Leaflet label -->
+<script src="{% static "include/js/Label.js" %}"></script>
+<script src="{% static "include/js/BaseMarkerMethods.js" %}"></script>
+<script src="{% static "include/js/Marker.Label.js" %}"></script>
+<script src="{% static "include/js/Path.Label.js" %}"></script>
+<script src="{% static "include/js/Map.Label.js" %}"></script>
+<script src="{% static "include/js/FeatureGroup.Label.js" %}"></script>
 
-  <!-- LEAFLET -->
-  <script src="{% static "include/js/leaflet-src.js" %}"></script>
-  <script src="{% static "include/js/easy-button.js" %}"></script>
+<!-- Leaflet drag -->
+<script src="{% static "include/js/SVG.js" %}"></script>
+<script src="{% static "include/js/Path.Transform.js" %}"></script>
+<script src="{% static "include/js/Path.Drag.js" %}"></script>
 
-  <!-- Leaflet label -->
-  <script src="{% static "include/js/Label.js" %}"></script>
-  <script src="{% static "include/js/BaseMarkerMethods.js" %}"></script>
-  <script src="{% static "include/js/Marker.Label.js" %}"></script>
-  <script src="{% static "include/js/Path.Label.js" %}"></script>
-  <script src="{% static "include/js/Map.Label.js" %}"></script>
-  <script src="{% static "include/js/FeatureGroup.Label.js" %}"></script>
+<!-- Leaflet edit -->
+<script src="{% static "include/js/Leaflet.draw.js" %}"></script>
+<script src="{% static "include/js/edit/handler/Edit.Poly.js" %}"></script>
+<script src="{% static "include/js/edit/handler/Edit.SimpleShape.js" %}"></script>
+<script src="{% static "include/js/edit/handler/Edit.Rectangle.js" %}"></script>
+{% endblock %}
 
-  <!-- Leaflet drag -->
-  <script src="{% static "include/js/SVG.js" %}"></script>
-  <script src="{% static "include/js/Path.Transform.js" %}"></script>
-  <script src="{% static "include/js/Path.Drag.js" %}"></script>
-
-  <!-- Leaflet edit -->
-  <script src="{% static "include/js/Leaflet.draw.js" %}"></script>
-  <script src="{% static "include/js/edit/handler/Edit.Poly.js" %}"></script>
-  <script src="{% static "include/js/edit/handler/Edit.SimpleShape.js" %}"></script>
-  <script src="{% static "include/js/edit/handler/Edit.Rectangle.js" %}"></script>
-
-  <!-- CSS -->
-  <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
-  <link href="{% static "include/css/leaflet.css" %}" rel="stylesheet" />
-  <link href="{% static "include/css/easy-button.css" %}" rel="stylesheet" />
-  <link href="{% static "include/css/leaflet.label.css" %}" rel="stylesheet" />
-  <link href="{% static "include/css/font-awesome.min.css" %}" rel="stylesheet" />
-  <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
-  <link href="{% static "css/base.css" %}" rel="stylesheet" />
-  {% compress js %}
-  <script type="text/coffeescript">
-    root = exports ? this
-    root.csrf_form = "{% csrf_token %}"
-  </script>
-  {% endcompress %}
-</head>
-<body>
+{% block css %}
+<!-- CSS -->
+<link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/leaflet.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/easy-button.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/leaflet.label.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/font-awesome.min.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+<link href="{% static "css/index.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block content %}
   {% compress js %}
   <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
   {% endcompress %}
@@ -108,5 +97,4 @@
     )
   </script>
   {% endcompress %}
-</body>
-</html>
+{% endblock %}

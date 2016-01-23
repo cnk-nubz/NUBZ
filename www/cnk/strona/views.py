@@ -5,12 +5,16 @@ from enum import Enum
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
+from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
 from django.conf import settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
+
+def get_const(name):
+    return getattr(settings, name, None)
 
 def _pingServer():
 	tc = ThriftCommunicator()
@@ -217,3 +221,19 @@ def createNewExhibit(request):
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)
+
+def surveys(request):
+	template = loader.get_template('surveys.html')
+	return HttpResponse(template.render(RequestContext(request)))
+
+def getSimpleQuestionDialog(request):
+	dialog = get_const("SIMPLE_QUESTION_DIALOG")
+	contextDict = {
+		'data': dialog['data']
+	}
+	html = render_to_string('dialog/dialog.html', contextDict)
+	retDict = {
+		'data': dialog,
+		'html': html.replace("\n", "")
+	}
+	return JsonResponse(retDict)

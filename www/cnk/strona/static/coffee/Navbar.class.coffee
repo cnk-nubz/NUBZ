@@ -16,7 +16,13 @@ root.Navbar = class Navbar extends root.View
             text: 'Edycja mapy'
             ref: root.EditMapPage
             refDiv: "#{@_containerId}-b"
-          }
+          },
+    ]
+    @jumpLinks = [
+      {
+        text: 'Badania'
+        href: '/badania'
+      }
     ]
     @_init()
 
@@ -49,9 +55,18 @@ root.Navbar = class Navbar extends root.View
          .classed "nav-link", true
          .html e.text
          .on "click", =>
-           @setActiveButton e.id
-           @setActiveView e
+             @setActiveButton e.id
+             @setActiveView e
     )
+
+    d3.map(@jumpLinks, (e, id) =>
+      content.append "li"
+        .append "a"
+          .html e.text
+          .on "click", =>
+            location.href = e.href
+    )
+
     @setActiveView @navLinks[initialPage]
     @_lastClicked = @navLinks[initialPage].id
 
