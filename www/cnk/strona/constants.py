@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 SIMPLE_QUESTION_DIALOG = {
     "data": [
         [
@@ -8,7 +9,7 @@ SIMPLE_QUESTION_DIALOG = {
         ],
         [
             "dialog/input.html", {
-                "placeholder": "Pytanie dla uzytkownika",
+                "placeholder": "Pytanie dla użytkownika",
                 "labelText": "Pytanie",
             }
         ],
@@ -26,7 +27,7 @@ SIMPLE_QUESTION_DIALOG = {
             "title": "Tworzenie nowego pytania",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
-            "inputError": "To pole jest wymagane.",
+            "inputError": u"Napis może zawierać tylko angielski alfabet oraz spacje.",
         },
         "style": {
             "inputErrorColor": "#D8000C"

@@ -1,5 +1,5 @@
 _data = null
-triedToSend = false
+inputPattern = /^[a-zA-Z\ ]+$/
 jQuery("#simpleQuestion").on "click", ->
   jQuery.ajaxSetup(
     headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -28,7 +28,7 @@ dialogCreated = ->
       jQuery(this).parent().next().css("color", _data.utils.style.inputErrorColor)
       jQuery(this).keyup( (e) ->
         obj = jQuery(this)
-        if e.keyCode is 8 and triedToSend and obj.val() is ""
+        if (e.keyCode is 8 and obj.val() is "") or not obj.val().match(inputPattern)
             showInputError(obj.parent().next())
         else
           obj.parent().next().html("")
@@ -48,7 +48,6 @@ closeButton = ->
 saveButton = ->
   label: _data.utils.text.saveButton
   action: (dialog) ->
-    triedToSend = true
     if validateForm()
       dialog.close()
 
