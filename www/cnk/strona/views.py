@@ -231,7 +231,7 @@ def getSimpleQuestionDialog(request):
 	contextDict = {
 		'data': dialog['data']
 	}
-	html = render_to_string('dialog/createDialog.html', contextDict)
+	html = render_to_string('dialog/dialog.html', contextDict)
 	retDict = {
 		'data': dialog,
 		'html': html.replace("\n", "")

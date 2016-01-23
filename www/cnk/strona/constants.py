@@ -25,7 +25,11 @@ SIMPLE_QUESTION_DIALOG = {
         "text": {
             "title": "Tworzenie nowego pytania",
             "saveButton": "Zapisz",
-            "cancelButton": "Anuluj"
+            "cancelButton": "Anuluj",
+            "inputError": "To pole jest wymagane.",
+        },
+        "style": {
+            "inputErrorColor": "#D8000C"
         }
     }
 }

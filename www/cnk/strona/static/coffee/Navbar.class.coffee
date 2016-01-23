@@ -55,9 +55,7 @@ root.Navbar = class Navbar extends root.View
          .classed "nav-link", true
          .html e.text
          .on "click", =>
-           if e.ref[0] is '/'
              location.href = e.ref
-           else
              @setActiveButton e.id
              @setActiveView e
     )
