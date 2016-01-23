@@ -1,38 +1,31 @@
-SIMPLE_QUESTION_DIALOG = [
-    [
-        "input", {
-            "placeholder": "Nazwa pytania",
-            "labelText": "Nazwa pytania",
-        }
+SIMPLE_QUESTION_DIALOG = {
+    "data": [
+        [
+            "dialog/input.html", {
+                "placeholder": "Nazwa pytania",
+                "labelText": "Nazwa pytania",
+            }
+        ],
+        [
+            "dialog/input.html", {
+                "placeholder": "Pytanie dla uzytkownika",
+                "labelText": "Pytanie",
+            }
+        ],
+        [
+            "dialog/radios.html", {
+                "radioGroup": "ansType",
+                "labelText": "Typ odpowiedzi",
+                "radioSize": "3",
+                "textList": ["Liczba", "Zdanie"]
+            }
+        ]
     ],
-    [
-        "input", {
-            "placeholder": "Pytanie dla uzytkownika",
-            "labelText": "Pytanie",
+    "utils": {
+        "text": {
+            "title": "Tworzenie nowego pytania",
+            "saveButton": "Zapisz",
+            "cancelButton": "Anuluj"
         }
-    ],
-    [
-        "radios", {
-            "radioGroup": "test",
-            "labelText": "Typ odpowiedzi",
-            "radioSize": "3",
-            "textList": ["Liczba", "Zdanie"]
-        }
-    ]
-]
-
-EXHIBIT_DIALOG = [
-    [
-        "input", {
-            "labelText": "Nazwa",
-            "withError": True
-        }
-    ],
-    [
-        "radios", {
-            "radioGroup": "rFloor",
-            "labelText": "Pietro",
-            "textList": ["0", "1", "brak"]
-        }
-    ]
-]
+    }
+}

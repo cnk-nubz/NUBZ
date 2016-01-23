@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load compress %}
+{% load staticfiles %}
+{% block script %}
+<script src="{% static "include/js/jquery.min.js" %}"></script>
+<script src="{% static "include/js/bootstrap.min.js" %}"></script>
+<script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
+<script src="{% static "include/js/csrf.js" %}"></script>
+{% endblock %}
+{% block css %}
+<link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
+<link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block content %}
+<center><button class="btn btn-default" id="simpleQuestion">Proste pytanie</button></center>
+{% compress js %}
+<script src="{% static "coffee/dialog/simpleQuestion.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% endblock %}

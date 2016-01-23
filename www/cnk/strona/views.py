@@ -13,7 +13,7 @@ from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
-def _(name):
+def get_const(name):
     return getattr(settings, name, None)
 
 def _pingServer():
@@ -222,28 +222,16 @@ def createNewExhibit(request):
 	}
 	return JsonResponse(data)
 
-def badania(request):
-	template = loader.get_template('badania.html')
+def surveys(request):
+	template = loader.get_template('surveys.html')
 	return HttpResponse(template.render(RequestContext(request)))
 
-def getExhibitDialog(request):
-	dialog = _("EXHIBIT_DIALOG")
-	contextDict = {
-		'data': dialog
-	}
-	html = render_to_string('dialog/exhibitDialog.html', contextDict)
-	retDict = {
-		'data': dialog,
-		'html': html.replace("\n", "")
-	}
-	return JsonResponse(retDict)
-
 def getSimpleQuestionDialog(request):
-	dialog = _("SIMPLE_QUESTION_DIALOG")
+	dialog = get_const("SIMPLE_QUESTION_DIALOG")
 	contextDict = {
-		'data': dialog
+		'data': dialog['data']
 	}
-	html = render_to_string('dialog/simpleQuestionDialog.html', contextDict)
+	html = render_to_string('dialog/createDialog.html', contextDict)
 	retDict = {
 		'data': dialog,
 		'html': html.replace("\n", "")
