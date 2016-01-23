@@ -55,7 +55,8 @@ validateForm = ->
   isValid = true
   jQuery "#dialog input[type=text]"
     .each( ->
-      if jQuery(this).val() is ""
+      text = jQuery(this).val()
+      if text is "" or not text.match(inputPattern)
         isValid = false
         showInputError(jQuery(this).parent().next())
     )
