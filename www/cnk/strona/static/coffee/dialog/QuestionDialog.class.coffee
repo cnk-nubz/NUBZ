@@ -1,0 +1,51 @@
+root = exports ? this
+root.QuestionDialog = class QuestionDialog
+  inputPattern: /^[a-zA-Z\ ]+$/
+  constructor: (@_url, @_button) ->
+    instance = this
+    jQuery(@_button).on "click", =>
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.ajax(
+        type: 'POST'
+        url: @_url
+        success: (data) =>
+          instance._data = data.data
+          BootstrapDialog.show(
+            message: data.html
+            title: data.data.utils.text.title
+            onshown: @_dialogCreated
+            closable: false
+            buttons: [@_closeButton(), @_saveButton()]
+          )
+      )
+
+  dialogCreated: -> return
+
+  _showInputError: (obj, message) =>
+    obj.html message
+    return
+
+  _closeButton: =>
+    label: @_data.utils.text.cancelButton
+    action: (dialog) ->
+      dialog.close()
+
+  _saveButton: =>
+    label: @_data.utils.text.saveButton
+    action: (dialog) =>
+      if @_validateForm()
+        dialog.close()
+
+  _validateForm: =>
+    isValid = true
+    instance = this
+    jQuery "#dialog input[type=text]"
+      .each( ->
+        text = jQuery(this).val()
+        if not text.match(instance.inputPattern)
+          isValid = false
+          instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.inputError)
+      )
+    isValid

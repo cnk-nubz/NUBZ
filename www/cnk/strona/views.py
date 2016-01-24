@@ -226,8 +226,7 @@ def surveys(request):
 	template = loader.get_template('surveys.html')
 	return HttpResponse(template.render(RequestContext(request)))
 
-def getSimpleQuestionDialog(request):
-	dialog = get_const("SIMPLE_QUESTION_DIALOG")
+def getDialog(request, dialog):
 	contextDict = {
 		'data': dialog['data']
 	}
@@ -237,3 +236,9 @@ def getSimpleQuestionDialog(request):
 		'html': html.replace("\n", "")
 	}
 	return JsonResponse(retDict)
+
+def getSimpleQuestionDialog(request):
+	return getDialog(request, get_const("SIMPLE_QUESTION_DIALOG"))
+
+def getMultipleChoiceQuestionDialog(request):
+    return getDialog(request, get_const("MULTIPLE_CHOICE_QUESTION_DIALOG"))

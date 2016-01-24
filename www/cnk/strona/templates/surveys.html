@@ -3,6 +3,9 @@
 {% load staticfiles %}
 {% block script %}
 <script src="{% static "include/js/jquery.min.js" %}"></script>
+{% compress js %}
+<script src="{% static "coffee/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
 <script src="{% static "include/js/bootstrap.min.js" %}"></script>
 <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
 <script src="{% static "include/js/csrf.js" %}"></script>
@@ -12,8 +15,17 @@
 <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block content %}
-<center><button class="btn btn-default" id="simpleQuestion">Proste pytanie</button></center>
+<center>
+  <button class="btn btn-default" id="simpleQuestion">Proste pytanie</button>
+  <button class="btn btn-default" id="multipleChoiceQuestion">Pytanie jedno/wielokrotnego wyboru</button>
+</center>
 {% compress js %}
-<script src="{% static "coffee/dialog/simpleQuestion.coffee" %}" type="text/coffeescript"></script>
+<script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/dialog/SimpleQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/dialog/MultipleChoiceQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
 {% endcompress %}
 {% endblock %}
