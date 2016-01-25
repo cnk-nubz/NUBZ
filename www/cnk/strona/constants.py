@@ -61,9 +61,9 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
         [
             "dialog/radios.html", {
                 "radioGroup": "ansType",
-                "labelText": "Ilość odpowiedzi",
+                "labelText": "Wybór",
                 "radioSize": "3",
-                "textList": ["jedna", "wiele"]
+                "textList": ["jednokrotny", "wielokrotny"]
             }
         ],
         [

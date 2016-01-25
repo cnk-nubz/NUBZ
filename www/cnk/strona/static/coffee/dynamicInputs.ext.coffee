@@ -23,6 +23,7 @@ jQuery.fn.dynamicInputs = (offset, keyUpFun, instance) ->
         eraseNumber(jQuery(".input-group:last", node))
     )
     jQuery("input", el).blur( ->
+      jQuery(this).val(jQuery.trim(jQuery(this).val()))
       text = jQuery(this).val()
       error = jQuery(this).parent().next()
       if not text.length and not error.is(':last-child')
@@ -33,8 +34,6 @@ jQuery.fn.dynamicInputs = (offset, keyUpFun, instance) ->
         jQuery(".input-group:not(:last)", node).each( (index) ->
           renumerateInput(this, index + 1)
         )
-      else
-        jQuery(this).val(jQuery.trim(text))
       return
     )
 

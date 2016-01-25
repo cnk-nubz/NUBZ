@@ -20,7 +20,11 @@ root.QuestionDialog = class QuestionDialog
           )
       )
 
-  dialogCreated: -> return
+  _dialogCreated: =>
+    jQuery("#dialog input[type=text]").blur( ->
+        jQuery(this).val(jQuery.trim(jQuery(this).val()))
+      )
+    return
 
   _showInputError: (obj, message) =>
     obj.html message

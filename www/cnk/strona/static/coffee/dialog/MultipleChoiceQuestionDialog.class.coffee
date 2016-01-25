@@ -1,6 +1,7 @@
 root = exports ? this
 class MultipleChoiceQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
+    super
     radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this

@@ -1,6 +1,7 @@
 root = exports ? this
 class SimpleQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
+    super
     radioGroup = @_data.data[2][1].radioGroup
     instance = this
     jQuery "#dialog label.#{radioGroup}"
