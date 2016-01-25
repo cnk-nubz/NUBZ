@@ -48,8 +48,6 @@ import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
-    public static final Integer TILE_SIDE_LEN = 256;
-
     private static final String LOG_TAG = "MapActivity";
     private static final String BREAK_NAME = "Przerwa";
     private static final String TITLE_PREFIX = "Piętro";
@@ -58,7 +56,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private static final Float MINIMUM_SCALE = 0.01f;
 
     private TileView tileView;
-    private Semaphore changeAndUpdateMutex, singleDialogMutex;
+    private Semaphore changeAndUpdateMutex;
     private MapState mapState;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
@@ -68,6 +66,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private Point lastClick;
     private ProgressDialog spinner;
     private ActionBarDrawerToggle drawerToggle;
+    private Integer openedDialogs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +75,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "onCreate execution");
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
-        singleDialogMutex = new Semaphore(1, true);
+        openedDialogs = 0;
         networkHandler = new NetworkHandler();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
@@ -635,13 +634,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Action listeners:
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
-        public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
-            if (singleDialogMutex.tryAcquire()) {
+        public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
+            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
+            if (openedDialogs == 0) {
+                openedDialogs++;
                 // only if exhibit is clicked first time
-                Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
-                Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
 
-                Integer floorId = ((ExhibitSpot) hotSpot).listId;
+                final Integer floorId = ((ExhibitSpot) hotSpot).listId;
                 showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
             }
         }
@@ -651,7 +650,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        singleDialogMutex.release();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                openedDialogs--;
+            }
+        });
 
         if (resultCode == RESULT_OK) {
             if (requestCode != BREAK_ID) {

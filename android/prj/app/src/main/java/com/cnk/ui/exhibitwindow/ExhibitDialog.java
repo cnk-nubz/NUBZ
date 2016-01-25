@@ -33,8 +33,6 @@ public class ExhibitDialog extends Activity {
     public static final String AVAILABLE_ACTIONS = "Available actions";
     public static final String SELECTED_ACTIONS = "Selected actions";
 
-    private static final Integer FULL_LAYOUT_DELAY_MS = 200;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,57 +46,37 @@ public class ExhibitDialog extends Activity {
 
         setContentView(R.layout.exhibit_dialog_layout);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                new PrepareDialogTask().execute();
-            }
-        }, FULL_LAYOUT_DELAY_MS);
-    }
+        actionsStrings = new ArrayList<>();
 
-    private class PrepareDialogTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            actionsStrings = new ArrayList<>();
-
-            List<Action> actions;
-            if (isBreak) {
-                actions = DataHandler.getInstance().getAllBreakActions();
-            } else {
-                actions = DataHandler.getInstance().getAllExhibitActions();
-            }
-            for (Action a : actions) {
-                actionsStrings.add(a.getText());
-            }
-            actionsAdapter = new ExhibitActionsAdapter(ExhibitDialog.this, actionsStrings);
-
-            return null;
+        List<Action> actions;
+        if (isBreak) {
+            actions = DataHandler.getInstance().getAllBreakActions();
+        } else {
+            actions = DataHandler.getInstance().getAllExhibitActions();
         }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-
-            Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
-            cancel.setOnClickListener(new CancelListener());
-
-            Button finish = (Button) findViewById(R.id.bExbibitDialogFinish);
-            finish.setOnClickListener(new FinishListener());
-
-            AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) findViewById(R.id.tvExhibitDialogName);
-            tvExhibitDialogName.setText(name);
-            tvExhibitDialogName.setMinTextSize(2f);
-            tvExhibitDialogName.setTextSize(100f);
-
-            GridView gridView = (GridView) findViewById(R.id.gvActions);
-            gridView.setAdapter(actionsAdapter);
-
-            ProgressBar progressBar = (ProgressBar) findViewById(R.id.pbExhibitDialog);
-            progressBar.setVisibility(View.INVISIBLE);
-
-            gridView.setVisibility(View.VISIBLE);
+        for (Action a : actions) {
+            actionsStrings.add(a.getText());
         }
+        actionsAdapter = new ExhibitActionsAdapter(ExhibitDialog.this, actionsStrings);
+
+        Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
+        cancel.setOnClickListener(new CancelListener());
+
+        Button finish = (Button) findViewById(R.id.bExbibitDialogFinish);
+        finish.setOnClickListener(new FinishListener());
+
+        AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) findViewById(R.id.tvExhibitDialogName);
+        tvExhibitDialogName.setText(name);
+        tvExhibitDialogName.setMinTextSize(2f);
+        tvExhibitDialogName.setTextSize(100f);
+
+        GridView gridView = (GridView) findViewById(R.id.gvActions);
+        gridView.setAdapter(actionsAdapter);
+
+        ProgressBar progressBar = (ProgressBar) findViewById(R.id.pbExhibitDialog);
+        progressBar.setVisibility(View.INVISIBLE);
+
+        gridView.setVisibility(View.VISIBLE);
     }
 
     @Override
