@@ -12,7 +12,8 @@ class SimpleQuestionDialog extends root.QuestionDialog
         jQuery(this).parent().next().css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup( (e) ->
           obj = jQuery(this)
-          if not obj.val().match(instance.inputPattern)
+          regex = new RegExp(instance._data.utils.regex.input)
+          if not obj.val().match regex
               instance._showInputError(obj.parent().next(), instance._data.utils.text.inputError)
           else
             obj.parent().next().html("")

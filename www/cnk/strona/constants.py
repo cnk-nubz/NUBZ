@@ -1,4 +1,10 @@
 # -*- coding: UTF-8 -*-
+# ================
+# THOSE ARE CONSTANTS FOR NORMAL SIZE OF BOOTSTRAP DIALOG
+# DEFAULT LABEL SIZE: 3
+# DEFAULT INPUT SIZE: 9
+# ALL ROWS MUST SUM UP TO 12 OR LESS
+# ================
 SIMPLE_QUESTION_DIALOG = {
     "data": [
         [
@@ -31,6 +37,9 @@ SIMPLE_QUESTION_DIALOG = {
         },
         "style": {
             "inputErrorColor": "#D8000C"
+        },
+        "regex": {
+            "input": "^[a-zA-Z\ ]+$"
         }
     }
 }
@@ -74,6 +83,14 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
         },
         "style": {
             "inputErrorColor": "#D8000C"
+        },
+        "regex": {
+            "input": "^[a-zA-Z\ ]+$",
+            "dynamicInput": "^[a-zA-Z\ ]*$"
+        },
+        "default": {
+            "radioGroup": "ansType",
+            "labelSize": "3"
         }
     }
 }

@@ -1,6 +1,5 @@
 root = exports ? this
 root.QuestionDialog = class QuestionDialog
-  inputPattern: /^[a-zA-Z\ ]+$/
   constructor: (@_url, @_button) ->
     instance = this
     jQuery(@_button).on "click", =>
@@ -44,7 +43,8 @@ root.QuestionDialog = class QuestionDialog
     jQuery "#dialog input[type=text]"
       .each( ->
         text = jQuery(this).val()
-        if not text.match(instance.inputPattern)
+        regex = new RegExp(instance._data.utils.regex.input)
+        if not text.match regex
           isValid = false
           instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.inputError)
       )
