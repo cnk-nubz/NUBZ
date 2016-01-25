@@ -34,6 +34,7 @@ SIMPLE_QUESTION_DIALOG = {
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
             "inputError": u"Napis może zawierać tylko angielski alfabet oraz spacje.",
+            "emptyInputError": "Napis nie może być pusty"
         },
         "style": {
             "inputErrorColor": "#D8000C"
@@ -79,7 +80,7 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
             "inputError": "Napis może zawierać tylko angielski alfabet oraz spacje.",
-            "emptyInput": "Potrzebna jest jakakolwiek odpowiedź."
+            "emptyInputError": ["Napis nie może być pusty", "Potrzebna jest jakakolwiek odpowiedź."]
         },
         "style": {
             "inputErrorColor": "#D8000C"

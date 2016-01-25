@@ -21,14 +21,27 @@ root.QuestionDialog = class QuestionDialog
       )
 
   _dialogCreated: =>
+    instance = this
     jQuery("#dialog input[type=text]").blur( ->
-        jQuery(this).val(jQuery.trim(jQuery(this).val()))
+        obj = jQuery(this)
+        error = obj.parent().next()
+        obj.val(jQuery.trim(obj.val()))
+        if not obj.val().length
+          instance._showInputError(error, instance._getEmptyInputError())
+        else
+          instance._showInputError(error, instance._getInputError())
       )
     return
 
   _showInputError: (obj, message) =>
     obj.html message
     return
+
+  _getEmptyInputError: =>
+    @_data.utils.text.emptyInputError
+
+  _getInputError: =>
+    @_data.utils.text.inputError
 
   _closeButton: =>
     label: @_data.utils.text.cancelButton

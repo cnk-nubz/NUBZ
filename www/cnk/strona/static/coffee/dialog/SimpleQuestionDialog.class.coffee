@@ -14,8 +14,12 @@ class SimpleQuestionDialog extends root.QuestionDialog
         jQuery(this).keyup( (e) ->
           obj = jQuery(this)
           regex = new RegExp(instance._data.utils.regex.input)
+          error = obj.parent().next()
           if not obj.val().match regex
-              instance._showInputError(obj.parent().next(), instance._data.utils.text.inputError)
+              if obj.val().length
+                instance._showInputError(error, instance._data.utils.text.inputError)
+              else
+                instance._showInputError(error, instance._data.utils.text.emptyInputError)
           else
             obj.parent().next().html("")
         )
