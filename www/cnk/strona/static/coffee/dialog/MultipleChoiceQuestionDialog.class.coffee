@@ -1,8 +1,5 @@
 root = exports ? this
 class MultipleChoiceQuestionDialog extends root.QuestionDialog
-  _getEmptyInputError: =>
-    @_data.utils.text.emptyInputError[0]
-
   _dialogCreated: =>
     super
     radioGroup = @_data.utils.default.radioGroup
@@ -33,7 +30,7 @@ class MultipleChoiceQuestionDialog extends root.QuestionDialog
           if obj.val().length
             @_showInputError(error, @_data.utils.text.inputError)
           else
-            @_showInputError(error, @_data.utils.text.emptyInputError[0])
+            @_showInputError(error, @_data.utils.text.emptyInputError)
         else
           error.html("")
         return
@@ -56,7 +53,7 @@ class MultipleChoiceQuestionDialog extends root.QuestionDialog
     if inputs.length is 1 and not inputs.val().length
       isValid = false
       error = inputs.parent().next()
-      instance._showInputError(error, @_data.utils.text.emptyInputError[1])
+      instance._showInputError(error, @_data.utils.text.needAnswerError)
     isValid
 
 new MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', "#multipleChoiceQuestion")

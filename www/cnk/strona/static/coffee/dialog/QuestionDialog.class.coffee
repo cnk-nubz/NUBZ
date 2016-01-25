@@ -28,8 +28,6 @@ root.QuestionDialog = class QuestionDialog
         obj.val(jQuery.trim(obj.val()))
         if not obj.val().length
           instance._showInputError(error, instance._getEmptyInputError())
-        else
-          instance._showInputError(error, instance._getInputError())
       )
     return
 
