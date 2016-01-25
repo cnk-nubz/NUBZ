@@ -15,6 +15,7 @@ cur.execute('DROP TABLE IF EXISTS reports')
 cur.execute('DROP TABLE IF EXISTS actions')
 cur.execute('DROP TABLE IF EXISTS active_experiment')
 cur.execute('DROP TABLE IF EXISTS experiments')
+cur.execute('DROP TABLE IF EXISTS simple_questions')
 
 ######### create
 cur.execute('''
@@ -73,13 +74,6 @@ cur.execute('''
 ''')
 
 cur.execute('''
-	CREATE TABLE reports (
-		id INT NOT NULL,
-		doc JSONB NOT NULL
-	)
-''')
-
-cur.execute('''
 	CREATE TABLE actions (
 		id SERIAL PRIMARY KEY,
 		text VARCHAR NOT NULL
@@ -87,9 +81,26 @@ cur.execute('''
 ''')
 
 cur.execute('''
+	CREATE TABLE simple_questions (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR NOT NULL,
+		question VARCHAR NOT NULL,
+		number_answer BOOLEAN NOT NULL
+	)
+''')
+
+cur.execute('''
 	CREATE TABLE experiments (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
+		doc JSONB NOT NULL
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE reports (
+		id INT NOT NULL,
+		experiment_id INT NOT NULL REFERENCES experiments(id),
 		doc JSONB NOT NULL
 	)
 ''')
@@ -133,40 +144,72 @@ cur.execute('''
 		('exhibit 5 floor 1', 5, 250, 250, 250, 250, 1)
 ''')
 
+# experiments
+cur.execute('''
+	INSERT INTO experiments (name, doc) VALUES
+		('badanie testowe', '
+			{
+				"actions": [5, 1, 4, 3, 7, 8],
+				"breakActions": [12, 9, 11],
+				"surveyBefore": {
+					"typesOrder": [0, 0],
+					"simpleQuestions": [2, 1]
+				},
+				"surveyAfter": {
+					"typesOrder": [0],
+					"simpleQuestions": [1]
+				}
+			}
+		')
+''')
+
 # reports
 cur.execute('''
 	INSERT INTO reports VALUES
-		(1, '
+		(1, 1, '
 			{
-				"history": [{
+				"history": [
+					{
 						"exhibitId": 2,
 						"durationInSecs": 15,
-						"actions": [1, 2, 4]
+						"actions": [1, 4, 7]
 					}, {
-						"exhibitId": 0,
+						"exhibitId": 1,
 						"durationInSecs": 30,
 						"actions": [1]
 					}, {
+						"exhibitID": 2,
 						"durationInSecs": 140,
-						"actions": [5]
-					}
-				]
-			}
-		'),
-		(3, '
-			{
-				"history": [{
-						"durationInSecs": 17,
 						"actions": []
+					}, {
+						"durationInSecs": 17,
+						"actions": [12, 9]
 					}, {
 						"exhibitId": 1,
 						"durationInSecs": 20,
-						"actions": [1, 2]
+						"actions": [1, 3]
 					}, {
 						"durationInSecs": 14,
-						"actions": [5]
+						"actions": [11]
 					}
-				]
+				],
+				"surveyBefore": {
+					"typesOrder": [0, 0],
+					"simpleQuestions": [
+						{
+							"answer": "12345"
+						}, {
+						}
+					]
+				},
+				"surveyAfter": {
+					"typesOrder": [0],
+					"simpleQuestions": [
+						{
+							"answer": "test answer for simple question 1"
+						}
+					]
+				}
 			}
 		')
 ''')
@@ -188,15 +231,11 @@ cur.execute('''
 		('odpoczywa')
 ''')
 
-# experiments
+# simple questions
 cur.execute('''
-	INSERT INTO experiments (name, doc) VALUES
-		('badanie testowe', '
-			{
-				"actions": [5, 1, 4, 3, 7, 8],
-				"breakActions": [12, 9, 11]
-			}
-		')
+	INSERT INTO simple_questions (name, question, number_answer) VALUES
+		('simple question 1 - str', 'test test test string answer', FALSE),
+		('simple question 2 - num', 'test test test num answer', TRUE)
 ''')
 
 # current experiment

@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <type_traits>
+
+#include <boost/optional.hpp>
 
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
@@ -10,6 +13,13 @@
 
 const rapidjson::Value &getNode(const rapidjson::Document &root, const std::string &path);
 const rapidjson::Value &getNode(const rapidjson::Value &root, const std::string &path);
+
+std::int32_t parseInt(const rapidjson::Value &root, const std::string &path);
+std::string parseString(const rapidjson::Value &root, const std::string &path);
+
+boost::optional<std::int32_t> parseOptInt(const rapidjson::Value &root, const std::string &path);
+boost::optional<std::string> parseOptString(const rapidjson::Value &root, const std::string &path);
+
 rapidjson::Document parseJson(const std::string &str);
 std::string jsonToString(const rapidjson::Value &json);
 rapidjson::GenericStringRef<char> toStupidStringAdapter(const std::string &str);
@@ -27,6 +37,7 @@ auto parseArray(const rapidjson::Value &json, Parser &&parser)
 }
 
 std::vector<std::int32_t> parseIntArray(const rapidjson::Value &json);
+std::vector<std::string> parseStringArray(const rapidjson::Value &json);
 
 // Translator = rapidjson::Value(const Raw &, rapidjson::Document::AllocatorType &)
 template <class Raw, class Translator>

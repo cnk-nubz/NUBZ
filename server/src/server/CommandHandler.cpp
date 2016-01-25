@@ -22,6 +22,8 @@ void CommandHandler::shutdown() {
     LOG(INFO) << "shutdown end";
 }
 
+#pragma mark - PING
+
 std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     LOG(INFO) << "ping start";
     LOG(INFO) << "input: " << msg;
@@ -36,6 +38,8 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
 
     return output;
 }
+
+#pragma mark - MAP
 
 void CommandHandler::getMapImages(communication::MapImagesResponse &response,
                                   const communication::MapImagesRequest &request) {
@@ -81,6 +85,8 @@ void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &resp
     LOG(INFO) << "getMapImageTiles end";
 }
 
+#pragma mark - EXHIBITS
+
 void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
                                  const communication::ExhibitsRequest &request) {
     LOG(INFO) << "getExhibits start";
@@ -94,30 +100,6 @@ void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExhibits end";
-}
-
-std::int32_t CommandHandler::getIdForNewReport() {
-    LOG(INFO) << "getIdForNewReport start";
-
-    std::int32_t response =
-        withExceptionTranslation([&]() { return command::ReserveIdForReportCommand{db}(); });
-
-    LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getIdForNewReport end";
-
-    return response;
-}
-
-void CommandHandler::saveReport(const communication::RawReport &report) {
-    LOG(INFO) << "saveReport start";
-    LOG(INFO) << "input: " << report;
-
-    withExceptionTranslation([&]() {
-        io::input::RawReport input(report);
-        command::SaveRawReportCommand{db}(input);
-    });
-
-    LOG(INFO) << "saveReport end";
 }
 
 void CommandHandler::createNewExhibit(communication::NewExhibitResponse &response,
@@ -147,6 +129,8 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << "setExhibitsFrames end";
 }
 
+#pragma mark - EXPERIMENTS
+
 void CommandHandler::getCurrentExperiment(communication::CurrentExperimentResponse &response) {
     LOG(INFO) << "getExperimentData start";
 
@@ -158,6 +142,34 @@ void CommandHandler::getCurrentExperiment(communication::CurrentExperimentRespon
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getExperimentData end";
 }
+
+#pragma mark - REPORTS
+
+std::int32_t CommandHandler::getIdForNewReport() {
+    LOG(INFO) << "getIdForNewReport start";
+
+    std::int32_t response =
+        withExceptionTranslation([&]() { return command::ReserveIdForReportCommand{db}(); });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getIdForNewReport end";
+
+    return response;
+}
+
+void CommandHandler::saveReport(const communication::RawReport &report) {
+    LOG(INFO) << "saveReport start";
+    LOG(INFO) << "input: " << report;
+
+    withExceptionTranslation([&]() {
+        io::input::RawReport input(report);
+        command::SaveRawReportCommand{db}(input);
+    });
+
+    LOG(INFO) << "saveReport end";
+}
+
+#pragma mark - ACTIONS
 
 void CommandHandler::createNewAction(communication::NewActionResponse &response,
                                      const communication::NewActionRequest &request) {
@@ -184,5 +196,28 @@ void CommandHandler::getActions(communication::ActionsResponse &response) {
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << "getActions end";
+}
+
+#pragma mark - SIMPLE QUESTIONS
+
+void CommandHandler::createNewSimpleQuestion(
+    communication::NewSimpleQuestionResponse &response,
+    const communication::NewSimpleQuestionRequest &request) {
+    LOG(INFO) << "createNewSimpleQuestion start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "createNewSimpleQuestion end";
+}
+
+void CommandHandler::getSimpleQuestions(communication::SimpleQuestionsResponse &response) {
+    LOG(INFO) << "getSimpleQuestions start";
+
+    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << "getSimpleQuestions end";
 }
 }

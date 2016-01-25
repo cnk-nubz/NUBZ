@@ -1,4 +1,4 @@
-#include <boost/none_t.hpp>
+#include <boost/none.hpp>
 
 #include <db/command/GetExperiments.h>
 #include <db/command/GetCurrentExperiment.h>
@@ -22,7 +22,7 @@ bool ReportChecker::loadExperiment(std::int32_t experimentId) {
     if (!getExperiments.getResult().empty()) {
         experiment = getExperiments.getResult().front();
     } else {
-        experiment = boost::none_t{};
+        experiment = boost::none;
     }
     return (bool)experiment;
 }
