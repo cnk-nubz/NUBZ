@@ -9,5 +9,6 @@ urlpatterns = [
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
 	url(r'badania/$', views.surveys, name='surveys'),
     url(r'getSimpleQuestionDialog/$', views.getSimpleQuestionDialog, name='getSimpleQuestionDialog'),
-    url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog')
+    url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
+    url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog')
 ]
