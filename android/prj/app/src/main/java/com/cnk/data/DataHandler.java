@@ -317,6 +317,10 @@ public class DataHandler extends Observable {
 
     public Resolution getOriginalResolution(Integer floor) {
         Resolution originalRes = dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+        if (originalRes == null) {
+            Log.e(LOG_TAG, "Original res is null");
+            System.exit(1);
+        }
         return originalRes;
     }
 
@@ -327,6 +331,10 @@ public class DataHandler extends Observable {
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
         DetailLevelRes res = dbHelper.getDetailLevelRes(floor, detailLevel);
+        if (res == null) {
+            Log.e(LOG_TAG, "Detail level res is null");
+            System.exit(1);
+        }
         return res;
     }
 
