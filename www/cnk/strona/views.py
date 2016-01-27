@@ -242,3 +242,6 @@ def getSimpleQuestionDialog(request):
 
 def getMultipleChoiceQuestionDialog(request):
     return getDialog(request, get_const("MULTIPLE_CHOICE_QUESTION_DIALOG"))
+
+def getNewActionDialog(request):
+    return getDialog(request, get_const("NEW_ACTION_DIALOG"))

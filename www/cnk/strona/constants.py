@@ -96,3 +96,29 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
         }
     }
 }
+
+NEW_ACTION_DIALOG = {
+    "data": [
+        [
+            "dialog/input.html", {
+                "placeholder": "Akcja",
+                "labelText": "Akcja",
+            }
+        ]
+    ],
+    "utils": {
+        "text": {
+            "title": "Tworzenie nowej akcji",
+            "saveButton": "Zapisz",
+            "cancelButton": "Anuluj",
+            "inputError": u"Napis może zawierać tylko angielski alfabet, cyfry oraz spacje.",
+            "emptyInputError": "Napis nie może być pusty"
+        },
+        "style": {
+            "inputErrorColor": "#D8000C"
+        },
+        "regex": {
+            "input": "^[a-zA-Z0-9\ ]+$"
+        }
+    }
+}
