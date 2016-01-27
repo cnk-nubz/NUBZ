@@ -224,8 +224,14 @@ public class DataHandler extends Observable {
         if (tileFilename == null) {
             tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
 
+            if (tileFilename == null) {
+                return null;
+            }
+
             cachedTileAdresses.put(tileCode, tileFilename);
         }
+
+
 
         Bitmap bmp = null;
         InputStream in = null;
