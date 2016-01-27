@@ -31,7 +31,7 @@ public class MapDownloadTask extends ServerTask {
         super(notificator);
     }
 
-    public void performInSession(Server.Client client) throws TException, IOException {
+    public void performInSession(Server.Client client) throws TException {
         MapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
         boolean floor1Update = (response.getLevelImageUrls().get(Consts.FLOOR1) != null);
@@ -57,7 +57,7 @@ public class MapDownloadTask extends ServerTask {
     }
 
     private void downloadTilesUpdate(Server.Client client, boolean floor1Update,
-                                     boolean floor2Update, Integer version) throws TException, IOException {
+                                     boolean floor2Update, Integer version) throws TException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
         MapImageTilesResponse floor1Response = null;
         MapImageTilesResponse floor2Response = null;
@@ -72,7 +72,7 @@ public class MapDownloadTask extends ServerTask {
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2);
+        DataHandler.getInstance().setMaps(version, floor1, floor2, 0);
     }
 
     private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {

@@ -1,10 +1,16 @@
 package com.cnk;
 
+import android.app.Application;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;

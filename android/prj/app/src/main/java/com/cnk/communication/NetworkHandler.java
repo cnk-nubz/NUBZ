@@ -2,7 +2,6 @@ package com.cnk.communication;
 
 import android.util.Log;
 
-import com.cnk.utilities.Consts;
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;
@@ -11,6 +10,7 @@ import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
 import com.cnk.notificators.Notificator;
+import com.cnk.utilities.Consts;
 
 import java.util.Observable;
 import java.util.Observer;

@@ -71,6 +71,7 @@ public class DataHandler extends Observable {
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
+    private static final Integer MAX_TRIES = 3;
 
     private final Map<Integer, String> cachedTileAdresses;
 
@@ -108,22 +109,52 @@ public class DataHandler extends Observable {
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else
-    public void startNewRaport() throws IOException {
+    public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId);
-        String path = saveRaport(currentRaport);
+        String path = "";
+        try {
+            path = saveRaport(currentRaport);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in startNewRaport");
+            System.exit(1);
+        }
+
         dbHelper.setRaportFile(newId, path);
     }
 
     // only modifies file of raport in progress, which is not used anywhere else at the time
-    public void addEventToRaport(RaportEvent event) throws IOException {
+    public void addEventToRaport(RaportEvent event, int tryNo) {
         currentRaport.addEvent(event);
-        saveRaport(currentRaport);
+        try {
+            saveRaport(currentRaport);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in addEventToRaport");
+            if (tryNo > MAX_TRIES) {
+                System.exit(1);
+            } else {
+                addEventToRaport(event, tryNo + 1);
+            }
+        }
+
     }
 
     // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
-    public void markRaportAsReady() throws IOException {
-        saveRaport(currentRaport);
+    public void markRaportAsReady(int tryNo) {
+        try {
+            saveRaport(currentRaport);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in markRaportAsReady");
+            if (tryNo > MAX_TRIES) {
+                System.exit(1);
+            } else {
+                markRaportAsReady(tryNo + 1);
+                return;
+            }
+        }
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
     }
@@ -157,12 +188,24 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) {
         Log.i(LOG_TAG, "Setting new maps");
         setChanged();
-
-        Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
-        Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
+        Boolean floor0Changed = false;
+        Boolean floor1Changed = false;
+        try {
+            floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
+            floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in setMaps, downloadAndSave");
+            if (tryNo > MAX_TRIES) {
+                System.exit(1);
+            } else {
+                setMaps(version, floor0, floor1, tryNo + 1);
+                return;
+            }
+        }
 
         if (floor0Changed && floor1Changed) {
             notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
@@ -172,14 +215,27 @@ public class DataHandler extends Observable {
             notifyObservers(Item.FLOOR_1_MAP_CHANGING);
         }
 
-        if (floor0Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                    + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
+        try {
+            if (floor0Changed) {
+                FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                        + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
+            }
+            if (floor1Changed) {
+                FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                        + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOEXception in setMaps, rename directories");
+            if (tryNo > MAX_TRIES) {
+                System.exit(1);
+            } else {
+                setMaps(version, floor0, floor1, tryNo + 1);
+                return;
+            }
         }
-        if (floor1Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                            + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
-        }
+
+
 
         cachedTileAdresses.clear();
 
@@ -216,10 +272,8 @@ public class DataHandler extends Observable {
     }
 
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        String tileFilename = null;
         Integer tileCode = getTileCode(floor, detailLevel, row, column);
-
-        tileFilename = cachedTileAdresses.get(tileCode);
+        String tileFilename = cachedTileAdresses.get(tileCode);
 
         if (tileFilename == null) {
             tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
@@ -230,8 +284,6 @@ public class DataHandler extends Observable {
 
             cachedTileAdresses.put(tileCode, tileFilename);
         }
-
-
 
         Bitmap bmp = null;
         InputStream in = null;
@@ -347,9 +399,11 @@ public class DataHandler extends Observable {
         String dir = DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
         String tmpFile = dir + TMP;
+        String realFile = "";
         FileHandler.getInstance().saveSerializable(raport, tmpFile);
-        String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
+        realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
         FileHandler.getInstance().renameFile(tmpFile, realFile);
+
         return dir + realFile;
     }
 }

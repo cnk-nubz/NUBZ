@@ -6,6 +6,7 @@ import com.cnk.communication.Server;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
@@ -52,7 +53,7 @@ public abstract class ServerTask extends Task {
 
     }
 
-    protected abstract void performInSession(Server.Client client) throws Exception;
+    protected abstract void performInSession(Server.Client client) throws TException;
 
     private TFramedTransport openSocket(Integer tries) {
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
