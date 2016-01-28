@@ -1,23 +1,21 @@
-#ifndef SERVER_IO__SET_EXHIBIT_FRAME_REQUEST__H
-#define SERVER_IO__SET_EXHIBIT_FRAME_REQUEST__H
+#ifndef SERVER_IO_INPUT__SET_EXHIBIT_FRAME_REQUEST__H
+#define SERVER_IO_INPUT__SET_EXHIBIT_FRAME_REQUEST__H
 
 #include <cstdint>
 
 #include <communication/structs_types.h>
 
+#include <server/io/Frame.h>
+
 namespace server {
 namespace io {
 namespace input {
 
-class SetExhibitFrameRequest {
-public:
+struct SetExhibitFrameRequest {
     SetExhibitFrameRequest(const communication::SetExhibitFrameRequest &thrift);
 
     std::int32_t exhibitId;
-    std::int32_t newX;
-    std::int32_t newY;
-    std::int32_t newWidth;
-    std::int32_t newHeight;
+    Frame frame;
 };
 }
 }

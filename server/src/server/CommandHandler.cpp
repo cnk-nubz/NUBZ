@@ -1,8 +1,9 @@
 #include <iostream>
 
+#include "io/input/HelloMsg.h"
+#include "io/utils.h"
 #include "CommandHandler.h"
 #include "commands.h"
-#include "io.h"
 
 namespace server {
 
@@ -14,18 +15,18 @@ void CommandHandler::setServer(apache::thrift::server::TServer *srv) {
 }
 
 void CommandHandler::shutdown() {
-    LOG(INFO) << "shutdown start";
+    LOG(INFO) << __func__ << " start";
 
     assert(srv);
     srv->stop();
 
-    LOG(INFO) << "shutdown end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - PING
 
 std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
-    LOG(INFO) << "ping start";
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << msg;
 
     std::int32_t output = withExceptionTranslation([&]() {
@@ -34,32 +35,32 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     });
 
     LOG(INFO) << "output: " << output;
-    LOG(INFO) << "ping end";
+    LOG(INFO) << __func__ << " end";
 
     return output;
 }
 
 #pragma mark - MAP
 
-void CommandHandler::getMapImages(communication::MapImagesResponse &response,
-                                  const communication::MapImagesRequest &request) {
-    LOG(INFO) << "getMapImages start";
+void CommandHandler::getNewMapImages(communication::NewMapImagesResponse &response,
+                                     const communication::NewMapImagesRequest &request) {
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::MapImagesRequest input(request);
-        io::output::MapImagesResponse output = command::GetMapImagesCommand{db}(input);
+        io::input::NewMapImagesRequest input(request);
+        io::output::NewMapImagesResponse output = command::GetNewMapImagesCommand{db}(input);
         response = output.toThrift();
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getMapImages end";
+    LOG(INFO) << __func__ << " end";
 }
 
 void CommandHandler::setMapImage(const communication::SetMapImageRequest &request) {
     std::lock_guard<std::mutex> lock(setMapLock);
 
-    LOG(INFO) << "setMapImage start";
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
@@ -67,12 +68,12 @@ void CommandHandler::setMapImage(const communication::SetMapImageRequest &reques
         command::SetMapImageCommand{db}(input);
     });
 
-    LOG(INFO) << "setMapImage end";
+    LOG(INFO) << __func__ << " end";
 }
 
 void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &response,
                                       const communication::MapImageTilesRequest &request) {
-    LOG(INFO) << "getMapImageTiles start";
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
@@ -82,43 +83,55 @@ void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &resp
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getMapImageTiles end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - EXHIBITS
 
-void CommandHandler::getExhibits(communication::ExhibitsResponse &response,
-                                 const communication::ExhibitsRequest &request) {
-    LOG(INFO) << "getExhibits start";
+void CommandHandler::getNewExhibits(communication::NewExhibitsResponse &response,
+                                    const communication::NewExhibitsRequest &request) {
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::ExhibitsRequest input(request);
-        io::output::ExhibitsResponse output = command::GetExhibitsCommand{db}(input);
+        io::input::NewExhibitsRequest input(request);
+        io::output::NewExhibitsResponse output = command::GetNewExhibitsCommand{db}(input);
         response = output.toThrift();
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getExhibits end";
+    LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::createNewExhibit(communication::NewExhibitResponse &response,
-                                      const communication::NewExhibitRequest &request) {
-    LOG(INFO) << "createNewExhibit start";
+void CommandHandler::createExhibit(communication::Exhibit &response,
+                                   const communication::CreateExhibitRequest &request) {
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::NewExhibitRequest input(request);
-        io::output::NewExhibitResponse output = command::CreateNewExhibitCommand{db}(input);
+        io::input::CreateExhibitRequest input(request);
+        io::Exhibit output = command::CreateExhibitCommand{db}(input);
         response = output.toThrift();
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "createNewExhibit end";
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getAllExhibits(std::vector<communication::Exhibit> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetAllExhibitsCommand{db}();
+        response = server::io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
 }
 
 void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest &request) {
-    LOG(INFO) << "setExhibitsFrames start";
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
@@ -126,13 +139,13 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
         command::SetExhibitFrameCommand{db}(input);
     });
 
-    LOG(INFO) << "setExhibitsFrames end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - EXPERIMENTS
 
 void CommandHandler::getCurrentExperiment(communication::CurrentExperimentResponse &response) {
-    LOG(INFO) << "getExperimentData start";
+    LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
         io::output::CurrentExperimentResponse output = command::GetCurrentExperimentCommand{db}();
@@ -140,25 +153,25 @@ void CommandHandler::getCurrentExperiment(communication::CurrentExperimentRespon
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getExperimentData end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {
-    LOG(INFO) << "getIdForNewReport start";
+    LOG(INFO) << __func__ << " start";
 
     std::int32_t response =
         withExceptionTranslation([&]() { return command::ReserveIdForReportCommand{db}(); });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getIdForNewReport end";
+    LOG(INFO) << __func__ << " end";
 
     return response;
 }
 
 void CommandHandler::saveReport(const communication::RawReport &report) {
-    LOG(INFO) << "saveReport start";
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << report;
 
     withExceptionTranslation([&]() {
@@ -166,58 +179,65 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
         command::SaveRawReportCommand{db}(input);
     });
 
-    LOG(INFO) << "saveReport end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - ACTIONS
 
-void CommandHandler::createNewAction(communication::NewActionResponse &response,
-                                     const communication::NewActionRequest &request) {
-    LOG(INFO) << "createNewAction start";
+void CommandHandler::createAction(communication::Action &response,
+                                  const communication::CreateActionRequest &request) {
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::NewActionRequest input(request);
-        io::output::NewActionResponse output = command::CreateNewActionCommand{db}(request);
+        io::input::CreateActionRequest input(request);
+        io::Action output = command::CreateActionCommand{db}(input);
         response = output.toThrift();
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "createNewAction end";
+    LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::getActions(communication::ActionsResponse &response) {
-    LOG(INFO) << "getActions start";
+void CommandHandler::getAllActions(std::vector<communication::Action> &response) {
+    LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        io::output::ActionsResponse output = command::GetActionsCommand{db}();
-        response = output.toThrift();
+        auto output = command::GetAllActionsCommand{db}();
+        response = ioToThrift(output);
     });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getActions end";
+    LOG(INFO) << __func__ << " end";
 }
 
 #pragma mark - SIMPLE QUESTIONS
 
-void CommandHandler::createNewSimpleQuestion(
-    communication::NewSimpleQuestionResponse &response,
-    const communication::NewSimpleQuestionRequest &request) {
-    LOG(INFO) << "createNewSimpleQuestion start";
+void CommandHandler::createSimpleQuestion(
+    communication::SimpleQuestion &response,
+    const communication::CreateSimpleQuestionRequest &request) {
+    LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        io::input::CreateSimpleQuestionRequest input(request);
+        io::SimpleQuestion output = command::CreateSimpleQuestionCommand{db}(input);
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "createNewSimpleQuestion end";
+    LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::getSimpleQuestions(communication::SimpleQuestionsResponse &response) {
-    LOG(INFO) << "getSimpleQuestions start";
+void CommandHandler::getAllSimpleQuestions(std::vector<communication::SimpleQuestion> &response) {
+    LOG(INFO) << __func__ << " start";
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        auto output = command::GetAllSimpleQuestionsCommand{db}();
+        response = server::io::ioToThrift(output);
+    });
 
     LOG(INFO) << "output: " << response;
-    LOG(INFO) << "getSimpleQuestions end";
+    LOG(INFO) << __func__ << " end";
 }
 }

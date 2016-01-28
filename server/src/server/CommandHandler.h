@@ -3,8 +3,6 @@
 
 #include <thrift/server/TServer.h>
 
-#include <external/easylogging++.h>
-
 #include <db/Database.h>
 
 #include <communication/Server.h>
@@ -21,33 +19,35 @@ public:
 
     virtual void shutdown() override;
 
-    virtual std::int32_t ping(const communication::HelloMsg &msg) override;
+    virtual int32_t ping(const communication::HelloMsg &msg) override;
 
-    virtual void getMapImages(communication::MapImagesResponse &response,
-                              const communication::MapImagesRequest &request) override;
+    virtual void getNewMapImages(communication::NewMapImagesResponse &response,
+                                 const communication::NewMapImagesRequest &request) override;
     virtual void getMapImageTiles(communication::MapImageTilesResponse &response,
                                   const communication::MapImageTilesRequest &request) override;
     virtual void setMapImage(const communication::SetMapImageRequest &request) override;
 
-    virtual void getExhibits(communication::ExhibitsResponse &response,
-                             const communication::ExhibitsRequest &request) override;
-    virtual void createNewExhibit(communication::NewExhibitResponse &response,
-                                  const communication::NewExhibitRequest &request) override;
+    virtual void getNewExhibits(communication::NewExhibitsResponse &response,
+                                const communication::NewExhibitsRequest &request) override;
+    virtual void createExhibit(communication::Exhibit &response,
+                               const communication::CreateExhibitRequest &request) override;
+    virtual void getAllExhibits(std::vector<communication::Exhibit> &response) override;
     virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
 
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
+    virtual int32_t getIdForNewReport() override;
 
-    virtual std::int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
-    virtual void createNewAction(communication::NewActionResponse &response,
-                                 const communication::NewActionRequest &request) override;
-    virtual void getActions(communication::ActionsResponse &_return) override;
+    virtual void createAction(communication::Action &response,
+                              const communication::CreateActionRequest &request) override;
+    virtual void getAllActions(std::vector<communication::Action> &response) override;
 
-    virtual void createNewSimpleQuestion(
-        communication::NewSimpleQuestionResponse &response,
-        const communication::NewSimpleQuestionRequest &request) override;
-    virtual void getSimpleQuestions(communication::SimpleQuestionsResponse &response) override;
+    virtual void createSimpleQuestion(
+        communication::SimpleQuestion &response,
+        const communication::CreateSimpleQuestionRequest &request) override;
+    virtual void getAllSimpleQuestions(
+        std::vector<communication::SimpleQuestion> &response) override;
 
 private:
     db::Database &db;

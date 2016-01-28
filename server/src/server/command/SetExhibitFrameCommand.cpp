@@ -24,10 +24,10 @@ void SetExhibitFrameCommand::operator()(const io::input::SetExhibitFrameRequest 
 
         // prepare new
         // map level doesn't change
-        exhibit.frame.value().x = input.newX;
-        exhibit.frame.value().y = input.newY;
-        exhibit.frame.value().width = input.newWidth;
-        exhibit.frame.value().height = input.newHeight;
+        exhibit.frame.value().x = input.frame.x;
+        exhibit.frame.value().y = input.frame.y;
+        exhibit.frame.value().width = input.frame.size.width;
+        exhibit.frame.value().height = input.frame.size.height;
         exhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
 
         // update
@@ -45,15 +45,18 @@ void SetExhibitFrameCommand::validateInput(db::DatabaseSession &session,
     }
 
     db::Exhibit exhibit = getExhibit.getResult().front();
-    db::MapElementFrame frame = exhibit.frame.value();
+    db::MapFrame frame = exhibit.frame.value();
 
     if (!exhibit.frame) {
         throw io::InvalidInput("given exhibit doesn't belong to any floor");
     }
 
     utils::InputChecker checker(session);
-    if (!checker.checkFrame(
-            frame.mapLevel, input.newX, input.newY, input.newWidth, input.newHeight)) {
+    if (!checker.checkFrame(frame.floor,
+                            input.frame.x,
+                            input.frame.y,
+                            input.frame.size.width,
+                            input.frame.size.height)) {
         throw io::InvalidInput("incorrect frame");
     }
 }

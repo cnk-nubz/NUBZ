@@ -22,15 +22,15 @@ std::string UpdateExhibit::createUpdate() const {
                       .set(colName, exhibit.name)
                       .set(colVersion, exhibit.version);
     if (exhibit.frame) {
-        MapElementFrame frame = exhibit.frame.value();
-        update.set(colMapLevel, frame.mapLevel)
+        MapFrame frame = exhibit.frame.value();
+        update.set(colMapFloor, frame.floor)
             .set(colMapFrameX, frame.x)
             .set(colMapFrameY, frame.y)
             .set(colMapFrameWidth, frame.width)
             .set(colMapFrameHeight, frame.height);
     } else {
         for (const auto frameCol :
-             {colMapFrameHeight, colMapFrameWidth, colMapFrameX, colMapFrameY, colMapLevel}) {
+             {colMapFrameHeight, colMapFrameWidth, colMapFrameX, colMapFrameY, colMapFloor}) {
             update.set(frameCol, Null());
         }
     }

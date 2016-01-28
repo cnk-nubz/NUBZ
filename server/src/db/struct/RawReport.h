@@ -17,16 +17,11 @@ struct RawReport {
     };
 
     struct Survey {
-        enum QuestionType : int {
-            Simple = 0,
-        };
-
-        struct SimpleQuestion {
+        struct SimpleQuestionAnswer {
             boost::optional<std::string> answer;
         };
 
-        std::vector<QuestionType> order;
-        std::vector<SimpleQuestion> simpleQuestions;
+        std::vector<SimpleQuestionAnswer> simpleQuestions;
     };
 
     std::int32_t ID;

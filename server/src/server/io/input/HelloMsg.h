@@ -1,5 +1,5 @@
-#ifndef SERVER_IO__HELLO_MSG__H
-#define SERVER_IO__HELLO_MSG__H
+#ifndef SERVER_IO_INPUT__HELLO_MSG__H
+#define SERVER_IO_INPUT__HELLO_MSG__H
 
 #include <cstdint>
 #include <string>
@@ -10,8 +10,7 @@ namespace server {
 namespace io {
 namespace input {
 
-class HelloMsg {
-public:
+struct HelloMsg {
     HelloMsg(const communication::HelloMsg &thrift);
 
     std::int32_t num;

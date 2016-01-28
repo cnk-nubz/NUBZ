@@ -11,6 +11,7 @@ exception InternalError {
 exception InvalidData {
 }
 
+
 /////////////////////////////////////////////////
 // Ping
 /////////////////////////////////////////////////
@@ -20,22 +21,26 @@ struct HelloMsg {
 	2: string msg,
 }
 
+
 /////////////////////////////////////////////////
 // Map
 /////////////////////////////////////////////////
 
-// (x, y) = left upper corner
-struct MapElementFrame {
-	1: i32 x,
-	2: i32 y,
-	3: i32 width,
-	4: i32 height,
-	5: i32 mapLevel,
-}
-
 struct Size {
 	1: i32 width,
 	2: i32 height,
+}
+
+// (x, y) = left upper corner
+struct Frame {
+	1: i32 x,
+	2: i32 y,
+	3: Size size,
+}
+
+struct MapFrame {
+	1: Frame frame,
+	2: i32 floor,
 }
 
 struct ImageTiles {
@@ -44,13 +49,13 @@ struct ImageTiles {
 	3: list<list<string>> tilesUrls,
 }
 
-struct MapImagesRequest {
+struct NewMapImagesRequest {
 	1: optional i32 acquiredVersion,
 }
 
-struct MapImagesResponse {
+struct NewMapImagesResponse {
 	1: i32 version,
-	2: map<i32, string> levelImageUrls,
+	2: map<i32, string> floorImageUrls,
 }
 
 struct MapImageTilesRequest {
@@ -63,46 +68,41 @@ struct MapImageTilesResponse {
 }
 
 struct SetMapImageRequest {
-	1: i32 level
-	2: string filename
+	1: i32 floor,
+	2: string filename,
 }
+
 
 /////////////////////////////////////////////////
 // Exhibits
 /////////////////////////////////////////////////
 
 struct Exhibit {
-	1: string name,
-	2: optional MapElementFrame frame,
+	1: i32 exhibitId,
+	2: string name,
+	3: optional MapFrame mapFrame,
 }
 
-struct ExhibitsRequest {
+struct NewExhibitsRequest {
 	1: optional i32 acquiredVersion,
 }
 
-struct ExhibitsResponse {
+struct NewExhibitsResponse {
 	1: i32 version,
 	2: map<i32, Exhibit> exhibits,
 }
 
 struct SetExhibitFrameRequest {
 	1: i32 exhibitId,
-	2: i32 x,
-	3: i32 y,
-	4: i32 width,
-	5: i32 height,
+	2: Frame frame,
 }
 
-struct NewExhibitRequest {
+struct CreateExhibitRequest {
 	1: string name,
 	2: optional i32 floor,
-	3: optional MapElementFrame visibleMapFrame,
+	3: optional MapFrame visibleFrame,
 }
 
-struct NewExhibitResponse {
-	1: i32 exhibitId,
-	2: Exhibit exhibit,
-}
 
 /////////////////////////////////////////////////
 // Actions
@@ -113,17 +113,10 @@ struct Action {
 	2: string text,
 }
 
-struct NewActionRequest {
+struct CreateActionRequest {
 	1: string text,
 }
 
-struct NewActionResponse {
-	1: Action action,
-}
-
-struct ActionsResponse {
-	1: list<Action> actions,
-}
 
 /////////////////////////////////////////////////
 // Simple Question
@@ -134,10 +127,9 @@ enum SimpleQuestionAnswerType {
 	NUMBER,
 }
 
-// name is optional, null means name == question
 struct SimpleQuestion {
-	1: i32 id,
-	2: optional string name,
+	1: i32 questionId,
+	2: string name,
 	3: string question,
 	4: SimpleQuestionAnswerType answerType,
 }
@@ -146,21 +138,13 @@ struct SimpleQuestionAnswer {
 	1: optional string answer,
 }
 
-struct NewSimpleQuestionRequest {
-	1: string name,
+// name is optional, null means name == question
+struct CreateSimpleQuestionRequest {
+	1: optional string name,
 	2: string question,
 	3: SimpleQuestionAnswerType answerType,
 }
 
-struct NewSimpleQuestionResponse {
-	1: string name,
-	2: string question,
-	3: SimpleQuestionAnswerType answerType,
-}
-
-struct SimpleQuestionsResponse {
-	1: list<SimpleQuestion> questions,
-}
 
 /////////////////////////////////////////////////
 // Experiment
@@ -170,20 +154,24 @@ enum QuestionType {
 	SIMPLE,
 }
 
+struct Survey {
+	1: list<QuestionType> questionsOrder,
+	2: list<SimpleQuestion> simpleQuestions,
+}
+
 struct Experiment {
 	1: i32 experimentId,
 	2: string name,
-	3: list<QuestionType> beforeQuestionsOrder,
-	4: list<SimpleQuestion> beforeSimpleQuestions,
-	5: list<Action> exhibitActions,
-	6: list<Action> breakActions,
-	7: list<QuestionType> afterQuestionOrder,
-	8: list<SimpleQuestion> afterSimpleQuestions,
+	3: Survey surveyBefore,
+	4: list<Action> exhibitActions,
+	5: list<Action> breakActions,
+	6: Survey surveyAfter,
 }
 
 struct CurrentExperimentResponse {
 	1: optional Experiment experiment,
 }
+
 
 /////////////////////////////////////////////////
 // Reports
@@ -199,7 +187,7 @@ struct RawReportEvent {
 struct RawReport {
 	1: i32 experimentId,
 	2: i32 reportId,
-	3: list<SimpleQuestionAnswer> beforeSimpleQuestionsAnswers,
+	3: list<SimpleQuestionAnswer> simpleQuestionsAnswersBefore,
 	4: list<RawReportEvent> history,
-	5: list<SimpleQuestionAnswer> afterSimpleQuestionsAnswers,
+	5: list<SimpleQuestionAnswer> simpleQuestionsAnswersAfter,
 }

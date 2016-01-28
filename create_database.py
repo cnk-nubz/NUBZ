@@ -69,7 +69,7 @@ cur.execute('''
 		map_frame_y INT NULL,
 		map_frame_width INT NULL,
 		map_frame_height INT NULL,
-		map_level INT NULL
+		map_floor INT NULL
 	)
 ''')
 
@@ -135,7 +135,7 @@ cur.execute('''
 
 # exhibits
 cur.execute('''
-	INSERT INTO exhibits (name, version, map_frame_x, map_frame_y, map_frame_width, map_frame_height, map_level) VALUES
+	INSERT INTO exhibits (name, version, map_frame_x, map_frame_y, map_frame_width, map_frame_height, map_floor) VALUES
 		('invisible', 3, NULL, NULL, NULL, NULL, NULL),
 		('exhibit 1 floor 0', 1, 100, 100, 200, 200, 0),
 		('exhibit 2 floor 0', 2, 50, 400, 100, 100, 0),
@@ -194,7 +194,6 @@ cur.execute('''
 					}
 				],
 				"surveyBefore": {
-					"typesOrder": [0, 0],
 					"simpleQuestions": [
 						{
 							"answer": "12345"
@@ -203,7 +202,6 @@ cur.execute('''
 					]
 				},
 				"surveyAfter": {
-					"typesOrder": [0],
 					"simpleQuestions": [
 						{
 							"answer": "test answer for simple question 1"

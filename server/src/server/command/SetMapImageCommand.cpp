@@ -1,8 +1,7 @@
 #include <boost/filesystem.hpp>
 #include <Magick++.h>
 
-#include <external/easylogging++.h>
-
+#include <utils/log.h>
 #include <utils/ImageProcessor.h>
 
 #include <db/command/GetMapImages.h>
@@ -35,27 +34,27 @@ SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
 // 5. rename tmp tiles directory to destination name
 void SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
     prepareImageProcessor(input.filename);
-    db::MapImage fullMap = createFullMapImage(input.level);
+    db::MapImage fullMap = createFullMapImage(input.floor);
 
     std::vector<::utils::FileHandler> handlers;
     handlers.emplace_back(utils::FileHelper::getInstance().pathForPublicFile(fullMap.filename));
-    handlers.push_back(createTiles(input.level));
+    handlers.push_back(createTiles(input.floor));
     boost::filesystem::path tmpDirPath = handlers.back().getPath();
 
     LOG(INFO) << "Saving information about image and tiles to database";
     db.execute([&](db::DatabaseSession &session) {
         std::vector<boost::filesystem::path> filesToDelete;
-        if (auto oldFullMapPath = getOldMap(input.level, session)) {
+        if (auto oldFullMapPath = getOldMap(input.floor, session)) {
             filesToDelete.push_back(oldFullMapPath.value());
         }
-        filesToDelete.push_back(finalTilesDir(input.level));
+        filesToDelete.push_back(finalTilesDir(input.floor));
         filesToDelete.push_back(utils::FileHelper::getInstance().pathForTmpFile(input.filename));
 
         fullMap.version = db::cmd::IncrementCounter::mapVersion()(session);
         db::cmd::SaveMapImage{fullMap}(session);
 
-        db::cmd::RemoveMapTiles{input.level}(session);
-        db::cmd::RemoveMapTilesInfo{input.level}(session);
+        db::cmd::RemoveMapTiles{input.floor}(session);
+        db::cmd::RemoveMapTilesInfo{input.floor}(session);
 
         for (const auto &tile : tiles) {
             db::cmd::SaveMapTile{tile}(session);
@@ -69,7 +68,7 @@ void SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) 
                 boost::filesystem::remove_all(toDel);
             }
         }
-        switchToNewTiles(tmpDirPath, input.level);
+        switchToNewTiles(tmpDirPath, input.floor);
     });
 
     for (auto &handler : handlers) {

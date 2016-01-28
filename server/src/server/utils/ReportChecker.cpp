@@ -26,5 +26,25 @@ bool ReportChecker::loadExperiment(std::int32_t experimentId) {
     }
     return (bool)experiment;
 }
+
+bool ReportChecker::checkQuestionsBeforeCount(std::size_t simpleQuestions) const {
+    if (!experiment) {
+        return false;
+    }
+    return checkQuestionsCount(experiment.value().surveyBefore, simpleQuestions);
+}
+
+bool ReportChecker::checkQuestionsAfterCount(std::size_t simpleQuestions) const {
+    if (!experiment) {
+        return false;
+    }
+    return checkQuestionsCount(experiment.value().surveyAfter, simpleQuestions);
+}
+
+bool ReportChecker::checkQuestionsCount(const db::Experiment::Survey &survey,
+                                        std::size_t simpleQuestions) const {
+    static const auto Simple = db::Experiment::Survey::QuestionType::Simple;
+    return simpleQuestions == ::utils::count(survey.order, Simple);
+}
 }
 }

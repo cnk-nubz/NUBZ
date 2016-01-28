@@ -35,9 +35,15 @@ public:
               class = typename std::is_same<typename Container::value_type, std::int32_t>::type>
     bool checkBreakActionsIds(const Container &actionsIds) const;
 
+    bool checkQuestionsBeforeCount(std::size_t simpleQuestions) const;
+    bool checkQuestionsAfterCount(std::size_t simpleQuestions) const;
+
 private:
     db::DatabaseSession &session;
     boost::optional<db::Experiment> experiment;
+
+    bool checkQuestionsCount(const db::Experiment::Survey &survey,
+                             std::size_t simpleQuestions) const;
 };
 
 template <class Container, class>
@@ -47,7 +53,8 @@ bool ReportChecker::checkExhibitActionsIds(const Container &actionsIds) const {
         return false;
     }
     std::unordered_set<std::int32_t> correctIds;
-    correctIds.insert(experiment.value().actions.begin(), experiment.value().actions.end());
+    const auto &actions = experiment.value().actions;
+    correctIds.insert(actions.begin(), actions.end());
     return ::utils::all_of(actionsIds, std::bind(&decltype(correctIds)::count, &correctIds, _1));
     return false;
 }
@@ -59,8 +66,8 @@ bool ReportChecker::checkBreakActionsIds(const Container &actionsIds) const {
         return false;
     }
     std::unordered_set<std::int32_t> correctIds;
-    correctIds.insert(experiment.value().breakActions.begin(),
-                      experiment.value().breakActions.end());
+    const auto &actions = experiment.value().breakActions;
+    correctIds.insert(actions.begin(), actions.end());
     return ::utils::all_of(actionsIds, std::bind(&decltype(correctIds)::count, &correctIds, _1));
 }
 }

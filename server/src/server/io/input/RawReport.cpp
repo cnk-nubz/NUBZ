@@ -5,9 +5,22 @@ namespace io {
 namespace input {
 
 RawReport::RawReport(const communication::RawReport &thrift)
-    : experimentId(thrift.experimentId), reportId(thrift.reportId) {
+    : experimentId(thrift.experimentId), ID(thrift.reportId) {
+    for (const auto &q : thrift.simpleQuestionsAnswersBefore) {
+        simpleQuestionsAnswersBefore.emplace_back(q);
+    }
+    for (const auto &q : thrift.simpleQuestionsAnswersAfter) {
+        simpleQuestionsAnswersAfter.emplace_back(q);
+    }
     for (const auto &event : thrift.history) {
         history.emplace_back(event);
+    }
+}
+
+RawReport::SimpleQuestionAnswer::SimpleQuestionAnswer(
+    const communication::SimpleQuestionAnswer &thrift) {
+    if (thrift.__isset.answer) {
+        answer = thrift.answer;
     }
 }
 

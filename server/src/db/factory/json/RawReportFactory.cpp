@@ -16,8 +16,8 @@ using namespace rapidjson;
 namespace {
 Value createEvent(const RawReport::Event &event, Document::AllocatorType &allocator);
 Value createSurvey(const RawReport::Survey &survey, Document::AllocatorType &allocator);
-Value createSimpleQuestion(const RawReport::Survey::SimpleQuestion &q,
-                           Document::AllocatorType &allocator);
+Value createSimpleQuestionAnswer(const RawReport::Survey::SimpleQuestionAnswer &q,
+                                 Document::AllocatorType &allocator);
 }
 
 std::string RawReportFactory::createJson(const RawReport &report) {
@@ -58,25 +58,23 @@ Value createEvent(const RawReport::Event &event, Document::AllocatorType &alloca
 }
 
 Value createSurvey(const RawReport::Survey &survey, Document::AllocatorType &allocator) {
-    static const auto keyTypesOrder = toStupidStringAdapter(field10_TypesOrder);
-    static const auto keySimpleQuestions = toStupidStringAdapter(field11_SimpleQuestions);
+    static const auto keySimpleQuestions = toStupidStringAdapter(field10_SimpleQuestions);
 
-    auto jsonTypesOrder = createTrivialArray(survey.order, allocator);
-    auto jsonSimpleQuestions = createArray(survey.simpleQuestions, allocator, createSimpleQuestion);
+    auto jsonSimpleQuestions =
+        createArray(survey.simpleQuestions, allocator, createSimpleQuestionAnswer);
 
     Value json(kObjectType);
-    json.AddMember(keyTypesOrder, jsonTypesOrder, allocator);
     json.AddMember(keySimpleQuestions, jsonSimpleQuestions, allocator);
     return json;
 }
 
-Value createSimpleQuestion(const RawReport::Survey::SimpleQuestion &q,
-                           Document::AllocatorType &allocator) {
-    static const auto keyAnswer = toStupidStringAdapter(field110_Answer);
+Value createSimpleQuestionAnswer(const RawReport::Survey::SimpleQuestionAnswer &ans,
+                                 Document::AllocatorType &allocator) {
+    static const auto keyAnswer = toStupidStringAdapter(field100_Answer);
 
     Value json(kObjectType);
-    if (q.answer) {
-        json.AddMember(keyAnswer, toStupidStringAdapter(q.answer.value()), allocator);
+    if (ans.answer) {
+        json.AddMember(keyAnswer, toStupidStringAdapter(ans.answer.value()), allocator);
     }
     return json;
 }
@@ -93,7 +91,7 @@ namespace json {
 namespace {
 RawReport::Event parseEvent(const Value &jsonEvent);
 RawReport::Survey parseSurvey(const Value &jsonSurvey);
-RawReport::Survey::SimpleQuestion parseSimpleQuestion(const Value &jsonSimpleQ);
+RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &jsonSimpleQ);
 }
 
 const std::vector<std::string> &RawReportFactory::fieldsOrder() noexcept {
@@ -135,22 +133,18 @@ RawReport::Event parseEvent(const Value &jsonEvent) {
 RawReport::Survey parseSurvey(const Value &jsonSurvey) {
     assert(jsonSurvey.IsObject());
 
-    const auto &typesOrder = getNode(jsonSurvey, field10_TypesOrder);
-    const auto &simpleQuestions = getNode(jsonSurvey, field11_SimpleQuestions);
+    const auto &simpleQuestions = getNode(jsonSurvey, field10_SimpleQuestions);
 
     RawReport::Survey survey;
-    for (auto t : parseIntArray(typesOrder)) {
-        survey.order.push_back(static_cast<RawReport::Survey::QuestionType>(t));
-    }
-    survey.simpleQuestions = parseArray(simpleQuestions, parseSimpleQuestion);
+    survey.simpleQuestions = parseArray(simpleQuestions, parseSimpleQuestionAnswer);
     return survey;
 }
 
-RawReport::Survey::SimpleQuestion parseSimpleQuestion(const Value &jsonSimpleQ) {
+RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &jsonSimpleQ) {
     assert(jsonSimpleQ.IsObject());
 
-    RawReport::Survey::SimpleQuestion sQ;
-    sQ.answer = parseOptString(jsonSimpleQ, field110_Answer);
+    RawReport::Survey::SimpleQuestionAnswer sQ;
+    sQ.answer = parseOptString(jsonSimpleQ, field100_Answer);
     return sQ;
 }
 }

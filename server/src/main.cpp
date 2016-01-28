@@ -9,14 +9,13 @@
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 
-#include <external/easylogging++.h>
-
 #include <db/Database.h>
 
 #include <utils/Config.h>
+#include <utils/log.h>
 
 #include <server/CommandHandler.h>
-#include <server/command/GetMapImagesCommand.h>
+#include <server/command/GetNewMapImagesCommand.h>
 #include <server/command/GetMapImageTilesCommand.h>
 #include <server/utils/FileHelper.h>
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[]) {
 
     server::utils::FileHelper::configure(
         cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
-    server::command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
+    server::command::GetNewMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
     server::command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
 
     db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);

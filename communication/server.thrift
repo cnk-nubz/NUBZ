@@ -18,7 +18,7 @@ service Server {
 // Map
 /////////////////////////////////////////////////
 
-	structs.MapImagesResponse getMapImages(1: structs.MapImagesRequest request)
+	structs.NewMapImagesResponse getNewMapImages(1: structs.NewMapImagesRequest request)
 		throws (1: structs.InternalError err),
 
 	structs.MapImageTilesResponse getMapImageTiles(1: structs.MapImageTilesRequest request)
@@ -32,11 +32,14 @@ service Server {
 // Exhibits
 /////////////////////////////////////////////////
 
-	structs.ExhibitsResponse getExhibits(1: structs.ExhibitsRequest request)
+	structs.NewExhibitsResponse getNewExhibits(1: structs.NewExhibitsRequest request)
 		throws (1: structs.InternalError err),
 
-	structs.NewExhibitResponse createNewExhibit(1: structs.NewExhibitRequest request)
+	structs.Exhibit createExhibit(1: structs.CreateExhibitRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	list<structs.Exhibit> getAllExhibits()
+		throws (1: structs.InternalError err),
 
 	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
@@ -65,10 +68,10 @@ service Server {
 // Actions
 /////////////////////////////////////////////////
 
-	structs.NewActionResponse createNewAction(1: structs.NewActionRequest request)
+	structs.Action createAction(1: structs.CreateActionRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.ActionsResponse getActions()
+	list<structs.Action> getAllActions()
 		throws (1: structs.InternalError err),
 
 
@@ -76,9 +79,9 @@ service Server {
 // Simple Question
 /////////////////////////////////////////////////
 
-	structs.NewSimpleQuestionResponse createNewSimpleQuestion(1: structs.NewSimpleQuestionRequest request)
+	structs.SimpleQuestion createSimpleQuestion(1: structs.CreateSimpleQuestionRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.SimpleQuestionsResponse getSimpleQuestions()
+	list<structs.SimpleQuestion> getAllSimpleQuestions()
 		throws (1: structs.InternalError err),
 }
