@@ -118,7 +118,7 @@ public class DataHandler extends Observable {
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(LOG_TAG, "IOException in startNewRaport");
-            System.exit(1);
+            throw new RuntimeException("Cannot start new raport");
         }
 
         dbHelper.setRaportFile(newId, path);
@@ -133,7 +133,7 @@ public class DataHandler extends Observable {
             e.printStackTrace();
             Log.e(LOG_TAG, "IOException in addEventToRaport");
             if (tryNo > MAX_TRIES) {
-                System.exit(1);
+                throw new RuntimeException("Cannot add event to raport");
             } else {
                 addEventToRaport(event, tryNo + 1);
             }
@@ -149,7 +149,7 @@ public class DataHandler extends Observable {
             e.printStackTrace();
             Log.e(LOG_TAG, "IOException in markRaportAsReady");
             if (tryNo > MAX_TRIES) {
-                System.exit(1);
+                throw new RuntimeException("Cannot mark raport as ready");
             } else {
                 markRaportAsReady(tryNo + 1);
                 return;
@@ -188,24 +188,13 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         setChanged();
         Boolean floor0Changed = false;
         Boolean floor1Changed = false;
-        try {
-            floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
-            floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in setMaps, downloadAndSave");
-            if (tryNo > MAX_TRIES) {
-                System.exit(1);
-            } else {
-                setMaps(version, floor0, floor1, tryNo + 1);
-                return;
-            }
-        }
+        floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
+        floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
 
         if (floor0Changed && floor1Changed) {
             notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
@@ -215,27 +204,14 @@ public class DataHandler extends Observable {
             notifyObservers(Item.FLOOR_1_MAP_CHANGING);
         }
 
-        try {
-            if (floor0Changed) {
-                FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                        + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
-            }
-            if (floor1Changed) {
-                FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                        + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOEXception in setMaps, rename directories");
-            if (tryNo > MAX_TRIES) {
-                System.exit(1);
-            } else {
-                setMaps(version, floor0, floor1, tryNo + 1);
-                return;
-            }
+        if (floor0Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                    + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
         }
-
-
+        if (floor1Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
+                    + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
+        }
 
         cachedTileAdresses.clear();
 
@@ -306,36 +282,23 @@ public class DataHandler extends Observable {
     }
 
     public Boolean mapForFloorExists(Integer floor) {
-        boolean exists = dbHelper.getDetailLevelsForFloor(floor) != null;
-        return exists;
+        return dbHelper.getDetailLevelsForFloor(floor) != null;
     }
 
     public Integer getDetailLevelsCountForFloor(Integer floor) {
-        Integer detailLevels = dbHelper.getDetailLevelsForFloor(floor);
-        return detailLevels;
+        return dbHelper.getDetailLevelsForFloor(floor);
     }
 
     public Resolution getOriginalResolution(Integer floor) {
-        Resolution originalRes = dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
-        if (originalRes == null) {
-            Log.e(LOG_TAG, "Original res is null");
-            System.exit(1);
-        }
-        return originalRes;
+        return dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
     }
 
     public Integer getMapVersion() {
-        Integer version = dbHelper.getVersion(Version.Item.MAP);
-        return version;
+        return dbHelper.getVersion(Version.Item.MAP);
     }
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        DetailLevelRes res = dbHelper.getDetailLevelRes(floor, detailLevel);
-        if (res == null) {
-            Log.e(LOG_TAG, "Detail level res is null");
-            System.exit(1);
-        }
-        return res;
+        return dbHelper.getDetailLevelRes(floor, detailLevel);
     }
 
     public Resolution getTileSize(Integer floor, Integer detailLevel) {

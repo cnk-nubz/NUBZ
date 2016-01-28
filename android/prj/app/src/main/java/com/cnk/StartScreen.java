@@ -21,7 +21,6 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class StartScreen extends AppCompatActivity implements Observer {
-    private NetworkHandler net;
     private ProgressDialog spinner;
 
     @Override
@@ -30,13 +29,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
-        net = new NetworkHandler();
     }
 
     public void mapClick(View view) {
         DataHandler.getInstance().addObserver(this);
         setSpinner();
-        net.downloadMap();
+        NetworkHandler.getInstance().downloadMap();
     }
 
     public void update(Observable observable, Object o) {

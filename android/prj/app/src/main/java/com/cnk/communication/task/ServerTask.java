@@ -12,6 +12,8 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 
+import java.io.IOException;
+
 public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
@@ -53,7 +55,7 @@ public abstract class ServerTask extends Task {
 
     }
 
-    protected abstract void performInSession(Server.Client client) throws TException;
+    protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
     private TFramedTransport openSocket(Integer tries) {
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));

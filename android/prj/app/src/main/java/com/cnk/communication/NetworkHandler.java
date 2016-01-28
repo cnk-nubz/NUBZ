@@ -21,6 +21,7 @@ public class NetworkHandler implements Observer {
 
     private static final String LOG_TAG = "NetworkHandler";
     private static final long SECONDS_DELAY = 30;
+    private static NetworkHandler instance;
 
     private long bgDelaySeconds;
     private BlockingQueue<Task> tasks;
@@ -54,7 +55,14 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    public NetworkHandler() {
+    public static NetworkHandler getInstance() {
+        if (instance == null) {
+            instance = new NetworkHandler();
+        }
+        return instance;
+    }
+
+    private NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
         exhibitsDownload = new Notificator(this);

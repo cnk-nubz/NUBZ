@@ -31,16 +31,11 @@ public class MapDownloadTask extends ServerTask {
         super(notificator);
     }
 
-    public void performInSession(Server.Client client) throws TException {
+    public void performInSession(Server.Client client) throws TException, IOException {
         MapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
-        boolean floor1Update = (response.getLevelImageUrls().get(Consts.FLOOR1) != null);
-        boolean floor2Update = (response.getLevelImageUrls().get(Consts.FLOOR2) != null);
-        if (floor1Update || floor2Update) {
-            downloadTilesUpdate(client, floor1Update, floor2Update, version);
-        } else {
-            DataHandler.getInstance().notifyMapUpdated();
-        }
+        downloadTilesUpdate(client, version);
+        DataHandler.getInstance().notifyMapUpdated();
         Log.i(LOG_TAG, "Map update complete");
     }
 
@@ -56,19 +51,14 @@ public class MapDownloadTask extends ServerTask {
         return response;
     }
 
-    private void downloadTilesUpdate(Server.Client client, boolean floor1Update,
-                                     boolean floor2Update, Integer version) throws TException {
+    private void downloadTilesUpdate(Server.Client client, Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
         MapImageTilesResponse floor1Response = null;
         MapImageTilesResponse floor2Response = null;
-        if (floor1Update) {
-            MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
-            floor1Response = client.getMapImageTiles(requestFloor1);
-        }
-        if (floor2Update) {
-            MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
-            floor2Response = client.getMapImageTiles(requestFloor2);
-        }
+        MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
+        floor1Response = client.getMapImageTiles(requestFloor1);
+        MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
+        floor2Response = client.getMapImageTiles(requestFloor2);
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);

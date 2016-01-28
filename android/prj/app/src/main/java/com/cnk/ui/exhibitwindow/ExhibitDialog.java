@@ -13,26 +13,29 @@ import com.cnk.R;
 import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.ui.AutoResizeTextView;
+import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 
 public class ExhibitDialog extends Activity {
-    private Integer reqId;
+    public static final String IS_BREAK = "IsBreak";
+    public static final String NAME = "Name";
+    public static final String SELECTED_ACTIONS = "Selected actions";
+    public static final String TIME = "Time";
+
     private List<String> actionsStrings;
     private String name;
     private Boolean isBreak;
     private ExhibitActionsAdapter actionsAdapter;
-
-    public static final String IS_BREAK = "IsBreak";
-    public static final String NAME = "Name";
-    public static final String AVAILABLE_ACTIONS = "Available actions";
-    public static final String SELECTED_ACTIONS = "Selected actions";
+    private long startTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        startTime = System.currentTimeMillis() / Consts.SECOND;
         setFinishOnTouchOutside(false);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -91,7 +94,9 @@ public class ExhibitDialog extends Activity {
     class FinishListener implements View.OnClickListener {
         @Override
         public void onClick(View view) {
+            long endTime = System.currentTimeMillis() / Consts.SECOND;
             Intent intent = new Intent();
+            intent.putExtra(TIME, endTime - startTime);
             intent.putStringArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedActions());
             setResult(RESULT_OK, intent);
             finish();
