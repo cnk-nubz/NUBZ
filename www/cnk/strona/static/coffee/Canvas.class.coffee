@@ -187,3 +187,19 @@ root.Canvas = class Canvas extends root.View
     topLeft = new L.Point(Math.min(maxX, Math.max(0, min.x)), Math.min(maxY, Math.max(0, min.y)))
     bottomRight = new L.Point(Math.min(maxX, Math.max(0, max.x)), Math.min(maxY, Math.max(0, max.y)))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]
+
+  flyToExhibit: (frame) =>
+    return unless frame?
+    floor = @mapData.activeFloor
+    bounds = new L.LatLngBounds(
+      @_map.unproject([frame.x, frame.y], @_maxZoom[floor]),
+      @_map.unproject([frame.x + frame.width, frame.y + frame.height], @_maxZoom[floor]),
+    )
+    if floor isnt frame.mapLevel
+      @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
+        @_map.flyToBounds(bounds, animate: false)
+      )
+      @setFloorLayer(frame.mapLevel)(@_floorButton[frame.mapLevel]) unless floor is frame.mapLevel
+    else
+      @_map.flyToBounds(bounds, animate: false)
+    return

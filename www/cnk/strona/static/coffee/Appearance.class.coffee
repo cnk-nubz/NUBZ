@@ -16,7 +16,7 @@ root.Appearance = class Appearance
     }
     @panel = {
       background: "rgba(221, 221, 221, 1)"
-      border: "1px solid #080808"
+      border: "1px solid #aaa"
       zindex: 1029
       mapControls:
         width: "46px"

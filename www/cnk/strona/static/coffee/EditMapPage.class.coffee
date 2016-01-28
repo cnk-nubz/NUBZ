@@ -14,6 +14,9 @@ root.EditMapPage = class EditMapPage extends root.View
       dialog.nameEditable = true
       dialog.show()
     )
+    @exhibitPanel.on("flyToExhibit", (frame) =>
+      @canvas.flyToExhibit frame
+    )
     @_init()
     @addView("rightPanel", @exhibitPanel)
     @addView("map", @canvas)
@@ -69,8 +72,13 @@ root.EditMapPage = class EditMapPage extends root.View
       t = {}
       t[id] = @mapData.exhibits[id]
       @canvas.addExhibits(data.frame.mapLevel, t)
+      @exhibitPanel.addExhibits(t)
       if data.frame.mapLevel is @mapData.activeFloor
         @canvas.updateState()
+    else
+      t = {}
+      t[id] = @mapData.exhibits[id]
+      @exhibitPanel.addExhibits(t)
     return
 
   _init: =>
@@ -78,7 +86,7 @@ root.EditMapPage = class EditMapPage extends root.View
     @
 
   _initCss: =>
-    exhibitPanelWidth = "200px"
+    exhibitPanelWidth = "300px"
     leftPanelStyle = {
       "background": @appearance.panel.background
       "position": "absolute"
