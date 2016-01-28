@@ -81,7 +81,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
-        showAlert();
         setViews();
         setActionBar();
         setSpinner();
