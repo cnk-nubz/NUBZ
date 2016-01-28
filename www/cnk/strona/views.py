@@ -63,19 +63,20 @@ def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
 	if not result:
+		print >>sys.stderr, "kurde xxxxxxxxxxxxxxxxx2"
 		return None
 
 	exhibitDict = {}
 	for k in result.exhibits:
 		e = result.exhibits[k]
 		frame = None
-		if e.frame != None:
+		if e.mapFrame != None:
 			frame = {
-				'x': e.frame.x,
-				'y': e.frame.y,
-				'width': e.frame.width,
-				'height': e.frame.height,
-				'mapLevel': e.frame.mapLevel
+				'x': e.mapFrame.frame.x,
+				'y': e.mapFrame.frame.y,
+				'width': e.mapFrame.frame.size.width,
+				'height': e.mapFrame.frame.size.height,
+				'mapLevel': e.mapFrame.floor
 			}
 		exhibitDict[k] = {
 			'name': e.name,
@@ -90,7 +91,7 @@ def index(request):
 
 	floorTilesInfo = _getMapImageInfo()
 	exhibits = _getExhibits()
-	if not floorTilesInfo or exhibits is None:
+	if floorTilesInfo is None or exhibits is None:
 		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template('index.html')
 
@@ -199,21 +200,21 @@ def createNewExhibit(request):
 	if not newExhibit:
 		return JsonResponse(data)
 
-	if newExhibit.exhibit.frame:
-		frame = newExhibit.exhibit.frame
+	if newExhibit.mapFrame:
+		frame = newExhibit.mapFrame
 		exhibitFrame = {
-			"x": frame.x,
-			"y": frame.y,
-			"width": frame.width,
-			"height": frame.height,
-			"mapLevel": frame.mapLevel
+			"x": frame.frame.x,
+			"y": frame.frame.y,
+			"width": frame.frame.size.width,
+			"height": frame.frame.size.height,
+			"mapLevel": frame.floor
 		}
 	else:
 		exhibitFrame = None
 	data = {
 		"success": True,
 		"id": int(newExhibit.exhibitId),
-		"name": newExhibit.exhibit.name,
+		"name": newExhibit.name,
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)

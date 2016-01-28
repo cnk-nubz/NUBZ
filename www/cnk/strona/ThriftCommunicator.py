@@ -25,15 +25,21 @@ class ThriftCommunicator:
 			self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
 			self.transport.open()
 			self.client = Server.Client(self.protocol)
-		except:
-			return False
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
+			return None
 		return True
 
 	def end_connection(self):
 		try:
 			self.transport.close()
-		except:
-			return False
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
+			return None
 		return True
 
 	def ping(self, number, text):
@@ -52,8 +58,11 @@ class ThriftCommunicator:
 
 		try:
 			ret = self.client.getMapImages(msg)
-		except:
-			ret = None
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
+			return None
 
 		if not self.end_connection():
 			return None
@@ -67,21 +76,27 @@ class ThriftCommunicator:
 
 		try:
 			self.client.setMapImage(msg)
-		except:
-			return None #failed to set the map
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
+			return None
 
 		if not self.end_connection():
 			return None
 		return True
 
 	def getExhibits(self):
-		msg = ExhibitsRequest()
+		msg = NewExhibitsRequest()
 		if not self.start_connection():
 			return None
 
 		try:
-			ret = self.client.getExhibits(msg)
-		except:
+			ret = self.client.getNewExhibits(msg)
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
 			return None
 
 		if not self.end_connection():
@@ -95,7 +110,10 @@ class ThriftCommunicator:
 
 		try:
 			ret = self.client.getMapImageTiles(msg)
-		except:
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
 			return None
 
 		if not self.end_connection():
@@ -103,13 +121,16 @@ class ThriftCommunicator:
 		return ret
 
 	def setExhibitFrame(self, frame):
-		msg = SetExhibitFrameRequest(int(frame['id']), frame['x'], frame['y'], frame['width'], frame['height'])
+		msg = SetExhibitFrameRequest(int(frame['id']), Frame(frame['x'], frame['y'], Size(frame['width'], frame['height'])))
 		if not self.start_connection():
 			return None
 
 		try:
 			self.client.setExhibitFrame(msg)
-		except:
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
 			return None
 
 		if not self.end_connection():
@@ -123,22 +144,20 @@ class ThriftCommunicator:
 			floor = None
 		if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
 			t = request['visibleMapFrame']
-			frame = MapElementFrame(
-				t['x'],
-				t['y'],
-				t['width'],
-				t['height'],
-				t['mapLevel']
-			)
+			frame = MapFrame(
+				Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
 		else:
 			frame = None
-		msg = NewExhibitRequest(request['name'], floor, frame)
+		msg = CreateExhibitRequest(request['name'], floor, frame)
 		if not self.start_connection():
 			return None
 
 		try:
-			ret = self.client.createNewExhibit(msg)
-		except:
+			ret = self.client.createExhibit(msg)
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
 			return None
 
 		if not self.end_connection():
