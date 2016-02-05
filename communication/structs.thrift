@@ -1,5 +1,5 @@
 namespace cpp communication
-namespace java com.cnk.communication
+namespace java com.cnk.communication.thrift
 
 /////////////////////////////////////////////////
 // Exceptions

@@ -1,7 +1,7 @@
 include "structs.thrift"
 
 namespace cpp communication
-namespace java com.cnk.communication
+namespace java com.cnk.communication.thrift
 
 service Server {
 	void shutdown(),
