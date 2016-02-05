@@ -61,6 +61,9 @@ root.QuestionDialog = class QuestionDialog
         regex = new RegExp(instance._data.utils.regex.input)
         if not text.match regex
           isValid = false
-          instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.inputError)
+          if text.length
+            instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.inputError)
+          else
+            instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.emptyInputError)
       )
     isValid

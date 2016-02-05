@@ -30,7 +30,6 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
@@ -49,8 +48,6 @@ import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
-    public static final Integer TILE_SIDE_LEN = 256;
-
     private static final String LOG_TAG = "MapActivity";
     private static final String BREAK_NAME = "Przerwa";
     private static final String TITLE_PREFIX = "Piętro";
@@ -69,6 +66,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private Point lastClick;
     private ProgressDialog spinner;
     private ActionBarDrawerToggle drawerToggle;
+    private Integer openedDialogs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +75,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "onCreate execution");
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
+        openedDialogs = 0;
         networkHandler = new NetworkHandler();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
@@ -526,6 +525,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
+        Integer floorNum = 1;
         for (Exhibit e: exhibits) {
             posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                     mapState.originalMapSize.getWidth(),
@@ -548,15 +548,16 @@ public class MapActivity extends AppCompatActivity implements Observer {
             artv.setBackground(bcgDrawable);
 
             artv.setGravity(Gravity.CENTER);
+            artv.setMinTextSize(2f);
             artv.setTextSize(100f);
-            artv.setMaxLines(10);
+            artv.setSingleLine(false);
 
             tvLP = new RelativeLayout.LayoutParams(width, height);
             tvLP.setMargins(posX, posY, 0, 0);
 
             viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
 
-            es = new ExhibitSpot(e.getId(), e.getName(), artv);
+            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
             es.setHotSpotTapListener(exhibitsListener);
@@ -586,11 +587,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Private classes declarations:
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
+        private Integer listId;
         private String name;
         private AutoResizeTextView exhibitTextView;
 
-        public ExhibitSpot(Integer exhibitId, String name, AutoResizeTextView exhibitTextView) {
+        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
             super();
+            this.listId = listId;
             this.exhibitId = exhibitId;
             this.name = name;
             this.exhibitTextView = exhibitTextView;
@@ -607,6 +610,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public AutoResizeTextView getExhibitTextView() {
             return exhibitTextView;
         }
+
+        public Integer getListId() {
+            return listId;
+        }
     }
 
     private class MapState {
@@ -617,7 +624,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         Resolution currentMapSize, originalMapSize;
 
-        List<HotSpot> hotSpotsForFloor;
+        ArrayList<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
 
         AutoResizeTextView lastExhibitTextView;
@@ -627,47 +634,55 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Action listeners:
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
-        public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
+        public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
-            Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
+            if (openedDialogs == 0) {
+                openedDialogs++;
+                // only if exhibit is clicked first time
 
-            if (mapState.lastExhibitTextView != null) {
-                mapState.lastExhibitTextView
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                final Integer floorId = ((ExhibitSpot) hotSpot).listId;
+                showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
             }
-
-            mapState.lastExhibitTextView = ((ExhibitSpot) hotSpot).getExhibitTextView();
-            ((ExhibitSpot) hotSpot).getExhibitTextView()
-                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
-
-            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), id);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                openedDialogs--;
+            }
+        });
+
         if (resultCode == RESULT_OK) {
-            ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            if (requestCode != BREAK_ID) {
+                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                if (mapState.lastExhibitTextView != null) {
+                    mapState.lastExhibitTextView
+                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                }
+                mapState.lastExhibitTextView = es.getExhibitTextView();
+                es.getExhibitTextView()
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+                mapState.exhibitsOverlay.invalidate();
+
+                ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            } else {
+                // TODO: after break
+            }
         }
     }
 
-    private void showExhibitDialog(boolean isBreak, String name, Integer id) {
-        ArrayList<String> actionStrings = new ArrayList<>();
-        List<Action> actions;
-        if (isBreak) {
-            actions = DataHandler.getInstance().getAllBreakActions();
-        } else {
-            actions = DataHandler.getInstance().getAllExhibitActions();
-        }
-        for (Action a : actions) {
-            actionStrings.add(a.getText());
-        }
+    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
         Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
-        exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
+        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
         ActivityOptions activityOptions =
-                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-        startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
+            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 }

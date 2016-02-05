@@ -10,5 +10,6 @@ urlpatterns = [
 	url(r'badania/$', views.surveys, name='surveys'),
     url(r'getSimpleQuestionDialog/$', views.getSimpleQuestionDialog, name='getSimpleQuestionDialog'),
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
-    url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog')
+    url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
+    url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog')
 ]
