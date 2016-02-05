@@ -1,13 +1,9 @@
 root = exports ? this
-class MultipleChoiceQuestionDialog extends root.QuestionDialog
+class SortQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
-    radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this
-    jQuery "#dialog label.#{radioGroup}"
-      .filter ":first"
-      .addClass "active"
 
     inputs = jQuery "#dialog input[type=text]"
     inputs.each( (idx) ->
@@ -59,4 +55,4 @@ class MultipleChoiceQuestionDialog extends root.QuestionDialog
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
 
-new MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', "#multipleChoiceQuestion")
+new SortQuestionDialog('getSortQuestionDialog/', "#sortQuestion")

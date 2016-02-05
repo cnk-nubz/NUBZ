@@ -18,7 +18,9 @@
 <center>
   <button class="btn btn-default" id="simpleQuestion">Proste pytanie</button>
   <button class="btn btn-default" id="multipleChoiceQuestion">Pytanie jedno/wielokrotnego wyboru</button>
+  <button class="btn btn-default" id="sortQuestion">Pytanie z sortowaniem</button>
   <button class="btn btn-default" id="newAction">Nowa akcja</button>
+
 </center>
 {% compress js %}
 <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
@@ -28,6 +30,9 @@
 {% endcompress %}
 {% compress js %}
 <script src="{% static "coffee/dialog/MultipleChoiceQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% compress js %}
+<script src="{% static "coffee/dialog/SortQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
 {% endcompress %}
 {% compress js %}
 <script src="{% static "coffee/dialog/ActionDialog.class.coffee" %}" type="text/coffeescript"></script>
