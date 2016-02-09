@@ -4,9 +4,8 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     super
     @mapData = new MapDataHandler()
     @_NO_FLOOR = 2
-    @unmatchedExhibits = [[], [], []] #0, 1, and no floor
-    @filteredExhibits = [[], [], []]
-    @newExhibitIndex = 0
+    @_ENTER_KEY = 13
+    @_exhibits = []
     @_init()
 
   _init: =>
@@ -17,123 +16,60 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       type: 'POST'
       context: this
       url: '/getExhibitPanel/'
-      success: (data) ->
-        instance = this
+      success: (data) =>
         jQuery(data).appendTo(@_containerId)
-        jQuery("#exhibitPanel > button").click( => @fireEvents("addExhibit"))
-        jQuery("#exhibitPanel > div.input-group span").click(@_searchBarClickHandler)
-        jQuery("#exhibitPanel > div.input-group input").keypress(@_searchBarKeypressHandler)
-        jQuery("#filterButtons button").each((index) ->
-          jQuery(this).addClass("active")
-          jQuery(this).click(instance._filterButtonHandler(index, instance))
-        )
+        @_setExhibitPanelHandlers()
         @_getExhibitElementHTML()
     )
 
-  _searchBarClickHandler: (e) =>
-    val = jQuery("#exhibitSearchBar").val()
+  _setExhibitPanelHandlers: =>
     instance = this
-    #add elements back that match the query
-    jQuery("#filterButtons button").each( (floor) ->
-      if jQuery(this).hasClass("active")
-        instance._matchAndAddExhibitsToDOM(instance.unmatchedExhibits[floor], val)
-      else
-        instance.filteredExhibits[floor] = instance._mergeArraysById(
-          instance.filteredExhibits[floor],
-          instance.unmatchedExhibits[floor]
-        )
-        instance.unmatchedExhibits[floor] = []
+    jQuery("#exhibitPanel > button").click( => @fireEvents("addExhibit"))
+    jQuery("#exhibitPanel > div.input-group span").click(@_refreshExhibitsList)
+    jQuery("#exhibitPanel > div.input-group input").keypress(@_searchBarKeypressHandler)
+    jQuery("#filterButtons button").each((index) ->
+      jQuery(this).addClass("active")
+      jQuery(this).click( ->
+        isActive = jQuery(this).hasClass("active")
+        jQuery(this).removeClass("active") if isActive
+        jQuery(this).addClass("active") unless isActive
+        jQuery(this).blur()
+        instance._refreshExhibitsList()
+      )
     )
-    jQuery("#exhibitList .exhibitListElement")
-      .each( ->
-        obj = jQuery(this)
-        floor = obj.data("button").text()
-        name = obj.data("caption").text()
-        if not (name.indexOf(val) > -1)
-          if floor is ''
-            instance.unmatchedExhibits[instance._NO_FLOOR].push obj.detach()
-          else
-            instance.unmatchedExhibits[+floor].push obj.detach()
-      )
+
+  _filterExhibits: =>
+    filterButtons = jQuery("#filterButtons button")
+    filterButtonsState = (jQuery(b).hasClass("active") for b in jQuery.makeArray(filterButtons))
+    for e in @_exhibits
+      # filter by search bar text
+      searchedText = jQuery("#exhibitSearchBar").val().toLowerCase()
+      exhibitsText = jQuery(e.exhibit).data("caption").text().toLowerCase()
+      if exhibitsText.indexOf(searchedText) isnt -1
+        e.visible = true
+        # filter by floor only if exhibit matches the query
+        exhibit = e.exhibit.data("exhibit")
+        exhibitsFloor = @_getExhibitsFloor(exhibit)
+        e.visible = filterButtonsState[exhibitsFloor]
+      else
+        e.visible = false
     return
 
-  _mergeArraysById: (first, second) =>
-    res = []
-    index0 = 0
-    index1 = 0
-    while index0 < first.length and index1 < second.length
-      exhibitIndex0 = first[index0].data("index")
-      exhibitIndex1 = second[index1].data("index")
-      if +exhibitIndex0 < +exhibitIndex1
-        res.push first[index0++]
-      else
-        res.push second[index1++]
-
-    while index0 < first.length
-      res.push first[index0++]
-    while index1 < second.length
-      res.push second[index1++]
-    res
-
-  _matchAndAddExhibitsToDOM: (exhibits, inputVal) =>
-    matchedExhibits = []
-    unmatchedExhibits = []
-    for e in exhibits
-      if e.data("caption").text().indexOf(inputVal) > -1
-        matchedExhibits.push e
-      else
-        unmatchedExhibits.push e
-    exhibits = unmatchedExhibits
-    @_addExhibitsToDOM matchedExhibits
+  _refreshExhibitsList: =>
+    jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
+    @_filterExhibits()
+    for e in @_exhibits when e.visible is true
+      exhibit = e.exhibit.clone(true, true)
+      jQuery(exhibit).appendTo("#exhibitList")
+      jQuery(".exhibitCaption > div", exhibit).shortenText()
     return
 
-  _addExhibitsToDOM: (exhibits) =>
-    idx = 0
-    jQuery("#exhibitList .exhibitListElement")
-      .each( ->
-        return if idx is exhibits.length
-        obj = jQuery(this)
-        thisIndex = obj.data "index"
-        indexToAdd = exhibits[idx].data "index"
-        while +indexToAdd < +thisIndex
-          added = exhibits[idx++].insertBefore obj
-          jQuery(".exhibitCaption > div", added).shortenText()
-          break if idx is exhibits.length
-          indexToAdd = exhibits[idx].data "index"
-      )
-    #add rest of elements to the end of list
-    for i in [idx...exhibits.length]
-      added = exhibits[i].appendTo jQuery("#exhibitList")
-      jQuery(".exhibitCaption > div", added).shortenText()
-    return
+  _getExhibitsFloor: (exhibit) =>
+    [id, e] = [k, v] for k, v of exhibit
+    if e.frame?.mapLevel? then e.frame.mapLevel else @_NO_FLOOR
 
-  _searchBarKeypressHandler: (e) ->
-    jQuery("#exhibitPanel > div.input-group span").click() if e.which is 13 #13 = enter
-
-  _filterButtonHandler: (floor, context) ->
-    (e) ->
-      isActive = jQuery(this).hasClass("active")
-      jQuery(this).addClass("active") unless isActive
-      jQuery(this).removeClass("active") if isActive
-      jQuery(this).blur()
-      isActive = not isActive
-      instance = context
-      if not isActive
-        jQuery("#exhibitList .exhibitListElement")
-          .each( ->
-            exhibitsFloor = jQuery(this).data("button").text()
-            exhibitsFloor = instance._NO_FLOOR if exhibitsFloor is ""
-            return unless floor is +exhibitsFloor
-            instance.filteredExhibits[floor].push jQuery(this).detach()
-        )
-      else
-        inputVal = jQuery("#exhibitSearchBar").val()
-        instance._matchAndAddExhibitsToDOM instance.filteredExhibits[floor], inputVal
-        instance.unmatchedExhibits[floor] = instance._mergeArraysById(
-          instance.unmatchedExhibits[floor],
-          instance.filteredExhibits[floor]
-        )
-        instance.filteredExhibits[floor] = []
+  _searchBarKeypressHandler: (e) =>
+    jQuery("#exhibitPanel > div.input-group span").click() if e.which is @_ENTER_KEY
 
   _getExhibitElementHTML: =>
     jQuery.ajaxSetup(
@@ -150,38 +86,29 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     return
 
   addExhibits: (exhibits) =>
-    exhibitsToAdd = []
     for id, e of exhibits
-      tmp = {}
-      tmp[id] = e
-      el = jQuery(@_exhibitElementHTML)
-      caption = jQuery(".exhibitCaption div", el)
-      button = jQuery(".exhibitFlyToButton div", el)
-      el.data("caption", caption)
-        .data("button", button)
-        .data("exhibit", tmp)
-        .data("index", @newExhibitIndex++)
-      caption.html "#{e.name} (#{@newExhibitIndex - 1})"
+      exhibit = {}
+      exhibit[id] = e
+      exhibitListElement = jQuery(@_exhibitElementHTML)
+      caption = jQuery(".exhibitCaption div", exhibitListElement)
+      flyToButton = jQuery(".exhibitFlyToButton div", exhibitListElement)
+      exhibitListElement.data("caption", caption)
+        .data("button", flyToButton)
+        .data("exhibit", exhibit)
+      caption.html "#{e.name}"
 
-      exhibitFloor = e.frame?.mapLevel
-      if exhibitFloor?
-        button.html e.frame.mapLevel
-      else
-        exhibitFloor = @_NO_FLOOR
-        button.html ""
+      exhibitsFloor = @_getExhibitsFloor(exhibit)
+      if 0 <= exhibitsFloor <= 1
+        flyToButton.html exhibitsFloor
+        instance = this
+        jQuery(".exhibitFlyToButton", exhibitListElement).click( ->
+          obj = jQuery(this)
+          instance._flyToExhibitHandler(e.frame, obj, instance)
+        )
 
-      jQuery(".exhibitCaption", el).click(@_editExhibitHandler)
-      instance = this
-      jQuery(".exhibitFlyToButton", el).click( ->
-        obj = jQuery(this)
-        instance._flyToExhibitHandler(e.frame, obj, instance)
-      )
-      if jQuery("#filterButtons button:eq(#{exhibitFloor})").hasClass("active")
-        exhibitsToAdd.push el
-      else
-        @filteredExhibits[exhibitFloor].push el
-
-    @_addExhibitsToDOM exhibitsToAdd
+      jQuery(".exhibitCaption", exhibitListElement).click(@_editExhibitHandler)
+      @_exhibits.push { exhibit: exhibitListElement, visible: true }
+    @_refreshExhibitsList()
     return
 
   _editExhibitHandler: (e) ->
@@ -195,14 +122,5 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     element = obj.parent()
     exhibit = element.data("exhibit")
     [id, exhibit] = [k, v] for k, v of exhibit
-    instance.fireEvents("flyToExhibit", exhibit.frame)
-    return
-
-  _eraseExhibits: =>
-    @unmatchedExhibits = [[], [], []]
-    @filteredExhibits = [[], [], []]
-    jQuery("#exhibitList .exhibitListElement")
-      .each( ->
-        jQuery(this).remove()
-      )
+    instance.fireEvents("flyToExhibit", exhibit)
     return

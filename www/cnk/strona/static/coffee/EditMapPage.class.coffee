@@ -14,8 +14,8 @@ root.EditMapPage = class EditMapPage extends root.View
       dialog.nameEditable = true
       dialog.show()
     )
-    @exhibitPanel.on("flyToExhibit", (frame) =>
-      @canvas.flyToExhibit frame
+    @exhibitPanel.on("flyToExhibit", (exhibit) =>
+      @canvas.flyToExhibit exhibit
     )
     @_init()
     @addView("rightPanel", @exhibitPanel)
