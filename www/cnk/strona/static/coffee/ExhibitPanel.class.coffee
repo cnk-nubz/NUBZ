@@ -38,6 +38,15 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       )
     )
 
+  _refreshExhibitsList: =>
+    jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
+    @_filterExhibits()
+    for e in @_exhibits when e.visible is true
+      exhibit = e.exhibit.clone(true, true)
+      jQuery(exhibit).appendTo("#exhibitList")
+      jQuery(".exhibitCaption > div", exhibit).shortenText()
+    return
+
   _filterExhibits: =>
     filterButtons = jQuery("#filterButtons button")
     filterButtonsState = (jQuery(b).hasClass("active") for b in jQuery.makeArray(filterButtons))
@@ -53,15 +62,6 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         e.visible = filterButtonsState[exhibitsFloor]
       else
         e.visible = false
-    return
-
-  _refreshExhibitsList: =>
-    jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
-    @_filterExhibits()
-    for e in @_exhibits when e.visible is true
-      exhibit = e.exhibit.clone(true, true)
-      jQuery(exhibit).appendTo("#exhibitList")
-      jQuery(".exhibitCaption > div", exhibit).shortenText()
     return
 
   _getExhibitsFloor: (exhibit) =>
@@ -111,16 +111,16 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_refreshExhibitsList()
     return
 
+  _flyToExhibitHandler: (frame, obj, instance) ->
+    element = obj.parent()
+    exhibit = element.data("exhibit")
+    [id, e] = [k, v] for k, v of exhibit
+    instance.fireEvents("flyToExhibit", e)
+    return
+
   _editExhibitHandler: (e) ->
     element = jQuery(this).parent()
     [id, exhibit] = [k, v] for k, v of element.data("exhibit")
     dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
     dialog.show()
-    return
-
-  _flyToExhibitHandler: (frame, obj, instance) ->
-    element = obj.parent()
-    exhibit = element.data("exhibit")
-    [id, exhibit] = [k, v] for k, v of exhibit
-    instance.fireEvents("flyToExhibit", exhibit)
     return
