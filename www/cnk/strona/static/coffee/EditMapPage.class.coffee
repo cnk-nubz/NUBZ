@@ -8,6 +8,12 @@ root.EditMapPage = class EditMapPage extends root.View
     @exhibitPanelId = "#{@_containerId}-b"
     @canvas = new MutableCanvas(@canvasId)
     @exhibitPanel = new ExhibitPanel(@exhibitPanelId)
+    @_setViewHandlers()
+    @_init()
+    @addView("rightPanel", @exhibitPanel)
+    @addView("map", @canvas)
+
+  _setViewHandlers: =>
     @canvas.on("mapChangeRequest", @_showChangeMapPopup)
     @exhibitPanel.on("addExhibit", =>
       dialog = new ExhibitDialog(null, @mapData.activeFloor, @_addNewExhibitHandler.bind(this))
@@ -17,9 +23,11 @@ root.EditMapPage = class EditMapPage extends root.View
     @exhibitPanel.on("flyToExhibit", (exhibit) =>
       @canvas.flyToExhibit exhibit
     )
-    @_init()
-    @addView("rightPanel", @exhibitPanel)
-    @addView("map", @canvas)
+    @exhibitPanel.on("modifyExhibit", (id) =>
+      exhibit = @mapData.exhibits[id]
+      dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
+      dialog.show()
+    )
 
   _addNewExhibitHandler: (data) =>
     if data.floor?

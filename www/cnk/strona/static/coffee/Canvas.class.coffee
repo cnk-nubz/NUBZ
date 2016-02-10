@@ -188,8 +188,9 @@ root.Canvas = class Canvas extends root.View
     bottomRight = new L.Point(Math.min(maxX, Math.max(0, max.x)), Math.min(maxY, Math.max(0, max.y)))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]
 
-  flyToExhibit: (exhibit) =>
+  flyToExhibit: (exhibitsId) =>
     floor = @mapData.activeFloor
+    exhibit = @mapData.exhibits[exhibitsId]
     frame = exhibit.frame
     bounds = new L.LatLngBounds(
       @_map.unproject([frame.x, frame.y], @_maxZoom[floor]),

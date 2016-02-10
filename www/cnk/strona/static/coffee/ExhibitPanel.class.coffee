@@ -5,6 +5,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @mapData = new MapDataHandler()
     @_NO_FLOOR = 2
     @_ENTER_KEY = 13
+    @_lastSearchedText = ''
     @_exhibits = []
     @_init()
 
@@ -38,6 +39,40 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       )
     )
 
+  addExhibits: (exhibits) =>
+    for id, e of exhibits
+      exhibitListElement = jQuery(@_exhibitElementHTML)
+      caption = jQuery(".exhibitCaption div", exhibitListElement)
+      flyToButton = jQuery(".exhibitFlyToButton div", exhibitListElement)
+      exhibitListElement.data("caption", caption)
+        .data("button", flyToButton)
+        .data("exhibitsId", id)
+      caption.html "#{e.name}"
+
+      exhibitFloor = @_getExhibitFloor(id)
+      if exhibitFloor isnt @_NO_FLOOR
+        flyToButton.html exhibitFloor
+        flyToButton.addClass "clickable"
+        instance = this
+        jQuery(".exhibitFlyToButton", exhibitListElement).click( ->
+          obj = jQuery(this)
+          instance._flyToExhibitHandler(obj, instance)
+        )
+      jQuery(".exhibitCaption", exhibitListElement).click( do (id) => (=> @fireEvents("modifyExhibit", id)))
+      @_exhibits.push { exhibit: exhibitListElement, visible: true }
+    @_refreshExhibitsList()
+    return
+
+  _getExhibitFloor: (exhibitsId) =>
+    exhibit = @mapData.exhibits[exhibitsId]
+    if exhibit.frame?.mapLevel? then exhibit.frame.mapLevel else @_NO_FLOOR
+
+  _flyToExhibitHandler: (obj, instance) ->
+    element = obj.parent()
+    exhibitsId = element.data("exhibitsId")
+    instance.fireEvents("flyToExhibit", exhibitsId)
+    return
+
   _refreshExhibitsList: =>
     jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
     @_filterExhibits()
@@ -50,26 +85,23 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   _filterExhibits: =>
     filterButtons = jQuery("#filterButtons button")
     filterButtonsState = (jQuery(b).hasClass("active") for b in jQuery.makeArray(filterButtons))
+    searchedText = @_lastSearchedText.toLowerCase()
     for e in @_exhibits
       # filter by search bar text
-      searchedText = jQuery("#exhibitSearchBar").val().toLowerCase()
       exhibitsText = jQuery(e.exhibit).data("caption").text().toLowerCase()
       if exhibitsText.indexOf(searchedText) isnt -1
-        e.visible = true
         # filter by floor only if exhibit matches the query
-        exhibit = e.exhibit.data("exhibit")
-        exhibitsFloor = @_getExhibitsFloor(exhibit)
+        exhibitsId = e.exhibit.data("exhibitsId")
+        exhibitsFloor = @_getExhibitFloor(exhibitsId)
         e.visible = filterButtonsState[exhibitsFloor]
       else
         e.visible = false
     return
 
-  _getExhibitsFloor: (exhibit) =>
-    [id, e] = [k, v] for k, v of exhibit
-    if e.frame?.mapLevel? then e.frame.mapLevel else @_NO_FLOOR
-
   _searchBarKeypressHandler: (e) =>
-    jQuery("#exhibitPanel > div.input-group span").click() if e.which is @_ENTER_KEY
+    if e.which is @_ENTER_KEY
+      @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").text()
+      jQuery("#exhibitPanel > div.input-group span").click()
 
   _getExhibitElementHTML: =>
     jQuery.ajaxSetup(
@@ -83,44 +115,4 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_exhibitElementHTML = data
         @addExhibits(@mapData.exhibits)
     )
-    return
-
-  addExhibits: (exhibits) =>
-    for id, e of exhibits
-      exhibit = {}
-      exhibit[id] = e
-      exhibitListElement = jQuery(@_exhibitElementHTML)
-      caption = jQuery(".exhibitCaption div", exhibitListElement)
-      flyToButton = jQuery(".exhibitFlyToButton div", exhibitListElement)
-      exhibitListElement.data("caption", caption)
-        .data("button", flyToButton)
-        .data("exhibit", exhibit)
-      caption.html "#{e.name}"
-
-      exhibitsFloor = @_getExhibitsFloor(exhibit)
-      if 0 <= exhibitsFloor <= 1
-        flyToButton.html exhibitsFloor
-        instance = this
-        jQuery(".exhibitFlyToButton", exhibitListElement).click( ->
-          obj = jQuery(this)
-          instance._flyToExhibitHandler(e.frame, obj, instance)
-        )
-
-      jQuery(".exhibitCaption", exhibitListElement).click(@_editExhibitHandler)
-      @_exhibits.push { exhibit: exhibitListElement, visible: true }
-    @_refreshExhibitsList()
-    return
-
-  _flyToExhibitHandler: (frame, obj, instance) ->
-    element = obj.parent()
-    exhibit = element.data("exhibit")
-    [id, e] = [k, v] for k, v of exhibit
-    instance.fireEvents("flyToExhibit", e)
-    return
-
-  _editExhibitHandler: (e) ->
-    element = jQuery(this).parent()
-    [id, exhibit] = [k, v] for k, v of element.data("exhibit")
-    dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
-    dialog.show()
     return
