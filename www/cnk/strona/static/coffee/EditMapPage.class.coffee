@@ -20,10 +20,10 @@ root.EditMapPage = class EditMapPage extends root.View
       dialog.nameEditable = true
       dialog.show()
     )
-    @exhibitPanel.on("flyToExhibit", (exhibit) =>
+    @exhibitPanel.on("flyToExhibitWithId", (exhibit) =>
       @canvas.flyToExhibit exhibit
     )
-    @exhibitPanel.on("modifyExhibit", (id) =>
+    @exhibitPanel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
       dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
       dialog.show()
