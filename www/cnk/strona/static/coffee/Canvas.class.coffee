@@ -13,6 +13,7 @@ root.Canvas = class Canvas extends root.View
       minZoom: @_minZoom
       zoom: @_minZoom
       crs: L.CRS.Simple
+      autoPan: false
     })
     @_initButtons()
     @_init()
@@ -148,7 +149,7 @@ root.Canvas = class Canvas extends root.View
 
       @mapData.activeFloor = floor
       @updateState()
-      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor])
+      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor], animate: false)
       @
 
   updateState: =>
@@ -200,7 +201,7 @@ root.Canvas = class Canvas extends root.View
       @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
         @_map.flyToBounds(bounds, animate: false)
       )
-      @setFloorLayer(frame.mapLevel)(@_floorButton[frame.mapLevel]) unless floor is frame.mapLevel
+      @setFloorLayer(frame.mapLevel)(@_floorButton[frame.mapLevel])
     else
       @_map.flyToBounds(bounds, animate: false)
     return
