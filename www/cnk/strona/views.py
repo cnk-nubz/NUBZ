@@ -243,6 +243,14 @@ def getSimpleQuestionDialog(request):
 def getMultipleChoiceQuestionDialog(request):
     return getDialog(request, get_const("MULTIPLE_CHOICE_QUESTION_DIALOG"))
 
+def getExhibitPanel(request):
+    html = render_to_string('exhibitPanel/exhibitPanel.html')
+    return HttpResponse(html)
+
+def getExhibitListElement(request):
+    html = render_to_string('exhibitPanel/exhibitListElement.html')
+    return HttpResponse(html)
+
 def getSortQuestionDialog(request):
     return getDialog(request, get_const("SORT_QUESTION_DIALOG"))
 

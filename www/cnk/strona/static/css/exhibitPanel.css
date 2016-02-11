@@ -1,0 +1,96 @@
+#exhibitPanel {
+  padding: 5px 2px 5px 2px;
+  height: 100%;
+  width: 100%;
+}
+
+#exhibitPanel button {
+  height: 35px;
+}
+
+#exhibitPanel > button {
+  width: 100%;
+}
+
+#exhibitPanel > div.input-group {
+  margin-top: 5px;
+  height: 34px;
+}
+
+#exhibitPanel > div.input-group span {
+  cursor: pointer;
+}
+
+#exhibitListContainer {
+  position: absolute;
+  top: 79px; /* button + search bar + margins */
+  bottom: 45px; /* button + margin */
+  left: 2px;
+  right: 2px;
+  overflow-y: scroll;
+}
+
+#exhibitList {
+  position: relative;
+  width: 100%;
+}
+
+.exhibitListElement {
+  position: relative;
+  margin: 2px;
+}
+
+.exhibitListElement > .exhibitCaption {
+  position: relative;
+  margin-right: 24px;
+  padding-left: 8px;
+  height: 42px;
+  border-radius: 4px 0px 0px 4px;
+  white-space: nowrap;
+  overflow-x: hidden;
+  background: white;
+  cursor: pointer;
+}
+
+.exhibitListElement > .exhibitCaption:hover {
+  background: #eee;
+}
+
+.exhibitListElement > .exhibitFlyToButton {
+  display: table;
+  position: absolute;
+  width: 24px;
+  top: 0px;
+  bottom: 0px;
+  right: 0px;
+  background: #eee;
+  border-radius: 0px 3px 3px 0px;
+  text-align: center;
+  border-left: 1px solid #ccc;
+}
+
+.exhibitListElement > .exhibitFlyToButton .clickable {
+  cursor: pointer;
+}
+
+.exhibitFlyToButton > div,
+.exhibitCaption > div {
+  display: table-cell;
+  vertical-align: middle;
+  height: 42px;
+}
+
+#filterButtons {
+  position: absolute;
+  right: 2px;
+  bottom: 5px;
+  left: 2px;
+}
+
+#filterButtons > button {
+  width: 32%;
+}
+
+#filterButtons > button:not(:last-child) {
+  margin-right: 0.5%;
+}

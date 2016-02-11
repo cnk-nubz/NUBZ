@@ -45,6 +45,6 @@ root.View = class View
     @_handlers[name] = []
     @
 
-  fireEvents: (name) =>
-    h() for h in @_handlers[name] if @_handlers[name]?
+  fireEvents: (name, args...) =>
+    h(args...) for h in @_handlers[name] if @_handlers[name]?
     @

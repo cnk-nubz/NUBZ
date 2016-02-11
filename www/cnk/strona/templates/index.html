@@ -4,6 +4,9 @@
 {% load jsvar %}
 {% block script %}
 <script src="{% static "include/js/jquery.min.js" %}"></script>
+{% compress js %}
+<script src="{% static "coffee/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
 <script src="{% static "include/js/d3.v3.min.js" %}"></script>
 <script src="{% static "include/js/bootstrap.min.js" %}"></script>
 <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
@@ -43,6 +46,7 @@
 <link href="{% static "include/css/font-awesome.min.css" %}" rel="stylesheet" />
 <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
 <link href="{% static "css/index.css" %}" rel="stylesheet" />
+<link href="{% static "css/exhibitPanel.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block content %}
   {% compress js %}

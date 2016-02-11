@@ -8,15 +8,26 @@ root.EditMapPage = class EditMapPage extends root.View
     @exhibitPanelId = "#{@_containerId}-b"
     @canvas = new MutableCanvas(@canvasId)
     @exhibitPanel = new ExhibitPanel(@exhibitPanelId)
+    @_setViewHandlers()
+    @_init()
+    @addView("rightPanel", @exhibitPanel)
+    @addView("map", @canvas)
+
+  _setViewHandlers: =>
     @canvas.on("mapChangeRequest", @_showChangeMapPopup)
     @exhibitPanel.on("addExhibit", =>
       dialog = new ExhibitDialog(null, @mapData.activeFloor, @_addNewExhibitHandler.bind(this))
       dialog.nameEditable = true
       dialog.show()
     )
-    @_init()
-    @addView("rightPanel", @exhibitPanel)
-    @addView("map", @canvas)
+    @exhibitPanel.on("flyToExhibitWithId", (exhibit) =>
+      @canvas.flyToExhibit exhibit
+    )
+    @exhibitPanel.on("modifyExhibitWithId", (id) =>
+      exhibit = @mapData.exhibits[id]
+      dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
+      dialog.show()
+    )
 
   _addNewExhibitHandler: (data) =>
     if data.floor?
@@ -69,8 +80,13 @@ root.EditMapPage = class EditMapPage extends root.View
       t = {}
       t[id] = @mapData.exhibits[id]
       @canvas.addExhibits(data.frame.mapLevel, t)
+      @exhibitPanel.addExhibits(t)
       if data.frame.mapLevel is @mapData.activeFloor
         @canvas.updateState()
+    else
+      t = {}
+      t[id] = @mapData.exhibits[id]
+      @exhibitPanel.addExhibits(t)
     return
 
   _init: =>
@@ -78,7 +94,7 @@ root.EditMapPage = class EditMapPage extends root.View
     @
 
   _initCss: =>
-    exhibitPanelWidth = "200px"
+    exhibitPanelWidth = "300px"
     leftPanelStyle = {
       "background": @appearance.panel.background
       "position": "absolute"
