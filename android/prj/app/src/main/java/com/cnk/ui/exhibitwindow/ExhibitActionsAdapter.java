@@ -45,6 +45,7 @@ public class ExhibitActionsAdapter extends BaseAdapter {
     public View getView(final int i, View view, ViewGroup viewGroup) {
         AutoResizeTextView actionLabel = new AutoResizeTextView(context);
         actionLabel.setMaxLines(3);
+        actionLabel.setMinTextSize(2f);
         actionLabel.setTextSize(20f);
         actionLabel.setWidth(200);
         actionLabel.setHeight(80);

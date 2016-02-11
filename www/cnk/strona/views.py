@@ -250,3 +250,9 @@ def getExhibitPanel(request):
 def getExhibitListElement(request):
     html = render_to_string('exhibitPanel/exhibitListElement.html')
     return HttpResponse(html)
+
+def getSortQuestionDialog(request):
+    return getDialog(request, get_const("SORT_QUESTION_DIALOG"))
+
+def getNewActionDialog(request):
+    return getDialog(request, get_const("NEW_ACTION_DIALOG"))
