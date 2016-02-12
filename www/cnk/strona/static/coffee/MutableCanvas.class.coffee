@@ -1,57 +1,21 @@
 root = exports ? this
 root.MutableCanvas = class MutableCanvas extends root.Canvas
   constructor: ->
+    @_isResizingAllowed = false
     super
-    @_changeMapButton = L.easyButton('fa-map-o',
-                                    => @fireEvents "mapChangeRequest",
-                                    'Zmień obrazek piętra',
-                                    {position: 'bottomleft'}).addTo @_map
-
-    @_enableResizingButton = L.easyButton({
-        states:[
-          {
-            stateName: 'enableResizing'
-            icon: 'fa-arrows-alt'
-            title: 'Wyłącz rozciąganie eksponatów'
-            onClick: (btn) =>
-              jQuery(btn.button).addClass "clicked"
-              btn.state('disableResizing')
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.editing.enable()
-              )
-          },
-          {
-            stateName: 'disableResizing'
-            icon: 'fa-arrows-alt'
-            title: 'Włącz rozciąganie eksponatów'
-            onClick: (btn) =>
-              jQuery(btn.button).removeClass "clicked"
-              btn.state('enableResizing')
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.editing.disable()
-              )
-          }
-        ]
-    }).addTo @_map
-    @_enableResizingButton.state 'enableResizing'
 
   updateState: =>
     super
-    floor = @mapData.activeFloor
-    if @_enableResizingButton?._currentState.stateName is 'disableResizing'
-      @_exhibits[floor].eachLayer((layer) ->
-        layer.editing.enable()
-      )
-    if @_enableResizingButton?._currentState.stateName is 'enableResizing'
-      @_exhibits[floor].eachLayer((layer) ->
-        layer.editing.disable()
-      )
+    @_exhibits[@mapData.activeFloor].eachLayer((layer) =>
+      layer.editing.enable() if @_isResizingAllowed
+      layer.editing.disable() unless @_isResizingAllowed
+    )
 
   _exhibitOptions: (options...) =>
     jQuery.extend(options..., { draggable: true })
 
   _prepareExhibit: (exh) =>
-    exh.editing.enable() if @_enableResizingButton?._currentState.stateName is 'disableResizing'
+    exh.editing.enable() if @_isResizingAllowed
     exh.on('editstart', @_onEditStart)
     exh.on('edit', @_onEditEnd)
     exh.on('dragstart', @_onDragStart)
@@ -69,8 +33,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     @_fixExhibitPosition(exhibit)
     exhibit.editing._repositionCornerMarkers()
     @_updateExhibitPosition(exhibit)
-    if @_labelsButton._currentState.stateName is 'removeLabels'
-      exhibit.showLabel()
+    exhibit.showLabel() if @_areLabelsVisible
     return
 
   _onDragStart: (e) ->
@@ -84,10 +47,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     return unless e.target._dragMoved
     exhibit = e.target
     @_updateExhibitPosition(exhibit)
-    if @_labelsButton._currentState.stateName is 'removeLabels'
-      exhibit.showLabel()
-    if @_enableResizingButton._currentState.stateName is 'disableResizing'
-      exhibit.editing.enable()
+    exhibit.showLabel() if @_areLabelsVisible
+    exhibit.editing.enable() if @_isResizingAllowed
     return
 
   _updateExhibitPosition: (exhibit) =>
@@ -171,3 +132,10 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     bot = arr[0]
     (bot = p if p.x >= bot.x and p.y >= bot.y) for p in arr[1..]
     bot
+
+  changeExhibitResizing: (isActive) =>
+    @_isResizingAllowed = isActive
+    @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+      layer.editing.enable() if isActive
+      layer.editing.disable() unless isActive
+    )

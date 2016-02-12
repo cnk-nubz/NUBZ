@@ -22,4 +22,6 @@ class ActionDialog extends root.QuestionDialog
       )
     return
 
-new ActionDialog("getNewActionDialog/", "#newAction")
+jQuery(document).ready( ->
+  new ActionDialog("getNewActionDialog/", "#newAction")
+)

@@ -1,16 +1,98 @@
 <!DOCTYPE html>
 {% load staticfiles %}
 {% load compress %}
+{% load jsvar %}
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NUBZ</title>
-	{% block script %} {% endblock %}
-	{% block css %} {% endblock %}
+  {% block script %}
+  <script src="{% static "include/js/jquery.min.js" %}"></script>
+  {% compress js %}
+  <script src="{% static "coffee/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  <script src="{% static "include/js/d3.v3.min.js" %}"></script>
+  <script src="{% static "include/js/bootstrap.min.js" %}"></script>
+  <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
+  <script src="{% static "include/js/csrf.js" %}"></script>
+
+  <!-- LEAFLET -->
+  <script src="{% static "include/js/leaflet-src.js" %}"></script>
+  <script src="{% static "include/js/easy-button.js" %}"></script>
+
+  <!-- Leaflet label -->
+  <script src="{% static "include/js/Label.js" %}"></script>
+  <script src="{% static "include/js/BaseMarkerMethods.js" %}"></script>
+  <script src="{% static "include/js/Marker.Label.js" %}"></script>
+  <script src="{% static "include/js/Path.Label.js" %}"></script>
+  <script src="{% static "include/js/Map.Label.js" %}"></script>
+  <script src="{% static "include/js/FeatureGroup.Label.js" %}"></script>
+
+  <!-- Leaflet drag -->
+  <script src="{% static "include/js/SVG.js" %}"></script>
+  <script src="{% static "include/js/Path.Transform.js" %}"></script>
+  <script src="{% static "include/js/Path.Drag.js" %}"></script>
+
+  <!-- Leaflet edit -->
+  <script src="{% static "include/js/Leaflet.draw.js" %}"></script>
+  <script src="{% static "include/js/edit/handler/Edit.Poly.js" %}"></script>
+  <script src="{% static "include/js/edit/handler/Edit.SimpleShape.js" %}"></script>
+  <script src="{% static "include/js/edit/handler/Edit.Rectangle.js" %}"></script>
+  {% endblock %}
+  {% block css %}
+  <!-- CSS -->
+  <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/leaflet.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/leaflet.label.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/font-awesome.min.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  <link href="{% static "css/exhibitPanel.css" %}" rel="stylesheet" />
+  {% endblock %}
+  {% block includes %}
+    {% compress js %}
+    <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/Appearance.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/MutableCanvas.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/ExhibitPanel.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+  {% endblock %}
+  {% block init %}
+    {% compress js %}
+    <script type="text/coffeescript">
+      document.detached = {}
+      root = exports ? this
+      floorUrl = [
+        "{{urlFloor0|escape|safe}}"
+        "{{urlFloor1|escape|safe}}"
+      ]
+      activeFloor = +"{{acitveFloor}}"
+      exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+      floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+      (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
+      mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
+    </script>
+    {% endcompress %}
+  {% endblock %}
 </head>
 	<body>
-		{% block content %}{% endblock %}
+		{% block body %}{% endblock %}
 	</body>
 </html>

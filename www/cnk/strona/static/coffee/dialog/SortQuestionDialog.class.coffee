@@ -55,4 +55,6 @@ class SortQuestionDialog extends root.QuestionDialog
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
 
-new SortQuestionDialog('getSortQuestionDialog/', "#sortQuestion")
+jQuery(document).ready( ->
+  new SortQuestionDialog('getSortQuestionDialog/', "#sortQuestion")
+)

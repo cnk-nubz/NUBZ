@@ -14,63 +14,21 @@ root.Canvas = class Canvas extends root.View
       zoom: @_minZoom
       crs: L.CRS.Simple
       autoPan: false
+      zoomControl: false
     })
-    @_initButtons()
+    @_areLabelsVisible = true
     @_init()
-
-  _initButtons: =>
-    @_labelsButton = L.easyButton({
-      states:[
-          {
-            stateName: 'setLabels'
-            icon: 'fa-comment-o'
-            title: 'Pokaż etykiety'
-            onClick: (btn) =>
-              jQuery btn.button
-                .addClass "clicked"
-              btn.state('removeLabels')
-              @mapData.activeLabels = true
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.showLabel()
-              )
-              return
-          },
-          {
-            stateName: 'removeLabels'
-            icon: 'fa-comment-o'
-            title: 'Ukryj etykiety'
-            onClick: (btn) =>
-              jQuery btn.button
-                .removeClass "clicked"
-              btn.state('setLabels')
-              @mapData.activeLabels = false
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.hideLabel()
-              )
-              return
-          }
-      ]
-    })
-    activeLabelState = "#{if @mapData.activeLabels then "removeLabels" else "setLabels"}"
-    activeLabelButton = @_labelsButton.state(activeLabelState).button
-    jQuery(activeLabelButton).addClass("clicked") if @mapData.activeLabels
-    @_labelsButton.state
-
-    @_floorButton = [
-      L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
-      L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
-    ]
-
-    toAddButton = @select(@_floorButton[1].getContainer())
-    mainButton = @select(@_floorButton[0].getContainer())
-        .append -> toAddButton[0][0].firstChild
-    @_labelsButton.addTo @_map
     return
 
   _init: =>
     #TODO
     #@_map.on('moveend', @_getCurrentView)
     #@_map.on('zoomend', @_getCurrentView)
+    @_map.on('zoomend', =>
+      disableMinus = @_map.getZoom() is @_minZoom
+      disablePlus = @_map.getZoom() is @_maxZoom[@mapData.activeFloor]
+      @fireEvents('zoomend', disableMinus, disablePlus)
+    )
     actv = @mapData.activeFloor
     @loadData i for i in [1-actv..actv]
     @
@@ -90,7 +48,7 @@ root.Canvas = class Canvas extends root.View
     @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
     @addExhibits(floor, @mapData.exhibits)
-    @setFloorLayer(floor)(@_floorButton[floor])
+    @setFloorLayer(floor)
     @
 
   _addMapBounds: (floor, northEast, southWest) =>
@@ -141,12 +99,6 @@ root.Canvas = class Canvas extends root.View
     return
 
   setFloorLayer: (floor) =>
-    (btn) =>
-      jQuery btn.button
-        .addClass "clicked"
-      jQuery @_floorButton[1 - floor].button
-        .removeClass "clicked"
-
       @mapData.activeFloor = floor
       @updateState()
       @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor], animate: false)
@@ -158,13 +110,7 @@ root.Canvas = class Canvas extends root.View
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
       @_map.addLayer(@_exhibits[floor])
-      if @_labelsButton._currentState.stateName is 'removeLabels' #setLabels is active
-        @_exhibits[1 - floor].eachLayer((layer) ->
-          layer.hideLabel()
-        )
-        @_exhibits[floor].eachLayer((layer) ->
-          layer.showLabel()
-        )
+      @changeLabelVisibility(@_areLabelsVisible)
       @_map.setMaxBounds @_mapBounds[floor]
       @_map.invalidateSize()
       @
@@ -201,7 +147,24 @@ root.Canvas = class Canvas extends root.View
       @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
         @_map.flyToBounds(bounds, animate: false)
       )
-      @setFloorLayer(frame.mapLevel)(@_floorButton[frame.mapLevel])
+      @setFloorLayer(frame.mapLevel)
     else
       @_map.flyToBounds(bounds, animate: false)
     return
+
+  changeLabelVisibility: (isActive) =>
+    @_areLabelsVisible = isActive
+    @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+      layer.showLabel() if isActive
+      layer.hideLabel() unless isActive
+    )
+
+  zoomIn: =>
+    result = if @_map.getZoom() + 1 is @_maxZoom[@mapData.activeFloor] then false else true
+    @_map.zoomIn()
+    result
+
+  zoomOut: =>
+    result = if @_map.getZoom() - 1 is @_minZoom then false else true
+    @_map.zoomOut()
+    result

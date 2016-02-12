@@ -13,5 +13,7 @@ urlpatterns = [
     url(r'getExhibitPanel/$', views.getExhibitPanel, name='getExhibitPanel'),
     url(r'getExhibitListElement/$', views.getExhibitListElement, name='getExhibitListElement'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
-    url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog')
+    url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
+    url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
+    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog')
 ]

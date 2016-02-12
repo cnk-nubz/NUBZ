@@ -26,4 +26,6 @@ class SimpleQuestionDialog extends root.QuestionDialog
       )
     return
 
-new SimpleQuestionDialog("getSimpleQuestionDialog/", "#simpleQuestion")
+jQuery(document).ready( ->
+  new SimpleQuestionDialog("getSimpleQuestionDialog/", "#simpleQuestion")
+)

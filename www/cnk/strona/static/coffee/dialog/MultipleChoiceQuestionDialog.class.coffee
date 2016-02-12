@@ -59,4 +59,6 @@ class MultipleChoiceQuestionDialog extends root.QuestionDialog
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
 
-new MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', "#multipleChoiceQuestion")
+jQuery(document).ready( ->
+  new MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', "#multipleChoiceQuestion")
+)
