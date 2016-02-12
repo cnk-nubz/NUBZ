@@ -53,21 +53,13 @@ class Handlers
     instance = this
     ->
       jQuery(this).blur()
-      result = instance.canvas.zoomOut()
-      if not result
-        jQuery(instance.button.minusZoom).prop "disabled", true
-      else
-        jQuery(instance.button.plusZoom).prop "disabled", false
+      instance.canvas.zoomOut()
 
   zoomInHandler: =>
     instance = this
     ->
       jQuery(this).blur()
-      result = instance.canvas.zoomIn()
-      if not result
-        jQuery(instance.button.plusZoom).prop "disabled", true
-      else
-        jQuery(instance.button.minusZoom).prop "disabled", false
+      instance.canvas.zoomIn()
 
   changeFloorHandler: (floor) =>
     instance = this

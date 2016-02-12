@@ -160,11 +160,7 @@ root.Canvas = class Canvas extends root.View
     )
 
   zoomIn: =>
-    result = if @_map.getZoom() + 1 is @_maxZoom[@mapData.activeFloor] then false else true
     @_map.zoomIn()
-    result
 
   zoomOut: =>
-    result = if @_map.getZoom() - 1 is @_minZoom then false else true
     @_map.zoomOut()
-    result

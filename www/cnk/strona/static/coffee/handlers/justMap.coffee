@@ -40,7 +40,7 @@ class Handlers
 
   showLabelsHandler: =>
     canvas = @canvas
-     ->
+    ->
       obj = jQuery(this)
       obj.blur()
       isActive = obj.hasClass("active")
