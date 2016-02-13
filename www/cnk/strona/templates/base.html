@@ -48,7 +48,6 @@
   <link href="{% static "include/css/font-awesome.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/base.css" %}" rel="stylesheet" />
-  <link href="{% static "css/exhibitPanel.css" %}" rel="stylesheet" />
   {% endblock %}
   {% block includes %}
     {% compress js %}
@@ -56,9 +55,6 @@
     {% endcompress %}
     {% compress js %}
     <script src="{% static "coffee/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/Appearance.class.coffee"%}" type="text/coffeescript"></script>
     {% endcompress %}
     {% compress js %}
     <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>

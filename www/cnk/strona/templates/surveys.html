@@ -2,9 +2,9 @@
 {% load compress %}
 {% load staticfiles %}
 {% block init %}
-{% compress js %}
-<script src="{% static "coffee/handlers/surveys.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/handlers/surveys.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
 {% endblock %}
 {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
@@ -16,6 +16,8 @@
   <script src="{% static "include/js/csrf.js" %}"></script>
 {% endblock %}
 {% block css %}
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
 {% endblock %}

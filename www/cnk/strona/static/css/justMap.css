@@ -22,6 +22,6 @@
 }
 
 #zoomControls button:disabled {
-  background: #eeeddd;
+  opacity: 0.5;
   cursor: not-allowed;
 }

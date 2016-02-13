@@ -5,7 +5,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   # flyToExhibitWithId: takes exhibit id as second argument
   # modifyExhibitWithId: takes exhibit id as second argument
   # =====================================
-  constructor: ->
+  constructor: (@_containerId) ->
     super
     @mapData = new MapDataHandler()
     @_NO_FLOOR = 2
@@ -40,8 +40,10 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       jQuery(this).addClass("active")
       jQuery(this).click( ->
         isActive = jQuery(this).hasClass("active")
-        jQuery(this).removeClass("active") if isActive
-        jQuery(this).addClass("active") unless isActive
+        if isActive
+          jQuery(this).removeClass("active")
+        else
+          jQuery(this).addClass("active")
         jQuery(this).blur()
         instance._refreshExhibitsList()
       )

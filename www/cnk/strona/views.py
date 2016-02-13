@@ -88,7 +88,7 @@ def _getExhibits():
 		}
 	return exhibitDict
 
-def getMapPage(request, file):
+def getMapPage(request, file, activeLink):
 	if not _pingServer():
 		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
 
@@ -113,15 +113,16 @@ def getMapPage(request, file):
 		'exhibits': exhibits,
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
-		'urlFloor1': urlFloor1
+		'urlFloor1': urlFloor1,
+        'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
 
 def index(request):
-	return getMapPage(request, 'map/justMap.html')
+	return getMapPage(request, 'map/justMap.html', "0")
 
 def editMapPage(request):
-    return getMapPage(request, 'map/editMap.html')
+    return getMapPage(request, 'map/editMap.html', "1")
 
 class uploadError(Enum):
 	SUCCESS = 1
@@ -230,7 +231,7 @@ def createNewExhibit(request):
 
 def surveys(request):
 	template = loader.get_template('surveys.html')
-	return HttpResponse(template.render(RequestContext(request)))
+	return HttpResponse(template.render(RequestContext(request, {'activeLink' : "2"})))
 
 def getDialog(request, dialog):
 	contextDict = {
@@ -264,5 +265,6 @@ def getNewActionDialog(request):
     return getDialog(request, get_const("NEW_ACTION_DIALOG"))
 
 def getChangeMapDialog(request):
+    floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html')
-    return JsonResponse({'html': html.replace("\n", "")})
+    return JsonResponse({'html': html.replace("\n", "").replace("!activeFloor!", "{}".format(floor))})

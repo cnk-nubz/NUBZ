@@ -7,8 +7,10 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
   updateState: =>
     super
     @_exhibits[@mapData.activeFloor].eachLayer((layer) =>
-      layer.editing.enable() if @_isResizingAllowed
-      layer.editing.disable() unless @_isResizingAllowed
+      if @_isResizingAllowed
+        layer.editing.enable()
+      else
+        layer.editing.disable()
     )
 
   _exhibitOptions: (options...) =>

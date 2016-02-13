@@ -1,15 +1,14 @@
 root = exports ? this
 root.Canvas = class Canvas extends root.View
   constructor: (@_containerMap) ->
-    super @_containerMap
+    super
     @mapData = new MapDataHandler()
-    @appearance = new Appearance()
     @_minZoom = @mapData.minZoom
     @_maxZoom = @mapData.maxZoom
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
-    @_map = L.map(@select(@_containerMap).node(), {
+    @_map = L.map(@_containerMap[1..], {
       minZoom: @_minZoom
       zoom: @_minZoom
       crs: L.CRS.Simple
@@ -81,12 +80,11 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       options =
-        color: @appearance.exhibit.strokeColor
-        fillColor: @appearance.exhibit.fillColor
-        fillOpacity: @appearance.exhibit.fillOpacity
-        weight: @appearance.exhibit.weight
-        strokeColor: @appearance.exhibit.strokeColor
-        strokeOpacity: @appearance.exhibit.strokeOpacity
+          fillColor: '#ff7800'
+          fillOpacity: 0.7
+          weight: 1
+          strokeColor: 'darkblue'
+          strokeOpacity: 1
       r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: id }))
       r.bindLabel(e.name, { direction: 'auto' })
       @_prepareExhibit(r)
@@ -111,7 +109,7 @@ root.Canvas = class Canvas extends root.View
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
       @_map.addLayer(@_exhibits[floor])
-      @changeLabelVisibility(@_areLabelsVisible)
+      @changeLabelsVisibility(@_areLabelsVisible)
       @_map.setMaxBounds @_mapBounds[floor]
       @_map.invalidateSize()
       @
@@ -153,7 +151,7 @@ root.Canvas = class Canvas extends root.View
       @_map.flyToBounds(bounds, animate: false)
     return
 
-  changeLabelVisibility: (areVisible) =>
+  changeLabelsVisibility: (areVisible) =>
     @_areLabelsVisible = areVisible
     @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
       if areVisible

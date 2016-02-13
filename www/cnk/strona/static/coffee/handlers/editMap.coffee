@@ -42,8 +42,8 @@ class Handlers
       dialog.show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@button.plusZoom).prop("disabled", disablePlus is true)
-      jQuery(@button.minusZoom).prop("disabled", disableMinus is true)
+      jQuery(@button.plusZoom).prop("disabled", disablePlus)
+      jQuery(@button.minusZoom).prop("disabled", disableMinus)
     )
 
   zoomOutHandler: =>
@@ -73,7 +73,7 @@ class Handlers
     instance = this
     ->
       statusNow = instance.changeButtonStatus(jQuery(this))
-      instance.canvas.changeLabelVisibility(statusNow)
+      instance.canvas.changeLabelsVisibility(statusNow)
 
   resizeExhibitsHandler: =>
     instance = this
@@ -100,6 +100,7 @@ class Handlers
         type: 'POST'
         dataType: 'json'
         url: '/getChangeMapDialog/'
+        data: { floor: @mapData.activeFloor }
         success: (data) =>
           instance.showChangeMapPopup(data.html)
       )
@@ -108,7 +109,7 @@ class Handlers
     activeFloor = @mapData.activeFloor
     instance = this
     dialog = BootstrapDialog.show(
-      message: html.replace '!activeFloor!', "#{activeFloor}"
+      message: html
       title: 'Zmiana mapy'
       size: BootstrapDialog.SIZE_SMALL
       buttons: [

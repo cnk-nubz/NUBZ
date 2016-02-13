@@ -1,5 +1,6 @@
 #exhibitPanel {
   padding: 5px 2px 5px 2px;
+  border-left: 1px solid #aaa;
   height: 100%;
   width: 100%;
 }

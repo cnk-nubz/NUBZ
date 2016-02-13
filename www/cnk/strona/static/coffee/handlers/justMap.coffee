@@ -21,8 +21,8 @@ class Handlers
 
   _setEvents: =>
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@button.plusZoom).prop("disabled", disablePlus is true)
-      jQuery(@button.minusZoom).prop("disabled", disableMinus is true)
+      jQuery(@button.plusZoom).prop("disabled", disablePlus)
+      jQuery(@button.minusZoom).prop("disabled", disableMinus)
     )
 
   zoomOutHandler: =>
@@ -47,7 +47,7 @@ class Handlers
         obj.removeClass("active")
       else
         obj.addClass("active")
-      canvas.changeLabelVisibility(not isActive)
+      canvas.changeLabelsVisibility(not isActive)
 
   changeFloorHandler: (floor) =>
     instance = this
