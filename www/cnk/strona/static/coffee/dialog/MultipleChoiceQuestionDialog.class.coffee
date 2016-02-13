@@ -1,5 +1,5 @@
 root = exports ? this
-class MultipleChoiceQuestionDialog extends root.QuestionDialog
+root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     radioGroup = @_data.utils.default.radioGroup
@@ -58,5 +58,3 @@ class MultipleChoiceQuestionDialog extends root.QuestionDialog
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
-
-new MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', "#multipleChoiceQuestion")

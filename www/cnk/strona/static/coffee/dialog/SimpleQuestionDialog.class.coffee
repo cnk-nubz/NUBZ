@@ -1,5 +1,5 @@
 root = exports ? this
-class SimpleQuestionDialog extends root.QuestionDialog
+root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     radioGroup = @_data.data[2][1].radioGroup
@@ -25,5 +25,3 @@ class SimpleQuestionDialog extends root.QuestionDialog
         )
       )
     return
-
-new SimpleQuestionDialog("getSimpleQuestionDialog/", "#simpleQuestion")

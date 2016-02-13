@@ -88,7 +88,7 @@ def _getExhibits():
 		}
 	return exhibitDict
 
-def index(request):
+def getMapPage(request, file, activeLink):
 	if not _pingServer():
 		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
 
@@ -96,7 +96,7 @@ def index(request):
 	exhibits = _getExhibits()
 	if not floorTilesInfo or exhibits is None:
 		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
-	template = loader.get_template('index.html')
+	template = loader.get_template(file)
 
 	if len(floorTilesInfo[0]) == 1: #just default image
 		urlFloor0 = r"static/floorplan0.jpg"
@@ -113,9 +113,16 @@ def index(request):
 		'exhibits': exhibits,
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
-		'urlFloor1': urlFloor1
+		'urlFloor1': urlFloor1,
+        'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
+
+def index(request):
+	return getMapPage(request, 'map/justMap.html', "0")
+
+def editMapPage(request):
+    return getMapPage(request, 'map/editMap.html', "1")
 
 class uploadError(Enum):
 	SUCCESS = 1
@@ -224,7 +231,7 @@ def createNewExhibit(request):
 
 def surveys(request):
 	template = loader.get_template('surveys.html')
-	return HttpResponse(template.render(RequestContext(request)))
+	return HttpResponse(template.render(RequestContext(request, {'activeLink' : "2"})))
 
 def getDialog(request, dialog):
 	contextDict = {
@@ -256,3 +263,8 @@ def getSortQuestionDialog(request):
 
 def getNewActionDialog(request):
     return getDialog(request, get_const("NEW_ACTION_DIALOG"))
+
+def getChangeMapDialog(request):
+    floor = request.POST.get("floor")
+    html = render_to_string('dialog/changeMap.html', {'floor': floor})
+    return JsonResponse({'html': html.replace("\n", "")})
