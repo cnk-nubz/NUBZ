@@ -11,6 +11,7 @@ root.Canvas = class Canvas extends root.View
     @_map = L.map(@_containerMap[1..], {
       minZoom: @_minZoom
       zoom: @_minZoom
+      center: [0, 0]
       crs: L.CRS.Simple
       autoPan: false
       zoomControl: false
@@ -100,7 +101,6 @@ root.Canvas = class Canvas extends root.View
   setFloorLayer: (floor) =>
       @mapData.activeFloor = floor
       @updateState()
-      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor], animate: false)
       @
 
   updateState: =>

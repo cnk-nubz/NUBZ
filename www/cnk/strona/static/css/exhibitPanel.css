@@ -1,6 +1,8 @@
-#exhibitPanel {
-  padding: 5px 2px 5px 2px;
+#exhibit-panel {
   border-left: 1px solid #aaa;
+}
+
+#exhibitPanel {
   height: 100%;
   width: 100%;
 }
@@ -10,11 +12,18 @@
 }
 
 #exhibitPanel > button {
+  position: absolute;
+  top: 5px;
+  margin-left: 2px;
+  margin-right: 2px;
   width: 100%;
 }
 
 #exhibitPanel > div.input-group {
-  margin-top: 5px;
+  position: absolute;
+  top: 45px;
+  margin-left: 2px;
+  margin-right: 2px;
   height: 34px;
 }
 
