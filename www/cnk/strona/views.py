@@ -266,5 +266,5 @@ def getNewActionDialog(request):
 
 def getChangeMapDialog(request):
     floor = request.POST.get("floor")
-    html = render_to_string('dialog/changeMap.html')
-    return JsonResponse({'html': html.replace("\n", "").replace("!activeFloor!", "{}".format(floor))})
+    html = render_to_string('dialog/changeMap.html', {'floor': floor})
+    return JsonResponse({'html': html.replace("\n", "")})

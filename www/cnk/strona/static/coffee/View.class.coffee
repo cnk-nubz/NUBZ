@@ -1,7 +1,6 @@
 root = exports ? this
 root.View = class View
   constructor: ->
-    @_views = {}
     @_handlers = {}
 
   on: (name, handler) =>
