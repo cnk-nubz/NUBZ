@@ -75,10 +75,12 @@ void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
     if (!reportChecker.checkBreakActionsIds(breakActions)) {
         throw io::InvalidInput("incorrect break action");
     }
-    if (!reportChecker.checkQuestionsBeforeCount(input.simpleQuestionsAnswersBefore.size())) {
+    if (!reportChecker.checkQuestionsBeforeCount(
+            input.answersBefore.simpleQuestionsAnswers.size())) {
         throw io::InvalidInput("incorrect number of questions answer in survey before");
     }
-    if (!reportChecker.checkQuestionsBeforeCount(input.simpleQuestionsAnswersBefore.size())) {
+    if (!reportChecker.checkQuestionsBeforeCount(
+            input.answersAfter.simpleQuestionsAnswers.size())) {
         throw io::InvalidInput("incorrect number of questions answer in survey after");
     }
     if (!checker.checkExhibitsIds(exhibits)) {

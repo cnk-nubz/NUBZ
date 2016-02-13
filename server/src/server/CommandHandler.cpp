@@ -240,4 +240,28 @@ void CommandHandler::getAllSimpleQuestions(std::vector<communication::SimpleQues
     LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
+
+#pragma mark - MULTIPLE CHOICE QUESTIONS
+
+void CommandHandler::createMultipleChoiceQuestion(
+    communication::MultipleChoiceQuestion &response,
+    const communication::CreateMultipleChoiceQuestionRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getAllMultipleChoiceQuestions(
+    std::vector<communication::MultipleChoiceQuestion> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
 }

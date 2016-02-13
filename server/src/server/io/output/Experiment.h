@@ -18,6 +18,7 @@ struct Experiment {
     struct Survey {
         enum class QuestionType {
             Simple,
+            MultipleChoice,
         };
         static QuestionType QuestionTypeFromThrift(const communication::QuestionType::type &thrift);
         static communication::QuestionType::type QuestionTypeToThrift(const QuestionType &type);

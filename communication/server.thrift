@@ -84,4 +84,15 @@ service Server {
 
 	list<structs.SimpleQuestion> getAllSimpleQuestions()
 		throws (1: structs.InternalError err),
+
+
+/////////////////////////////////////////////////
+// Multiple Choice Question
+/////////////////////////////////////////////////
+
+	structs.MultipleChoiceQuestion createMultipleChoiceQuestion(1: structs.CreateMultipleChoiceQuestionRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
+		throws (1: structs.InternalError err),
 }

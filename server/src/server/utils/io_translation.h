@@ -24,7 +24,7 @@ io::SimpleQuestion toIO(const db::SimpleQuestion &simpleQuestion);
 db::RawReport toDB(const io::input::RawReport &report);
 db::RawReport::Event toDB(const io::input::RawReport::Event &event);
 db::RawReport::Survey::SimpleQuestionAnswer toDB(
-    const io::input::RawReport::SimpleQuestionAnswer &answer);
+    const io::input::RawReport::SurveyAnswers::SimpleQuestionAnswer &answer);
 }
 }
 
