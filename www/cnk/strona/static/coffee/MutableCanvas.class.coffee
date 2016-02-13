@@ -133,9 +133,11 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     (bot = p if p.x >= bot.x and p.y >= bot.y) for p in arr[1..]
     bot
 
-  changeExhibitResizing: (isActive) =>
-    @_isResizingAllowed = isActive
+  changeExhibitResizing: (isVisible) =>
+    @_isResizingAllowed = isVisible
     @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-      layer.editing.enable() if isActive
-      layer.editing.disable() unless isActive
+      if isVisible
+        layer.editing.enable()
+      else
+        layer.editing.disable()
     )

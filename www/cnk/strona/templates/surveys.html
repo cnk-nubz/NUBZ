@@ -1,7 +1,11 @@
-{% extends "navbar/navbar.html" %}
+{% extends "mainPage.html" %}
 {% load compress %}
 {% load staticfiles %}
-{% block init %}{% endblock %}
+{% block init %}
+{% compress js %}
+<script src="{% static "coffee/handlers/surveys.coffee" %}" type="text/coffeescript"></script>
+{% endcompress %}
+{% endblock %}
 {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
   {% compress js %}

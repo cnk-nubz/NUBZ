@@ -1,5 +1,5 @@
 root = exports ? this
-class SortQuestionDialog extends root.QuestionDialog
+root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     inputOffset = @_data.utils.default.labelSize
@@ -54,7 +54,3 @@ class SortQuestionDialog extends root.QuestionDialog
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
-
-jQuery(document).ready( ->
-  new SortQuestionDialog('getSortQuestionDialog/', "#sortQuestion")
-)

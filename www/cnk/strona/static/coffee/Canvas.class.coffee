@@ -47,7 +47,7 @@ root.Canvas = class Canvas extends root.View
     @_exhibits[floor].clearLayers()
     @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
-    @addExhibits(floor, @mapData.exhibits)
+    @addExhibits(floor, (id for id, _ of @mapData.exhibits))
     @setFloorLayer(floor)
     @
 
@@ -70,8 +70,9 @@ root.Canvas = class Canvas extends root.View
       @_floorLayer[floor].addLayer zoomLayer
     @
 
-  addExhibits: (floor, exhibits) =>
-    for idx, e of exhibits
+  addExhibits: (floor, exhibitIdList) =>
+    for id in exhibitIdList
+      e = @mapData.exhibits[id]
       continue unless e.frame?.mapLevel is floor
       X = e.frame.x
       Y = e.frame.y
@@ -86,7 +87,7 @@ root.Canvas = class Canvas extends root.View
         weight: @appearance.exhibit.weight
         strokeColor: @appearance.exhibit.strokeColor
         strokeOpacity: @appearance.exhibit.strokeOpacity
-      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: idx }))
+      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: id }))
       r.bindLabel(e.name, { direction: 'auto' })
       @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
@@ -152,11 +153,13 @@ root.Canvas = class Canvas extends root.View
       @_map.flyToBounds(bounds, animate: false)
     return
 
-  changeLabelVisibility: (isActive) =>
-    @_areLabelsVisible = isActive
+  changeLabelVisibility: (areVisible) =>
+    @_areLabelsVisible = areVisible
     @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-      layer.showLabel() if isActive
-      layer.hideLabel() unless isActive
+      if areVisible
+        layer.showLabel()
+      else
+        layer.hideLabel()
     )
 
   zoomIn: =>

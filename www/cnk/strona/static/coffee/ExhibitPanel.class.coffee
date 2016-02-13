@@ -57,12 +57,13 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       url: '/getExhibitListElement/'
       success: (data) ->
         @_exhibitElementHTML = data
-        @addExhibits(@mapData.exhibits)
+        @addExhibits((id for id, _ of @mapData.exhibits))
     )
     return
 
-  addExhibits: (exhibits) =>
-    for id, e of exhibits
+  addExhibits: (exhibitIdList) =>
+    for id in exhibitIdList
+      e = @mapData.exhibits[id]
       exhibitListElement = jQuery(@_exhibitElementHTML)
       caption = jQuery(".exhibitCaption div", exhibitListElement)
       flyToButton = jQuery(".exhibitFlyToButton div", exhibitListElement)

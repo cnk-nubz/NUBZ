@@ -1,5 +1,5 @@
 root = exports ? this
-class ActionDialog extends root.QuestionDialog
+root.ActionDialog = class ActionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     instance = this
@@ -21,7 +21,3 @@ class ActionDialog extends root.QuestionDialog
         )
       )
     return
-
-jQuery(document).ready( ->
-  new ActionDialog("getNewActionDialog/", "#newAction")
-)

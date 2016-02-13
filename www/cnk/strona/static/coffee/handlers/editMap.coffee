@@ -41,12 +41,9 @@ class Handlers
       dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
       dialog.show()
     )
-
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@button.plusZoom).prop("disabled", true) if disablePlus
-      jQuery(@button.plusZoom).prop("disabled", false) unless disablePlus
-      jQuery(@button.minusZoom).prop("disabled", true) if disableMinus
-      jQuery(@button.minusZoom).prop("disabled", false) unless disableMinus
+      jQuery(@button.plusZoom).prop("disabled", disablePlus is true)
+      jQuery(@button.minusZoom).prop("disabled", disableMinus is true)
     )
 
   zoomOutHandler: =>
@@ -87,12 +84,15 @@ class Handlers
   changeButtonStatus: (button) ->
     button.blur()
     isActive = button.hasClass("active")
-    button.removeClass("active") if isActive
-    button.addClass("active") unless isActive
+    if isActive
+      button.removeClass("active")
+    else
+      button.addClass("active")
     return not isActive
 
   changeMapHandler: =>
     =>
+      instance = this
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
@@ -101,10 +101,10 @@ class Handlers
         dataType: 'json'
         url: '/getChangeMapDialog/'
         success: (data) =>
-          @showChangeMapPopup(data.html)
+          instance.showChangeMapPopup(data.html)
       )
 
-  showChangeMapPopup = (html) =>
+  showChangeMapPopup: (html) =>
     activeFloor = @mapData.activeFloor
     instance = this
     dialog = BootstrapDialog.show(
@@ -180,60 +180,55 @@ class Handlers
     return
 
   newExhibitRequest: (data) =>
-      if data.floor?
-        [topLeft, ViewportWidth, ViewportHeight] = @canvas.getVisibleFrame()
-        frame =
-          x: topLeft.x
-          y: topLeft.y
-          width: ViewportWidth
-          height: ViewportHeight
-          mapLevel: @mapData.activeFloor
-      toSend =
-        jsonData:
-          JSON.stringify(
-            name: data.name
-            floor: data.floor if data.floor?
-            visibleMapFrame: frame
-          )
-      jQuery.ajaxSetup(
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      )
-      jQuery.ajax(
-        type: 'POST'
-        dataType: 'json'
-        url: '/createNewExhibit/'
-        data: toSend
-        success: @ajaxNewExhibitSuccess
-      )
+    if data.floor?
+      [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
+      frame =
+        x: topLeft.x
+        y: topLeft.y
+        width: viewportWidth
+        height: viewportHeight
+        mapLevel: @mapData.activeFloor
+    toSend =
+      jsonData:
+        JSON.stringify(
+          name: data.name
+          floor: data.floor if data.floor?
+          visibleMapFrame: frame
+        )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/createNewExhibit/'
+      data: toSend
+      success: @ajaxNewExhibitSuccess
+    )
 
   ajaxNewExhibitSuccess: (data) =>
-      mapData = new MapDataHandler()
-      if not data.success
-        BootstrapDialog.alert(
-          message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
-          type: BootstrapDialog.TYPE_DANGER
-          title: 'Błąd serwera'
-        )
-        return
-      id = data.id
-      @mapData.exhibits[id] = {name: null, frame: {}}
-      @mapData.exhibits[id].name = data.name
-      if data.frame?
-        @mapData.exhibits[id].frame.x = data.frame.x
-        @mapData.exhibits[id].frame.y = data.frame.y
-        @mapData.exhibits[id].frame.width = data.frame.width
-        @mapData.exhibits[id].frame.height = data.frame.height
-        @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
-        t = {}
-        t[id] = @mapData.exhibits[id]
-        @canvas.addExhibits(data.frame.mapLevel, t)
-        @panel.addExhibits(t)
-        if data.frame.mapLevel is @mapData.activeFloor
-          @canvas.updateState()
-      else
-        t = {}
-        t[id] = @mapData.exhibits[id]
-        @panel.addExhibits(t)
+    if not data.success
+      BootstrapDialog.alert(
+        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
+        type: BootstrapDialog.TYPE_DANGER
+        title: 'Błąd serwera'
+      )
+      return
+    id = data.id
+    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id].name = data.name
+    if data.frame?
+      @mapData.exhibits[id].frame.x = data.frame.x
+      @mapData.exhibits[id].frame.y = data.frame.y
+      @mapData.exhibits[id].frame.width = data.frame.width
+      @mapData.exhibits[id].frame.height = data.frame.height
+      @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
+      @canvas.addExhibits(data.frame.mapLevel, [id])
+      @panel.addExhibits([id])
+      if data.frame.mapLevel is @mapData.activeFloor
+        @canvas.updateState()
+    else
+      @panel.addExhibits(id)
 
 jQuery(document).ready( ->
   map = new root.MutableCanvas('#map')

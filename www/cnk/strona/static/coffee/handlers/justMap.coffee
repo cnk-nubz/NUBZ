@@ -10,6 +10,7 @@ class Handlers
     jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
     jQuery(@button.minusZoom).prop "disabled", true
     @_setButtonHandlers()
+    @_setEvents()
 
   _setButtonHandlers: =>
     jQuery(@button.minusZoom).on('click', @zoomOutHandler())
@@ -18,25 +19,23 @@ class Handlers
     jQuery(@button.firstFloor).on('click', @changeFloorHandler(1))
     jQuery(@button.labels).on('click', @showLabelsHandler())
 
+  _setEvents: =>
+    @canvas.on("zoomend", (disableMinus, disablePlus) =>
+      jQuery(@button.plusZoom).prop("disabled", disablePlus is true)
+      jQuery(@button.minusZoom).prop("disabled", disableMinus is true)
+    )
+
   zoomOutHandler: =>
     instance = this
     ->
       jQuery(this).blur()
-      result = instance.canvas.zoomOut()
-      if not result
-        jQuery(instance.button.minusZoom).prop "disabled", true
-      else
-        jQuery(instance.button.plusZoom).prop "disabled", false
+      instance.canvas.zoomOut()
 
   zoomInHandler: =>
     instance = this
     ->
       jQuery(this).blur()
-      result = instance.canvas.zoomIn()
-      if not result
-        jQuery(instance.button.plusZoom).prop "disabled", true
-      else
-        jQuery(instance.button.minusZoom).prop "disabled", false
+      instance.canvas.zoomIn()
 
   showLabelsHandler: =>
     canvas = @canvas
@@ -44,13 +43,15 @@ class Handlers
       obj = jQuery(this)
       obj.blur()
       isActive = obj.hasClass("active")
-      obj.removeClass("active") if isActive
-      obj.addClass("active") unless isActive
+      if isActive
+        obj.removeClass("active")
+      else
+        obj.addClass("active")
       canvas.changeLabelVisibility(not isActive)
 
   changeFloorHandler: (floor) =>
     instance = this
-    floorButtons = [jQuery(@button.plusZoom), jQuery(@button.minusZoom)]
+    floorButtons = [jQuery(@button.groundFloor), jQuery(@button.firstFloor)]
     ->
       jQuery(this).blur()
       jQuery(floorButtons[1 - floor]).removeClass "active"
@@ -61,5 +62,5 @@ class Handlers
 
 jQuery(document).ready( ->
   canvas = new root.Canvas('#map')
-  handlers = new Handlers()
+  handlers = new Handlers(canvas)
 )

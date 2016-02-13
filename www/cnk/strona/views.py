@@ -265,5 +265,4 @@ def getNewActionDialog(request):
 
 def getChangeMapDialog(request):
     html = render_to_string('dialog/changeMap.html')
-    print >>sys.stderr, "%s" % html
     return JsonResponse({'html': html.replace("\n", "")})
