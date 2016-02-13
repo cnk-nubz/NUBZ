@@ -31,8 +31,13 @@ class Handlers
       dialog.nameEditable = true
       dialog.show()
     )
-    @panel.on("flyToExhibitWithId", (exhibit) =>
-      @canvas.flyToExhibit exhibit
+    @panel.on("flyToExhibitWithId", (id) =>
+      exhibit = @mapData.exhibits[id]
+      exhibitFloor = exhibit.frame.mapLevel
+      if exhibitFloor isnt @mapData.activeFloor
+        jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
+        jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
+      @canvas.flyToExhibit id
       jQuery(@button.plusZoom).prop "disabled", true
       jQuery(@button.minusZoom).prop "disabled", false
     )
