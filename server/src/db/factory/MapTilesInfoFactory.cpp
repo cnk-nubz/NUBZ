@@ -23,8 +23,12 @@ MapTilesInfoFactory::Product MapTilesInfoFactory::create(
 
 const std::vector<std::string> &MapTilesInfoFactory::fieldsOrder() noexcept {
     using namespace db::info::map_tiles_info;
-    static const std::vector<std::string> order = {colFloor,        colZoomLevel, colRowsCount,
-                                                   colColumnsCount, colImgWidth,  colImgHeight,
+    static const std::vector<std::string> order = {colFloor,
+                                                   colZoomLevel,
+                                                   colRowsCount,
+                                                   colColumnsCount,
+                                                   colImgWidth,
+                                                   colImgHeight,
                                                    colTileSize};
     return order;
 }

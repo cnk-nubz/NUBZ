@@ -1,19 +1,20 @@
 #ifndef SERVER_IO__ACTION__H
 #define SERVER_IO__ACTION__H
 
+#include <string>
 #include <cstdint>
 
 #include <communication/structs_types.h>
-#include <db/struct/Action.h>
 
 namespace server {
 namespace io {
 
 struct Action {
-    Action() = default;
+    using thrift_t = communication::Action;
 
-    Action(const communication::Action &thrift);
-    communication::Action toThrift() const;
+    Action() = default;
+    Action(const thrift_t &thrift);
+    thrift_t toThrift() const;
 
     std::int32_t ID;
     std::string text;

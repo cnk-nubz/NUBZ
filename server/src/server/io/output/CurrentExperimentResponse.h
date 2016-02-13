@@ -1,5 +1,5 @@
-#ifndef IO__CURRENT_EXPERIMENT_RESPONSE__H
-#define IO__CURRENT_EXPERIMENT_RESPONSE__H
+#ifndef SERVER_IO_OUTPUT__CURRENT_EXPERIMENT_RESPONSE__H
+#define SERVER_IO_OUTPUT__CURRENT_EXPERIMENT_RESPONSE__H
 
 #include <boost/optional.hpp>
 
@@ -11,8 +11,7 @@ namespace server {
 namespace io {
 namespace output {
 
-class CurrentExperimentResponse {
-public:
+struct CurrentExperimentResponse {
     communication::CurrentExperimentResponse toThrift() const;
 
     boost::optional<Experiment> experiment;

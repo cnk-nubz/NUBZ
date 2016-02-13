@@ -1,5 +1,5 @@
-#ifndef SERVER_IO__MAP_IMAGE_TILES_REQUEST__H
-#define SERVER_IO__MAP_IMAGE_TILES_REQUEST__H
+#ifndef SERVER_IO_INPUT__MAP_IMAGE_TILES_REQUEST__H
+#define SERVER_IO_INPUT__MAP_IMAGE_TILES_REQUEST__H
 
 #include <cstdint>
 
@@ -9,8 +9,7 @@ namespace server {
 namespace io {
 namespace input {
 
-class MapImageTilesRequest {
-public:
+struct MapImageTilesRequest {
     MapImageTilesRequest(const communication::MapImageTilesRequest &thrift);
 
     std::int32_t floor;

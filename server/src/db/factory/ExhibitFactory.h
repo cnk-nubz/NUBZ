@@ -15,7 +15,7 @@ struct ExhibitFactory {
     using Product = Exhibit;
 
     static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
-    static boost::optional<MapElementFrame> createFrame(
+    static boost::optional<MapFrame> createFrame(
         const std::vector<boost::optional<std::string>> &raw) noexcept;
 
     static const std::vector<std::string> &fieldsOrder() noexcept;

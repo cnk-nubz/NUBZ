@@ -6,7 +6,6 @@
 
 #include <server/io/input/MapImageTilesRequest.h>
 #include <server/io/output/MapImageTilesResponse.h>
-#include <server/io/output/ImageTiles.h>
 
 #include "commons.h"
 
@@ -32,8 +31,8 @@ private:
 
     void getOriginalSize(::db::DatabaseSession &session);
     void getZoomLevels(::db::DatabaseSession &session);
-    io::output::ImageTiles getTiles(::db::DatabaseSession &session,
-                                    const db::MapTilesInfo &tilesInfo);
+    io::output::MapImageTilesResponse::ImageTiles getTiles(::db::DatabaseSession &session,
+                                                           const db::MapTilesInfo &tilesInfo);
 
     std::string createFullUrl(const std::string &imgFileName) const;
 };

@@ -22,7 +22,7 @@ void SaveRawReportCommand::operator()(const io::input::RawReport &input) {
         auto clearInput = removeDuplicatedIds(input);
 
         // already in database?
-        if (!db::cmd::GetRawReports{clearInput.reportId}(session).empty()) {
+        if (!db::cmd::GetRawReports{clearInput.ID}(session).empty()) {
             return;
         }
 
@@ -44,7 +44,7 @@ void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
     utils::InputChecker checker(session);
     utils::ReportChecker reportChecker(session);
 
-    if (!checker.checkReportId(input.reportId)) {
+    if (!checker.checkReportId(input.ID)) {
         throw io::InvalidInput("incorrect report ID");
     }
     if (!reportChecker.loadExperiment(input.experimentId)) {
@@ -74,6 +74,12 @@ void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
     }
     if (!reportChecker.checkBreakActionsIds(breakActions)) {
         throw io::InvalidInput("incorrect break action");
+    }
+    if (!reportChecker.checkQuestionsBeforeCount(input.simpleQuestionsAnswersBefore.size())) {
+        throw io::InvalidInput("incorrect number of questions answer in survey before");
+    }
+    if (!reportChecker.checkQuestionsBeforeCount(input.simpleQuestionsAnswersBefore.size())) {
+        throw io::InvalidInput("incorrect number of questions answer in survey after");
     }
     if (!checker.checkExhibitsIds(exhibits)) {
         throw io::InvalidInput("incorrect exhibit ID");

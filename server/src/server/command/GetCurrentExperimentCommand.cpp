@@ -22,7 +22,7 @@ io::output::CurrentExperimentResponse GetCurrentExperimentCommand::operator()() 
         }
 
         auto experiment = experimentOpt.value();
-        currentExperiment.experimentID = experiment.ID;
+        currentExperiment.ID = experiment.ID;
         currentExperiment.name = experiment.name;
         fillExperimentData(experiment, session);
 

@@ -11,7 +11,7 @@ ActionFactory::Product ActionFactory::create(
     assert(raw.size() == fieldsOrder().size());
     assert(raw[0]);
     assert(raw[1]);
-    
+
     Action res;
     assert(boost::conversion::try_lexical_convert(raw[0].value(), res.ID));
     res.text = raw[1].value();

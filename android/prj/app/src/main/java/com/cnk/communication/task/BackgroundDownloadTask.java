@@ -1,6 +1,6 @@
 package com.cnk.communication.task;
 
-import com.cnk.communication.Server;
+import com.cnk.communication.thrift.Server;
 import com.cnk.notificators.Notificator;
 
 public class BackgroundDownloadTask extends ServerTask {

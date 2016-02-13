@@ -21,8 +21,8 @@ MapTileFactory::Product MapTileFactory::create(
 
 const std::vector<std::string> &MapTileFactory::fieldsOrder() noexcept {
     using namespace db::info::map_tiles;
-    static const std::vector<std::string> order = {colFilename, colFloor, colZoomLevel, colRow,
-                                                   colColumn};
+    static const std::vector<std::string> order = {
+        colFilename, colFloor, colZoomLevel, colRow, colColumn};
     return order;
 }
 }

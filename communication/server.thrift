@@ -1,13 +1,24 @@
 include "structs.thrift"
 
 namespace cpp communication
-namespace java com.cnk.communication
+namespace java com.cnk.communication.thrift
 
 service Server {
 	void shutdown(),
+
+
+/////////////////////////////////////////////////
+// Ping
+/////////////////////////////////////////////////
+
 	i32 ping(1: structs.HelloMsg msg),
 
-	structs.MapImagesResponse getMapImages(1: structs.MapImagesRequest request)
+
+/////////////////////////////////////////////////
+// Map
+/////////////////////////////////////////////////
+
+	structs.NewMapImagesResponse getNewMapImages(1: structs.NewMapImagesRequest request)
 		throws (1: structs.InternalError err),
 
 	structs.MapImageTilesResponse getMapImageTiles(1: structs.MapImageTilesRequest request)
@@ -16,27 +27,61 @@ service Server {
 	void setMapImage(1: structs.SetMapImageRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.ExhibitsResponse getExhibits(1: structs.ExhibitsRequest request)
+
+/////////////////////////////////////////////////
+// Exhibits
+/////////////////////////////////////////////////
+
+	structs.NewExhibitsResponse getNewExhibits(1: structs.NewExhibitsRequest request)
 		throws (1: structs.InternalError err),
+
+	structs.Exhibit createExhibit(1: structs.CreateExhibitRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	list<structs.Exhibit> getAllExhibits()
+		throws (1: structs.InternalError err),
+
+	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+
+/////////////////////////////////////////////////
+// Experiments
+/////////////////////////////////////////////////
+
+	structs.CurrentExperimentResponse getCurrentExperiment()
+		throws (1: structs.InternalError err),
+
+
+/////////////////////////////////////////////////
+// Reports
+/////////////////////////////////////////////////
 
 	i32 getIdForNewReport()
 		throws (1: structs.InternalError err),
 
 	void saveReport(1: structs.RawReport report)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+	
 
-	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
+/////////////////////////////////////////////////
+// Actions
+/////////////////////////////////////////////////
+
+	structs.Action createAction(1: structs.CreateActionRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
-		
-	structs.CurrentExperimentResponse getCurrentExperiment()
+
+	list<structs.Action> getAllActions()
 		throws (1: structs.InternalError err),
 
-	structs.NewExhibitResponse createNewExhibit(1: structs.NewExhibitRequest request)
+
+/////////////////////////////////////////////////
+// Simple Question
+/////////////////////////////////////////////////
+
+	structs.SimpleQuestion createSimpleQuestion(1: structs.CreateSimpleQuestionRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.NewActionResponse createNewAction(1: structs.NewActionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
-
-	structs.ActionsResponse getActions()
+	list<structs.SimpleQuestion> getAllSimpleQuestions()
 		throws (1: structs.InternalError err),
 }

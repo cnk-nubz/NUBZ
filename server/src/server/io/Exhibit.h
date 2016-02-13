@@ -1,25 +1,28 @@
 #ifndef SERVER_IO__EXHIBIT__H
 #define SERVER_IO__EXHIBIT__H
 
+#include <cstdint>
 #include <string>
 
 #include <boost/optional.hpp>
 
 #include <communication/structs_types.h>
 
-#include "MapElementFrame.h"
+#include "MapFrame.h"
 
 namespace server {
 namespace io {
 
 struct Exhibit {
+    using thrift_t = communication::Exhibit;
+
     Exhibit() = default;
+    Exhibit(const thrift_t &thrift);
+    thrift_t toThrift() const;
 
-    Exhibit(const communication::Exhibit &thrift);
-    communication::Exhibit toThrift() const;
-
+    std::int32_t ID;
     std::string name;
-    boost::optional<MapElementFrame> frame;
+    boost::optional<MapFrame> mapFrame;
 };
 }
 }

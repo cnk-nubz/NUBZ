@@ -19,7 +19,7 @@ ExhibitFactory::Product ExhibitFactory::create(
     return res;
 }
 
-boost::optional<MapElementFrame> ExhibitFactory::createFrame(
+boost::optional<MapFrame> ExhibitFactory::createFrame(
     const std::vector<boost::optional<std::string>> &raw) noexcept {
     bool exist = raw[3].is_initialized();
     for (std::size_t i = 4; i < raw.size(); i++) {
@@ -29,20 +29,25 @@ boost::optional<MapElementFrame> ExhibitFactory::createFrame(
         return {};
     }
 
-    MapElementFrame res;
+    MapFrame res;
     assert(boost::conversion::try_lexical_convert(raw[3].value(), res.x));
     assert(boost::conversion::try_lexical_convert(raw[4].value(), res.y));
     assert(boost::conversion::try_lexical_convert(raw[5].value(), res.width));
     assert(boost::conversion::try_lexical_convert(raw[6].value(), res.height));
-    assert(boost::conversion::try_lexical_convert(raw[7].value(), res.mapLevel));
+    assert(boost::conversion::try_lexical_convert(raw[7].value(), res.floor));
     return res;
 }
 
 const std::vector<std::string> &ExhibitFactory::fieldsOrder() noexcept {
     using namespace db::info::exhibits;
-    static const std::vector<std::string> order = {colId, colName, colVersion, colMapFrameX,
-                                                   colMapFrameY, colMapFrameWidth,
-                                                   colMapFrameHeight, colMapLevel};
+    static const std::vector<std::string> order = {colId,
+                                                   colName,
+                                                   colVersion,
+                                                   colMapFrameX,
+                                                   colMapFrameY,
+                                                   colMapFrameWidth,
+                                                   colMapFrameHeight,
+                                                   colMapFloor};
     return order;
 }
 }

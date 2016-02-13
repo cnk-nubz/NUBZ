@@ -5,7 +5,7 @@ namespace io {
 namespace input {
 
 SetMapImageRequest::SetMapImageRequest(const communication::SetMapImageRequest &thrift) {
-    level = thrift.level;
+    floor = thrift.floor;
     filename = thrift.filename;
 }
 }

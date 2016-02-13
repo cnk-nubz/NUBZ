@@ -53,18 +53,19 @@ void GetMapImageTilesCommand::getZoomLevels(db::DatabaseSession &session) {
     getTilesInfo(session);
 
     std::vector<db::MapTilesInfo> tilesInfo = getTilesInfo.getResult();
-    std::sort(tilesInfo.begin(), tilesInfo.end(), [](const auto &a, const auto &b) {
-        return a.zoomLevel < b.zoomLevel;
-    });
+    std::sort(tilesInfo.begin(),
+              tilesInfo.end(),
+              [](const auto &a, const auto &b) { return a.zoomLevel < b.zoomLevel; });
 
     for (const auto &tileInfo : tilesInfo) {
         answer->zoomLevels.push_back(getTiles(session, tileInfo));
     }
 }
 
-io::output::ImageTiles GetMapImageTilesCommand::getTiles(db::DatabaseSession &session,
-                                                         const db::MapTilesInfo &tilesInfo) {
-    io::output::ImageTiles imageTiles(tilesInfo.rowsCount, tilesInfo.colsCount);
+io::output::MapImageTilesResponse::ImageTiles GetMapImageTilesCommand::getTiles(
+    db::DatabaseSession &session, const db::MapTilesInfo &tilesInfo) {
+    io::output::MapImageTilesResponse::ImageTiles imageTiles(tilesInfo.rowsCount,
+                                                             tilesInfo.colsCount);
     imageTiles.scaledSize.width = tilesInfo.imgWidth;
     imageTiles.scaledSize.height = tilesInfo.imgHeight;
     imageTiles.tileSize.width = tilesInfo.tileSize;

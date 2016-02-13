@@ -7,7 +7,7 @@
 
 #include <pqxx/pqxx>
 
-#include <external/easylogging++.h>
+#include <utils/log.h>
 
 #include "DatabaseSession.h"
 

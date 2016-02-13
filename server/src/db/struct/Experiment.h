@@ -8,10 +8,21 @@
 namespace db {
 
 struct Experiment {
+    struct Survey {
+        enum QuestionType : int {
+            Simple = 0,
+        };
+
+        std::vector<QuestionType> order;
+        std::vector<std::int32_t> simpleQuestions;
+    };
+
     std::int32_t ID;
     std::string name;
     std::vector<std::int32_t> actions;
     std::vector<std::int32_t> breakActions;
+    Survey surveyBefore;
+    Survey surveyAfter;
 };
 }
 

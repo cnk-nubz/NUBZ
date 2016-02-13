@@ -24,14 +24,14 @@ std::string InsertExhibit::createInsert() const {
         return Sql::insertInto(tableName)
             .what(colName,
                   colVersion,
-                  colMapLevel,
+                  colMapFloor,
                   colMapFrameX,
                   colMapFrameY,
                   colMapFrameWidth,
                   colMapFrameHeight)
             .values(exhibit.name,
                     exhibit.version,
-                    frame.mapLevel,
+                    frame.floor,
                     frame.x,
                     frame.y,
                     frame.width,

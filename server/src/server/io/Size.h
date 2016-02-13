@@ -9,10 +9,11 @@ namespace server {
 namespace io {
 
 struct Size {
-    Size() = default;
+    using thrift_t = communication::Size;
 
-    Size(const communication::Size &thrift);
-    communication::Size toThrift() const;
+    Size() = default;
+    Size(const thrift_t &thrift);
+    thrift_t toThrift() const;
 
     std::int32_t width;
     std::int32_t height;

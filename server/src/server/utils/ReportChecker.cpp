@@ -1,4 +1,4 @@
-#include <boost/none_t.hpp>
+#include <boost/none.hpp>
 
 #include <db/command/GetExperiments.h>
 #include <db/command/GetCurrentExperiment.h>
@@ -22,9 +22,29 @@ bool ReportChecker::loadExperiment(std::int32_t experimentId) {
     if (!getExperiments.getResult().empty()) {
         experiment = getExperiments.getResult().front();
     } else {
-        experiment = boost::none_t{};
+        experiment = boost::none;
     }
     return (bool)experiment;
+}
+
+bool ReportChecker::checkQuestionsBeforeCount(std::size_t simpleQuestions) const {
+    if (!experiment) {
+        return false;
+    }
+    return checkQuestionsCount(experiment.value().surveyBefore, simpleQuestions);
+}
+
+bool ReportChecker::checkQuestionsAfterCount(std::size_t simpleQuestions) const {
+    if (!experiment) {
+        return false;
+    }
+    return checkQuestionsCount(experiment.value().surveyAfter, simpleQuestions);
+}
+
+bool ReportChecker::checkQuestionsCount(const db::Experiment::Survey &survey,
+                                        std::size_t simpleQuestions) const {
+    static const auto Simple = db::Experiment::Survey::QuestionType::Simple;
+    return simpleQuestions == ::utils::count(survey.order, Simple);
 }
 }
 }

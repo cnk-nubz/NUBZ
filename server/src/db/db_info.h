@@ -72,21 +72,30 @@ static const std::string colMapFrameX = "map_frame_x";
 static const std::string colMapFrameY = "map_frame_y";
 static const std::string colMapFrameWidth = "map_frame_width";
 static const std::string colMapFrameHeight = "map_frame_height";
-static const std::string colMapLevel = "map_level";
+static const std::string colMapFloor = "map_floor";
 }  // exhibits
 
 namespace reports {
 static const std::string tableName = "reports";
 
 static const std::string colId = "id";
+static const std::string colExperimentId = "experiment_id";
 static const std::string colDocument = "doc";
 
 // json
-// field[level][name]
-static const std::string field0History = "history";
-static const std::string field1ExhibitId = "exhibitId";
-static const std::string field1DurationInSecs = "durationInSecs";
-static const std::string field1Actions = "actions";
+// field[level]_[name]
+static const std::string field0_History = "history";
+
+static const std::string field00_ExhibitId = "exhibitId";
+static const std::string field01_DurationInSecs = "durationInSecs";
+static const std::string field02_Actions = "actions";
+
+static const std::string field1_SurveyBefore = "surveyBefore";
+static const std::string field1_SurveyAfter = "surveyAfter";
+
+static const std::string field10_SimpleQuestions = "simpleQuestions";
+static const std::string field100_Answer = "answer";
+
 }  // reports
 
 namespace actions {
@@ -95,6 +104,15 @@ static const std::string tableName = "actions";
 static const std::string colId = "id";
 static const std::string colText = "text";
 }  // actions
+
+namespace simple_questions {
+static const std::string tableName = "simple_questions";
+
+static const std::string colId = "id";
+static const std::string colName = "name";
+static const std::string colQuestion = "question";
+static const std::string colNumberAnswer = "number_answer";
+}  // simple questions
 
 namespace experiments {
 namespace current {
@@ -108,9 +126,15 @@ static const std::string colId = "id";
 static const std::string colName = "name";
 static const std::string colDocument = "doc";
 
-// json keys
-static const std::string fieldActions = "actions";
-static const std::string fieldBreakActions = "breakActions";
+// json
+// field[level]_[name]
+static const std::string field0_Actions = "actions";
+static const std::string field1_BreakActions = "breakActions";
+
+static const std::string field2_SurveyBefore = "surveyBefore";
+static const std::string field2_SurveyAfter = "surveyAfter";
+static const std::string field20_TypesOrder = "typesOrder";
+static const std::string field21_SimpleQuestions = "simpleQuestions";
 }  // experiments
 }
 }

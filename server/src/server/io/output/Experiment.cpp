@@ -1,24 +1,44 @@
+#include <utils/fp_algorithm.h>
+
+#include <server/io/utils.h>
+
 #include "Experiment.h"
 
 namespace server {
 namespace io {
 namespace output {
 
-communication::Experiment Experiment::toThrift() const {
-    communication::Experiment res;
-    res.experimentId = experimentID;
-    res.name = name;
-    res.exhibitActions = toThriftActions(exhibitActions);
-    res.breakActions = toThriftActions(breakActions);
-    return res;
+Experiment::Survey::QuestionType Experiment::Survey::QuestionTypeFromThrift(
+    const communication::QuestionType::type &thrift) {
+    switch (thrift) {
+        case communication::QuestionType::type::SIMPLE:
+            return Experiment::Survey::QuestionType::Simple;
+    }
 }
 
-std::vector<communication::Action> Experiment::toThriftActions(
-    const std::vector<io::Action> &ioActions) const {
-    std::vector<communication::Action> res;
-    for (const auto &ioAction : ioActions) {
-        res.push_back(ioAction.toThrift());
+communication::QuestionType::type Experiment::Survey::QuestionTypeToThrift(
+    const Survey::QuestionType &type) {
+    switch (type) {
+        case Experiment::Survey::QuestionType::Simple:
+            return communication::QuestionType::type::SIMPLE;
     }
+}
+
+communication::Survey Experiment::Survey::toThrift() const {
+    communication::Survey thrift;
+    ::utils::transform(questionsOrder, thrift.questionsOrder, QuestionTypeToThrift);
+    thrift.simpleQuestions = ioToThrift(simpleQuestions);
+    return thrift;
+}
+
+communication::Experiment Experiment::toThrift() const {
+    communication::Experiment res;
+    res.experimentId = ID;
+    res.name = name;
+    res.exhibitActions = ioToThrift(exhibitActions);
+    res.breakActions = ioToThrift(breakActions);
+    res.surveyBefore = surveyBefore.toThrift();
+    res.surveyAfter = surveyAfter.toThrift();
     return res;
 }
 }

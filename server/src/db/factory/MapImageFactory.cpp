@@ -21,8 +21,8 @@ MapImageFactory::Product MapImageFactory::create(
 
 const std::vector<std::string> &MapImageFactory::fieldsOrder() noexcept {
     using namespace db::info::map_images;
-    static const std::vector<std::string> order = {colFilename, colWidth, colHeight, colVersion,
-                                                   colFloor};
+    static const std::vector<std::string> order = {
+        colFilename, colWidth, colHeight, colVersion, colFloor};
     return order;
 }
 }

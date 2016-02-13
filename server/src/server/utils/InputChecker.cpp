@@ -33,8 +33,9 @@ bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y
 }
 
 bool InputChecker::checkText(const std::string &text) {
-    return std::all_of(
-        text.begin(), text.end(), [](char c) { return std::isalpha(c) || isspace(c); });
+    return text.length() &&
+           std::all_of(
+               text.begin(), text.end(), [](char c) { return std::isalpha(c) || isspace(c); });
 }
 }
 }
