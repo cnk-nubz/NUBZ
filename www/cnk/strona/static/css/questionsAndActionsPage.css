@@ -1,0 +1,100 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 16px;
+}
+
+#questionList,
+#actionList {
+  position: relative;
+  width: 50%;
+  height: 100%;
+}
+
+#questionList {
+  float: left;
+  padding: 10px 50px 10px 150px;
+}
+
+#actionList {
+  float: right;
+  padding: 10px 150px 10px 50px;
+}
+
+#questionList div.myList,
+#actionList div.myList {
+  position: absolute;
+  top: 68px;
+  bottom: 5px;
+
+  background: #eee;
+  overflow-y: scroll;
+}
+
+#questionList div.myList {
+  right: 50px;
+  left: 150px;
+}
+
+#actionList div.myList {
+  right: 150px;
+  left: 50px;
+}
+
+table.myTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 20px 10px;
+  table-layout: fixed;
+}
+
+table.myTable > tbody > tr {
+  height: 42px;
+  background: #fff;
+}
+
+table.myTable > tbody > tr > td {
+  border: 1px solid #ddd;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+table.myTable > tbody > tr > td:hover {
+  background: #ddd;
+  border: 1px solid #ccc;
+}
+
+table.myTable > tbody > tr > td > div {
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+div.panel-heading {
+  position: relative;
+  background: #eee;
+  border-radius: 4px 4px 0px 0px;
+  border: 1px solid #ddd;
+  font-size: 22px;
+  font-family: OpenSans-Semibold;
+}
+
+.addElement {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  font-size: 14px;
+  line-height: 51px;
+  width: 42px;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.addElement:hover {
+  background: #ccc;
+  border: 1px solid #bbb;
+}

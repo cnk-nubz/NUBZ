@@ -268,3 +268,32 @@ def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
+
+def getChooseQuestionTypeDialog(request):
+    html = render_to_string('dialog/chooseQuestionType.html')
+    return JsonResponse({'html': html.replace("\n", "")})
+
+def questionsAndActionsPage(request):
+    template = loader.get_template('questionsAndActionsPage.html')
+    return HttpResponse(template.render(RequestContext(request, {'activeLink': '3'})))
+
+def setSimpleQuestion(request):
+    jsonData = request.POST.get("jsonData")
+    data = json.loads(jsonData)
+    return JsonResponse({'list': [data['question']]})
+
+def setSortQuestion(request):
+    # test multiple elements on list
+    jsonData = request.POST.get("jsonData")
+    data = json.loads(jsonData)
+    return JsonResponse({'list': [entry for entry in data['answers']]})
+
+def setMultipleChoiceQuestion(request):
+    jsonData = request.POST.get("jsonData")
+    data = json.loads(jsonData)
+    return JsonResponse({'list': [data['question']]})
+
+def setAction(request):
+    jsonData = request.POST.get("jsonData")
+    data = json.loads(jsonData)
+    return JsonResponse({'list': [data['actionName']]})

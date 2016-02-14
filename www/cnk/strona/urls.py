@@ -6,6 +6,7 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
     url(r'badania/$', views.surveys, name='surveys'),
+    url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
 
 	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 
@@ -18,5 +19,11 @@ urlpatterns = [
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
     url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
-    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog')
+    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
+    url(r'getChooseQuestionTypeDialog/$', views.getChooseQuestionTypeDialog, name='getChooseQuestionTypeDialog'),
+
+    url(r'setSimpleQuestion/$', views.setSimpleQuestion, name='setSimpleQuestion'),
+    url(r'setSortQuestion/$', views.setSortQuestion, name='setSortQuestion'),
+    url(r'setMultipleChoiceQuestion/$', views.setMultipleChoiceQuestion, name='setMultipleChoiceQuestion'),
+    url(r'setAction/$', views.setAction, name='setAction')
 ]

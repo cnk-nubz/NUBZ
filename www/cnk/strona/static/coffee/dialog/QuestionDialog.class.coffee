@@ -1,6 +1,6 @@
 root = exports ? this
 root.QuestionDialog = class QuestionDialog
-  constructor: (@_url, @_button) ->
+  constructor: (@_url, @_button, @_saveHandler = (->)) ->
     instance = this
     jQuery(@_button).on "click", =>
       jQuery.ajaxSetup(
@@ -50,6 +50,7 @@ root.QuestionDialog = class QuestionDialog
     label: @_data.utils.text.saveButton
     action: (dialog) =>
       if @_validateForm()
+        @_saveHandler()
         dialog.close()
 
   _validateForm: =>
