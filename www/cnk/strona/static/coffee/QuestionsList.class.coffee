@@ -32,15 +32,14 @@ root.QuestionsList = class QuestionsList extends root.View
     return
 
   addQuestions: (questions) =>
-    for q of questions
+    for id, q of questions
       questionListElement = jQuery(@_questionsListElementHTML)
       questionName = jQuery(".questionNameCell > div", questionListElement)
       questionBadge = jQuery(".questionBadge", questionListElement)
       questionListElement.data("name", questionName)
         .data("badge", questionBadge)
-      questionName.html "#{questions[q].name}"
-      questionBadge.html questions[q].type
-      id = questions[q].id
+      questionName.html "#{q.name}"
+      questionBadge.html q.type
       jQuery(questionListElement).click( do (id) => (=>
         @fireEvents("questionClicked", id)))
       @_questions.push questionListElement
