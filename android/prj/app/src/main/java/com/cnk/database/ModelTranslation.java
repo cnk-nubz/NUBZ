@@ -270,4 +270,5 @@ public class ModelTranslation {
         return new MapTileInfo(realm.getFloor(), realm.getDetailLevel(),
                                  new Resolution(realm.getWidth(), realm.getLength()));
     }
+
 }

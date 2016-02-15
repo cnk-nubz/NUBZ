@@ -235,7 +235,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
 
     // Layout setting:
-    private void prepareTileView(final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
+    private void prepareTileView(final Integer floor, final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
         runOnUiThread(new Runnable() {
@@ -255,7 +255,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     ScaleData scale = scalesList.get(i);
                     Resolution res = tileSizes.get(i);
                     tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),
-                            res.getWidth(), res.getHeight());
+                                            res.getWidth(), res.getHeight());
                 }
 
                 tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
@@ -488,7 +488,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 tileSizes.add(current);
             }
 
-            prepareTileView(ll, tileSizes);
+            prepareTileView(floor, ll, tileSizes);
             setLayout(true);
 
             addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
@@ -703,9 +703,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent(getApplicationContext(), StartScreen.class);
                 finish();
-                startActivity(i);
             }
         });
         alert.setCancelable(false);

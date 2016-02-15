@@ -64,19 +64,22 @@ public class DataHandler extends Observable {
     private static final String LOG_TAG = "DataHandler";
     private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
     private static final String RAPORT_DIRECTORY = "raports/";
-    private static final String MAP_DIRECTORY = "maps/";
-    private static final String FLOOR1_DIRECTORY = "floor0/";
-    private static final String FLOOR2_DIRECTORY = "floor1/";
-    private static final String FLOOR_DIRECTORY_PREFIX = "floor";
+    private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
     private static final Integer MAX_TRIES = 3;
 
-    private final Map<Integer, String> cachedTileAdresses;
-
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
+
+    private List<List<DetailLevelRes>> detailLevelRes;
+    private List<List<Exhibit>> exhibits;
+    private List<List<MapTileInfo>> mapTilesSizes;
+    private List<Integer> detailLevelsCount;
+    private Map<Integer, Exhibit> exhibitIdMap;
+    Integer exhibitsVersion;
+    Integer mapVersion;
     private Raport currentRaport;
     private ExperimentData experimentData;
 
@@ -92,7 +95,34 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
-        cachedTileAdresses = new ConcurrentHashMap<>();
+        detailLevelRes = new ArrayList<>();
+        exhibits = new ArrayList<>();
+        mapTilesSizes = new ArrayList<>();
+        detailLevelsCount = new ArrayList<>();
+        exhibitIdMap = new HashMap<>();
+        mapVersion = null;
+        exhibitsVersion = null;
+    }
+
+    public void loadDbData() {
+        exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
+        mapVersion = dbHelper.getVersion(Version.Item.MAP);
+        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            exhibits.add(dbHelper.getAllExhibitsForFloor(floor));
+            detailLevelsCount.add(dbHelper.getDetailLevelsForFloor(floor));
+            detailLevelRes.add(new ArrayList<DetailLevelRes>());
+            mapTilesSizes.add(new ArrayList<MapTileInfo>());
+            for (int detailLevel = 0; detailLevel < detailLevelsCount.get(floor); detailLevel++) {
+                detailLevelRes.get(floor).add(dbHelper.getDetailLevelRes(floor, detailLevel));
+                mapTilesSizes.get(floor).add(dbHelper.getMapTileInfo(floor, detailLevel));
+            }
+        }
+
+        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            for (Exhibit e : exhibits.get(floor)) {
+                exhibitIdMap.put(e.getId(), e);
+            }
+        }
     }
 
     public void setNewExperimentData(ExperimentData newData) {
@@ -190,46 +220,47 @@ public class DataHandler extends Observable {
 
     public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
-        setChanged();
-        Boolean floor0Changed = false;
-        Boolean floor1Changed = false;
-        floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
-        floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
-
-        if (floor0Changed && floor1Changed) {
-            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
-        } else if (floor0Changed) {
-            notifyObservers(Item.FLOOR_0_MAP_CHANGING);
-        } else if (floor1Changed) {
-            notifyObservers(Item.FLOOR_1_MAP_CHANGING);
+        Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
+        Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
+        if (floor0Changed || floor1Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         }
-
-        if (floor0Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                    + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
-        }
-        if (floor1Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                    + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
-        }
-
-        cachedTileAdresses.clear();
-
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor0, floor1);
+        ArrayList<FloorMap> floors = new ArrayList<>();
+        floors.add(floor0);
+        floors.add(floor1);
+        updateMapData(floors, version);
         setChanged();
-
-        if (floor0Changed && floor1Changed) {
-            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGED);
-        } else if (floor0Changed) {
-            notifyObservers(Item.FLOOR_0_MAP_CHANGED);
-        } else if (floor1Changed) {
-            notifyObservers(Item.FLOOR_1_MAP_CHANGED);
-        }
-
         notifyMapUpdated();
 
         Log.i(LOG_TAG, "New maps set");
+    }
+
+    private void updateMapData(List<FloorMap> floors, Integer version) {
+        mapVersion = version;
+        detailLevelsCount.clear();
+        detailLevelRes.clear();
+        mapTilesSizes.clear();
+        for (int floor = 0; floor < floors.size(); floor++) {
+            FloorMap floorMap = floors.get(floor);
+            detailLevelsCount.add(floorMap.getLevels().size());
+            detailLevelRes.add(floor, new ArrayList<DetailLevelRes>());
+            mapTilesSizes.add(floor, new ArrayList<MapTileInfo>());
+            for (int i = 0; i < detailLevelsCount.get(floor); i++) {
+                detailLevelRes.get(floor).add(new DetailLevelRes(
+                                                                floor,
+                                                                i,
+                                                                floorMap.getOriginalSize(),
+                                                                floorMap.getLevels().get(i).getScaledSize()
+                                                                ));
+                mapTilesSizes.get(floor).add(new MapTileInfo(
+                                                            floor,
+                                                            i,
+                                                            floorMap.getLevels().get(i).getTileSize()
+                                                            ));
+            }
+        }
     }
 
     public void notifyMapUpdated() {
@@ -237,30 +268,9 @@ public class DataHandler extends Observable {
         notifyObservers(Item.MAP_UPDATE_COMPLETED);
     }
 
-    private Integer getTileCode(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        Integer code = 0;
-        code += column;
-        code += row * 1000;
-        code += detailLevel * 1000 * 1000;
-        code += floor * 10 * 1000 * 1000;
-
-        return code;
-    }
-
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        Integer tileCode = getTileCode(floor, detailLevel, row, column);
-        String tileFilename = cachedTileAdresses.get(tileCode);
-
-        if (tileFilename == null) {
-            tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
-
-            if (tileFilename == null) {
-                return null;
-            }
-
-            cachedTileAdresses.put(tileCode, tileFilename);
-        }
-
+        String tileFilename = getTileFilename(row, column, floor, detailLevel);
+        tileFilename = DATA_PATH + MAP_DIRECTORY + "/" + tileFilename;
         Bitmap bmp = null;
         InputStream in = null;
         try {
@@ -282,15 +292,15 @@ public class DataHandler extends Observable {
     }
 
     public Boolean mapForFloorExists(Integer floor) {
-        return dbHelper.getDetailLevelsForFloor(floor) != null;
+        return detailLevelsCount.get(floor) > 0;
     }
 
     public Integer getDetailLevelsCountForFloor(Integer floor) {
-        return dbHelper.getDetailLevelsForFloor(floor);
+        return detailLevelsCount.get(floor);
     }
 
     public Resolution getOriginalResolution(Integer floor) {
-        return dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
+        return detailLevelRes.get(floor).get(0).getOriginalRes();
     }
 
     public Integer getMapVersion() {
@@ -298,7 +308,7 @@ public class DataHandler extends Observable {
     }
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        return dbHelper.getDetailLevelRes(floor, detailLevel);
+        return detailLevelRes.get(floor).get(detailLevel);
     }
 
     public Resolution getTileSize(Integer floor, Integer detailLevel) {
@@ -310,39 +320,55 @@ public class DataHandler extends Observable {
         if (exhibits.isEmpty()) {
             return;
         }
-
         dbHelper.addOrUpdateExhibits(version, exhibits);
+        exhibitsVersion = version;
+        updateExhibits(exhibits);
         setChanged();
         notifyObservers(Item.EXHIBITS);
     }
 
-    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
-        return dbHelper.getAllExhibitsForFloor(floor);
+    private void updateExhibits(List<Exhibit> newExhibits) {
+        for (Exhibit newExhibit : newExhibits) {
+            findAndChangeExhibit(newExhibit);
+        }
     }
 
-    public Exhibit getExhibit(Integer id) {
-        return dbHelper.getExhibit(id);
+    private void findAndChangeExhibit(Exhibit e) {
+        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            Exhibit old = exhibitIdMap.get(e.getId());
+            if (old != null) {
+                exhibits.get(floor).remove(old);
+            }
+        }
+        if (e.getFloor() != null) {
+            exhibits.get(e.getFloor()).add(e);
+            exhibitIdMap.put(e.getId(), e);
+        } else {
+            exhibitIdMap.remove(e);
+        }
+
+    }
+
+    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
+        return exhibits.get(floor);
     }
 
     public Integer getExhibitsVersion() {
-        return dbHelper.getVersion(Version.Item.EXHIBITS);
+        return exhibitsVersion;
     }
 
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = DATA_PATH + MAP_DIRECTORY +
-                FLOOR_DIRECTORY_PREFIX + floorNo.toString() + "/"
-                + detailLevel.toString() + "/";
-        return dir + getTileFilename(x, y);
+        String dir = DATA_PATH + MAP_DIRECTORY;
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
     public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = DATA_PATH + MAP_DIRECTORY +
-                FLOOR_DIRECTORY_PREFIX + TMP + floorNo.toString() + "/" + detailLevel.toString() + "/";
-        return dir + getTileFilename(x, y);
+        String dir = DATA_PATH + MAP_DIRECTORY + TMP + "/";
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
-    private String getTileFilename(Integer x, Integer y) {
-        return TILE_FILE_PREFIX + x.toString() + "_" + y.toString();
+    private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
+        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" + x.toString() + "_" + y.toString();
     }
 
     private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
