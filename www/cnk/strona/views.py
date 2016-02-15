@@ -99,14 +99,14 @@ def getMapPage(request, file, activeLink):
 	template = loader.get_template(file)
 
 	if len(floorTilesInfo[0]) == 1: #just default image
-		urlFloor0 = r"static/floorplan0.jpg"
+		urlFloor0 = r"/static/floorplan0.jpg"
 	else: #get from config file
-		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
 
 	if len(floorTilesInfo[1]) == 1:
-		urlFloor1 = r"static/floorplan1.jpg"
+		urlFloor1 = r"/static/floorplan1.jpg"
 	else:
-		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
+		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
 
 	context = RequestContext(request, {
 		'activeFloor': 0,
@@ -161,12 +161,12 @@ def uploadImage(request):
 		return JsonResponse(data)
 
 	if len(floorTilesInfo[floor]) == 1: #just default image
-		floorUrl = r"static/floorplan0.jpg"
+		floorUrl = r"/static/floorplan0.jpg"
 	else: #get from config file
 		if floor == 0:
-			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"static/floorplan0.jpg")
+			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
 		else:
-			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"static/floorplan1.jpg")
+			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
@@ -268,3 +268,15 @@ def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
+
+def getQuestionsList(request):
+    html = render_to_string('questionsList/questionsList.html')
+    return HttpResponse(html)
+
+def getQuestionsListElement(request):
+    html = render_to_string('questionsList/questionsListElement.html')
+    return HttpResponse(html)
+
+def questionsListTest(request):
+    template = loader.get_template('questionsListTest.html')
+    return HttpResponse(template.render(RequestContext(request, {'activeLink': '3'})))

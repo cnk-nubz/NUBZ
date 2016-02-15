@@ -1,0 +1,32 @@
+{% extends "mainPage.html" %}
+{% load compress %}
+{% load staticfiles %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static "css/questionsListTest.css" %}" rel="stylesheet" />
+  <link href="{% static "css/questionsList.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block init %}
+  {% compress js %}
+  <script src="{% static "coffee/handlers/qList.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+{% block includes %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/QuestionsList.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+{% block script %}
+  {{ block.super }}
+{% endblock %}
+{% block content %}
+<div id="container">
+  <div id="questionList">
+    <div id="questionsListContainer">
+    </div>
+  </div>
+</div>
+{% endblock %}

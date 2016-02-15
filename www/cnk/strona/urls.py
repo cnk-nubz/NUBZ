@@ -6,6 +6,7 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
     url(r'badania/$', views.surveys, name='surveys'),
+    url(r'test-listy/$', views.questionsListTest, name='questionsListTest'),
 
 	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 
@@ -18,5 +19,8 @@ urlpatterns = [
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
     url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
-    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog')
+    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
+
+    url(r'getQuestionsList/$', views.getQuestionsList, name='getExhibitPanel'),
+    url(r'getQuestionsListElement/$', views.getQuestionsListElement, name='getExhibitListElement')
 ]
