@@ -28,24 +28,6 @@ root.QuestionsList = class QuestionsList extends root.View
       url: '/getQuestionsListElement/'
       success: (data) ->
         @_questionsListElementHTML = data
-        # TODO CHANGE FROM FAKE LIST TO REAL QUESTIONS:
-        qList = {}
-        qList[0] = {
-          id: 2
-          name: "nazwa pierwszego"
-          type: "otwarte"
-        }
-        qList[1] = {
-          id: 5
-          name: "nazwa drugiego pytania nazwa drugiego pytania nazwa drugiego pytania nazwa drugiego pytania"
-          type: "zamknięte"
-        }
-        qList[2] = {
-          id: 7
-          name: "pytanie z sortowaniem"
-          type: "sortowanie"
-        }
-        @addQuestions(qList)
     )
     return
 
@@ -60,7 +42,6 @@ root.QuestionsList = class QuestionsList extends root.View
       questionBadge.html questions[q].type
       id = questions[q].id
       jQuery(questionListElement).click( do (id) => (=>
-        console.log("clicked #{id}")
         @fireEvents("questionClicked", id)))
       @_questions.push questionListElement
     @_refreshQuestionsList()

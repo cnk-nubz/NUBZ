@@ -20,6 +20,6 @@ urlpatterns = [
     url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
     url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
 
-    url(r'getQuestionsList/$', views.getQuestionsList, name='getExhibitPanel'),
-    url(r'getQuestionsListElement/$', views.getQuestionsListElement, name='getExhibitListElement')
+    url(r'getQuestionsList/$', views.getQuestionsList, name='getQuestionsList'),
+    url(r'getQuestionsListElement/$', views.getQuestionsListElement, name='getQuestionsListElement')
 ]
