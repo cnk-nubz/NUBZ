@@ -276,7 +276,3 @@ def getQuestionsList(request):
 def getQuestionsListElement(request):
     html = render_to_string('questionsList/questionsListElement.html')
     return HttpResponse(html)
-
-def questionsListTest(request):
-    template = loader.get_template('questionsListTest.html')
-    return HttpResponse(template.render(RequestContext(request, {'activeLink': '3'})))
