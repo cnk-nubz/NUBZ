@@ -9,4 +9,8 @@
         <item name="android:textSize">20sp</item>
     </style>
 
+    <style name="FullHeightDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
 </resources>

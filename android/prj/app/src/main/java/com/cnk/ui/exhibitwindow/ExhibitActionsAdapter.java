@@ -26,6 +26,10 @@ public class ExhibitActionsAdapter extends BaseAdapter {
         Arrays.fill(actionsClicked, Boolean.FALSE);
     }
 
+    public void clearClickedState() {
+        Arrays.fill(actionsClicked, Boolean.FALSE);
+    }
+
     @Override
     public int getCount() {
         return actionsList.size();

@@ -1,6 +1,5 @@
 package com.cnk.ui;
 
-import android.app.ActivityOptions;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -11,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
@@ -18,23 +18,26 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cnk.R;
 import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
+import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
-import com.cnk.ui.exhibitwindow.ExhibitDialog;
+import com.cnk.ui.exhibitwindow.ExhibitActionsAdapter;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
@@ -68,6 +71,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private ActionBarDrawerToggle drawerToggle;
     private Integer openedDialogs;
 
+    private AlertDialog.Builder breakAlertDialogBuilder;
+    private AlertDialog breakDialog;
+    private View breakDialogView;
+    private AlertDialog.Builder exhibitAlertDialogBuilder;
+    private AlertDialog exhibitDialog;
+    private View exhibitDialogView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +96,77 @@ public class MapActivity extends AppCompatActivity implements Observer {
         setSpinner();
 
         networkHandler.downloadExperimentData();
+
+        createDialogs();
+    }
+
+    private void createDialogs() {
+        breakAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
+        breakDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
+        breakAlertDialogBuilder.setView(breakDialogView);
+
+        List<Action> breakActions = DataHandler.getInstance().getAllBreakActions();
+
+        List<String> breakActionsStrings = new ArrayList<>();
+        for (Action a : breakActions) {
+            breakActionsStrings.add(a.getText());
+        }
+        ExhibitActionsAdapter breakActionsAdapter = new ExhibitActionsAdapter(MapActivity.this, breakActionsStrings);
+
+        GridView breakGridView = (GridView) breakDialogView.findViewById(R.id.gvActions);
+        breakGridView.setAdapter(breakActionsAdapter);
+
+        breakAlertDialogBuilder.setCancelable(false);
+        breakDialog = breakAlertDialogBuilder.create();
+
+
+        exhibitAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
+        exhibitDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
+        exhibitAlertDialogBuilder.setView(exhibitDialogView);
+
+        List<Action> exhibitActions = DataHandler.getInstance().getAllExhibitActions();
+
+        List<String> exhibitActionsStrings = new ArrayList<>();
+        for (Action a : exhibitActions) {
+            exhibitActionsStrings.add(a.getText());
+        }
+        ExhibitActionsAdapter exhibitActionsAdapter = new ExhibitActionsAdapter(MapActivity.this, exhibitActionsStrings);
+
+        GridView exhibitsGridView = (GridView) exhibitDialogView.findViewById(R.id.gvActions);
+        exhibitsGridView.setAdapter(exhibitActionsAdapter);
+
+        exhibitAlertDialogBuilder.setCancelable(false);
+        exhibitDialog = exhibitAlertDialogBuilder.create();
+    }
+
+    private void dialogButtonHandler(AlertDialog toDissmiss, Integer requestCode, boolean cancel, ExhibitActionsAdapter toTakeResultFrom) {
+        toDissmiss.dismiss();
+        if (cancel) {
+            dialogReturn(requestCode, true, null);
+        } else {
+            dialogReturn(requestCode, false, toTakeResultFrom.getSelectedActions());
+        }
+        openedDialogs--;
+    }
+
+    private void dialogReturn(Integer requestCode, boolean canceled, List<String> result) {
+        if (!canceled) {
+            Toast.makeText(MapActivity.this, result.toString(), Toast.LENGTH_LONG).show();
+            if (requestCode != BREAK_ID) {
+                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                if (mapState.lastExhibitTextView != null) {
+                    mapState.lastExhibitTextView
+                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                }
+                mapState.lastExhibitTextView = es.getExhibitTextView();
+                es.getExhibitTextView()
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+                mapState.exhibitsOverlay.invalidate();
+            } else {
+                // TODO: after break
+            }
+        }
     }
 
     public void pauseClick(View view) {
@@ -191,11 +272,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        lastClick = new Point((int) ev.getX(), (int) ev.getY());
-        return super.dispatchTouchEvent(ev);
-    }
+//    @Override
+//    public boolean dispatchTouchEvent(MotionEvent ev) {
+//        lastClick = new Point((int) ev.getX(), (int) ev.getY());
+//        return super.dispatchTouchEvent(ev);
+//    }
 
     @Override
     protected void onDestroy() {
@@ -646,43 +727,61 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void showExhibitDialog(boolean isBreak, String name, final Integer requestCode) {
+        if (isBreak) {
+            AutoResizeTextView tvBreakDialogName = (AutoResizeTextView) breakDialogView.findViewById(R.id.tvExhibitDialogName);
+            tvBreakDialogName.setText(name);
+            tvBreakDialogName.setMinTextSize(2f);
+            tvBreakDialogName.setTextSize(100f);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                openedDialogs--;
-            }
-        });
+            final ExhibitActionsAdapter eaa = (ExhibitActionsAdapter)
+                    ((GridView) breakDialogView.findViewById(R.id.gvActions)).getAdapter();
+            eaa.clearClickedState();
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode != BREAK_ID) {
-                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
-                if (mapState.lastExhibitTextView != null) {
-                    mapState.lastExhibitTextView
-                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+            Button cancel = (Button) breakDialogView.findViewById(R.id.bExbibitDialogCancel);
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogButtonHandler(breakDialog, requestCode, true, eaa);
                 }
-                mapState.lastExhibitTextView = es.getExhibitTextView();
-                es.getExhibitTextView()
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+            });
 
-                mapState.exhibitsOverlay.invalidate();
+            Button finish = (Button) breakDialogView.findViewById(R.id.bExbibitDialogFinish);
+            finish.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogButtonHandler(breakDialog, requestCode, false, eaa);
+                }
+            });
 
-                ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
-            } else {
-                // TODO: after break
-            }
+            breakDialog.show();
+        } else {
+            AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) exhibitDialogView.findViewById(R.id.tvExhibitDialogName);
+            tvExhibitDialogName.setText(name);
+            tvExhibitDialogName.setMinTextSize(2f);
+            tvExhibitDialogName.setTextSize(100f);
+
+            final ExhibitActionsAdapter eaa = (ExhibitActionsAdapter)
+                    ((GridView) exhibitDialogView.findViewById(R.id.gvActions)).getAdapter();
+            eaa.clearClickedState();
+
+            Button cancel = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogCancel);
+            cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogButtonHandler(exhibitDialog, requestCode, true, eaa);
+                }
+            });
+
+            Button finish = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogFinish);
+            finish.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialogButtonHandler(exhibitDialog, requestCode, false, eaa);
+                }
+            });
+
+            exhibitDialog.show();
         }
-    }
-
-    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
-        Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
-        exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
-        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
-        ActivityOptions activityOptions =
-            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 }
