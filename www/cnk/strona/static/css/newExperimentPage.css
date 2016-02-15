@@ -1,0 +1,171 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+#experiment {
+  position: relative;
+  float: left;
+  width: 65%;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.beforeQuestions,
+.afterQuestions,
+.actions {
+  padding: 10px 5%;
+  margin-bottom: 50px;
+}
+
+.beforeQuestions > div,
+.afterQuestions > div,
+.actions > div,
+.chooseList > div {
+  background: #eee;
+  border: 1px solid #ddd;
+}
+
+.myHeader {
+  height: 50px;
+  line-height: 50px;
+  font-size: 22px;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+}
+
+.myFooter {
+  height: 50px;
+  line-height: 50px;
+  font-size: 22px;
+  border-top: 1px solid #ddd;
+}
+
+.actions .myHeader,
+.chooseList .myFooter {
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.actions .myHeader > div,
+.chooseList .myFooter > div:not(.addElement) {
+  display: table-cell;
+  width: 45%;
+}
+
+.chooseList .myFooter > div:hover {
+  background: #ccc;
+  cursor: pointer;
+}
+
+.actions .myHeader > div:first-child,
+.chooseList .myFooter > div:first-child {
+  border-right: 1px solid #ddd;
+}
+
+.chooseList {
+  float: right;
+  width: 35%;
+  height: 100%;
+  padding: 10px 15px;
+}
+
+.chooseList > div {
+  position: relative;
+  height: 100%;
+}
+
+.chooseList .myHeader {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+.chooseList .middle {
+  position: absolute;
+  top: 50px;
+  left: 0px;
+  right: 0px;
+  bottom: 50px;
+  overflow-y: scroll;
+}
+
+.chooseList .myFooter {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+table.myTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 20px 10px;
+  table-layout: fixed;
+}
+
+table.myTable > tbody > tr {
+  height: 42px;
+  background: #fff;
+}
+
+table.myTable > tbody > tr > td {
+  border: 1px solid #ddd;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+table.myTable > tbody > tr > td > div:first-child {
+  width: 70%;
+}
+table.myTable > tbody > tr > td > div:last-child {
+  width: 30%;
+}
+
+
+
+table.myTable > tbody > tr > td:hover {
+  background: #ddd;
+  border: 1px solid #ccc;
+}
+
+table.myTable > tbody > tr > td > div:first-child {
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+.chooseList table.myTable {
+  border-spacing: 0px;
+  border-collapse: collapse;
+}
+
+.chooseList table.myTable >tbody>tr> td:first-child {
+  width: 70%;
+}
+.chooseList table.myTable >tbody>tr> td:last-child {
+  width: 30%;
+  padding: 0px;
+}
+
+.addElement {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  font-size: 14px;
+  line-height: 51px;
+  width: 42px;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.addElement:hover {
+  background: #ccc;
+  border: 1px solid #bbb;
+}

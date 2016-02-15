@@ -6,6 +6,7 @@ urlpatterns = [
 	url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
     url(r'badania/$', views.surveys, name='surveys'),
+    url(r'nowy-eksperyment/$', views.newExperimentPage, name='newExperimentPage'),
 
 	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 

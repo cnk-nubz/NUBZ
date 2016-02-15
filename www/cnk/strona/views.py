@@ -268,3 +268,7 @@ def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
+
+def newExperimentPage(request):
+    template = loader.get_template('newExperimentPage.html')
+    return HttpResponse(template.render(RequestContext(request, {'activeLink' : "3"})))
