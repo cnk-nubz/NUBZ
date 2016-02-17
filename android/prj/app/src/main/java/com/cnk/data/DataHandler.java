@@ -293,7 +293,7 @@ public class DataHandler extends Observable {
             floorInfos.get(floor).removeExhibit(e.getId());
         }
         if (e.getFloor() != null) {
-            floorInfos.get(e.getFloor()).getExhibits().put(e.getId(), e);
+            floorInfos.get(e.getFloor()).addExhibit(e);
         }
     }
 

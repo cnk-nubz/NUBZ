@@ -42,8 +42,10 @@ public class FloorInfo {
         return ret;
     }
 
-    public Map<Integer, Exhibit> getExhibits() {
-        return exhibits;
+    public void addExhibit(Exhibit e) {
+        exhibitLock.lock();
+        exhibits.put(e.getId(), e);
+        exhibitLock.unlock();
     }
 
     public void setExhibits(Map<Integer, Exhibit> exhibits) {
