@@ -8,6 +8,8 @@ import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.notificators.Notificator;
 
+import org.apache.thrift.TException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class ExperimentDataDownloadTask extends ServerTask {
     }
 
     @Override
-    protected void performInSession(Server.Client client) throws Exception {
+    protected void performInSession(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading actions");
         ExperimentData thriftData = client.getExperimentData();
         Log.i(LOG_TAG, "Downloaded actions");

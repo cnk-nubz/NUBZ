@@ -12,4 +12,7 @@
     <string name="end_action">Koniec badania</string>
     <string name="cancel">Anuluj</string>
     <string name="finish">Koniec</string>
+    <string name="error">Błąd</string>
+    <string name="MapIncompleteMessage">Dane o mapie są niekompletne, pobierz mapę ponownie</string>
+    <string name="DataError">Pobrane dane są uszkodzone, spróbuj ponownie lub skontaktuj się z administratorem</string>
 </resources>

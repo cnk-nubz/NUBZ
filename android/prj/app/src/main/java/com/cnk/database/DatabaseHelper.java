@@ -208,21 +208,6 @@ public class DatabaseHelper {
 
     }
 
-    private void setMapsImpl(Realm realm, Integer versionNum, List<MapTileRealm> tilesForFloor0,
-                            List<MapTileRealm> tilesForFloor1) {
-        assert(versionNum != null);
-
-        setVersionImpl(realm, Version.Item.MAP, versionNum);
-        if (tilesForFloor0 != null) {
-            realm.where(MapTileRealm.class).equalTo("floor", Consts.FLOOR1).findAll().clear();
-            realm.copyToRealm(tilesForFloor0);
-        }
-        if (tilesForFloor1 != null) {
-            realm.where(MapTileRealm.class).equalTo("floor", Consts.FLOOR2).findAll().clear();
-            realm.copyToRealm(tilesForFloor1);
-        }
-    }
-
     private void setMapTileInfo(Realm realm, List<MapTileInfoRealm> floorInfo) {
         if (floorInfo != null) {
             for (MapTileInfoRealm tileInfo : floorInfo) {
@@ -235,8 +220,6 @@ public class DatabaseHelper {
     }
 
     public void setMaps(Integer versionNum, FloorMap floor0Map, FloorMap floor1Map) {
-        List<MapTileRealm> floor0Tiles = null;
-        List<MapTileRealm> floor1Tiles = null;
         List<DetailLevelResRealm> floor0Resolutions = null;
         List<DetailLevelResRealm> floor1Resolutions = null;
         FloorDetailLevelsRealm floor0DetailLevels = null;
@@ -245,8 +228,6 @@ public class DatabaseHelper {
         List<MapTileInfoRealm> floor1TileInfo = null;
 
         if (floor0Map != null) {
-            floor0Tiles = ModelTranslation.realmListFromMapTileList(
-                    ModelTranslation.getMapTilesFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1, floor0Map));
             floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
@@ -254,21 +235,19 @@ public class DatabaseHelper {
             floor0TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR1);
         }
         if (floor1Map != null) {
-            floor1Tiles = ModelTranslation.realmListFromMapTileList(
-                    ModelTranslation.getMapTilesFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(
                     ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2, floor1Map));
             floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
                     new FloorDetailLevels(Consts.FLOOR2, floor1Map.getLevels().size()));
             floor1TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR2);
         }
+        setVersion(Version.Item.MAP, versionNum);
 
         Realm r = open();
 
         try {
             beginTransaction(r);
             setMapResolutionsImpl(r, floor0Resolutions, floor1Resolutions);
-            setMapsImpl(r, versionNum, floor0Tiles, floor1Tiles);
             setDetailLevelsImpl(r, floor0DetailLevels, floor1DetailLevels);
             setMapTileInfo(r, floor0TileInfo);
             setMapTileInfo(r, floor1TileInfo);

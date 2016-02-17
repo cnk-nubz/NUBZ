@@ -1,8 +1,10 @@
 package com.cnk.ui;
 
 import android.app.ActivityOptions;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -11,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
@@ -60,7 +63,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private MapState mapState;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
-    private NetworkHandler networkHandler;
     private RelativeLayout rlRootLayout;
     private RelativeLayout voidLayout;
     private Point lastClick;
@@ -76,16 +78,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
-        networkHandler = new NetworkHandler();
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
-
         setViews();
         setActionBar();
         setSpinner();
-
-        networkHandler.downloadExperimentData();
+        NetworkHandler.getInstance().downloadExperimentData();
     }
 
     public void pauseClick(View view) {
@@ -207,7 +206,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             tileView.destroy();
         }
 
-        networkHandler.stopBgDownload();
+        NetworkHandler.getInstance().stopBgDownload();
 
         Log.i(LOG_TAG, "deleting from DataHandler observers list");
         DataHandler.getInstance().deleteObserver(this);
@@ -236,7 +235,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
 
     // Layout setting:
-    private void prepareTileView(final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
+    private void prepareTileView(final Integer floor, final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
         runOnUiThread(new Runnable() {
@@ -256,7 +255,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     ScaleData scale = scalesList.get(i);
                     Resolution res = tileSizes.get(i);
                     tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),
-                            res.getWidth(), res.getHeight());
+                                            res.getWidth(), res.getHeight());
                 }
 
                 tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
@@ -387,7 +386,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         mapState = new MapState(this);
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
-        networkHandler.startBgDownload();
+        NetworkHandler.getInstance().startBgDownload();
         spinner.dismiss();
     }
 
@@ -466,19 +465,30 @@ public class MapActivity extends AppCompatActivity implements Observer {
             mapState.currentMapSize = biggestResolution.getScaledRes();
             mapState.originalMapSize = DataHandler.getInstance().getOriginalResolution(floor);
 
+            if (detailLevels == null || biggestResolution == null ||
+                mapState.currentMapSize == null || mapState.originalMapSize == null) {
+                showAlert();
+            }
+
             LinkedList<ScaleData> ll = new LinkedList<>();
             for (int i = 0; i < detailLevels; i++) {
                 DetailLevelRes current = DataHandler.getInstance().getDetailLevelResolution(floor, i);
+                if (current == null) {
+                    showAlert();
+                }
                 ll.add(new ScaleData((float) current.getScaledRes().getWidth() / biggestResolution.getScaledRes().getWidth(), i));
             }
 
             ArrayList<Resolution> tileSizes = new ArrayList<>();
             for (int i = 0; i < detailLevels; i++) {
                 Resolution current = DataHandler.getInstance().getTileSize(floor, i);
+                if (current == null) {
+                    showAlert();
+                }
                 tileSizes.add(current);
             }
 
-            prepareTileView(ll, tileSizes);
+            prepareTileView(floor, ll, tileSizes);
             setLayout(true);
 
             addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
@@ -684,5 +694,19 @@ public class MapActivity extends AppCompatActivity implements Observer {
         ActivityOptions activityOptions =
             ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
         startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
+    }
+
+    private void showAlert() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(R.string.error);
+        alert.setMessage(R.string.MapIncompleteMessage);
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        alert.setCancelable(false);
+        alert.show();
     }
 }
