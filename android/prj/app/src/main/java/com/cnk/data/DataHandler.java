@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+import com.cnk.communication.thrift.Experiment;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
@@ -27,12 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
     public enum Item {
-        FLOOR_0_MAP_CHANGED("Map changed 0"),
-        FLOOR_0_MAP_CHANGING("Map changing 0"),
-        FLOOR_1_MAP_CHANGED("Map changed 1"),
-        FLOOR_1_MAP_CHANGING("Map changing 1"),
-        BOTH_FLOORS_MAP_CHANGED("Map changed both"),
-        BOTH_FLOORS_MAP_CHANGING("Map changing both"),
         MAP_UPDATE_COMPLETED("Map update completed"),
         EXPERIMENT_DATA("Experiment data"),
         EXHIBITS("Exhibits"),
@@ -73,11 +68,7 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
 
-    private List<List<DetailLevelRes>> detailLevelRes;
-    private List<List<Exhibit>> exhibits;
-    private List<List<MapTileInfo>> mapTilesSizes;
-    private List<Integer> detailLevelsCount;
-    private Map<Integer, Exhibit> exhibitIdMap;
+    private List<FloorInfo> floorInfos;
     Integer exhibitsVersion;
     Integer mapVersion;
     private Raport currentRaport;
@@ -95,11 +86,7 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
-        detailLevelRes = new ArrayList<>();
-        exhibits = new ArrayList<>();
-        mapTilesSizes = new ArrayList<>();
-        detailLevelsCount = new ArrayList<>();
-        exhibitIdMap = new HashMap<>();
+        floorInfos = new ArrayList<>();
         mapVersion = null;
         exhibitsVersion = null;
     }
@@ -107,22 +94,29 @@ public class DataHandler extends Observable {
     public void loadDbData() {
         exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
         mapVersion = dbHelper.getVersion(Version.Item.MAP);
+        floorInfos.clear();
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            exhibits.add(dbHelper.getAllExhibitsForFloor(floor));
-            detailLevelsCount.add(dbHelper.getDetailLevelsForFloor(floor));
-            detailLevelRes.add(new ArrayList<DetailLevelRes>());
-            mapTilesSizes.add(new ArrayList<MapTileInfo>());
-            for (int detailLevel = 0; detailLevel < detailLevelsCount.get(floor); detailLevel++) {
-                detailLevelRes.get(floor).add(dbHelper.getDetailLevelRes(floor, detailLevel));
-                mapTilesSizes.get(floor).add(dbHelper.getMapTileInfo(floor, detailLevel));
+            FloorInfo currentFloor = new FloorInfo();
+            currentFloor.setExhibits(exhibitListToMap(dbHelper.getAllExhibitsForFloor(floor)));
+            currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
+            ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
+            ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
+            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount(); detailLevel++) {
+                detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
+                mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));
             }
+            currentFloor.setDetailLevelRes(detailLevelRes);
+            currentFloor.setMapTilesSizes(mapTileInfos);
+            floorInfos.add(currentFloor);
         }
+    }
 
-        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            for (Exhibit e : exhibits.get(floor)) {
-                exhibitIdMap.put(e.getId(), e);
-            }
+    private Map<Integer, Exhibit> exhibitListToMap(List<Exhibit> exhibitList) {
+        Map<Integer, Exhibit> map = new HashMap<>();
+        for (Exhibit e : exhibitList) {
+            map.put(e.getId(), e);
         }
+        return map;
     }
 
     public void setNewExperimentData(ExperimentData newData) {
@@ -156,7 +150,9 @@ public class DataHandler extends Observable {
 
     // only modifies file of raport in progress, which is not used anywhere else at the time
     public void addEventToRaport(RaportEvent event, int tryNo) {
-        currentRaport.addEvent(event);
+        if (tryNo == 0) {
+            currentRaport.addEvent(event);
+        }
         try {
             saveRaport(currentRaport);
         } catch (IOException e) {
@@ -173,23 +169,11 @@ public class DataHandler extends Observable {
 
     // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
     public void markRaportAsReady(int tryNo) {
-        try {
-            saveRaport(currentRaport);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in markRaportAsReady");
-            if (tryNo > MAX_TRIES) {
-                throw new RuntimeException("Cannot mark raport as ready");
-            } else {
-                markRaportAsReady(tryNo + 1);
-                return;
-            }
-        }
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
     }
 
-    // only modifies files ready to send which are used by one thread - uploading raports
+    // only uses files ready to send which are used by one thread - uploading raports
     public Map<Raport, Integer> getAllReadyRaports() {
         List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
         Map<Raport, Integer> raportsToSend = new HashMap<>();
@@ -227,40 +211,11 @@ public class DataHandler extends Observable {
         }
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor0, floor1);
-        ArrayList<FloorMap> floors = new ArrayList<>();
-        floors.add(floor0);
-        floors.add(floor1);
-        updateMapData(floors, version);
+        loadDbData();
         setChanged();
         notifyMapUpdated();
 
         Log.i(LOG_TAG, "New maps set");
-    }
-
-    private void updateMapData(List<FloorMap> floors, Integer version) {
-        mapVersion = version;
-        detailLevelsCount.clear();
-        detailLevelRes.clear();
-        mapTilesSizes.clear();
-        for (int floor = 0; floor < floors.size(); floor++) {
-            FloorMap floorMap = floors.get(floor);
-            detailLevelsCount.add(floorMap.getLevels().size());
-            detailLevelRes.add(floor, new ArrayList<DetailLevelRes>());
-            mapTilesSizes.add(floor, new ArrayList<MapTileInfo>());
-            for (int i = 0; i < detailLevelsCount.get(floor); i++) {
-                detailLevelRes.get(floor).add(new DetailLevelRes(
-                                                                floor,
-                                                                i,
-                                                                floorMap.getOriginalSize(),
-                                                                floorMap.getLevels().get(i).getScaledSize()
-                                                                ));
-                mapTilesSizes.get(floor).add(new MapTileInfo(
-                                                            floor,
-                                                            i,
-                                                            floorMap.getLevels().get(i).getTileSize()
-                                                            ));
-            }
-        }
     }
 
     public void notifyMapUpdated() {
@@ -292,27 +247,27 @@ public class DataHandler extends Observable {
     }
 
     public Boolean mapForFloorExists(Integer floor) {
-        return detailLevelsCount.get(floor) > 0;
+        return floorInfos.get(floor).getDetailLevelsCount() > 0;
     }
 
     public Integer getDetailLevelsCountForFloor(Integer floor) {
-        return detailLevelsCount.get(floor);
+        return floorInfos.get(floor).getDetailLevelsCount();
     }
 
     public Resolution getOriginalResolution(Integer floor) {
-        return detailLevelRes.get(floor).get(0).getOriginalRes();
+        return floorInfos.get(floor).getDetailLevelRes().get(0).getOriginalRes();
     }
 
     public Integer getMapVersion() {
-        return dbHelper.getVersion(Version.Item.MAP);
+        return mapVersion;
     }
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        return detailLevelRes.get(floor).get(detailLevel);
+        return floorInfos.get(floor).getDetailLevelRes().get(detailLevel);
     }
 
     public Resolution getTileSize(Integer floor, Integer detailLevel) {
-        MapTileInfo size = dbHelper.getMapTileInfo(floor, detailLevel);
+        MapTileInfo size = floorInfos.get(floor).getMapTilesSizes().get(detailLevel);
         return size != null ? size.getTileSize() : null;
     }
 
@@ -335,22 +290,17 @@ public class DataHandler extends Observable {
 
     private void findAndChangeExhibit(Exhibit e) {
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            Exhibit old = exhibitIdMap.get(e.getId());
-            if (old != null) {
-                exhibits.get(floor).remove(old);
+            if (floorInfos.get(floor).getExhibits().get(e.getId()) != null) {
+                floorInfos.get(floor).getExhibits().remove(e.getId());
             }
         }
         if (e.getFloor() != null) {
-            exhibits.get(e.getFloor()).add(e);
-            exhibitIdMap.put(e.getId(), e);
-        } else {
-            exhibitIdMap.remove(e);
+            floorInfos.get(e.getFloor()).getExhibits().put(e.getId(), e);
         }
-
     }
 
     public List<Exhibit> getExhibitsOfFloor(Integer floor) {
-        return exhibits.get(floor);
+        return new ArrayList<>(floorInfos.get(floor).getExhibits().values());
     }
 
     public Integer getExhibitsVersion() {

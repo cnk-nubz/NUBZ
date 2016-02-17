@@ -18,7 +18,7 @@ public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
     protected long delay = 1;
-    private static final String SEND_ADDRESS = "192.168.1.105";
+    private static final String SEND_ADDRESS = "192.168.1.102";
     private static final int SEND_PORT = 9090;
 
     protected Notificator notificator;
