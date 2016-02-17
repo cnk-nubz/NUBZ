@@ -1,35 +1,50 @@
-{% extends "base.html" %}
+{% extends "mainPage.html" %}
 {% load compress %}
 {% load staticfiles %}
+{% block init %}
+  {% compress js %}
+  <script src="{% static "coffee/handlers/surveys.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
 {% block script %}
-<script src="{% static "include/js/jquery.min.js" %}"></script>
-{% compress js %}
-<script src="{% static "coffee/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
-<script src="{% static "include/js/bootstrap.min.js" %}"></script>
-<script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
-<script src="{% static "include/js/csrf.js" %}"></script>
+  <script src="{% static "include/js/jquery.min.js" %}"></script>
+  {% compress js %}
+  <script src="{% static "coffee/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  <script src="{% static "include/js/bootstrap.min.js" %}"></script>
+  <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
+  <script src="{% static "include/js/csrf.js" %}"></script>
 {% endblock %}
 {% block css %}
-<link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
-<link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block includes %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/SimpleQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/MultipleChoiceQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/SortQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/ActionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
 {% endblock %}
 {% block content %}
-<center>
-  <button class="btn btn-default" id="simpleQuestion">Proste pytanie</button>
-  <button class="btn btn-default" id="multipleChoiceQuestion">Pytanie jedno/wielokrotnego wyboru</button>
-  <button class="btn btn-default" id="newAction">Nowa akcja</button>
-</center>
-{% compress js %}
-<script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/dialog/SimpleQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/dialog/MultipleChoiceQuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
-{% compress js %}
-<script src="{% static "coffee/dialog/ActionDialog.class.coffee" %}" type="text/coffeescript"></script>
-{% endcompress %}
+<div style="padding-top: 55px;">
+  <center>
+    <button class="btn btn-default" id="simpleQuestion">Proste pytanie</button>
+    <button class="btn btn-default" id="multipleChoiceQuestion">Pytanie jedno/wielokrotnego wyboru</button>
+    <button class="btn btn-default" id="sortQuestion">Pytanie z sortowaniem</button>
+    <button class="btn btn-default" id="newAction">Nowa akcja</button>
+  </center>
+</div>
 {% endblock %}

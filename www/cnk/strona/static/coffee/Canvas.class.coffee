@@ -1,75 +1,34 @@
 root = exports ? this
 root.Canvas = class Canvas extends root.View
   constructor: (@_containerMap) ->
-    super @_containerMap
+    super
     @mapData = new MapDataHandler()
-    @appearance = new Appearance()
     @_minZoom = @mapData.minZoom
     @_maxZoom = @mapData.maxZoom
     @_mapBounds = [null, null]
     @_exhibits = [new L.LayerGroup(), new L.LayerGroup()]
     @_floorLayer = [new L.LayerGroup(), new L.LayerGroup()]
-    @_map = L.map(@select(@_containerMap).node(), {
+    @_map = L.map(@_containerMap[1..], {
       minZoom: @_minZoom
       zoom: @_minZoom
+      center: [0, 0]
       crs: L.CRS.Simple
+      autoPan: false
+      zoomControl: false
     })
-    @_initButtons()
+    @_areLabelsVisible = true
     @_init()
-
-  _initButtons: =>
-    @_labelsButton = L.easyButton({
-      states:[
-          {
-            stateName: 'setLabels'
-            icon: 'fa-comment-o'
-            title: 'Pokaż etykiety'
-            onClick: (btn) =>
-              jQuery btn.button
-                .addClass "clicked"
-              btn.state('removeLabels')
-              @mapData.activeLabels = true
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.showLabel()
-              )
-              return
-          },
-          {
-            stateName: 'removeLabels'
-            icon: 'fa-comment-o'
-            title: 'Ukryj etykiety'
-            onClick: (btn) =>
-              jQuery btn.button
-                .removeClass "clicked"
-              btn.state('setLabels')
-              @mapData.activeLabels = false
-              @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
-                layer.hideLabel()
-              )
-              return
-          }
-      ]
-    })
-    activeLabelState = "#{if @mapData.activeLabels then "removeLabels" else "setLabels"}"
-    activeLabelButton = @_labelsButton.state(activeLabelState).button
-    jQuery(activeLabelButton).addClass("clicked") if @mapData.activeLabels
-    @_labelsButton.state
-
-    @_floorButton = [
-      L.easyButton('<strong>0</strong>', @setFloorLayer 0, 'Piętro 0').addTo @_map
-      L.easyButton('<strong>1</strong>', @setFloorLayer 1, 'Piętro 1').addTo @_map
-    ]
-
-    toAddButton = @select(@_floorButton[1].getContainer())
-    mainButton = @select(@_floorButton[0].getContainer())
-        .append -> toAddButton[0][0].firstChild
-    @_labelsButton.addTo @_map
     return
 
   _init: =>
     #TODO
     #@_map.on('moveend', @_getCurrentView)
     #@_map.on('zoomend', @_getCurrentView)
+    @_map.on('zoomend', =>
+      disableMinus = @_map.getZoom() is @_minZoom
+      disablePlus = @_map.getZoom() is @_maxZoom[@mapData.activeFloor]
+      @fireEvents('zoomend', disableMinus, disablePlus)
+    )
     actv = @mapData.activeFloor
     @loadData i for i in [1-actv..actv]
     @
@@ -88,8 +47,8 @@ root.Canvas = class Canvas extends root.View
     @_exhibits[floor].clearLayers()
     @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
-    @addExhibits(floor, @mapData.exhibits)
-    @setFloorLayer(floor)(@_floorButton[floor])
+    @addExhibits(floor, (id for id, _ of @mapData.exhibits))
+    @setFloorLayer(floor)
     @
 
   _addMapBounds: (floor, northEast, southWest) =>
@@ -111,8 +70,9 @@ root.Canvas = class Canvas extends root.View
       @_floorLayer[floor].addLayer zoomLayer
     @
 
-  addExhibits: (floor, exhibits) =>
-    for idx, e of exhibits
+  addExhibits: (floor, exhibitIdList) =>
+    for id in exhibitIdList
+      e = @mapData.exhibits[id]
       continue unless e.frame?.mapLevel is floor
       X = e.frame.x
       Y = e.frame.y
@@ -121,13 +81,12 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       options =
-        color: @appearance.exhibit.strokeColor
-        fillColor: @appearance.exhibit.fillColor
-        fillOpacity: @appearance.exhibit.fillOpacity
-        weight: @appearance.exhibit.weight
-        strokeColor: @appearance.exhibit.strokeColor
-        strokeOpacity: @appearance.exhibit.strokeOpacity
-      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: idx }))
+          fillColor: '#ff7800'
+          fillOpacity: 0.7
+          weight: 1
+          strokeColor: 'darkblue'
+          strokeOpacity: 1
+      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: id }))
       r.bindLabel(e.name, { direction: 'auto' })
       @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
@@ -140,15 +99,8 @@ root.Canvas = class Canvas extends root.View
     return
 
   setFloorLayer: (floor) =>
-    (btn) =>
-      jQuery btn.button
-        .addClass "clicked"
-      jQuery @_floorButton[1 - floor].button
-        .removeClass "clicked"
-
       @mapData.activeFloor = floor
       @updateState()
-      @_map.setView(@mapData.currentCenter[floor], @mapData.currentZoom[floor])
       @
 
   updateState: =>
@@ -157,13 +109,7 @@ root.Canvas = class Canvas extends root.View
       @_map.removeLayer(@_floorLayer[1 - floor])
       @_map.addLayer(@_floorLayer[floor])
       @_map.addLayer(@_exhibits[floor])
-      if @_labelsButton._currentState.stateName is 'removeLabels' #setLabels is active
-        @_exhibits[1 - floor].eachLayer((layer) ->
-          layer.hideLabel()
-        )
-        @_exhibits[floor].eachLayer((layer) ->
-          layer.showLabel()
-        )
+      @changeLabelsVisibility(@_areLabelsVisible)
       @_map.setMaxBounds @_mapBounds[floor]
       @_map.invalidateSize()
       @
@@ -187,3 +133,35 @@ root.Canvas = class Canvas extends root.View
     topLeft = new L.Point(Math.min(maxX, Math.max(0, min.x)), Math.min(maxY, Math.max(0, min.y)))
     bottomRight = new L.Point(Math.min(maxX, Math.max(0, max.x)), Math.min(maxY, Math.max(0, max.y)))
     [topLeft, width = bottomRight.x - topLeft.x, height = bottomRight.y - topLeft.y]
+
+  flyToExhibit: (exhibitsId) =>
+    floor = @mapData.activeFloor
+    exhibit = @mapData.exhibits[exhibitsId]
+    frame = exhibit.frame
+    bounds = new L.LatLngBounds(
+      @_map.unproject([frame.x, frame.y], @_maxZoom[floor]),
+      @_map.unproject([frame.x + frame.width, frame.y + frame.height], @_maxZoom[floor]),
+    )
+    if floor isnt frame.mapLevel
+      @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
+        @_map.flyToBounds(bounds, animate: false)
+      )
+      @setFloorLayer(frame.mapLevel)
+    else
+      @_map.flyToBounds(bounds, animate: false)
+    return
+
+  changeLabelsVisibility: (areVisible) =>
+    @_areLabelsVisible = areVisible
+    @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+      if areVisible
+        layer.showLabel()
+      else
+        layer.hideLabel()
+    )
+
+  zoomIn: =>
+    @_map.zoomIn()
+
+  zoomOut: =>
+    @_map.zoomOut()

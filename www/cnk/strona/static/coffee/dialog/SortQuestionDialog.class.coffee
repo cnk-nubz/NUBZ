@@ -1,13 +1,9 @@
 root = exports ? this
-root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
+root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
-    radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this
-    jQuery "#dialog label.#{radioGroup}"
-      .filter ":first"
-      .addClass "active"
 
     inputs = jQuery "#dialog input[type=text]"
     inputs.each( (idx) ->

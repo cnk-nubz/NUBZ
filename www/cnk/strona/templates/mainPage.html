@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block body %}
+
+<div id="navbar">
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li {% if activeLink == "0" %}class="active"{% endif %}>
+            <a class="nav-link" href="/" {% if activeLink == "0" %}class="active"{% endif %}>Podgląd mapy</a>
+          </li>
+          <li {% if activeLink == "1" %}class="active"{% endif %}>
+            <a class="nav-link" href="/edycja-mapy" >Edycja mapy</a>
+          </li>
+          <li {% if activeLink == "2" %}class="active"{% endif %}>
+            <a class="nav-link" href="/badania" {% if activeLink == "2" %}class="active"{% endif %}>Badania</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</div>
+{% block content %}{% endblock %}
+{% endblock %}

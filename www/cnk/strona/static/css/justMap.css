@@ -1,0 +1,27 @@
+#mapSite {
+  padding-top: 50px;
+  display: table;
+  table-layout: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+#mapSite > div {
+  display: table-cell;
+}
+
+#mapSite > div:first-child {
+  width: 46px;
+  background: rgba(221, 221, 221, 1);
+  border-right: 1px solid #aaa;
+  position: relative;
+}
+
+#mapSite > div:last-child {
+  position: relative;
+}
+
+#zoomControls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
