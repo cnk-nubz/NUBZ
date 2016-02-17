@@ -290,9 +290,7 @@ public class DataHandler extends Observable {
 
     private void findAndChangeExhibit(Exhibit e) {
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            if (floorInfos.get(floor).getExhibits().get(e.getId()) != null) {
-                floorInfos.get(floor).getExhibits().remove(e.getId());
-            }
+            floorInfos.get(floor).removeExhibit(e.getId());
         }
         if (e.getFloor() != null) {
             floorInfos.get(e.getFloor()).getExhibits().put(e.getId(), e);
@@ -300,7 +298,7 @@ public class DataHandler extends Observable {
     }
 
     public List<Exhibit> getExhibitsOfFloor(Integer floor) {
-        return new ArrayList<>(floorInfos.get(floor).getExhibits().values());
+        return floorInfos.get(floor).getExhibitsList();
     }
 
     public Integer getExhibitsVersion() {

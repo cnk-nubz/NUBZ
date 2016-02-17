@@ -59,7 +59,7 @@ public abstract class ServerTask extends Task {
 
     private TFramedTransport openSocket(Integer tries) {
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
-        Log.i(LOG_TAG, "Opening socket");
+        Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
         while (tries > 0) {
             try {
                 socket.open();

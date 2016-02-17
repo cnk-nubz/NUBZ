@@ -35,11 +35,15 @@ public class FloorInfo {
         this.detailLevelRes = detailLevelRes;
     }
 
-    public Map<Integer, Exhibit> getExhibits() {
+    public List<Exhibit> getExhibitsList() {
         exhibitLock.lock();
-        Map<Integer, Exhibit> ret = exhibits;
+        List<Exhibit> ret = new ArrayList<>(exhibits.values());
         exhibitLock.unlock();
         return ret;
+    }
+
+    public Map<Integer, Exhibit> getExhibits() {
+        return exhibits;
     }
 
     public void setExhibits(Map<Integer, Exhibit> exhibits) {
@@ -62,5 +66,11 @@ public class FloorInfo {
 
     public void setDetailLevelsCount(Integer detailLevelsCount) {
         this.detailLevelsCount = detailLevelsCount;
+    }
+
+    public void removeExhibit(Integer id) {
+        exhibitLock.lock();
+        exhibits.remove(id);
+        exhibitLock.unlock();
     }
 }
