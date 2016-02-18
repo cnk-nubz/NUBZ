@@ -2,13 +2,13 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.ImageTiles;
-import com.cnk.communication.MapImageTilesRequest;
-import com.cnk.communication.MapImageTilesResponse;
-import com.cnk.communication.MapImagesRequest;
-import com.cnk.communication.MapImagesResponse;
-import com.cnk.communication.Server;
-import com.cnk.communication.Size;
+import com.cnk.communication.thrift.ImageTiles;
+import com.cnk.communication.thrift.MapImageTilesRequest;
+import com.cnk.communication.thrift.MapImageTilesResponse;
+import com.cnk.communication.thrift.NewMapImagesRequest;
+import com.cnk.communication.thrift.NewMapImagesResponse;
+import com.cnk.communication.thrift.Server;
+import com.cnk.communication.thrift.Size;
 import com.cnk.data.DataHandler;
 import com.cnk.data.FloorMap;
 import com.cnk.data.MapTiles;
@@ -32,33 +32,35 @@ public class MapDownloadTask extends ServerTask {
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
-        MapImagesResponse response = downloadUpdateStatus(client);
+        NewMapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
         downloadTilesUpdate(client, version);
         DataHandler.getInstance().notifyMapUpdated();
         Log.i(LOG_TAG, "Map update complete");
     }
 
-    private MapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
+    private NewMapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading maps to update");
-        MapImagesRequest request = new MapImagesRequest();
+        NewMapImagesRequest request = new NewMapImagesRequest();
         Integer version = DataHandler.getInstance().getMapVersion();
         if (version != null) {
             request.setAcquiredVersion(version);
         }
-        MapImagesResponse response = client.getMapImages(request);
+        NewMapImagesResponse response = client.getNewMapImages(request);
         Log.i(LOG_TAG, "Maps to update obtained");
         return response;
     }
 
     private void downloadTilesUpdate(Server.Client client, Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
+
         MapImageTilesResponse floor1Response = null;
         MapImageTilesResponse floor2Response = null;
         MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
         floor1Response = client.getMapImageTiles(requestFloor1);
         MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
         floor2Response = client.getMapImageTiles(requestFloor2);
+
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
@@ -78,7 +80,7 @@ public class MapDownloadTask extends ServerTask {
             Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(), tile.getScaledSize().getHeight());
             Resolution tileSize = new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
-            MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(tile.getTilesUrls()));
+            MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(toCopy));
             mapTiles.add(toAdd);
         }
 

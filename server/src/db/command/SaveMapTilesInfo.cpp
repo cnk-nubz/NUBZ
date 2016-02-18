@@ -1,36 +1,37 @@
+#include <db/db_info.h>
+#include <db/sql.h>
+
 #include "SaveMapTilesInfo.h"
-#include "db/db_info.h"
-#include "db/sql.h"
 
 namespace db {
-    namespace cmd {
-        SaveMapTilesInfo::SaveMapTilesInfo(const MapTilesInfo &mapTileInfo)
-            : mapTileInfo(mapTileInfo) {
-        }
+namespace cmd {
 
-        void SaveMapTilesInfo::operator()(db::DatabaseSession &session) {
-            session.execute(createInsert());
-        }
+SaveMapTilesInfo::SaveMapTilesInfo(const MapTilesInfo &mapTileInfo) : mapTileInfo(mapTileInfo) {
+}
 
-        std::string SaveMapTilesInfo::createInsert() const {
-            using namespace db::info::map_tiles_info;
-            using namespace db::sql;
+void SaveMapTilesInfo::operator()(db::DatabaseSession &session) {
+    session.execute(createInsert());
+}
 
-            return Sql::insertInto(tableName)
-                .what(colFloor,
-                      colZoomLevel,
-                      colRowsCount,
-                      colColumnsCount,
-                      colImgWidth,
-                      colImgHeight,
-                      colTileSize)
-                .values(mapTileInfo.floor,
-                        mapTileInfo.zoomLevel,
-                        mapTileInfo.rowsCount,
-                        mapTileInfo.colsCount,
-                        mapTileInfo.imgWidth,
-                        mapTileInfo.imgHeight,
-                        mapTileInfo.tileSize);
-        }
-    }
+std::string SaveMapTilesInfo::createInsert() const {
+    using namespace db::info::map_tiles_info;
+    using namespace db::sql;
+
+    return Sql::insertInto(tableName)
+        .what(colFloor,
+              colZoomLevel,
+              colRowsCount,
+              colColumnsCount,
+              colImgWidth,
+              colImgHeight,
+              colTileSize)
+        .values(mapTileInfo.floor,
+                mapTileInfo.zoomLevel,
+                mapTileInfo.rowsCount,
+                mapTileInfo.colsCount,
+                mapTileInfo.imgWidth,
+                mapTileInfo.imgHeight,
+                mapTileInfo.tileSize);
+}
+}
 }

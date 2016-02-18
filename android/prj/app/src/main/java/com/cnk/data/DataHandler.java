@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
-import com.cnk.communication.thrift.Experiment;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
@@ -24,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -72,7 +70,7 @@ public class DataHandler extends Observable {
     Integer exhibitsVersion;
     Integer mapVersion;
     private Raport currentRaport;
-    private ExperimentData experimentData;
+    private Experiment experiment;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -119,17 +117,17 @@ public class DataHandler extends Observable {
         return map;
     }
 
-    public void setNewExperimentData(ExperimentData newData) {
-        experimentData = newData;
+    public void setNewExperimentData(Experiment newData) {
+        experiment = newData;
         setChanged();
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
     public List<Action> getAllExhibitActions() {
-        return experimentData.getExhibitActions();
+        return experiment.getExhibitActions();
     }
     public List<Action> getAllBreakActions() {
-        return experimentData.getBreakActions();
+        return experiment.getBreakActions();
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else

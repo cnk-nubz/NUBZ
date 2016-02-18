@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 2.6)
 project (zpp-cnk)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16")
 
 find_package(Boost COMPONENTS system program_options filesystem REQUIRED)
 find_package(Thrift REQUIRED)
@@ -16,34 +18,27 @@ include_directories(${Boost_INCLUDE_DIR})
 include_directories(${Thrift_INCLUDE_DIR})
 include_directories(${PostgreSQL_INCLUDE_DIR})
 include_directories(${Pqxx_INCLUDE_DIR})
-include_directories(${ImageMagick_INCLUDE_DIRS})
+include_directories(SYSTEM ${ImageMagick_INCLUDE_DIRS})
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${Thrift_LIBRARY_DIRS})
 link_directories(${PostgreSQL_LIBRARY_DIRS})
 link_directories(${Pqxx_LIBRARY_DIRS})
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -std=c++11 -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16")
+add_subdirectory(src/utils)
+add_subdirectory(src/db)
+add_subdirectory(src/server)
 
 file(GLOB SOURCES
     src/*.cpp
     src/communication/*.cpp
-    src/command/*.cpp
-    src/external/*.cpp
-    src/image/*.cpp
-    src/utils/*.cpp
-    src/io/*.cpp
-    src/io/input/*.cpp
-    src/io/output/*.cpp
-    src/db/*.cpp
-    src/db/command/*.cpp
-    src/db/factory/*.cpp
-    src/db/struct/*.cpp
 )
 
 add_executable(main ${SOURCES})
 
-target_link_libraries(main
+target_link_libraries(
+    main
+    server
     ssl
     thrift
     thriftnb

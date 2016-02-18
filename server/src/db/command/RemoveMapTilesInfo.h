@@ -1,23 +1,23 @@
 #ifndef DB_CMD__REMOVE_TILES_INFO__H
 #define DB_CMD__REMOVE_TILES_INFO__H
 
-#include "db/DatabaseSession.h"
+#include <db/DatabaseSession.h>
 
 namespace db {
-    namespace cmd {
-        class RemoveMapTilesInfo {
-        public:
-            RemoveMapTilesInfo(std::int32_t floor);
-            ~RemoveMapTilesInfo() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
+class RemoveMapTilesInfo {
+public:
+    RemoveMapTilesInfo(std::int32_t floor);
 
-        private:
-            std::int32_t floor;
+    void operator()(DatabaseSession &session);
 
-            std::string createDelete() const;
-        };
-    }
+private:
+    std::int32_t floor;
+
+    std::string createDelete() const;
+};
+}
 }
 
 #endif

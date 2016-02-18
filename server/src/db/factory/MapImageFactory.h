@@ -3,22 +3,22 @@
 
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
-#include "db/struct/MapImage.h"
-#include "db/db_info.h"
+#include <db/struct/MapImage.h>
+#include <db/db_info.h>
 
 namespace db {
-    namespace factory {
-        struct MapImageFactory {
-            using Product = MapImage;
+namespace factory {
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
+struct MapImageFactory {
+    using Product = MapImage;
 
-            static const std::vector<std::string> &fieldsOrder() noexcept;
-        };
-    }
+    static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
+
+    static const std::vector<std::string> &fieldsOrder() noexcept;
+};
+}
 }
 
 #endif

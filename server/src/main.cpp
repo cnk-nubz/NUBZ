@@ -9,36 +9,38 @@
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 
-#include "external/easylogging++.h"
+#include <db/Database.h>
 
-#include "CommandHandler.h"
-#include "Config.h"
-#include "FileHelper.h"
-#include "db/Database.h"
-#include "command/GetMapImagesCommand.h"
-#include "command/GetMapImageTilesCommand.h"
+#include <utils/Config.h>
+#include <utils/log.h>
+
+#include <server/CommandHandler.h>
+#include <server/command/GetNewMapImagesCommand.h>
+#include <server/command/GetMapImageTilesCommand.h>
+#include <server/utils/FileHelper.h>
 
 INITIALIZE_EASYLOGGINGPP
 
-boost::optional<Config> parseArguments(int argc, char *argv[]);
+boost::optional<utils::Config> parseArguments(int argc, char *argv[]);
 void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
     srand((unsigned)time(NULL));
-    boost::optional<Config> cfg = parseArguments(argc, argv);
+    boost::optional<utils::Config> cfg = parseArguments(argc, argv);
     if (!cfg) {
         return 0;
     }
 
-    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
-    command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
-    command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
+    server::utils::FileHelper::configure(
+        cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
+    server::command::GetNewMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
+    server::command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
 
     db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
     runServer(cfg->serverPort, db);
 }
 
-boost::optional<Config> parseArguments(int argc, char *argv[]) {
+boost::optional<utils::Config> parseArguments(int argc, char *argv[]) {
     static const char *configFilePathArg = "cfg";
     static const char *helpArg = "help";
     namespace po = boost::program_options;
@@ -60,7 +62,7 @@ boost::optional<Config> parseArguments(int argc, char *argv[]) {
         }
 
         if (vm.count(configFilePathArg)) {
-            return Config(path);
+            return utils::Config(path);
         } else {
             std::cout << opts;
             return {};
@@ -78,7 +80,7 @@ void runServer(std::uint16_t port, db::Database &db) {
     using namespace apache::thrift::server;
     using namespace apache::thrift::concurrency;
 
-    boost::shared_ptr<CommandHandler> handler(new CommandHandler(db));
+    boost::shared_ptr<::server::CommandHandler> handler(new ::server::CommandHandler(db));
     boost::shared_ptr<TProcessor> processor(new communication::ServerProcessor(handler));
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
