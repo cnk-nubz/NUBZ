@@ -35,6 +35,7 @@ public class MapDownloadTask extends ServerTask {
         NewMapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
         downloadTilesUpdate(client, version);
+        DataHandler.getInstance().notifyMapUpdated();
         Log.i(LOG_TAG, "Map update complete");
     }
 
@@ -52,14 +53,18 @@ public class MapDownloadTask extends ServerTask {
 
     private void downloadTilesUpdate(Server.Client client, Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
+
+        MapImageTilesResponse floor1Response = null;
+        MapImageTilesResponse floor2Response = null;
         MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
-        MapImageTilesResponse floor1Response = client.getMapImageTiles(requestFloor1);
+        floor1Response = client.getMapImageTiles(requestFloor1);
         MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
-        MapImageTilesResponse floor2Response = client.getMapImageTiles(requestFloor2);
+        floor2Response = client.getMapImageTiles(requestFloor2);
+
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2);
+        DataHandler.getInstance().setMaps(version, floor1, floor2, 0);
     }
 
     private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {

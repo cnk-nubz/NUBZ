@@ -1,8 +1,10 @@
 package com.cnk.ui;
 
 import android.app.ActivityOptions;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -11,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.Pair;
@@ -30,7 +33,6 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
@@ -61,12 +63,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private MapState mapState;
     private LinearLayout layoutLoading, layoutMapMissing;
     private Integer currentFloorNum;
-    private NetworkHandler networkHandler;
     private RelativeLayout rlRootLayout;
     private RelativeLayout voidLayout;
     private Point lastClick;
     private ProgressDialog spinner;
     private ActionBarDrawerToggle drawerToggle;
+    private Integer openedDialogs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,16 +77,14 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "onCreate execution");
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
-        networkHandler = new NetworkHandler();
+        openedDialogs = 0;
 
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
-
         setViews();
         setActionBar();
         setSpinner();
-
-        networkHandler.downloadExperimentData();
+        NetworkHandler.getInstance().downloadExperimentData();
     }
 
     public void pauseClick(View view) {
@@ -206,7 +206,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             tileView.destroy();
         }
 
-        networkHandler.stopBgDownload();
+        NetworkHandler.getInstance().stopBgDownload();
 
         Log.i(LOG_TAG, "deleting from DataHandler observers list");
         DataHandler.getInstance().deleteObserver(this);
@@ -235,7 +235,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
 
     // Layout setting:
-    private void prepareTileView(final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
+    private void prepareTileView(final Integer floor, final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
         runOnUiThread(new Runnable() {
@@ -255,7 +255,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     ScaleData scale = scalesList.get(i);
                     Resolution res = tileSizes.get(i);
                     tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),
-                            res.getWidth(), res.getHeight());
+                                            res.getWidth(), res.getHeight());
                 }
 
                 tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
@@ -386,7 +386,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         mapState = new MapState(this);
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
-        networkHandler.startBgDownload();
+        NetworkHandler.getInstance().startBgDownload();
         spinner.dismiss();
     }
 
@@ -465,19 +465,30 @@ public class MapActivity extends AppCompatActivity implements Observer {
             mapState.currentMapSize = biggestResolution.getScaledRes();
             mapState.originalMapSize = DataHandler.getInstance().getOriginalResolution(floor);
 
+            if (detailLevels == null || biggestResolution == null ||
+                mapState.currentMapSize == null || mapState.originalMapSize == null) {
+                showAlert();
+            }
+
             LinkedList<ScaleData> ll = new LinkedList<>();
             for (int i = 0; i < detailLevels; i++) {
                 DetailLevelRes current = DataHandler.getInstance().getDetailLevelResolution(floor, i);
+                if (current == null) {
+                    showAlert();
+                }
                 ll.add(new ScaleData((float) current.getScaledRes().getWidth() / biggestResolution.getScaledRes().getWidth(), i));
             }
 
             ArrayList<Resolution> tileSizes = new ArrayList<>();
             for (int i = 0; i < detailLevels; i++) {
                 Resolution current = DataHandler.getInstance().getTileSize(floor, i);
+                if (current == null) {
+                    showAlert();
+                }
                 tileSizes.add(current);
             }
 
-            prepareTileView(ll, tileSizes);
+            prepareTileView(floor, ll, tileSizes);
             setLayout(true);
 
             addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
@@ -524,6 +535,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
+        Integer floorNum = 1;
         for (Exhibit e: exhibits) {
             posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                     mapState.originalMapSize.getWidth(),
@@ -546,15 +558,16 @@ public class MapActivity extends AppCompatActivity implements Observer {
             artv.setBackground(bcgDrawable);
 
             artv.setGravity(Gravity.CENTER);
+            artv.setMinTextSize(2f);
             artv.setTextSize(100f);
-            artv.setMaxLines(10);
+            artv.setSingleLine(false);
 
             tvLP = new RelativeLayout.LayoutParams(width, height);
             tvLP.setMargins(posX, posY, 0, 0);
 
             viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
 
-            es = new ExhibitSpot(e.getId(), e.getName(), artv);
+            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
             es.setHotSpotTapListener(exhibitsListener);
@@ -584,11 +597,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Private classes declarations:
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
+        private Integer listId;
         private String name;
         private AutoResizeTextView exhibitTextView;
 
-        public ExhibitSpot(Integer exhibitId, String name, AutoResizeTextView exhibitTextView) {
+        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
             super();
+            this.listId = listId;
             this.exhibitId = exhibitId;
             this.name = name;
             this.exhibitTextView = exhibitTextView;
@@ -605,6 +620,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public AutoResizeTextView getExhibitTextView() {
             return exhibitTextView;
         }
+
+        public Integer getListId() {
+            return listId;
+        }
     }
 
     private class MapState {
@@ -615,7 +634,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         Resolution currentMapSize, originalMapSize;
 
-        List<HotSpot> hotSpotsForFloor;
+        ArrayList<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
 
         AutoResizeTextView lastExhibitTextView;
@@ -625,47 +644,69 @@ public class MapActivity extends AppCompatActivity implements Observer {
     // Action listeners:
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
-        public void onHotSpotTap(HotSpot hotSpot, int x, int y) {
+        public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
-            Integer id = ((ExhibitSpot) hotSpot).getExhibitId();
+            if (openedDialogs == 0) {
+                openedDialogs++;
+                // only if exhibit is clicked first time
 
-            if (mapState.lastExhibitTextView != null) {
-                mapState.lastExhibitTextView
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                final Integer floorId = ((ExhibitSpot) hotSpot).listId;
+                showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
             }
-
-            mapState.lastExhibitTextView = ((ExhibitSpot) hotSpot).getExhibitTextView();
-            ((ExhibitSpot) hotSpot).getExhibitTextView()
-                    .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
-
-            showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), id);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                openedDialogs--;
+            }
+        });
+
         if (resultCode == RESULT_OK) {
-            ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            if (requestCode != BREAK_ID) {
+                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                if (mapState.lastExhibitTextView != null) {
+                    mapState.lastExhibitTextView
+                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                }
+                mapState.lastExhibitTextView = es.getExhibitTextView();
+                es.getExhibitTextView()
+                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+                mapState.exhibitsOverlay.invalidate();
+
+                ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            } else {
+                // TODO: after break
+            }
         }
     }
 
-    private void showExhibitDialog(boolean isBreak, String name, Integer id) {
-        ArrayList<String> actionStrings = new ArrayList<>();
-        List<Action> actions;
-        if (isBreak) {
-            actions = DataHandler.getInstance().getAllBreakActions();
-        } else {
-            actions = DataHandler.getInstance().getAllExhibitActions();
-        }
-        for (Action a : actions) {
-            actionStrings.add(a.getText());
-        }
+    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
         Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
-        exhibitWindowIntent.putStringArrayListExtra(ExhibitDialog.AVAILABLE_ACTIONS, actionStrings);
+        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
         ActivityOptions activityOptions =
-                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-        startActivityForResult(exhibitWindowIntent, id, activityOptions.toBundle());
+            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
+    }
+
+    private void showAlert() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(R.string.error);
+        alert.setMessage(R.string.MapIncompleteMessage);
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        alert.setCancelable(false);
+        alert.show();
     }
 }

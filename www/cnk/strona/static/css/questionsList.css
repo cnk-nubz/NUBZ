@@ -1,0 +1,21 @@
+#questionsListTable {
+  padding: 5px 2px 5px 2px;
+  table-layout:fixed;
+}
+
+#questionsListTable tr {
+  cursor: pointer;
+}
+
+.questionNameCell {
+  width: 70%;
+  white-space: nowrap;
+}
+
+.questionBadgeCell {
+  width: 30%;
+}
+
+.questionBadge {
+  text-align: center;
+}

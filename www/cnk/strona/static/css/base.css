@@ -13,26 +13,12 @@
   box-sizing: border-box;
 }
 
-body {
+body, html {
   overflow: hidden;
+  height: 100%;
+  width: 100%;
 }
 
 .modal {
   top: 95px;
-}
-
-.navbar a {
-  font-family: OpenSans-Semibold;
-  font-size: 14px;
-}
-
-/* end of redefining bootstrap classes */
-/* Redefining leaflet classes */
-.leaflet-top.leaflet-left, .leaflet-bottom.leaflet-left {
-  left: -46px;
-  z-index: 1030;
-}
-/* end of redefining leaflet classes */
-.nav-link {
-  cursor: pointer;
 }

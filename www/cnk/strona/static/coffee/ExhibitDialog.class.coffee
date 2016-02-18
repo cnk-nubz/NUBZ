@@ -45,7 +45,7 @@ root.ExhibitDialog = class ExhibitDialog
     floorOptions = @_appendOptionsGroup(floorLine, 10)
     @_appendOption(floorOptions, "dialogOption1", "0", @_floor is 0)
     @_appendOption(floorOptions, "dialogOption2", "1", @_floor is 1)
-    @_appendOption(floorOptions, "dialogOption3", "brak", @_floor is null)
+    @_appendOption(floorOptions, "dialogOption3", "brak", not @_floor?)
     ## configuration
     floorOptions.attr(
       role: "group"

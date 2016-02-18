@@ -3,12 +3,14 @@ package com.cnk.communication.task;
 import android.util.Log;
 
 import com.cnk.communication.thrift.CurrentExperimentResponse;
-import com.cnk.communication.thrift.Experiment;
 import com.cnk.communication.thrift.Server;
 import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.notificators.Notificator;
 
+import org.apache.thrift.TException;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +23,7 @@ public class ExperimentDataDownloadTask extends ServerTask {
     }
 
     @Override
-    protected void performInSession(Server.Client client) throws Exception {
+    protected void performInSession(Server.Client client) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading experiment");
         CurrentExperimentResponse thriftData = client.getCurrentExperiment();
         if (thriftData == null) {

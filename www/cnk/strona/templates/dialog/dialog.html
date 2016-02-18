@@ -1,0 +1,7 @@
+<div class="container-fluid" id="dialog">
+  <form class="form-horizontal" role="form">
+		{% for type, desc in data %}
+				{% include type with description=desc.items only %}
+		{% endfor %}
+	</form>
+</div>
