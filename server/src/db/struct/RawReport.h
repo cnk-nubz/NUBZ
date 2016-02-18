@@ -21,7 +21,12 @@ struct RawReport {
             boost::optional<std::string> answer;
         };
 
+        struct MultipleChoiceQuestionAnswer {
+            boost::optional<std::vector<std::int32_t>> choosenOptions;
+        };
+
         std::vector<SimpleQuestionAnswer> simpleQuestions;
+        std::vector<MultipleChoiceQuestionAnswer> multipleChoiceQuestions;
     };
 
     std::int32_t ID;

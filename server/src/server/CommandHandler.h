@@ -3,6 +3,8 @@
 
 #include <thrift/server/TServer.h>
 
+#include <utils/log.h>
+
 #include <db/Database.h>
 
 #include <communication/Server.h>
@@ -48,6 +50,12 @@ public:
         const communication::CreateSimpleQuestionRequest &request) override;
     virtual void getAllSimpleQuestions(
         std::vector<communication::SimpleQuestion> &response) override;
+
+    virtual void createMultipleChoiceQuestion(
+        communication::MultipleChoiceQuestion &response,
+        const communication::CreateMultipleChoiceQuestionRequest &request) override;
+    virtual void getAllMultipleChoiceQuestions(
+        std::vector<communication::MultipleChoiceQuestion> &response) override;
 
 private:
     db::Database &db;

@@ -2,6 +2,9 @@
 #define UTILS__FP_ALGORITHM__H
 
 #include <algorithm>
+#include <functional>
+
+using namespace std::placeholders;
 
 namespace utils {
 

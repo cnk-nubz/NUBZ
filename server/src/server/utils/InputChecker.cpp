@@ -1,5 +1,7 @@
 #include <unordered_set>
 
+#include <utils/fp_algorithm.h>
+
 #include <db/command/GetCounter.h>
 #include <db/command/GetMapImages.h>
 
@@ -34,8 +36,7 @@ bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y
 
 bool InputChecker::checkText(const std::string &text) {
     return text.length() &&
-           std::all_of(
-               text.begin(), text.end(), [](char c) { return std::isalpha(c) || isspace(c); });
+           ::utils::all_of(text, [](char c) { return std::isalpha(c) || isspace(c); });
 }
 }
 }

@@ -240,4 +240,35 @@ void CommandHandler::getAllSimpleQuestions(std::vector<communication::SimpleQues
     LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
+
+#pragma mark - MULTIPLE CHOICE QUESTIONS
+
+void CommandHandler::createMultipleChoiceQuestion(
+    communication::MultipleChoiceQuestion &response,
+    const communication::CreateMultipleChoiceQuestionRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() {
+        io::input::CreateMultipleChoiceQuestionRequest input(request);
+        io::MultipleChoiceQuestion output = command::CreateMultipleChoiceQuestionCommand{db}(input);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getAllMultipleChoiceQuestions(
+    std::vector<communication::MultipleChoiceQuestion> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto questions = command::GetAllMultipleChoiceQuestionsCommand{db}();
+        response = server::io::ioToThrift(questions);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
 }

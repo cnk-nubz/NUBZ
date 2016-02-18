@@ -42,14 +42,32 @@ io::SimpleQuestion toIO(const db::SimpleQuestion &simpleQuestion) {
     return res;
 }
 
+io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
+                                const std::vector<db::MultipleChoiceQuestionOption> &options) {
+    io::MultipleChoiceQuestion res;
+    res.ID = question.ID;
+    res.name = question.name;
+    res.question = question.question;
+    res.singleAnswer = question.singleAnswer;
+    ::utils::transform(options, res.options, [](const auto &o) { return toIO(o); });
+    return res;
+}
+
+io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &questionOption) {
+    io::MultipleChoiceQuestion::Option res;
+    res.ID = questionOption.ID;
+    res.text = questionOption.text;
+    return res;
+}
+
 db::RawReport toDB(const io::input::RawReport &report) {
     db::RawReport res;
     res.ID = report.ID;
     ::utils::transform(report.history, res.history, [](const auto &e) { return toDB(e); });
-    ::utils::transform(report.simpleQuestionsAnswersBefore,
+    ::utils::transform(report.answersBefore.simpleQuestionsAnswers,
                        res.surveyBefore.simpleQuestions,
                        [](const auto &e) { return toDB(e); });
-    ::utils::transform(report.simpleQuestionsAnswersAfter,
+    ::utils::transform(report.answersAfter.simpleQuestionsAnswers,
                        res.surveyAfter.simpleQuestions,
                        [](const auto &e) { return toDB(e); });
     return res;
@@ -64,7 +82,7 @@ db::RawReport::Event toDB(const io::input::RawReport::Event &event) {
 }
 
 db::RawReport::Survey::SimpleQuestionAnswer toDB(
-    const io::input::RawReport::SimpleQuestionAnswer &answer) {
+    const io::input::RawReport::SurveyAnswers::SimpleQuestionAnswer &answer) {
     db::RawReport::Survey::SimpleQuestionAnswer res;
     res.answer = answer.answer;
     return res;

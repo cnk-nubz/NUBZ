@@ -14,21 +14,15 @@
 const rapidjson::Value &getNode(const rapidjson::Document &root, const std::string &path);
 const rapidjson::Value &getNode(const rapidjson::Value &root, const std::string &path);
 
-std::int32_t parseInt(const rapidjson::Value &root, const std::string &path);
-std::string parseString(const rapidjson::Value &root, const std::string &path);
-
-boost::optional<std::int32_t> parseOptInt(const rapidjson::Value &root, const std::string &path);
-boost::optional<std::string> parseOptString(const rapidjson::Value &root, const std::string &path);
-
-rapidjson::Document parseJson(const std::string &str);
-std::string jsonToString(const rapidjson::Value &json);
-rapidjson::GenericStringRef<char> toStupidStringAdapter(const std::string &str);
+std::int32_t parseInt(const rapidjson::Value &json);
+std::string parseString(const rapidjson::Value &json);
+std::vector<std::int32_t> parseIntArray(const rapidjson::Value &json);
+std::vector<std::string> parseStringArray(const rapidjson::Value &json);
 
 template <class Parser>
-auto parseArray(const rapidjson::Value &json, Parser &&parser)
+auto parseArray(Parser &&parser, const rapidjson::Value &json)
     -> std::vector<std::result_of_t<Parser(const rapidjson::Value &)>> {
     assert(json.IsArray());
-
     std::vector<std::result_of_t<Parser(const rapidjson::Value &)>> result;
     for (rapidjson::SizeType i = 0; i < json.Size(); i++) {
         result.push_back(parser(json[i]));
@@ -36,8 +30,24 @@ auto parseArray(const rapidjson::Value &json, Parser &&parser)
     return result;
 }
 
-std::vector<std::int32_t> parseIntArray(const rapidjson::Value &json);
-std::vector<std::string> parseStringArray(const rapidjson::Value &json);
+rapidjson::Document parseJson(const std::string &str);
+std::string jsonToString(const rapidjson::Value &json);
+rapidjson::GenericStringRef<char> toStupidStringAdapter(const std::string &str);
+
+template <class Parser>
+auto parse(Parser &&parser, const rapidjson::Value &root, const std::string &path)
+    -> std::result_of_t<Parser(const rapidjson::Value &)> {
+    return parser(getNode(root, path));
+}
+
+template <class Parser>
+auto parseOpt(Parser &&parser, const rapidjson::Value &root, const std::string &path)
+    -> boost::optional<std::result_of_t<Parser(const rapidjson::Value &)>> {
+    if (!root.HasMember(path.c_str())) {
+        return {};
+    }
+    return parser(getNode(root, path));
+}
 
 // Translator = rapidjson::Value(const Raw &, rapidjson::Document::AllocatorType &)
 template <class Raw, class Translator>

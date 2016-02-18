@@ -22,10 +22,23 @@ struct RawReport {
         std::vector<std::int32_t> actions;
     };
 
-    struct SimpleQuestionAnswer {
-        SimpleQuestionAnswer(const communication::SimpleQuestionAnswer &thrift);
+    struct SurveyAnswers {
+        struct SimpleQuestionAnswer {
+            SimpleQuestionAnswer(const communication::SimpleQuestionAnswer &thrift);
 
-        boost::optional<std::string> answer;
+            boost::optional<std::string> answer;
+        };
+
+        struct MultipleChoiceQuestionAnswer {
+            MultipleChoiceQuestionAnswer(const communication::MultipleChoiceQuestionAnswer &thrift);
+
+            boost::optional<std::vector<std::int32_t>> choosenOptions;
+        };
+
+        SurveyAnswers(const communication::SurveyAnswers &thrift);
+
+        std::vector<SimpleQuestionAnswer> simpleQuestionsAnswers;
+        std::vector<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers;
     };
 
     RawReport(const communication::RawReport &thrift);
@@ -33,8 +46,8 @@ struct RawReport {
     std::int32_t experimentId;
     std::int32_t ID;
 
-    std::vector<SimpleQuestionAnswer> simpleQuestionsAnswersBefore;
-    std::vector<SimpleQuestionAnswer> simpleQuestionsAnswersAfter;
+    SurveyAnswers answersBefore;
+    SurveyAnswers answersAfter;
 
     std::vector<Event> history;
 };

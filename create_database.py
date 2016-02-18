@@ -16,6 +16,8 @@ cur.execute('DROP TABLE IF EXISTS actions')
 cur.execute('DROP TABLE IF EXISTS active_experiment')
 cur.execute('DROP TABLE IF EXISTS experiments')
 cur.execute('DROP TABLE IF EXISTS simple_questions')
+cur.execute('DROP TABLE IF EXISTS multiple_choice_question_options')
+cur.execute('DROP TABLE IF EXISTS multiple_choice_questions')
 
 ######### create
 cur.execute('''
@@ -90,6 +92,23 @@ cur.execute('''
 ''')
 
 cur.execute('''
+	CREATE TABLE multiple_choice_questions (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR NOT NULL,
+		question VARCHAR NOT NULL,
+		single_answer BOOLEAN NOT NULL
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE multiple_choice_question_options (
+		id SERIAL PRIMARY KEY,
+		question_id INT NOT NULL REFERENCES multiple_choice_questions(id) ON DELETE CASCADE,
+		text VARCHAR NOT NULL
+	)
+''')
+
+cur.execute('''
 	CREATE TABLE experiments (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
@@ -152,12 +171,14 @@ cur.execute('''
 				"actions": [5, 1, 4, 3, 7, 8],
 				"breakActions": [12, 9, 11],
 				"surveyBefore": {
-					"typesOrder": [0, 0],
-					"simpleQuestions": [2, 1]
+					"typesOrder": [0, 1, 0],
+					"simpleQuestions": [2, 1],
+					"multipleChoiceQuestions": [2]
 				},
 				"surveyAfter": {
-					"typesOrder": [0],
-					"simpleQuestions": [1]
+					"typesOrder": [0, 1, 1],
+					"simpleQuestions": [1],
+					"multipleChoiceQuestions": [1, 2]
 				}
 			}
 		')
@@ -199,12 +220,23 @@ cur.execute('''
 							"answer": "12345"
 						}, {
 						}
+					],
+					"multipleChoiceQuestions": [
+						{
+							"answer": [5, 6, 9, 12]
+						}
 					]
 				},
 				"surveyAfter": {
 					"simpleQuestions": [
 						{
 							"answer": "test answer for simple question 1"
+						}
+					],
+					"multipleChoiceQuestions": [
+						{
+							"answer": [2]
+						}, {
 						}
 					]
 				}
@@ -234,6 +266,29 @@ cur.execute('''
 	INSERT INTO simple_questions (name, question, number_answer) VALUES
 		('simple question 1 - str', 'test test test string answer', FALSE),
 		('simple question 2 - num', 'test test test num answer', TRUE)
+''')
+
+# multiple choice questions
+cur.execute('''
+	INSERT INTO multiple_choice_questions (name, question, single_answer) VALUES
+		('multiple choice question 1 - single', 'multiple choice question 1 - single ??', TRUE),
+		('multiple choice question 2 - multi', 'multiple choice question 2 - multi ??', FALSE)
+''')
+
+cur.execute('''
+	INSERT INTO multiple_choice_question_options (question_id, text) VALUES
+		(1, 'a'),
+		(1, 'b'),
+		(1, 'c'),
+		(1, 'd'),
+		(2, 'aa'),
+		(2, 'bb'),
+		(2, 'cc'),
+		(2, 'dd'),
+		(2, 'ee'),
+		(2, 'ff'),
+		(2, 'gg'),
+		(2, 'hh')
 ''')
 
 # current experiment
