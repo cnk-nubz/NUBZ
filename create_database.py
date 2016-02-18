@@ -173,12 +173,12 @@ cur.execute('''
 				"surveyBefore": {
 					"typesOrder": [0, 1, 0],
 					"simpleQuestions": [2, 1],
-					"multipleQuestions": [2]
+					"multipleChoiceQuestions": [2]
 				},
 				"surveyAfter": {
 					"typesOrder": [0, 1, 1],
 					"simpleQuestions": [1],
-					"multipleQuestions": [1, 2]
+					"multipleChoiceQuestions": [1, 2]
 				}
 			}
 		')
@@ -221,7 +221,7 @@ cur.execute('''
 						}, {
 						}
 					],
-					"multipleQuestions": [
+					"multipleChoiceQuestions": [
 						{
 							"answer": [5, 6, 9, 12]
 						}
@@ -233,7 +233,7 @@ cur.execute('''
 							"answer": "test answer for simple question 1"
 						}
 					],
-					"multipleQuestions": [
+					"multipleChoiceQuestions": [
 						{
 							"answer": [2]
 						}, {

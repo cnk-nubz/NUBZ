@@ -6,12 +6,10 @@ template <class T>
 std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec) {
     stream << "[";
     auto it = vec.begin();
-    while (true) {
+    while (it != vec.end()) {
         stream << *it;
         if (++it != vec.end()) {
             stream << ", ";
-        } else {
-            break;
         }
     }
     stream << "]";

@@ -29,9 +29,16 @@ struct RawReport {
             boost::optional<std::string> answer;
         };
 
+        struct MultipleChoiceQuestionAnswer {
+            MultipleChoiceQuestionAnswer(const communication::MultipleChoiceQuestionAnswer &thrift);
+
+            boost::optional<std::vector<std::int32_t>> choosenOptions;
+        };
+
         SurveyAnswers(const communication::SurveyAnswers &thrift);
 
         std::vector<SimpleQuestionAnswer> simpleQuestionsAnswers;
+        std::vector<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers;
     };
 
     RawReport(const communication::RawReport &thrift);

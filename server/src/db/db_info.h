@@ -95,6 +95,8 @@ static const std::string field1_SurveyAfter = "surveyAfter";
 
 static const std::string field10_SimpleQuestions = "simpleQuestions";
 static const std::string field100_Answer = "answer";
+static const std::string field11_MultipleChoiceQuestions = "multipleChoiceQuestions";
+static const std::string field110_Answer = "answer";
 
 }  // reports
 
@@ -113,6 +115,23 @@ static const std::string colName = "name";
 static const std::string colQuestion = "question";
 static const std::string colNumberAnswer = "number_answer";
 }  // simple questions
+
+namespace multiple_choice_questions {
+static const std::string tableName = "multiple_choice_questions";
+
+static const std::string colId = "id";
+static const std::string colName = "name";
+static const std::string colQuestion = "question";
+static const std::string colSingleAnswer = "single_answer";
+}  // multiple choice questions
+
+namespace multiple_choice_question_options {
+static const std::string tableName = "multiple_choice_question_options";
+
+static const std::string colId = "id";
+static const std::string colQuestionId = "question_id";
+static const std::string colText = "text";
+}  // multiple choice question options
 
 namespace experiments {
 namespace current {
@@ -135,6 +154,7 @@ static const std::string field2_SurveyBefore = "surveyBefore";
 static const std::string field2_SurveyAfter = "surveyAfter";
 static const std::string field20_TypesOrder = "typesOrder";
 static const std::string field21_SimpleQuestions = "simpleQuestions";
+static const std::string field22_MultipleChoiceQuestions = "multipleChoiceQuestions";
 }  // experiments
 }
 }

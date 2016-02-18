@@ -20,5 +20,7 @@
 
 #include "command/CreateSimpleQuestionCommand.h"
 #include "command/GetAllSimpleQuestionsCommand.h"
+#include "command/CreateMultipleChoiceQuestionCommand.h"
+#include "command/GetAllMultipleChoiceQuestionsCommand.h"
 
 #endif

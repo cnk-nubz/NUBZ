@@ -22,6 +22,8 @@ public:
     InputChecker(db::DatabaseSession &session);
     SRV_CMD_CP_MV(InputChecker);
 
+    static bool checkText(const std::string &text);
+
     bool checkReportId(std::int32_t reportId);
 
     template <class Container,
@@ -35,15 +37,12 @@ public:
     bool checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y, std::int32_t width,
                     std::int32_t height);
 
-    bool checkText(const std::string &text);
-
 private:
     db::DatabaseSession &session;
 };
 
 template <class Container, class>
 bool InputChecker::checkExhibitsIds(const Container &exhibitsIds) {
-    using std::placeholders::_1;
     std::unordered_set<std::int32_t> correctIds;
     for (const auto &exhibit : db::cmd::GetExhibits{}(session)) {
         correctIds.insert(exhibit.ID);
@@ -53,7 +52,6 @@ bool InputChecker::checkExhibitsIds(const Container &exhibitsIds) {
 
 template <class Container, class>
 bool InputChecker::checkActionsIds(const Container &actionsIds) {
-    using std::placeholders::_1;
     std::unordered_set<std::int32_t> correctIds;
     for (const auto &action : db::cmd::GetActions{}(session)) {
         correctIds.insert(action.ID);

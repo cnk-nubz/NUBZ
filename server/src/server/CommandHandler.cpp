@@ -249,7 +249,11 @@ void CommandHandler::createMultipleChoiceQuestion(
     LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        io::input::CreateMultipleChoiceQuestionRequest input(request);
+        io::MultipleChoiceQuestion output = command::CreateMultipleChoiceQuestionCommand{db}(input);
+        response = output.toThrift();
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
@@ -259,7 +263,10 @@ void CommandHandler::getAllMultipleChoiceQuestions(
     std::vector<communication::MultipleChoiceQuestion> &response) {
     LOG(INFO) << __func__ << " start";
 
-    withExceptionTranslation([&]() { LOG(INFO) << "not implemented"; });
+    withExceptionTranslation([&]() {
+        auto questions = command::GetAllMultipleChoiceQuestionsCommand{db}();
+        response = server::io::ioToThrift(questions);
+    });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";

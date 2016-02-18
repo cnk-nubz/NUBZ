@@ -32,6 +32,7 @@ communication::Survey Experiment::Survey::toThrift() const {
     communication::Survey thrift;
     ::utils::transform(questionsOrder, thrift.questionsOrder, QuestionTypeToThrift);
     thrift.simpleQuestions = ioToThrift(simpleQuestions);
+    thrift.multipleChoiceQuestions = ioToThrift(multipleChoiceQuestions);
     return thrift;
 }
 

@@ -47,19 +47,24 @@ namespace {
 Value createSurvey(const Experiment::Survey &survey, Document::AllocatorType &allocator) {
     static const auto keyOrder = toStupidStringAdapter(field20_TypesOrder);
     static const auto keySimpleQuestions = toStupidStringAdapter(field21_SimpleQuestions);
+    static const auto keyMultipleChoiceQuestions =
+        toStupidStringAdapter(field22_MultipleChoiceQuestions);
 
     auto jsonOrder = createTrivialArray(survey.order, allocator);
     auto jsonSimpleQuestions = createTrivialArray(survey.simpleQuestions, allocator);
+    auto jsonMultipleChoiceQuestions =
+        createTrivialArray(survey.multipleChoiceQuestions, allocator);
 
     Value json(kObjectType);
     json.AddMember(keyOrder, jsonOrder, allocator);
     json.AddMember(keySimpleQuestions, jsonSimpleQuestions, allocator);
+    json.AddMember(keyMultipleChoiceQuestions, jsonMultipleChoiceQuestions, allocator);
     return json;
 }
 }
 
 namespace {
-Experiment::Survey parseSurvey(const Value &jsonSurvey);
+Experiment::Survey parseSurvey(const Value &json);
 }
 
 Experiment ExperimentFactory::create(
@@ -72,23 +77,21 @@ Experiment ExperimentFactory::create(
     experiment.name = raw[1].value();
 
     Document json = parseJson(raw[2].value());
-    experiment.actions = parseIntArray(getNode(json, field0_Actions));
-    experiment.breakActions = parseIntArray(getNode(json, field1_BreakActions));
-    experiment.surveyBefore = parseSurvey(getNode(json, field2_SurveyBefore));
-    experiment.surveyAfter = parseSurvey(getNode(json, field2_SurveyAfter));
+    experiment.actions = parse(parseIntArray, json, field0_Actions);
+    experiment.breakActions = parse(parseIntArray, json, field1_BreakActions);
+    experiment.surveyBefore = parse(parseSurvey, json, field2_SurveyBefore);
+    experiment.surveyAfter = parse(parseSurvey, json, field2_SurveyAfter);
     return experiment;
 }
 
 namespace {
-Experiment::Survey parseSurvey(const Value &jsonSurvey) {
-    const auto &typesOrder = getNode(jsonSurvey, field20_TypesOrder);
-    const auto &simpleQuestions = getNode(jsonSurvey, field21_SimpleQuestions);
-
+Experiment::Survey parseSurvey(const Value &json) {
     Experiment::Survey survey;
-    for (auto t : parseIntArray(typesOrder)) {
+    for (auto t : parse(parseIntArray, json, field20_TypesOrder)) {
         survey.order.push_back(static_cast<Experiment::Survey::QuestionType>(t));
     }
-    survey.simpleQuestions = parseIntArray(simpleQuestions);
+    survey.simpleQuestions = parse(parseIntArray, json, field21_SimpleQuestions);
+    survey.multipleChoiceQuestions = parse(parseIntArray, json, field22_MultipleChoiceQuestions);
     return survey;
 }
 }

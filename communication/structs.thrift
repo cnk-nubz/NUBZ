@@ -150,7 +150,7 @@ struct CreateSimpleQuestionRequest {
 // Multiple Choice Question
 /////////////////////////////////////////////////
 
-struct MultipleChoiceQuestionOptions {
+struct MultipleChoiceQuestionOption {
 	1: i32 optionId,
 	2: string text,
 }
@@ -160,7 +160,7 @@ struct MultipleChoiceQuestion {
 	2: string name,
 	3: string question,
 	4: bool singleAnswer,
-	5: list<MultipleChoiceQuestionOptions> options,
+	5: list<MultipleChoiceQuestionOption> options,
 }
 
 struct MultipleChoiceQuestionAnswer {

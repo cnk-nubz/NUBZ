@@ -2,7 +2,8 @@
 #define SERVER_COMMAND__GET_ALL_SIMPLE_QUESTIONS_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/SimpleQuestion.h>
+
+#include <server/io/SimpleQuestion.h>
 
 #include "commons.h"
 

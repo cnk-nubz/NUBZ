@@ -8,6 +8,7 @@
 #include <communication/structs_types.h>
 
 #include <server/io/SimpleQuestion.h>
+#include <server/io/MultipleChoiceQuestion.h>
 #include <server/io/Action.h>
 
 namespace server {
@@ -30,6 +31,7 @@ struct Experiment {
 
         std::vector<QuestionType> questionsOrder;
         std::vector<SimpleQuestion> simpleQuestions;
+        std::vector<MultipleChoiceQuestion> multipleChoiceQuestions;
     };
 
     using thrift_t = communication::Experiment;

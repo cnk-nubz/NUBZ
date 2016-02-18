@@ -16,8 +16,10 @@ using namespace rapidjson;
 namespace {
 Value createEvent(const RawReport::Event &event, Document::AllocatorType &allocator);
 Value createSurvey(const RawReport::Survey &survey, Document::AllocatorType &allocator);
-Value createSimpleQuestionAnswer(const RawReport::Survey::SimpleQuestionAnswer &q,
+Value createSimpleQuestionAnswer(const RawReport::Survey::SimpleQuestionAnswer &ans,
                                  Document::AllocatorType &allocator);
+Value createMultipleChoiceQuestionAnswer(const RawReport::Survey::MultipleChoiceQuestionAnswer &ans,
+                                         Document::AllocatorType &allocator);
 }
 
 std::string RawReportFactory::createJson(const RawReport &report) {
@@ -59,12 +61,17 @@ Value createEvent(const RawReport::Event &event, Document::AllocatorType &alloca
 
 Value createSurvey(const RawReport::Survey &survey, Document::AllocatorType &allocator) {
     static const auto keySimpleQuestions = toStupidStringAdapter(field10_SimpleQuestions);
+    static const auto keyMultipleChoiceQuestions =
+        toStupidStringAdapter(field11_MultipleChoiceQuestions);
 
     auto jsonSimpleQuestions =
         createArray(survey.simpleQuestions, allocator, createSimpleQuestionAnswer);
+    auto jsonMultipleChoiceQuestions =
+        createArray(survey.multipleChoiceQuestions, allocator, createMultipleChoiceQuestionAnswer);
 
     Value json(kObjectType);
     json.AddMember(keySimpleQuestions, jsonSimpleQuestions, allocator);
+    json.AddMember(keyMultipleChoiceQuestions, jsonMultipleChoiceQuestions, allocator);
     return json;
 }
 
@@ -75,6 +82,18 @@ Value createSimpleQuestionAnswer(const RawReport::Survey::SimpleQuestionAnswer &
     Value json(kObjectType);
     if (ans.answer) {
         json.AddMember(keyAnswer, toStupidStringAdapter(ans.answer.value()), allocator);
+    }
+    return json;
+}
+
+Value createMultipleChoiceQuestionAnswer(const RawReport::Survey::MultipleChoiceQuestionAnswer &ans,
+                                         Document::AllocatorType &allocator) {
+    static const auto keyAnswer = toStupidStringAdapter(field110_Answer);
+
+    Value json(kObjectType);
+    if (ans.choosenOptions) {
+        auto jsonChoosenOptions = createTrivialArray(ans.choosenOptions.value(), allocator);
+        json.AddMember(keyAnswer, jsonChoosenOptions, allocator);
     }
     return json;
 }
@@ -89,9 +108,11 @@ namespace factory {
 namespace json {
 
 namespace {
-RawReport::Event parseEvent(const Value &jsonEvent);
-RawReport::Survey parseSurvey(const Value &jsonSurvey);
-RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &jsonSimpleQ);
+RawReport::Event parseEvent(const Value &json);
+RawReport::Survey parseSurvey(const Value &json);
+RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &json);
+RawReport::Survey::MultipleChoiceQuestionAnswer parseMultipleChoiceQuestionAnswer(
+    const Value &json);
 }
 
 const std::vector<std::string> &RawReportFactory::fieldsOrder() noexcept {
@@ -108,44 +129,52 @@ RawReport RawReportFactory::create(const std::vector<boost::optional<std::string
     assert(boost::conversion::try_lexical_convert(raw[1].value(), report.experimentID));
     Document json = parseJson(raw[2].value());
 
-    const auto &jsonHistory = getNode(json, field0_History);
-    const auto &jsonBeforeSurvey = getNode(json, field1_SurveyBefore);
-    const auto &jsonAfterSurvey = getNode(json, field1_SurveyAfter);
-
-    report.history = parseArray(jsonHistory, parseEvent);
-    report.surveyBefore = parseSurvey(jsonBeforeSurvey);
-    report.surveyAfter = parseSurvey(jsonAfterSurvey);
+    report.history = parseArray(parseEvent, getNode(json, field0_History));
+    report.surveyBefore = parse(parseSurvey, json, field1_SurveyBefore);
+    report.surveyAfter = parse(parseSurvey, json, field1_SurveyAfter);
 
     return report;
 }
 
 namespace {
-RawReport::Event parseEvent(const Value &jsonEvent) {
-    assert(jsonEvent.IsObject());
+RawReport::Event parseEvent(const Value &json) {
+    assert(json.IsObject());
 
     RawReport::Event event;
-    event.durationInSecs = parseInt(jsonEvent, field01_DurationInSecs);
-    event.actions = parseIntArray(getNode(jsonEvent, field02_Actions));
-    event.exhibitId = parseOptInt(jsonEvent, field00_ExhibitId);
+    event.durationInSecs = parse(parseInt, json, field01_DurationInSecs);
+    event.actions = parse(parseIntArray, json, field02_Actions);
+    event.exhibitId = parseOpt(parseInt, json, field00_ExhibitId);
     return event;
 }
 
-RawReport::Survey parseSurvey(const Value &jsonSurvey) {
-    assert(jsonSurvey.IsObject());
+RawReport::Survey parseSurvey(const Value &json) {
+    assert(json.IsObject());
 
-    const auto &simpleQuestions = getNode(jsonSurvey, field10_SimpleQuestions);
+    const auto &jsonSimpleQuestions = getNode(json, field10_SimpleQuestions);
+    const auto &jsonMultipleChoiceQuestions = getNode(json, field11_MultipleChoiceQuestions);
 
     RawReport::Survey survey;
-    survey.simpleQuestions = parseArray(simpleQuestions, parseSimpleQuestionAnswer);
+    survey.simpleQuestions = parseArray(parseSimpleQuestionAnswer, jsonSimpleQuestions);
+    survey.multipleChoiceQuestions =
+        parseArray(parseMultipleChoiceQuestionAnswer, jsonMultipleChoiceQuestions);
     return survey;
 }
 
-RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &jsonSimpleQ) {
-    assert(jsonSimpleQ.IsObject());
+RawReport::Survey::SimpleQuestionAnswer parseSimpleQuestionAnswer(const Value &json) {
+    assert(json.IsObject());
 
     RawReport::Survey::SimpleQuestionAnswer sQ;
-    sQ.answer = parseOptString(jsonSimpleQ, field100_Answer);
+    sQ.answer = parseOpt(parseString, json, field100_Answer);
     return sQ;
+}
+
+RawReport::Survey::MultipleChoiceQuestionAnswer parseMultipleChoiceQuestionAnswer(
+    const Value &json) {
+    assert(json.IsObject());
+
+    RawReport::Survey::MultipleChoiceQuestionAnswer mcQ;
+    mcQ.choosenOptions = parseOpt(parseIntArray, json, field110_Answer);
+    return mcQ;
 }
 }
 }

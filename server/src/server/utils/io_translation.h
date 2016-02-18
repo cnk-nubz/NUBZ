@@ -6,11 +6,14 @@
 #include <db/struct/MapFrame.h>
 #include <db/struct/RawReport.h>
 #include <db/struct/SimpleQuestion.h>
+#include <db/struct/MultipleChoiceQuestion.h>
+#include <db/struct/MultipleChoiceQuestionOption.h>
 
 #include <server/io/Action.h>
 #include <server/io/Exhibit.h>
 #include <server/io/MapFrame.h>
 #include <server/io/SimpleQuestion.h>
+#include <server/io/MultipleChoiceQuestion.h>
 #include <server/io/input/RawReport.h>
 
 namespace server {
@@ -19,7 +22,10 @@ namespace utils {
 io::Action toIO(const db::Action &action);
 io::Exhibit toIO(const db::Exhibit &exhibit);
 io::MapFrame toIO(const db::MapFrame &mapFrame);
-io::SimpleQuestion toIO(const db::SimpleQuestion &simpleQuestion);
+io::SimpleQuestion toIO(const db::SimpleQuestion &question);
+io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
+                                const std::vector<db::MultipleChoiceQuestionOption> &options);
+io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &option);
 
 db::RawReport toDB(const io::input::RawReport &report);
 db::RawReport::Event toDB(const io::input::RawReport::Event &event);

@@ -4,8 +4,8 @@
 #include <db/command/SaveRawReport.h>
 
 #include <server/io/InvalidInput.h>
+#include <server/io/utils.h>
 #include <server/utils/InputChecker.h>
-#include <server/utils/ReportChecker.h>
 #include <server/utils/io_translation.h>
 
 #include "SaveRawReportCommand.h"
@@ -32,9 +32,14 @@ void SaveRawReportCommand::operator()(const io::input::RawReport &input) {
 
 io::input::RawReport SaveRawReportCommand::removeDuplicatedIds(io::input::RawReport input) const {
     for (auto &event : input.history) {
-        std::sort(event.actions.begin(), event.actions.end());
-        auto newEnd = std::unique(event.actions.begin(), event.actions.end());
-        event.actions.resize(newEnd - event.actions.begin());
+        server::io::removeDuplicatedIds(event.actions);
+    }
+    for (auto *answers : {&input.answersBefore, &input.answersAfter}) {
+        for (auto &multipleChoiceAnswer : answers->multipleChoiceQuestionsAnswers) {
+            if (multipleChoiceAnswer.choosenOptions) {
+                server::io::removeDuplicatedIds(multipleChoiceAnswer.choosenOptions.value());
+            }
+        }
     }
     return input;
 }
@@ -76,15 +81,50 @@ void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
         throw io::InvalidInput("incorrect break action");
     }
     if (!reportChecker.checkQuestionsBeforeCount(
-            input.answersBefore.simpleQuestionsAnswers.size())) {
-        throw io::InvalidInput("incorrect number of questions answer in survey before");
+            input.answersBefore.simpleQuestionsAnswers.size(),
+            input.answersBefore.multipleChoiceQuestionsAnswers.size())) {
+        throw io::InvalidInput("incorrect number of questions answers in survey before");
     }
     if (!reportChecker.checkQuestionsBeforeCount(
-            input.answersAfter.simpleQuestionsAnswers.size())) {
-        throw io::InvalidInput("incorrect number of questions answer in survey after");
+            input.answersAfter.simpleQuestionsAnswers.size(),
+            input.answersAfter.multipleChoiceQuestionsAnswers.size())) {
+        throw io::InvalidInput("incorrect number of questions answers in survey after");
     }
+
+    validateAnswers(
+        reportChecker, input.answersBefore, reportChecker.loadedExperiment().surveyBefore);
+    validateAnswers(
+        reportChecker, input.answersAfter, reportChecker.loadedExperiment().surveyAfter);
+
     if (!checker.checkExhibitsIds(exhibits)) {
         throw io::InvalidInput("incorrect exhibit ID");
+    }
+}
+
+void SaveRawReportCommand::validateAnswers(const utils::ReportChecker &reportChecker,
+                                           const io::input::RawReport::SurveyAnswers &answers,
+                                           const db::Experiment::Survey &survey) const {
+    {
+        auto questionIt = survey.simpleQuestions.begin();
+        for (const auto &ans : answers.simpleQuestionsAnswers) {
+            if (ans.answer &&
+                !reportChecker.checkSimpleQuestionAnswer(*questionIt, ans.answer.value())) {
+                throw io::InvalidInput("incorrect answer for simple question");
+            }
+            ++questionIt;
+        }
+    }
+
+    {
+        auto questionIt = survey.multipleChoiceQuestions.begin();
+        for (const auto &ans : answers.multipleChoiceQuestionsAnswers) {
+            const auto &options = ans.choosenOptions;
+            if (options &&
+                !reportChecker.checkMultipleChoiceQuestionAnswer(*questionIt, options.value())) {
+                throw io::InvalidInput("incorrect answer for multiple choice question");
+            }
+            ++questionIt;
+        }
     }
 }
 }

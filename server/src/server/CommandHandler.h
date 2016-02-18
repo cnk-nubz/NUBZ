@@ -3,6 +3,8 @@
 
 #include <thrift/server/TServer.h>
 
+#include <utils/log.h>
+
 #include <db/Database.h>
 
 #include <communication/Server.h>

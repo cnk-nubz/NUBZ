@@ -42,6 +42,24 @@ io::SimpleQuestion toIO(const db::SimpleQuestion &simpleQuestion) {
     return res;
 }
 
+io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
+                                const std::vector<db::MultipleChoiceQuestionOption> &options) {
+    io::MultipleChoiceQuestion res;
+    res.ID = question.ID;
+    res.name = question.name;
+    res.question = question.question;
+    res.singleAnswer = question.singleAnswer;
+    ::utils::transform(options, res.options, [](const auto &o) { return toIO(o); });
+    return res;
+}
+
+io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &questionOption) {
+    io::MultipleChoiceQuestion::Option res;
+    res.ID = questionOption.ID;
+    res.text = questionOption.text;
+    return res;
+}
+
 db::RawReport toDB(const io::input::RawReport &report) {
     db::RawReport res;
     res.ID = report.ID;

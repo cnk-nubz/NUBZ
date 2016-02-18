@@ -15,7 +15,7 @@ RawReport::RawReport(const communication::RawReport &thrift)
 }
 
 RawReport::Event::Event(const communication::RawReportEvent &thrift)
-    : actions(thrift.actions), durationInSecs(thrift.durationInSecs) {
+    : durationInSecs(thrift.durationInSecs), actions(thrift.actions) {
     if (thrift.__isset.exhibitId) {
         exhibitId = thrift.exhibitId;
     }
@@ -31,6 +31,13 @@ RawReport::SurveyAnswers::SimpleQuestionAnswer::SimpleQuestionAnswer(
     const communication::SimpleQuestionAnswer &thrift) {
     if (thrift.__isset.answer) {
         answer = thrift.answer;
+    }
+}
+
+RawReport::SurveyAnswers::MultipleChoiceQuestionAnswer::MultipleChoiceQuestionAnswer(
+    const communication::MultipleChoiceQuestionAnswer &thrift) {
+    if (thrift.__isset.choosenOptions) {
+        choosenOptions = thrift.choosenOptions;
     }
 }
 }
