@@ -2,10 +2,10 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.Exhibit;
-import com.cnk.communication.ExhibitsRequest;
-import com.cnk.communication.ExhibitsResponse;
-import com.cnk.communication.Server;
+import com.cnk.communication.thrift.Exhibit;
+import com.cnk.communication.thrift.NewExhibitsRequest;
+import com.cnk.communication.thrift.NewExhibitsResponse;
+import com.cnk.communication.thrift.Server;
 import com.cnk.data.DataHandler;
 import com.cnk.notificators.Notificator;
 
@@ -25,17 +25,17 @@ public class ExhibitDownloadTask extends ServerTask {
 
     protected void performInSession(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading exhibits");
-        ExhibitsRequest request = new ExhibitsRequest();
+        NewExhibitsRequest request = new NewExhibitsRequest();
         Integer version = DataHandler.getInstance().getExhibitsVersion();
         if (version != null) {
             request.setAcquiredVersion(version);
         }
-        ExhibitsResponse response = client.getExhibits(request);
+        NewExhibitsResponse response = client.getNewExhibits(request);
         updateDataHandler(response);
         Log.i(LOG_TAG, "Exhibits downloaded");
     }
 
-    private void updateDataHandler(ExhibitsResponse response) {
+    private void updateDataHandler(NewExhibitsResponse response) {
         Integer version = response.getVersion();
         Map<Integer, Exhibit> exhibits = response.getExhibits();
 

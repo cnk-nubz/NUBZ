@@ -3,22 +3,22 @@
 
 #include <vector>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
-#include "db/struct/Action.h"
-#include "db/db_info.h"
+#include <db/struct/Action.h>
+#include <db/db_info.h>
 
 namespace db {
-    namespace factory {
-        struct ActionFactory {
-            using Product = Action;
+namespace factory {
 
-            static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
+struct ActionFactory {
+    using Product = Action;
 
-            static const std::vector<std::string> &fieldsOrder() noexcept;
-        };
-    }
+    static Product create(const std::vector<boost::optional<std::string>> &raw) noexcept;
+
+    static const std::vector<std::string> &fieldsOrder() noexcept;
+};
+}
 }
 
 #endif

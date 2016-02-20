@@ -2,20 +2,23 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.Server;
+import com.cnk.communication.thrift.Server;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 
+import java.io.IOException;
+
 public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
     protected long delay = 1;
-    private static final String SEND_ADDRESS = "zpp.dns1.us";
+    private static final String SEND_ADDRESS = "192.168.1.102";
     private static final int SEND_PORT = 9090;
 
     protected Notificator notificator;
@@ -52,11 +55,11 @@ public abstract class ServerTask extends Task {
 
     }
 
-    protected abstract void performInSession(Server.Client client) throws Exception;
+    protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
     private TFramedTransport openSocket(Integer tries) {
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
-        Log.i(LOG_TAG, "Opening socket");
+        Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
         while (tries > 0) {
             try {
                 socket.open();

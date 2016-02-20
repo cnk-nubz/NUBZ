@@ -5,12 +5,10 @@
 #include <string>
 
 namespace db {
-    struct Action {
-        std::int32_t ID;
-        std::string text;
-        bool duringBreak;
-        bool inCurrentExperiment;
-    };
+struct Action {
+    std::int32_t ID;
+    std::string text;
+};
 }
 
 #endif

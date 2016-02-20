@@ -1,21 +1,23 @@
+#include <db/db_info.h>
+#include <db/sql.h>
+
 #include "RemoveMapTiles.h"
-#include "db/db_info.h"
-#include "db/sql.h"
 
 namespace db {
-    namespace cmd {
-        RemoveMapTiles::RemoveMapTiles(std::int32_t floor) : floor(floor) {
-        }
+namespace cmd {
 
-        void RemoveMapTiles::operator()(db::DatabaseSession &session) {
-            session.execute(createDelete());
-        }
+RemoveMapTiles::RemoveMapTiles(std::int32_t floor) : floor(floor) {
+}
 
-        std::string RemoveMapTiles::createDelete() const {
-            using namespace db::info::map_tiles;
-            using namespace db::sql;
+void RemoveMapTiles::operator()(db::DatabaseSession &session) {
+    session.execute(createDelete());
+}
 
-            return Sql::deleteFrom(tableName).where(C(colFloor) == floor);
-        }
-    }
+std::string RemoveMapTiles::createDelete() const {
+    using namespace db::info::map_tiles;
+    using namespace db::sql;
+
+    return Sql::deleteFrom(tableName).where(C(colFloor) == floor);
+}
+}
 }

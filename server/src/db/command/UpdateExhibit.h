@@ -3,24 +3,24 @@
 
 #include <boost/optional.hpp>
 
-#include "db/DatabaseSession.h"
-#include "db/struct/Exhibit.h"
+#include <db/DatabaseSession.h>
+#include <db/struct/Exhibit.h>
 
 namespace db {
-    namespace cmd {
-        class UpdateExhibit {
-        public:
-            UpdateExhibit(const Exhibit &exhibit);
-            ~UpdateExhibit() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
+class UpdateExhibit {
+public:
+    UpdateExhibit(const Exhibit &exhibit);
 
-        private:
-            const Exhibit exhibit;
+    void operator()(DatabaseSession &session);
 
-            std::string createUpdate() const;
-        };
-    }
+private:
+    const Exhibit exhibit;
+
+    std::string createUpdate() const;
+};
+}
 }
 
 #endif

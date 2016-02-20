@@ -23,16 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class DataHandler extends Observable {
     public enum Item {
-        FLOOR_0_MAP_CHANGED("Map changed 0"),
-        FLOOR_0_MAP_CHANGING("Map changing 0"),
-        FLOOR_1_MAP_CHANGED("Map changed 1"),
-        FLOOR_1_MAP_CHANGING("Map changing 1"),
-        BOTH_FLOORS_MAP_CHANGED("Map changed both"),
-        BOTH_FLOORS_MAP_CHANGING("Map changing both"),
         MAP_UPDATE_COMPLETED("Map update completed"),
         EXPERIMENT_DATA("Experiment data"),
         EXHIBITS("Exhibits"),
@@ -64,20 +57,20 @@ public class DataHandler extends Observable {
     private static final String LOG_TAG = "DataHandler";
     private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
     private static final String RAPORT_DIRECTORY = "raports/";
-    private static final String MAP_DIRECTORY = "maps/";
-    private static final String FLOOR1_DIRECTORY = "floor0/";
-    private static final String FLOOR2_DIRECTORY = "floor1/";
-    private static final String FLOOR_DIRECTORY_PREFIX = "floor";
+    private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
-
-    private final Map<Integer, String> cachedTileAdresses;
+    private static final Integer MAX_TRIES = 3;
 
     private static DataHandler instance;
     private DatabaseHelper dbHelper;
+
+    private List<FloorInfo> floorInfos;
+    Integer exhibitsVersion;
+    Integer mapVersion;
     private Raport currentRaport;
-    private ExperimentData experimentData;
+    private Experiment experiment;
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -91,44 +84,94 @@ public class DataHandler extends Observable {
     }
 
     private DataHandler() {
-        cachedTileAdresses = new ConcurrentHashMap<>();
+        floorInfos = new ArrayList<>();
+        mapVersion = null;
+        exhibitsVersion = null;
     }
 
-    public void setNewExperimentData(ExperimentData newData) {
-        experimentData = newData;
+    public void loadDbData() {
+        exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
+        mapVersion = dbHelper.getVersion(Version.Item.MAP);
+        floorInfos.clear();
+        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            FloorInfo currentFloor = new FloorInfo();
+            currentFloor.setExhibits(exhibitListToMap(dbHelper.getAllExhibitsForFloor(floor)));
+            currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
+            ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
+            ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
+            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount(); detailLevel++) {
+                detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
+                mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));
+            }
+            currentFloor.setDetailLevelRes(detailLevelRes);
+            currentFloor.setMapTilesSizes(mapTileInfos);
+            floorInfos.add(currentFloor);
+        }
+    }
+
+    private Map<Integer, Exhibit> exhibitListToMap(List<Exhibit> exhibitList) {
+        Map<Integer, Exhibit> map = new HashMap<>();
+        for (Exhibit e : exhibitList) {
+            map.put(e.getId(), e);
+        }
+        return map;
+    }
+
+    public void setNewExperimentData(Experiment newData) {
+        experiment = newData;
         setChanged();
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
     public List<Action> getAllExhibitActions() {
-        return experimentData.getExhibitActions();
+        return experiment.getExhibitActions();
     }
     public List<Action> getAllBreakActions() {
-        return experimentData.getBreakActions();
+        return experiment.getBreakActions();
     }
 
     // only creates new database entry and file for new raport which is not used anywhere else
-    public void startNewRaport() throws IOException {
+    public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId);
-        String path = saveRaport(currentRaport);
+        String path = "";
+        try {
+            path = saveRaport(currentRaport);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in startNewRaport");
+            throw new RuntimeException("Cannot start new raport");
+        }
+
         dbHelper.setRaportFile(newId, path);
     }
 
     // only modifies file of raport in progress, which is not used anywhere else at the time
-    public void addEventToRaport(RaportEvent event) throws IOException {
-        currentRaport.addEvent(event);
-        saveRaport(currentRaport);
+    public void addEventToRaport(RaportEvent event, int tryNo) {
+        if (tryNo == 0) {
+            currentRaport.addEvent(event);
+        }
+        try {
+            saveRaport(currentRaport);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(LOG_TAG, "IOException in addEventToRaport");
+            if (tryNo > MAX_TRIES) {
+                throw new RuntimeException("Cannot add event to raport");
+            } else {
+                addEventToRaport(event, tryNo + 1);
+            }
+        }
+
     }
 
     // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
-    public void markRaportAsReady() throws IOException {
-        saveRaport(currentRaport);
+    public void markRaportAsReady(int tryNo) {
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
     }
 
-    // only modifies files ready to send which are used by one thread - uploading raports
+    // only uses files ready to send which are used by one thread - uploading raports
     public Map<Raport, Integer> getAllReadyRaports() {
         List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
         Map<Raport, Integer> raportsToSend = new HashMap<>();
@@ -157,44 +200,17 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
-        setChanged();
-
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
-
-        if (floor0Changed && floor1Changed) {
-            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGING);
-        } else if (floor0Changed) {
-            notifyObservers(Item.FLOOR_0_MAP_CHANGING);
-        } else if (floor1Changed) {
-            notifyObservers(Item.FLOOR_1_MAP_CHANGING);
+        if (floor0Changed || floor1Changed) {
+            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         }
-
-        if (floor0Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                    + TMP + Consts.FLOOR1.toString(), FLOOR1_DIRECTORY);
-        }
-        if (floor1Changed) {
-            FileHandler.getInstance().renameFile(DATA_PATH + MAP_DIRECTORY + FLOOR_DIRECTORY_PREFIX
-                            + TMP + Consts.FLOOR2.toString(), FLOOR2_DIRECTORY);
-        }
-
-        cachedTileAdresses.clear();
-
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor0, floor1);
+        loadDbData();
         setChanged();
-
-        if (floor0Changed && floor1Changed) {
-            notifyObservers(Item.BOTH_FLOORS_MAP_CHANGED);
-        } else if (floor0Changed) {
-            notifyObservers(Item.FLOOR_0_MAP_CHANGED);
-        } else if (floor1Changed) {
-            notifyObservers(Item.FLOOR_1_MAP_CHANGED);
-        }
-
         notifyMapUpdated();
 
         Log.i(LOG_TAG, "New maps set");
@@ -205,34 +221,9 @@ public class DataHandler extends Observable {
         notifyObservers(Item.MAP_UPDATE_COMPLETED);
     }
 
-    private Integer getTileCode(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        Integer code = 0;
-        code += column;
-        code += row * 1000;
-        code += detailLevel * 1000 * 1000;
-        code += floor * 10 * 1000 * 1000;
-
-        return code;
-    }
-
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        String tileFilename = null;
-        Integer tileCode = getTileCode(floor, detailLevel, row, column);
-
-        tileFilename = cachedTileAdresses.get(tileCode);
-
-        if (tileFilename == null) {
-            tileFilename = dbHelper.getMapTileFileLocation(floor, detailLevel, row, column);
-
-            if (tileFilename == null) {
-                return null;
-            }
-
-            cachedTileAdresses.put(tileCode, tileFilename);
-        }
-
-
-
+        String tileFilename = getTileFilename(row, column, floor, detailLevel);
+        tileFilename = DATA_PATH + MAP_DIRECTORY + "/" + tileFilename;
         Bitmap bmp = null;
         InputStream in = null;
         try {
@@ -254,32 +245,27 @@ public class DataHandler extends Observable {
     }
 
     public Boolean mapForFloorExists(Integer floor) {
-        boolean exists = dbHelper.getDetailLevelsForFloor(floor) != null;
-        return exists;
+        return floorInfos.get(floor).getDetailLevelsCount() > 0;
     }
 
     public Integer getDetailLevelsCountForFloor(Integer floor) {
-        Integer detailLevels = dbHelper.getDetailLevelsForFloor(floor);
-        return detailLevels;
+        return floorInfos.get(floor).getDetailLevelsCount();
     }
 
     public Resolution getOriginalResolution(Integer floor) {
-        Resolution originalRes = dbHelper.getDetailLevelRes(floor, 1).getOriginalRes();
-        return originalRes;
+        return floorInfos.get(floor).getDetailLevelRes().get(0).getOriginalRes();
     }
 
     public Integer getMapVersion() {
-        Integer version = dbHelper.getVersion(Version.Item.MAP);
-        return version;
+        return mapVersion;
     }
 
     public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        DetailLevelRes res = dbHelper.getDetailLevelRes(floor, detailLevel);
-        return res;
+        return floorInfos.get(floor).getDetailLevelRes().get(detailLevel);
     }
 
     public Resolution getTileSize(Integer floor, Integer detailLevel) {
-        MapTileInfo size = dbHelper.getMapTileInfo(floor, detailLevel);
+        MapTileInfo size = floorInfos.get(floor).getMapTilesSizes().get(detailLevel);
         return size != null ? size.getTileSize() : null;
     }
 
@@ -287,39 +273,48 @@ public class DataHandler extends Observable {
         if (exhibits.isEmpty()) {
             return;
         }
-
         dbHelper.addOrUpdateExhibits(version, exhibits);
+        exhibitsVersion = version;
+        updateExhibits(exhibits);
         setChanged();
         notifyObservers(Item.EXHIBITS);
     }
 
-    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
-        return dbHelper.getAllExhibitsForFloor(floor);
+    private void updateExhibits(List<Exhibit> newExhibits) {
+        for (Exhibit newExhibit : newExhibits) {
+            findAndChangeExhibit(newExhibit);
+        }
     }
 
-    public Exhibit getExhibit(Integer id) {
-        return dbHelper.getExhibit(id);
+    private void findAndChangeExhibit(Exhibit e) {
+        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            floorInfos.get(floor).removeExhibit(e.getId());
+        }
+        if (e.getFloor() != null) {
+            floorInfos.get(e.getFloor()).addExhibit(e);
+        }
+    }
+
+    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
+        return floorInfos.get(floor).getExhibitsList();
     }
 
     public Integer getExhibitsVersion() {
-        return dbHelper.getVersion(Version.Item.EXHIBITS);
+        return exhibitsVersion;
     }
 
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = DATA_PATH + MAP_DIRECTORY +
-                FLOOR_DIRECTORY_PREFIX + floorNo.toString() + "/"
-                + detailLevel.toString() + "/";
-        return dir + getTileFilename(x, y);
+        String dir = DATA_PATH + MAP_DIRECTORY;
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
     public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = DATA_PATH + MAP_DIRECTORY +
-                FLOOR_DIRECTORY_PREFIX + TMP + floorNo.toString() + "/" + detailLevel.toString() + "/";
-        return dir + getTileFilename(x, y);
+        String dir = DATA_PATH + MAP_DIRECTORY + TMP + "/";
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
-    private String getTileFilename(Integer x, Integer y) {
-        return TILE_FILE_PREFIX + x.toString() + "_" + y.toString();
+    private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
+        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" + x.toString() + "_" + y.toString();
     }
 
     private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
@@ -347,9 +342,11 @@ public class DataHandler extends Observable {
         String dir = DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
         String tmpFile = dir + TMP;
+        String realFile = "";
         FileHandler.getInstance().saveSerializable(raport, tmpFile);
-        String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
+        realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
         FileHandler.getInstance().renameFile(tmpFile, realFile);
+
         return dir + realFile;
     }
 }

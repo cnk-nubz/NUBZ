@@ -1,7 +1,5 @@
 package com.cnk.database.realm;
 
-import com.cnk.data.Resolution;
-
 import io.realm.RealmObject;
 
 

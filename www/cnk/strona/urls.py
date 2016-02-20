@@ -19,5 +19,8 @@ urlpatterns = [
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
     url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
-    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog')
+    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
+
+    url(r'getQuestionsList/$', views.getQuestionsList, name='getQuestionsList'),
+    url(r'getQuestionsListElement/$', views.getQuestionsListElement, name='getQuestionsListElement')
 ]
