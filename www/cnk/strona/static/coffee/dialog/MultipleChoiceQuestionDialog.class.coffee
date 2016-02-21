@@ -2,13 +2,19 @@ root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
+    #add dialog info
+    if @_dialogInfo?
+      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
+      jQuery("#dialog .form-group:eq(1) input").val(@_dialogInfo.question)
+      activeLabel = if @_dialogInfo.singleAnswer then 0 else 1
+      jQuery("#dialog .form-group:eq(2) .btn-group label:eq(#{activeLabel})").addClass("active")
+
     radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this
-    jQuery "#dialog label.#{radioGroup}"
-      .filter ":first"
-      .addClass "active"
+    jQuery("#dialog label.#{radioGroup}").filter(":first").addClass("active") unless @_dialogInfo?
 
+    # prepare inputs with regexes etc
     inputs = jQuery "#dialog input[type=text]"
     inputs.each( (idx) ->
         obj = jQuery(this)
@@ -21,6 +27,15 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     lastInput.parent().addClass("input-group")
     regex = new RegExp(instance._data.utils.regex.dynamicInput)
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp(regex), instance)
+
+    #add all answers
+    if @_dialogInfo?
+      for answer, index in @_dialogInfo.options
+        jQuery("#dialog .form-group:last-child > div input:last").val(answer).keyup()
+
+    if @readonly
+      jQuery("#dialog input").prop("readonly", true)
+      jQuery("#dialog .btn:not(.active)").remove()
     return
 
   _inputKeyUp: (regex) =>

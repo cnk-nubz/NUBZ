@@ -2,6 +2,8 @@ root = exports ? this
 root.ActionDialog = class ActionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
+    if @_dialogInfo?
+      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.text)
     instance = this
 
     jQuery "#dialog input[type=text]"
@@ -20,4 +22,5 @@ root.ActionDialog = class ActionDialog extends root.QuestionDialog
             obj.parent().next().html("")
         )
       )
+    jQuery("#dialog input").prop("readonly", @readonly)
     return

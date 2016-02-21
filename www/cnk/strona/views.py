@@ -7,6 +7,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
@@ -90,6 +91,7 @@ def _getExhibits():
 		}
 	return exhibitDict
 
+@ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
 	if not _pingServer():
 		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
@@ -264,10 +266,83 @@ def getExhibitListElement(request):
 def getSortQuestionDialog(request):
     return getDialog(request, get_const("SORT_QUESTION_DIALOG"))
 
-def getNewActionDialog(request):
+def getActionDialog(request):
     return getDialog(request, get_const("NEW_ACTION_DIALOG"))
 
 def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
+
+def newExperimentPage(request):
+    template = loader.get_template('newExperimentPage.html')
+    return HttpResponse(template.render(RequestContext(request, {'activeLink' : "3"})))
+
+def getQuestionsActionsList(request, element):
+    myList = render_to_string('questionActionList/list.html')
+    tableRow = render_to_string(element)
+    return JsonResponse({
+        "list": myList,
+        "row": tableRow
+    })
+
+def getTwoColumnList(request):
+    return getQuestionsActionsList(request, 'questionActionList/twoColumnListElement.html')
+
+def getThreeColumnList(request):
+    return getQuestionsActionsList(request, 'questionActionList/threeColumnListElement.html')
+
+def getChooseQuestionTypeDialog(request):
+    html = render_to_string('dialog/chooseQuestionType.html')
+    return JsonResponse({'html': html.replace("\n", "")})
+
+class QuestionType(Enum):
+    SIMPLE = 0
+    MULTIPLE = 1
+    SORT = 2
+
+def setSimpleQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    tc = ThriftCommunicator()
+    simpleQuestion = tc.createSimpleQuestion(data)
+    data = {
+        'type': QuestionType.SIMPLE.value,
+        'questionId': simpleQuestion.questionId,
+        'name': simpleQuestion.name,
+        'question': simpleQuestion.question,
+        'answerType': simpleQuestion.answerType
+    }
+    return JsonResponse(data)
+
+def setMultipleChoiceQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    tc = ThriftCommunicator()
+    multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)
+    data = {
+        'type': QuestionType.MULTIPLE.value,
+        'questionId': multipleChoiceQuestion.questionId,
+        'name': multipleChoiceQuestion.name,
+        'question': multipleChoiceQuestion.question,
+        'options': [o.text for o in multipleChoiceQuestion.options]
+    }
+    return JsonResponse(data)
+
+def setSortQuestion(request):
+    data = {
+        'type': QuestionType.SORT.value,
+        'questionId': 123,
+        'name': 'BACKEND W TYLE',
+        'question': 'BACKEND W TYLE?',
+        'options': ['tak', 'oczywiscie', 'jeszcze jak']
+    }
+    return JsonResponse(data)
+
+def setAction(request):
+    data = json.loads(request.POST.get("jsonData"))
+    tc = ThriftCommunicator()
+    action = tc.createAction(data)
+    data = {
+        'actionId': action.actionId,
+        'text': action.text
+    }
+    return JsonResponse(data)

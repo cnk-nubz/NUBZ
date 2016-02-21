@@ -13,16 +13,18 @@
   overflow-y: scroll;
 }
 
-.beforeQuestions,
-.afterQuestions,
-.actions {
+.questionsBefore,
+.questionsAfter,
+.experimentActions,
+.breakActions {
   padding: 10px 5%;
   margin-bottom: 50px;
 }
 
-.beforeQuestions > div,
-.afterQuestions > div,
-.actions > div,
+.questionsBefore > div,
+.questionsAfter > div,
+.experimentActions > div,
+.breakActions > div,
 .chooseList > div {
   background: #eee;
   border: 1px solid #ddd;
@@ -33,27 +35,33 @@
   line-height: 50px;
   font-size: 22px;
   font-weight: 600;
-  border-bottom: 1px solid #ddd;
 }
 
 .myFooter {
   height: 50px;
   line-height: 50px;
   font-size: 22px;
-  border-top: 1px solid #ddd;
 }
 
-.actions .myHeader,
+.experimentActions .myHeader,
+.breakActions .myHeader,
 .chooseList .myFooter {
   display: table;
   table-layout: fixed;
   width: 100%;
 }
 
-.actions .myHeader > div,
-.chooseList .myFooter > div:not(.addElement) {
+.chooseList .myFooter {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+
+.experimentActions .myHeader > div,
+.breakActions .myHeader > div,
+.chooseList .myFooter > button {
   display: table-cell;
-  width: 45%;
+  width: 50%;
+  height: 45px;
 }
 
 .chooseList .myFooter > div:hover {
@@ -61,8 +69,8 @@
   cursor: pointer;
 }
 
-.actions .myHeader > div:first-child,
-.chooseList .myFooter > div:first-child {
+.experimentActions .myHeader > div:first-child
+.breakActions .myHeader > div:first-child {
   border-right: 1px solid #ddd;
 }
 
@@ -103,9 +111,8 @@
 
 table.myTable {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 20px 10px;
   table-layout: fixed;
+  margin-top: 1px;
 }
 
 table.myTable > tbody > tr {
@@ -114,25 +121,19 @@ table.myTable > tbody > tr {
 }
 
 table.myTable > tbody > tr > td {
-  border: 1px solid #ddd;
+  /*border: 1px solid #ddd;*/
   padding-left: 8px;
   padding-right: 8px;
-  border-radius: 4px;
   cursor: pointer;
 }
 
-table.myTable > tbody > tr > td > div:first-child {
-  width: 70%;
+table.myTable > tbody > tr {
+  border: 1px solid #ddd;
 }
-table.myTable > tbody > tr > td > div:last-child {
-  width: 30%;
-}
-
-
 
 table.myTable > tbody > tr > td:hover {
   background: #ddd;
-  border: 1px solid #ccc;
+  /*border: 1px solid #ccc;*/
 }
 
 table.myTable > tbody > tr > td > div:first-child {
@@ -140,17 +141,19 @@ table.myTable > tbody > tr > td > div:first-child {
   overflow-x: hidden;
 }
 
-.chooseList table.myTable {
-  border-spacing: 0px;
-  border-collapse: collapse;
+table.myTable > tbody > tr > td:not(:last-child):not(:first-child) {
+  width: 100px;
 }
 
-.chooseList table.myTable >tbody>tr> td:first-child {
-  width: 70%;
-}
-.chooseList table.myTable >tbody>tr> td:last-child {
-  width: 30%;
+table.myTable > tbody > tr > td:last-child {
   padding: 0px;
+  width: 15px;
+}
+
+:not(.chooseList) table.myTable > tbody > tr > td:last-child {
+  padding-right: 10px;
+  padding-left: 10px;
+  width: 35px;
 }
 
 .addElement {

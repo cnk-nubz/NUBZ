@@ -3,13 +3,17 @@
 {% load staticfiles %}
 {% block init %}
   {% compress js %}
-  <script src="{% static "coffee/handlers/surveys.coffee" %}" type="text/coffeescript"></script>
+  <script type="text/coffeescript">
+
+  </script>
   {% endcompress %}
 {% endblock %}
 {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
   {% compress js %}
   <script src="{% static "coffee/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/handlers/newExperiment.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   <script src="{% static "include/js/bootstrap.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
@@ -22,6 +26,7 @@
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/newExperimentPage.css" %}" rel="stylesheet" />
+  <link href="{% static "css/questionsList.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block includes %}
   {% compress js %}
@@ -39,50 +44,51 @@
   {% compress js %}
   <script src="{% static "coffee/dialog/ActionDialog.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/questionsActionsList/QuestionsActionsList.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/questionsActionsList/TwoColumnList.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/questionsActionsList/ThreeColumnList.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
 {% endblock %}
 {% block content %}
 <div id="container">
   <div id="experiment">
-    <div class="beforeQuestions">
+    <div class="questionsBefore">
       <div>
         <div class="myHeader">Pytania przed</div>
-        <table class="myTable">
-          <tr><td><div>Pytanie przed</div></td></tr>
-          <tr><td><div>Pytanie przed</div></td></tr>
-        </table>
+        <div class="middle"></div>
       </div>
     </div>
 
-    <div class="actions">
+    <div class="experimentActions">
       <div>
         <div class="myHeader">
-          <div>
-            Zwiedzanie
-          </div>
-          <div>
-            Przerwa
-          </div>
+          Akcje podczas badania
         </div>
-        <table class="myTable">
-          <tr>
-            <td>Przed</td>
-            <td>Po</td>
-          </tr>
-          <tr>
-            <td>Przed</td>
-            <td>Po</td>
-          </tr>
-        </table>
+        <div class="middle"></div>
       </div>
     </div>
 
-    <div class="afterQuestions">
+    <div class="breakActions">
+      <div>
+        <div class="myHeader">
+          Akcje podczas przerwy
+        </div>
+        <div class="middle"></div>
+      </div>
+    </div>
+
+    <div class="questionsAfter">
       <div>
         <div class="myHeader">Pytania po</div>
-        <table class="myTable">
-          <tr><td><div>Pytanie po (hehe pigułka po)</div></td></tr>
-          <tr><td><div>Pytanie po (hehe pigułka po)</div></td></tr>
-        </table>
+        <div class="middle"></div>
       </div>
     </div>
   </div>
@@ -90,65 +96,13 @@
   <div class="chooseList">
     <div>
       <div class="myHeader">
-        HaHa beniz :------D
+        <span></span>
         <div class="addElement"><i class="fa fa-plus"></i></div>
       </div>
-      <div class="middle">
-        <table class="myTable">
-          <tr>
-          <td>
-            <div>ahaha</div>
-          </td>
-          <td>
-            <span class="badge">kurwa</span>
-          </td>
-          </tr>
-          <tr>
-          <td>
-            <div>ahaha</div>
-          </td>
-          <td>
-            <span class="badge">patrz</span>
-          </td>
-          </tr>
-          <tr>
-          <td>
-            <div>ahaha</div>
-          </td>
-          <td>
-            <span class="badge">jestem</span>
-          </td>
-          </tr>
-          <tr>
-          <td>
-            <div>ahaha</div>
-          </td>
-          <td>
-            <span class="badge">mistrzem</span>
-          </td>
-          </tr>
-          <tr>
-          <td>
-            <div>ahaha</div>
-          </td>
-          <td>
-            <span class="badge">hehe</span>
-          </td>
-          </tr>
-          <tr><td><div>hahahaha</div></td></tr>
-          <tr><td><div>ahaha</div></td></tr>
-          <tr><td><div>hahahaha</div></td></tr>
-          <tr><td><div>ahaha</div></td></tr>
-          <tr><td><div>hahahaha</div></td></tr>
-          <tr><td><div>ahaha</div></td></tr>
-          <tr><td><div>hahahaha</div></td></tr>
-          <tr><td><div>ahaha</div></td></tr>
-          <tr><td><div>hahahaha</div></td></tr>
-        </table>
-      </div>
+      <div class="middle"></div>
       <div class="myFooter">
-        <div>Akcje</div>
-        <div>Pytania</div>
+        <button class="btn btn-default">Akcje</button>
+        <button class="btn btn-default">Pytania</button>
       </div>
     </div>
   </div>

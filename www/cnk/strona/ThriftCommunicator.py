@@ -42,124 +42,93 @@ class ThriftCommunicator:
 			return None
 		return True
 
-	def ping(self, number, text):
-		msg = HelloMsg(number, text)
+	def _perform_actions(self, actions):
 		if not self.start_connection():
 			return None
-		ret = self.client.ping(msg)
+		try:
+			ret = [action() for action in actions]
+		except Exception as ex:
+			template = "An exception of type {0} occured. Arguments:\n{1!r}"
+			message = template.format(type(ex).__name__, ex.args)
+			print message
+			return None
+
 		if not self.end_connection():
 			return None
 		return ret
+
+	def ping(self, number, text):
+		def action():
+			msg = HelloMsg(number, text)
+			return self.client.ping(msg)
+		return self._perform_actions([action])[0]
 
 	def getMapImages(self):
-		msg = MapImagesRequest()
-		if not self.start_connection():
-			return None
-
-		try:
-			ret = self.client.getMapImages(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-
-		return ret
+		def action():
+			msg = MapImagesRequest()
+			return self.client.getMapImages(msg)
+		return self._perform_actions([action])[0]
 
 	def setMapImage(self, floor, filename):
-		msg = SetMapImageRequest(floor, filename)
-		if not self.start_connection():
-			return None
-
-		try:
+		def action():
+			msg = SetMapImageRequest(floor, filename)
 			self.client.setMapImage(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-		return True
+			return True
+		return self._perform_actions([action])[0]
 
 	def getExhibits(self):
-		msg = NewExhibitsRequest()
-		if not self.start_connection():
-			return None
-
-		try:
-			ret = self.client.getNewExhibits(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-		return ret
+		def action():
+			msg = NewExhibitsRequest()
+			return self.client.getNewExhibits(msg)
+		return self._perform_actions([action])[0]
 
 	def getMapImageTiles(self, floor):
-		msg = MapImageTilesRequest(floor)
-		if not self.start_connection():
-			return None
-
-		try:
-			ret = self.client.getMapImageTiles(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-		return ret
+		def action():
+			msg = MapImageTilesRequest(floor)
+			return self.client.getMapImageTiles(msg)
+		return self._perform_actions([action])[0]
 
 	def setExhibitFrame(self, frame):
-		msg = SetExhibitFrameRequest(int(frame['id']), Frame(frame['x'], frame['y'], Size(frame['width'], frame['height'])))
-		if not self.start_connection():
-			return None
-
-		try:
+		def action():
+			msg = SetExhibitFrameRequest(int(frame['id']), Frame(frame['x'], frame['y'], Size(frame['width'], frame['height'])))
 			self.client.setExhibitFrame(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-		return True
+			return True
+		return self._perform_actions([action])[0]
 
 	def createNewExhibit(self, request):
-		if 'floor' in request.keys() and request['floor'] != None:
-			floor = request['floor']
-		else:
-			floor = None
-		if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
-			t = request['visibleMapFrame']
-			frame = MapFrame(
-				Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
-		else:
-			frame = None
-		msg = CreateExhibitRequest(request['name'], floor, frame)
-		if not self.start_connection():
-			return None
+		def action():
+			if 'floor' in request.keys() and request['floor'] != None:
+				floor = request['floor']
+			else:
+				floor = None
+			if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
+				t = request['visibleMapFrame']
+				frame = MapFrame(
+					Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
+			else:
+				frame = None
+			msg = CreateExhibitRequest(request['name'], floor, frame)
+			return self.client.createExhibit(msg)
+		return self._perform_actions([action])[0]
 
-		try:
-			ret = self.client.createExhibit(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
+	def createSimpleQuestion(self, request):
+		def action():
+			if request['answerType'] == 1:
+				answerType = SimpleQuestionAnswerType.NUMBER
+			else:
+				answerType = SimpleQuestionAnswerType.TEXT
+			msg = CreateSimpleQuestionRequest(request['name'], request['question'], answerType)
+			return self.client.createSimpleQuestion(msg)
+		return self._perform_actions([action])[0]
 
-		if not self.end_connection():
-			return None
-		return ret
+	def createMultipleChoiceQuestion(self, request):
+		def action():
+			msg = CreateMultipleChoiceQuestionRequest(request['name'], request['question'], request['singleAnswer'], request['options'])
+			return self.client.createMultipleChoiceQuestion(msg)
+		return self._perform_actions([action])[0]
+
+	def createAction(self, request):
+		def action():
+			msg = CreateActionRequest(request['text'])
+			return self.client.createAction(msg)
+		return self._perform_actions([action])[0]
