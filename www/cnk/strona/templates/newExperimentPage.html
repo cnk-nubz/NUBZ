@@ -2,11 +2,6 @@
 {% load compress %}
 {% load staticfiles %}
 {% block init %}
-  {% compress js %}
-  <script type="text/coffeescript">
-
-  </script>
-  {% endcompress %}
 {% endblock %}
 {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
@@ -26,7 +21,7 @@
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/newExperimentPage.css" %}" rel="stylesheet" />
-  <link href="{% static "css/questionsList.css" %}" rel="stylesheet" />
+  <link href="{% static "css/questionsActionsTable.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block includes %}
   {% compress js %}
@@ -60,6 +55,13 @@
 {% block content %}
 <div id="container">
   <div id="experiment">
+    <div class="experimentTitle">
+      <div class="myHeader">
+        <span>Tutaj nazwa badania</span>
+        <div class="addElement"><i class="fa fa-floppy-o"></i></div>
+      </div>
+    </div>
+
     <div class="questionsBefore">
       <div>
         <div class="myHeader">Pytania przed</div>
@@ -67,21 +69,23 @@
       </div>
     </div>
 
-    <div class="experimentActions">
-      <div>
-        <div class="myHeader">
-          Akcje podczas badania
+    <div class="actions">
+      <div class="experimentActions">
+        <div>
+          <div class="myHeader">
+            Akcje podczas badania
+          </div>
+          <div class="middle"></div>
         </div>
-        <div class="middle"></div>
       </div>
-    </div>
 
-    <div class="breakActions">
-      <div>
-        <div class="myHeader">
-          Akcje podczas przerwy
+      <div class="breakActions">
+        <div>
+          <div class="myHeader">
+            Akcje podczas przerwy
+          </div>
+          <div class="middle"></div>
         </div>
-        <div class="middle"></div>
       </div>
     </div>
 
@@ -91,6 +95,7 @@
         <div class="middle"></div>
       </div>
     </div>
+
   </div>
 
   <div class="chooseList">

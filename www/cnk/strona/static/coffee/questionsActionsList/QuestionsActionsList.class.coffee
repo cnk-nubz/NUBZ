@@ -1,5 +1,5 @@
 root = exports ? this
-root.QuestionsActionsList = class QuestionsActionsList extends root.View
+root.questionsActionsTable = class QuestionsActionsList extends root.View
   constructor: (@_containerId, @_lastColumnSign) ->
     super @_containerId
     @_elementsToAdd = []
@@ -37,7 +37,15 @@ root.QuestionsActionsList = class QuestionsActionsList extends root.View
 
   show: =>
     container = jQuery(@_containerId)
-    jQuery(".myTable", container).remove()
+    jQuery(".questionsActionsTable", container).remove()
     jQuery(@_listHTML).appendTo(@_containerId)
     @_addElementToDOM(id, element) for [id, element] in @_elementsToAdd
     @
+
+  getAllElementsId: =>
+    container = jQuery(@_containerId)
+    elements = []
+    jQuery(".questionsActionsTable tr", container).each( ->
+      elements.push id for id, element of jQuery(this).data("rowData")
+    )
+    elements

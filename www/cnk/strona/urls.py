@@ -28,5 +28,7 @@ urlpatterns = [
     url(r'setSimpleQuestion/$', views.setSimpleQuestion, name='setSimpleQuestion'),
     url(r'setMultipleChoiceQuestion/$', views.setMultipleChoiceQuestion, name='setMultipleChoiceQuestion'),
     url(r'setSortQuestion/$', views.setSortQuestion, name='setSortQuestion'),
-    url(r'setAction/$', views.setAction, name='setAction')
+    url(r'setAction/$', views.setAction, name='setAction'),
+    #experiment
+    url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment')
 ]

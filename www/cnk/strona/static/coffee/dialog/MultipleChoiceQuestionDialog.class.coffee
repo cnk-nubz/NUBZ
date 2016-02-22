@@ -73,3 +73,18 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
+
+  extractData: =>
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    singleAnswer = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
+    options = []
+    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
+      options.push jQuery(this).val()
+    )
+    data =
+      name: name
+      question: question
+      options: options
+      singleAnswer: singleAnswer
+    data

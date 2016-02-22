@@ -64,3 +64,16 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
+
+  extractData: =>
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    options = []
+    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
+      options.push jQuery(this).val()
+    )
+    data =
+      name: name
+      question: question
+      options: options
+    data

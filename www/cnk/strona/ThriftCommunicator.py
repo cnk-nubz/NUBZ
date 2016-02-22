@@ -29,8 +29,8 @@ class ThriftCommunicator:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
 			print message
-			return None
-		return True
+			raise Exception('Brak polaczenia z serwerem: {} Upewnij sie, ze serwer jest wlaczony'.format(ex.args))
+		return None
 
 	def end_connection(self):
 		try:
@@ -39,12 +39,10 @@ class ThriftCommunicator:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
 			print message
-			return None
-		return True
+			raise Exception(message)
 
 	def _perform_actions(self, actions):
-		if not self.start_connection():
-			return None
+		self.start_connection()
 		try:
 			ret = [action() for action in actions]
 		except Exception as ex:
@@ -53,8 +51,7 @@ class ThriftCommunicator:
 			print message
 			return None
 
-		if not self.end_connection():
-			return None
+		self.end_connection()
 		return ret
 
 	def ping(self, number, text):

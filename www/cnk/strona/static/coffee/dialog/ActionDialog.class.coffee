@@ -24,3 +24,9 @@ root.ActionDialog = class ActionDialog extends root.QuestionDialog
       )
     jQuery("#dialog input").prop("readonly", @readonly)
     return
+
+  extractData: =>
+    text = jQuery("#dialog input").val()
+    data =
+      text: text
+    data

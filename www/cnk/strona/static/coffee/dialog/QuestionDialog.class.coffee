@@ -58,7 +58,7 @@ root.QuestionDialog = class QuestionDialog
     label: @_data.utils.text.saveButton
     action: (dialog) =>
       if @_validateForm()
-        @_saveHandler()
+        @_saveHandler(@extractData())
         dialog.close()
 
   _validateForm: =>

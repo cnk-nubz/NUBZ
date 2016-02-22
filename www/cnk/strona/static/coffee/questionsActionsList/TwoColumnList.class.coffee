@@ -1,5 +1,5 @@
 root = exports ? this
-root.TwoColumnList = class TwoColumnList extends root.QuestionsActionsList
+root.TwoColumnList = class TwoColumnList extends root.questionsActionsTable
   constructor: (@_containerId, @_lastColumnSign) ->
     @url = 'getTwoColumnList/'
     super
@@ -7,7 +7,7 @@ root.TwoColumnList = class TwoColumnList extends root.QuestionsActionsList
   _addElementToDOM: (id, element) =>
     listElement = jQuery(@_listElementHTML)
     instance = this
-    jQuery("div:eq(0)", listElement).html(element.first).shortenText()
+    jQuery("div:eq(0)", listElement).html(element.first)
     jQuery("td:eq(0)", listElement).click( do (id) => (
       ->
         poss = jQuery(this).parent().index()
@@ -20,14 +20,15 @@ root.TwoColumnList = class TwoColumnList extends root.QuestionsActionsList
         instance.fireEvents("secondClicked", id, poss)
       )
     )
-    container = jQuery("#{@_containerId} .myTable")
+    container = jQuery("#{@_containerId} .questionsActionsTable")
     rowData = {}
     rowData[id] = element
     jQuery(listElement).data("rowData", jQuery.extend({}, rowData))
     jQuery(listElement).appendTo(container)
+    jQuery("div:eq(0)", listElement).shortenText()
     @fireEvents("elementAdded", listElement)
 
   removeElement: (pos) =>
-    jQuery(".myTable tr:eq(#{pos})", @_containerId).remove()
+    jQuery(".questionsActionsTable tr:eq(#{pos})", @_containerId).remove()
     @_elementsToAdd.splice(pos, 1)
     @

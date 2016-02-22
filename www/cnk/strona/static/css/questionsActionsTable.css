@@ -1,0 +1,47 @@
+table.questionsActionsTable {
+  width: 100%;
+  table-layout: fixed;
+  border-top: none;
+}
+
+table.questionsActionsTable > tbody > tr {
+  height: 42px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+table.questionsActionsTable > tbody > tr > td {
+  padding-left: 8px;
+  padding-right: 8px;
+  cursor: pointer;
+}
+
+table.questionsActionsTable > tbody > tr > td:hover {
+  background: #ddd;
+}
+
+table.questionsActionsTable > tbody > tr > td > div:first-child {
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+table.questionsActionsTable > tbody > tr > td:not(:last-child):not(:first-child) {
+  width: 100px;
+}
+
+table.questionsActionsTable > tbody > tr > td:not(:last-child):not(:first-child):hover {
+  background: #fff;
+  cursor: default;
+}
+
+table.questionsActionsTable > tbody > tr > td:last-child {
+  padding: 0px;
+  width: 15px;
+}
+
+table.questionsActionsTable > tbody > tr > td:last-child {
+  padding-right: 10px;
+  padding-left: 10px;
+  width: 35px;
+}

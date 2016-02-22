@@ -1,12 +1,12 @@
 root = exports ? this
-root.ThreeColumnList = class ThreeColumnList extends root.QuestionsActionsList
+root.ThreeColumnList = class ThreeColumnList extends root.questionsActionsTable
   constructor: (@_containerId, @_lastColumnSign) ->
     @url = 'getThreeColumnList/'
     super
 
   _addElementToDOM: (id, element) =>
     listElement = jQuery(@_listElementHTML)
-    jQuery("div:first", listElement).html(element.first).shortenText()
+    jQuery("div:first", listElement).html(element.first)
     jQuery("div > span", listElement).html(element.second)
     jQuery("td:eq(0)", listElement).click( do (id) => (
       =>
@@ -26,9 +26,10 @@ root.ThreeColumnList = class ThreeColumnList extends root.QuestionsActionsList
         @fireEvents("thirdClicked", id, pos)
       )
     )
-    container = jQuery("#{@_containerId} .myTable")
+    container = jQuery("#{@_containerId} .questionsActionsTable")
     rowData = {}
     rowData[id] = element
     jQuery(listElement).data("rowData", jQuery.extend({}, rowData))
     jQuery(listElement).appendTo(container)
+    jQuery("div:first", listElement).shortenText()
     @fireEvents("elementAdded", listElement)

@@ -69,7 +69,6 @@ def _getExhibits():
 	tc = ThriftCommunicator()
 	result = tc.getExhibits()
 	if not result:
-		print >>sys.stderr, "kurde xxxxxxxxxxxxxxxxx2"
 		return None
 
 	exhibitDict = {}
@@ -304,45 +303,75 @@ class QuestionType(Enum):
 def setSimpleQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
-    simpleQuestion = tc.createSimpleQuestion(data)
-    data = {
-        'type': QuestionType.SIMPLE.value,
-        'questionId': simpleQuestion.questionId,
-        'name': simpleQuestion.name,
-        'question': simpleQuestion.question,
-        'answerType': simpleQuestion.answerType
-    }
-    return JsonResponse(data)
+    try:
+        simpleQuestion = tc.createSimpleQuestion(data)
+        result = {
+            'success': True,
+            'type': QuestionType.SIMPLE.value,
+            'questionId': simpleQuestion.questionId,
+            'name': simpleQuestion.name,
+            'question': simpleQuestion.question,
+            'answerType': simpleQuestion.answerType
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
 
 def setMultipleChoiceQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
-    multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)
-    data = {
-        'type': QuestionType.MULTIPLE.value,
-        'questionId': multipleChoiceQuestion.questionId,
-        'name': multipleChoiceQuestion.name,
-        'question': multipleChoiceQuestion.question,
-        'options': [o.text for o in multipleChoiceQuestion.options]
-    }
-    return JsonResponse(data)
+    try:
+        multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)
+        result = {
+            'success': True,
+            'type': QuestionType.MULTIPLE.value,
+            'questionId': multipleChoiceQuestion.questionId,
+            'name': multipleChoiceQuestion.name,
+            'question': multipleChoiceQuestion.question,
+            'options': [o.text for o in multipleChoiceQuestion.options]
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
 
 def setSortQuestion(request):
-    data = {
-        'type': QuestionType.SORT.value,
-        'questionId': 123,
-        'name': 'BACKEND W TYLE',
-        'question': 'BACKEND W TYLE?',
-        'options': ['tak', 'oczywiscie', 'jeszcze jak']
+    data = json.loads(request.POST.get("jsonData"))
+    #TODO
+    result = {
+        'success': False,
+		'message': "TODO"
     }
-    return JsonResponse(data)
+    return JsonResponse(result)
 
 def setAction(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
-    action = tc.createAction(data)
-    data = {
-        'actionId': action.actionId,
-        'text': action.text
+    try:
+    	action = tc.createAction(data)
+        result = {
+            'success': True,
+            'actionId': action.actionId,
+            'text': action.text
+        }
+
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def saveExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    # TODO
+    result = {
+        'success': False,
+		'message': "TODO"
     }
-    return JsonResponse(data)
+    return JsonResponse(result)

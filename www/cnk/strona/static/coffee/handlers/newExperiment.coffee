@@ -18,9 +18,11 @@ class Questions
       2:
         name: 'sortowanie'
         dialog: @_sortQuestionDialog
-  addElements: (elements) => @_list[element.questionId] = element for element in elements
+  addElements: (elements) =>
+    @_list[element.questionId] = element for element in elements
 
-  removeElement: (id) => delete @_list[id] if @_list[id]?
+  removeElement: (id) =>
+    delete @_list[id] if @_list[id]?
 
   parseAllForTwoColumns: =>
     data = {}
@@ -32,11 +34,14 @@ class Questions
     data[id] = @_parseForTwoColumns(id)
     data
 
-  getElement: (id) => @_list[id]
+  getElement: (id) =>
+    @_list[id]
 
-  _getElementNameType: (id) => @_questionType[@_list[id].type].name
+  _getElementNameType: (id) =>
+    @_questionType[@_list[id].type].name
 
-  _parseForTwoColumns: (id) => { first: @_list[id].name }
+  _parseForTwoColumns: (id) =>
+    { first: @_list[id].name }
 
   parseAllForThreeColumns: =>
     data = {}
@@ -48,11 +53,12 @@ class Questions
     data[id] = @_parseForThreeColumns(id)
     data
 
-  _parseForThreeColumns: (id) => { first: @_list[id].name, second: @_getElementNameType(id) }
+  _parseForThreeColumns: (id) =>
+    { first: @_list[id].name, second: @_getElementNameType(id) }
 
-  showDialog: (id, readonly) =>
+  showDialog: (id, readonly = false) =>
     dialog = @_questionType[@_list[id].type].dialog
-    dialog.readonly = if readonly? and readonly then true else false
+    dialog.readonly = readonly is true
     @_questionType[@_list[id].type].dialog.bindData(@_list[id]).show()
 
 class Actions
@@ -62,9 +68,11 @@ class Actions
   _init: =>
     @_actionDialog = new root.ActionDialog('getActionDialog/')
 
-  addElements: (elements) => @_list[element.actionId] = element for element in elements
+  addElements: (elements) =>
+    @_list[element.actionId] = element for element in elements
 
-  removeElement: (id) => delete @_list[id] if @_list[id]?
+  removeElement: (id) =>
+    delete @_list[id] if @_list[id]?
 
   parseAllForTwoColumns: =>
     data = {}
@@ -76,23 +84,27 @@ class Actions
     data[id] = @_parseForTwoColumns(id)
     data
 
-  getElement: (id) => @_list[id]
+  _parseForTwoColumns: (id) =>
+    { first: @_list[id].text }
 
-  showDialog: (id, readonly) =>
-    @_actionDialog.readonly = if readonly? and readonly then true else false
+  getElement: (id) =>
+    @_list[id]
+
+  showDialog: (id, readonly = false) =>
+    @_actionDialog.readonly = readonly is true
     @_actionDialog.bindData(@_list[id]).show()
-
-  _parseForTwoColumns: (id) => { first: @_list[id].text }
 
 class Handlers
   constructor: ->
     @_DOM =
-      header: ".chooseList .myHeader span"
+      chooseListTitle: ".chooseList .myHeader span"
       actionButton: ".chooseList .myFooter button:first-child"
       questionButton: ".chooseList .myFooter button:last-child"
       attachToExperimentContainer: "td:last-child"
       attachToExperimentContainerSign: "td:last-child > i"
       addElement: ".chooseList .addElement"
+      experimentTitle: ".experimentTitle .myHeader span"
+      experimentSave: ".experimentTitle .myHeader .addElement"
 
     # TODO: add questions and actions from server
     @_questions = new Questions()
@@ -109,6 +121,7 @@ class Handlers
     @_setListsHandlers()
     @_setActionButtonClickHandler()
     @_setQuestionButtonClickHandler()
+    @_setExperimentSaveHandler()
 
   _setListsHandlers: =>
     #default state
@@ -117,7 +130,7 @@ class Handlers
     @_setListsSecondClickHandler()
     @_setListsElementAddedHandler()
     jQuery(@_DOM.addElement).click( => @_addNewQuestion())
-    jQuery(@_DOM.header).text("Pytania")
+    jQuery(@_DOM.chooseListTitle).text("Pytania")
     return
 
   _setListsInitHandler: =>
@@ -174,7 +187,7 @@ class Handlers
       return if jQuery(this).hasClass("active")
       jQuery(this).addClass("active")
       jQuery(instance._DOM.actionButton).removeClass("active")
-      jQuery(instance._DOM.header).text("Pytania")
+      jQuery(instance._DOM.chooseListTitle).text("Pytania")
       instance._questionsList.show()
       jQuery(instance._DOM.addElement).off("click").click( =>
         instance._addNewQuestion()
@@ -189,14 +202,41 @@ class Handlers
       return if jQuery(this).hasClass("active")
       jQuery(this).addClass("active")
       jQuery(instance._DOM.questionButton).removeClass("active")
-      jQuery(instance._DOM.header).text("Akcje")
+      jQuery(instance._DOM.chooseListTitle).text("Akcje")
       instance._actionsList.show()
-      actionDialog = new root.ActionDialog("getActionDialog/", instance._actionCreatedHandler)
+      actionSave = instance._newEntryRequest("/setAction/", instance._setNewAction)
+      actionDialog = new root.ActionDialog("getActionDialog/", actionSave)
       jQuery(instance._DOM.addElement).off("click").click( =>
         actionDialog.show()
       )
     )
     return
+
+  _setExperimentSaveHandler: =>
+    jQuery(@_DOM.experimentSave).click( =>
+      questionsBefore = @_questionsBeforeList.getAllElementsId()
+      questionsAfter = @_questionsAfterList.getAllElementsId()
+      experimentActions = @_experimentActionsList.getAllElementsId()
+      breakActions = @_breakActionsList.getAllElementsId()
+      dataToSend = {
+        questionsBefore: questionsBefore
+        questionsAfter: questionsAfter
+        experimentActions: experimentActions
+        breakActions: breakActions
+      }
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.ajax(
+        type: 'POST'
+        dataType: 'json'
+        context: this
+        data: (jsonData: JSON.stringify(dataToSend))
+        url: '/saveExperiment/'
+        success: (data) ->
+          @_displayError(data.message) unless data.success
+      )
+    )
 
   _setAddToExperimentHandler: (obj, contextList) ->
     dataContentButtons = null
@@ -210,7 +250,6 @@ class Handlers
       .on('shown.bs.popover', ->
         jQuery(".popover-content button").each((index) ->
           jQuery(this).mousedown( ->
-            #jump up to td element and move to first td in this row
             rowData = jQuery(this).parents("tr").data("rowData")
             toAdd = {}
             toAdd[id] = {first: element.first} for id, element of rowData
@@ -220,7 +259,7 @@ class Handlers
       )
       .each((index) ->
         jQuery(this).attr(tabindex: index)
-        # add bootstrap class to every button
+        # add bootstrap class to every popover button
         dataContent = jQuery(this).attr("data-content")
         dataContentButtons = jQuery(dataContent).each( ->
           jQuery(this).addClass("btn btn-default btn-xs")
@@ -251,94 +290,64 @@ class Handlers
         label: 'Anuluj'
         action: (dialog) -> dialog.close()
       ]
-      onshown: (dialog) => @_setQuestionsHandlers(dialog)
+      onshown: (dialog) => @_setChooseQuestionTypeHandlers(dialog)
     )
     return
 
-  _setQuestionsHandlers: (dialog) =>
-    simpleQuestionDialog = new root.SimpleQuestionDialog("getSimpleQuestionDialog/", @_simpleQuestionCreatedHandler)
-    sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/', @_sortQuestionCreatedHandler)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', @_multipleChoiceQuestionCreatedHandler)
+  # handlers for dialog to select question type
+  _setChooseQuestionTypeHandlers: (dialog) =>
+    # Long names are long. Are you gazing into the abyss? Because it's gazing back at us.
+    simpleQuestionSave = @_newEntryRequest("/setSimpleQuestion/", @_setNewQuestion)
+    simpleQuestionDialog = new root.SimpleQuestionDialog('getSimpleQuestionDialog/', simpleQuestionSave)
+    sortQuestionSave = @_newEntryRequest("/setSortQuestion/", @_setNewQuestion)
+    sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/', sortQuestionSave)
+    multipleChoiceSave = @_newEntryRequest("/setMultipleChoiceQuestion/", @_setNewQuestion)
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', multipleChoiceSave)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
     jQuery("#sortQuestion").click( -> sortQuestionDialog.show())
     jQuery("#multipleChoiceQuestion").click( -> multipleChoiceQuestionDialog.show())
     return
 
-  _simpleQuestionCreatedHandler: =>
-    name = jQuery("#dialog .form-group:eq(0) input").val()
-    question = jQuery("#dialog .form-group:eq(1) input").val()
-    answerType = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
-    data =
-      name: name
-      question: question
-      answerType: if answerType then 0 else 1
-    @_newEntryRequest(data, "/setSimpleQuestion/", @_setNewQuestion)
-    return
-
-  _sortQuestionCreatedHandler: =>
-    name = jQuery("#dialog .form-group:eq(0) input").val()
-    question = jQuery("#dialog .form-group:eq(1) input").val()
-    options = []
-    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
-      options.push jQuery(this).val()
-    )
-    data =
-      name: name
-      question: question
-      options: options
-    @_newEntryRequest(data, "/setSortQuestion/", @_setNewQuestion)
-    return
-
-  _multipleChoiceQuestionCreatedHandler: =>
-    name = jQuery("#dialog .form-group:eq(0) input").val()
-    question = jQuery("#dialog .form-group:eq(1) input").val()
-    singleAnswer = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
-    options = []
-    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
-      options.push jQuery(this).val()
-    )
-    data =
-      name: name
-      question: question
-      options: options
-      singleAnswer: singleAnswer
-    @_newEntryRequest(data, "/setMultipleChoiceQuestion/", @_setNewQuestion)
-    return
-
-  _actionCreatedHandler: =>
-    text = jQuery("#dialog input").val()
-    data =
-      text: text
-    @_newEntryRequest(data, "/setAction/", @_setNewAction)
-    return
-
-  _newEntryRequest: (data, url, callback) =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      data: (jsonData: JSON.stringify(data))
-      url: url
-      success: (data) =>
-        callback(data)
-    )
-    return
+  _newEntryRequest: (url, callback) =>
+    (data) =>
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.ajax(
+        type: 'POST'
+        dataType: 'json'
+        data: (jsonData: JSON.stringify(data))
+        url: url
+        success: (data) =>
+          callback(data)
+      )
+      return
 
   _setNewQuestion: (data) =>
+    if not data.success
+      @_displayError(data.message)
+      return
     @_questions.addElements([data])
     toAdd = @_questions.parseElementForThreeColumns(data.questionId)
     @_questionsList.addElements(toAdd).show()
     return
 
   _setNewAction: (data) =>
+    if not data.success
+      @_displayError(data.message)
+      return
     @_actions.addElements([data])
     toAdd = @_actions.parseElementForTwoColumns(data.actionId)
     @_actionsList.addElements(toAdd).show()
     return
 
+  _displayError: (message) =>
+    BootstrapDialog.show(
+      message: message
+      title: 'Wystąpił błąd'
+      type: BootstrapDialog.TYPE_DANGER
+    )
 jQuery(document).ready( ->
   new Handlers()
 )
