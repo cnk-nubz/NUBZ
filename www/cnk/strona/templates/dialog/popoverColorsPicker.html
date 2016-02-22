@@ -1,0 +1,8 @@
+{% for color in colorsList %}
+  {% if color == "br" %}
+    <br>
+  {% else %}
+    <button class="btn colorpick" style="width: 30px; height: 30px; margin: 2px; background-color: {{color}}">
+    </button>
+  {% endif %}
+{% endfor %}

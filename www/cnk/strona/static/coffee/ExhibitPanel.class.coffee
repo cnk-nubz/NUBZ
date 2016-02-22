@@ -30,7 +30,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
 
   _setExhibitPanelHandlers: =>
     instance = this
-    jQuery("#exhibitPanel > button").click( => @fireEvents("addExhibit"))
+    new root.ExhibitDialog("getExhibitDialog/", "#addExhibit")
     jQuery("#exhibitPanel > div.input-group span").click( =>
       @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").val()
       @_refreshExhibitsList()

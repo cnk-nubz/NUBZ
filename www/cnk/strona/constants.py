@@ -142,11 +142,45 @@ NEW_ACTION_DIALOG = {
     }
 }
 
+EXHIBIT_DIALOG = {
+    "data": [
+        [
+            "dialog/input.html", {
+                "placeholder": "Nazwa eksponatu",
+                "labelText": "Nazwa",
+            }
+        ],
+        [
+            "dialog/radios.html", {
+                "radioGroup": "floorNum",
+                "labelText": "Piętro",
+                "radioSize": "2",
+                "textList": ["0", "1", "brak"]
+            }
+        ],
+        [
+            "dialog/popoverButton.html", {
+                "labelText": "Kolor",
+                "popoverTitle": "Wybierz kolor",
+                "popoverPlacement": "bottom",
+                "popoverText": "",
+            }
+        ]
+    ],
+    "utils": {
+        "text": {
+            "title": "Tworzenie eksponatu",
+            "colorError": "Należy ustawić kolor eksponatu",
+        },
+    }
+}
+
 to_merge_with_defaults = [
     SIMPLE_QUESTION_DIALOG,
     MULTIPLE_CHOICE_QUESTION_DIALOG,
     SORT_QUESTION_DIALOG,
-    NEW_ACTION_DIALOG
+    NEW_ACTION_DIALOG,
+    EXHIBIT_DIALOG
 ]
 
 def merge_dicts(a, b, path=None):

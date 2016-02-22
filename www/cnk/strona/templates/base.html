@@ -54,7 +54,10 @@
     <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
     {% endcompress %}
     {% compress js %}
-    <script src="{% static "coffee/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
+    <script src="{% static "coffee/dialog/QuestionDialog.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
     {% endcompress %}
     {% compress js %}
     <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>

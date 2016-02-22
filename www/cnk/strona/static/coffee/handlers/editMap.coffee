@@ -26,11 +26,7 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.on("addExhibit", =>
-      dialog = new ExhibitDialog(null, @mapData.activeFloor, @newExhibitRequest)
-      dialog.nameEditable = true
-      dialog.show()
-    )
+    # TODO: set event, connect with exhibit dialog
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
       exhibitFloor = exhibit.frame.mapLevel
