@@ -3,6 +3,7 @@ class Handlers
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
     mapData = new MapDataHandler()
+    @exhibitEditDialog = new root.ExhibitDialog("getExhibitDialog/")
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -26,7 +27,7 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    # TODO: set event, connect with exhibit dialog
+    @panel.setAddExhibitHandler(@newExhibitRequest)
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
       exhibitFloor = exhibit.frame.mapLevel
@@ -39,8 +40,14 @@ class Handlers
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
-      dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
-      dialog.show()
+      # TODO: color is dummy for now
+      data =
+        id: id
+        name: exhibit.name
+        floor: exhibit.frame?.mapLevel
+        color: "2468AC"
+      @exhibitEditDialog.bindData(data)
+      @exhibitEditDialog.show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
       jQuery(@button.plusZoom).prop("disabled", disablePlus)

@@ -1,8 +1,7 @@
 {% for color in colorsList %}
-  {% if color == "br" %}
+  {% if forloop.counter0|divisibleby:6 %}
     <br>
-  {% else %}
-    <button class="btn colorpick" style="width: 30px; height: 30px; margin: 2px; background-color: {{color}}">
-    </button>
   {% endif %}
+  <button class="btn colorpick" style="width: 30px; height: 30px; margin: 2px; background-color: {{color}}">
+  </button>
 {% endfor %}

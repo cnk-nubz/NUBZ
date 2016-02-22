@@ -1,7 +1,6 @@
 root = exports ? this
 root.ExhibitPanel = class ExhibitPanel extends root.View
   # ========== ATTACHED EVENTS ==========
-  # addExhibit
   # flyToExhibitWithId: takes exhibit id as second argument
   # modifyExhibitWithId: takes exhibit id as second argument
   # =====================================
@@ -12,6 +11,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
+    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @addExhibitHandler)
     @_init()
 
   _init: =>
@@ -28,9 +28,16 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_getExhibitElementHTML()
     )
 
+  setAddExhibitHandler: (@addExhibitHandlerFunc) ->
+
+  addExhibitHandler: (data) =>
+    @addExhibitHandlerFunc(data)
+
   _setExhibitPanelHandlers: =>
     instance = this
-    new root.ExhibitDialog("getExhibitDialog/", "#addExhibit")
+    jQuery("#exhibitPanel #addExhibit").click(=>
+      @_exhibitDialog.show()
+    )
     jQuery("#exhibitPanel > div.input-group span").click( =>
       @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").val()
       @_refreshExhibitsList()
