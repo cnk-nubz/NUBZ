@@ -6,10 +6,12 @@
 
 #include <communication/structs_types.h>
 
+#include "Question.h"
+
 namespace server {
 namespace io {
 
-struct MultipleChoiceQuestion {
+struct MultipleChoiceQuestion : public Question {
     struct Option {
         using thrift_t = communication::MultipleChoiceQuestionOption;
 
@@ -25,9 +27,6 @@ struct MultipleChoiceQuestion {
     MultipleChoiceQuestion() = default;
     thrift_t toThrift() const;
 
-    std::int32_t ID;
-    std::string name;
-    std::string question;
     bool singleAnswer;
     std::vector<Option> options;
 };

@@ -45,6 +45,8 @@ public:
                               const communication::CreateActionRequest &request) override;
     virtual void getAllActions(std::vector<communication::Action> &response) override;
 
+    virtual void getAllQuestions(communication::QuestionsList &response) override;
+
     virtual void createSimpleQuestion(
         communication::SimpleQuestion &response,
         const communication::CreateSimpleQuestionRequest &request) override;

@@ -177,7 +177,7 @@ struct CreateMultipleChoiceQuestionRequest {
 
 
 /////////////////////////////////////////////////
-// Experiment
+// Questions List
 /////////////////////////////////////////////////
 
 enum QuestionType {
@@ -185,19 +185,24 @@ enum QuestionType {
 	MULTIPLE_CHOICE,
 }
 
-struct Survey {
+struct QuestionsList {
 	1: list<QuestionType> questionsOrder,
 	2: list<SimpleQuestion> simpleQuestions,
 	3: list<MultipleChoiceQuestion> multipleChoiceQuestions,
 }
 
+
+/////////////////////////////////////////////////
+// Experiment
+/////////////////////////////////////////////////
+
 struct Experiment {
 	1: i32 experimentId,
 	2: string name,
-	3: Survey surveyBefore,
+	3: QuestionsList surveyBefore,
 	4: list<Action> exhibitActions,
 	5: list<Action> breakActions,
-	6: Survey surveyAfter,
+	6: QuestionsList surveyAfter,
 }
 
 struct CurrentExperimentResponse {

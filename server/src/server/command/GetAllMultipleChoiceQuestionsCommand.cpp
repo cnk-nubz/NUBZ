@@ -23,9 +23,7 @@ std::vector<io::MultipleChoiceQuestion> GetAllMultipleChoiceQuestionsCommand::op
         }
     });
 
-    std::sort(questions.begin(),
-              questions.end(),
-              [](const auto &lhs, const auto &rhs) { return lhs.name < rhs.name; });
+    std::sort(questions.begin(), questions.end());
     return questions;
 }
 
