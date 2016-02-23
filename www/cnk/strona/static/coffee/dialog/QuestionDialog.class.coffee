@@ -1,7 +1,7 @@
 root = exports ? this
 root.QuestionDialog = class QuestionDialog
   readonly: false
-  constructor: (@_url, @_saveHandler = (->)) ->
+  constructor: (@_url, @_saveHandler = ( ->)) ->
     @_getDialogMessage()
 
   _getDialogMessage: =>

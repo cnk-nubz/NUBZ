@@ -3,11 +3,11 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     if @_dialogInfo?
-      if @_dialogInfo.floor == null
-        @_dialogInfo.floor = "brak"
+      if not @_dialogInfo.floor?
+        @_dialogInfo.floor = 2
       jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
-      jQuery("#dialog .form-group:eq(1) .btn-group label:contains(#{@_dialogInfo.floor})").addClass("active")
-      jQuery("#dialog #popover_button").css("background-color": "#" + @_dialogInfo.color)
+      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})").addClass("active")
+      jQuery("#dialog .popoverButton").css("background-color": "#" + @_dialogInfo.color)
 
     radioGroup = @_data.data[1][1].radioGroup
     jQuery("#dialog label.#{radioGroup}").filter(":first").addClass("active") unless @_dialogInfo?
@@ -21,7 +21,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         regex = new RegExp(instance._data.utils.regex.input)
         jQuery(this).keyup((e) -> instance._inputKeyUp(regex)(obj, e))
       )
-    jQuery "#dialog #popover_button"
+    jQuery "#dialog .popoverButton"
       .each( ->
         obj = jQuery(this)
         error = obj.parent().next()
@@ -36,25 +36,25 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       context: this
       url: '/getColorPickerPopoverContent/'
       success: (data) =>
-        jQuery('#popover_button').attr(
+        jQuery('.popoverButton').attr(
           'data-content': data
-        ).popover().on('shown.bs.popover', (->
-          $('.colorpick').click(->
-            rgbvals = $(this).css("background-color")
-            hexval = _rgb2hex(rgbvals).toUpperCase()
-            jQuery('#popover_button').css("background-color", hexval)
-            instance._colorPopoverClose()
-            colorError = jQuery("#popover_button").parent().next()
+        ).popover().on('shown.bs.popover', ( ->
+          jQuery("div.popover").css("z-index", 5000)
+          jQuery('div.popover button').click( ->
+            rgbvals = jQuery(this).css("background-color")
+            hexval = instance._rgb2hex(rgbvals).toUpperCase()
+            jQuery('.popoverButton').css("background-color", hexval)
+            colorError = jQuery(".popoverButton").parent().next()
             instance._showInputError(colorError, "")
+            instance._colorPopoverClose()
           )
         ))
     )
 
-    if @readonly == true
-      console.log "asdf"
+    if @readonly is true
       jQuery("#dialog input").prop("readonly", true)
       jQuery("#dialog label.floorNum.btn:not(.active)").remove()
-      jQuery("#dialog #popover_button").prop("disabled", true)
+      jQuery("#dialog .popoverButton").prop("disabled", true)
 
   _inputKeyUp: (regex) =>
       (obj, e) =>
@@ -71,32 +71,32 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _closeButton: =>
     label: super.label
     action: (dialog) =>
-      super.action(dialog)
       @_colorPopoverClose()
+      super.action(dialog)
 
   _saveButton: =>
     label: super.label
     action: (dialog) =>
-      if @readonly == false
-        super.action(dialog)
+      if @readonly is false
         @_colorPopoverClose()
+        super.action(dialog)
       else
         dialog.close()
 
   _colorPopoverClose: =>
-    jQuery('#popover_button').popover('hide')
+    jQuery('.popoverButton').popover('hide')
 
   extractData: =>
     editedName = jQuery("#dialog input[type=text]").val()
-    floorVal = jQuery("#dialog .floorNum.active").text()
-    if floorVal.match "brak"
-      floorVal = null
+    floorText = jQuery("#dialog .floorNum.active").text()
+    if jQuery.trim(floorText) is "brak"
+      floor = null
     else
-      floorVal = parseInt(floorVal)
-    exhibitColor = _rgb2hex(jQuery("#popover_button").css("background-color")).substring(1)
+      floor = +floorText
+    exhibitColor = @_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..]
     changedData =
       name: editedName
-      floor: floorVal
+      floor: floor
       color: exhibitColor
     changedData
 
@@ -104,7 +104,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     isValid = true
     instance = this
     jQuery "#dialog input[type=text]"
-      .each(->
+      .each( ->
         text = jQuery(this).val()
         regex = new RegExp(instance._data.utils.regex.input)
         if not text.match regex
@@ -115,17 +115,16 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
           else
             instance._showInputError(error, instance._getEmptyInputError())
       )
-    colorError = jQuery("#popover_button").parent().next()
-    if _rgb2hex(jQuery("#popover_button").css('background-color')) != '#ffffff'
+    colorError = jQuery(".popoverButton").parent().next()
+    if @_rgb2hex(jQuery(".popoverButton").css('background-color')) isnt '#ffffff'
       @_showInputError(colorError, "")
     else
       isValid = false
       @_showInputError(colorError, @_data.utils.text.colorError)
     isValid
 
-  _rgb2hex = (rgb) ->
-    hex = (x) ->
-      ('0' + parseInt(x).toString(16)).slice -2
+  _rgb2hex: (rgb) ->
+    hex = (x) -> "0#{parseInt(x).toString(16)}"[-2..]
     if /^#[0-9A-F]{6}$/i.test(rgb)
       return rgb
     rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/)

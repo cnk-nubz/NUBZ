@@ -40,7 +40,7 @@ root.QuestionsList = class QuestionsList extends root.View
         .data("badge", questionBadge)
       questionName.html "#{q.name}"
       questionBadge.html q.type
-      jQuery(questionListElement).click( do (id) => (=>
+      jQuery(questionListElement).click( do (id) => ( =>
         @fireEvents("questionClicked", id)))
       @_questions.push questionListElement
     @_refreshQuestionsList()

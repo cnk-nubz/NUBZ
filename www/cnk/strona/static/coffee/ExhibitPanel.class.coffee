@@ -1,6 +1,7 @@
 root = exports ? this
 root.ExhibitPanel = class ExhibitPanel extends root.View
   # ========== ATTACHED EVENTS ==========
+  # addExhibit
   # flyToExhibitWithId: takes exhibit id as second argument
   # modifyExhibitWithId: takes exhibit id as second argument
   # =====================================
@@ -11,7 +12,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
-    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @addExhibitHandler)
+    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @saveHandler)
     @_init()
 
   _init: =>
@@ -28,14 +29,12 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_getExhibitElementHTML()
     )
 
-  setAddExhibitHandler: (@addExhibitHandlerFunc) ->
-
-  addExhibitHandler: (data) =>
-    @addExhibitHandlerFunc(data)
+  saveHandler: (data) =>
+    @fireEvents("addExhibit", data)
 
   _setExhibitPanelHandlers: =>
     instance = this
-    jQuery("#exhibitPanel #addExhibit").click(=>
+    jQuery("#exhibitPanel #addExhibit").click( =>
       @_exhibitDialog.show()
     )
     jQuery("#exhibitPanel > div.input-group span").click( =>
@@ -90,7 +89,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
           obj = jQuery(this)
           instance._flyToExhibitHandler(obj, instance)
         )
-      jQuery(".exhibitCaption", exhibitListElement).click( do (id) => (=> @fireEvents("modifyExhibitWithId", id)))
+      jQuery(".exhibitCaption", exhibitListElement).click( do (id) => ( => @fireEvents("modifyExhibitWithId", id)))
       @_exhibits.push { exhibit: exhibitListElement, visible: true }
     @_refreshExhibitsList()
     return

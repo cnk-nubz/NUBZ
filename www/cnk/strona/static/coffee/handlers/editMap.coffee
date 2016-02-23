@@ -27,7 +27,9 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.setAddExhibitHandler(@newExhibitRequest)
+    @panel.on("addExhibit", (data) =>
+      @newExhibitRequest(data)
+    )
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
       exhibitFloor = exhibit.frame.mapLevel

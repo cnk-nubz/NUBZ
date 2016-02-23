@@ -248,10 +248,7 @@ def getExhibitDialog(request):
     return getDialog(request, get_const("EXHIBIT_DIALOG"))
 
 def getColorPickerPopoverContent(request):
-    colorsWithBreaks = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
-    '#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
-    '#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',
-    '#175879', '#578826', '#C79403', '#D27F15', '#AE1A15', '#3C0B49']
+    colorsWithBreaks = get_const("POPOVER_COLORS")
     popoverButtonHtml = render_to_string('dialog/popoverColorsPicker.html', {'colorsList': colorsWithBreaks})
     return HttpResponse(popoverButtonHtml)
 
