@@ -12,7 +12,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
-    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @saveHandler)
+    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @exhibitAddHandler)
     @_init()
 
   _init: =>
@@ -29,7 +29,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_getExhibitElementHTML()
     )
 
-  saveHandler: (data) =>
+  exhibitAddHandler: (data) =>
     @fireEvents("addExhibit", data)
 
   _setExhibitPanelHandlers: =>

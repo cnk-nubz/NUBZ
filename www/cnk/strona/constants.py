@@ -162,7 +162,7 @@ EXHIBIT_DIALOG = {
             "dialog/popoverButton.html", {
                 "labelText": "Kolor",
                 "popoverTitle": "Wybierz kolor",
-                "popoverPlacement": "bottom",
+                "popoverPlacement": "right",
                 "popoverText": "",
             }
         ]
@@ -170,6 +170,7 @@ EXHIBIT_DIALOG = {
     "utils": {
         "text": {
             "title": "Tworzenie eksponatu",
+            "editTitle": "Edycja eksponatu",
             "colorError": "Należy ustawić kolor eksponatu",
         },
     }

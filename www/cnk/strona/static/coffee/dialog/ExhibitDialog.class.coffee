@@ -3,6 +3,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
     if @_dialogInfo?
+      @_dialog.setTitle(@_data.utils.text['editTitle'])
       if not @_dialogInfo.floor?
         @_dialogInfo.floor = 2
       jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
