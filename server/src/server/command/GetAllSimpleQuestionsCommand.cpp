@@ -17,12 +17,10 @@ std::vector<io::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
     db.execute(getSimpleQuestions);
 
     std::vector<db::SimpleQuestion> dbSQuestions = getSimpleQuestions.getResult();
-    std::sort(dbSQuestions.begin(),
-              dbSQuestions.end(),
-              [](const auto &lhs, const auto &rhs) { return lhs.name < rhs.name; });
-
     std::vector<io::SimpleQuestion> sQuestions;
+
     ::utils::transform(dbSQuestions, sQuestions, [](const auto &e) { return utils::toIO(e); });
+    std::sort(sQuestions.begin(), sQuestions.end());
     return sQuestions;
 }
 }

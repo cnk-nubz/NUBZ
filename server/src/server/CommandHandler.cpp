@@ -211,6 +211,20 @@ void CommandHandler::getAllActions(std::vector<communication::Action> &response)
     LOG(INFO) << __func__ << " end";
 }
 
+#pragma mark - QUESTIONS
+
+void CommandHandler::getAllQuestions(communication::QuestionsList &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetAllQuestionsCommand{db}();
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - SIMPLE QUESTIONS
 
 void CommandHandler::createSimpleQuestion(
