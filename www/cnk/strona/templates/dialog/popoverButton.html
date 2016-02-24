@@ -1,0 +1,15 @@
+{% load updateContext %}
+{% updateContext description %}
+<div class="form-group">
+  <label class="col-sm-{{labelSize|default:3}} control-label">
+    {{labelText}}
+  </label>
+  <div class="col-sm-{{inputSize|default:9}}">
+    <button class="btn btn-default popoverButton" type="button"
+      data-original-title="{{popoverTitle}}" data-container="body"
+      data-toggle="popover" data-placement="{{popoverPlacement}}"
+      data-html="true" style="width: 30px; height: 30px">
+      {{popoverText}}
+    </button>
+  </div>
+</div>

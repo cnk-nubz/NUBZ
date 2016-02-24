@@ -14,6 +14,8 @@ urlpatterns = [
 
     url(r'getExhibitPanel/$', views.getExhibitPanel, name='getExhibitPanel'),
     url(r'getExhibitListElement/$', views.getExhibitListElement, name='getExhibitListElement'),
+    url(r'getExhibitDialog/$', views.getExhibitDialog, name='getExhibitDialog'),
+    url(r'getColorPickerPopoverContent/$', views.getColorPickerPopoverContent, name='getColorPickerPopoverContent'),
     url(r'getSimpleQuestionDialog/$', views.getSimpleQuestionDialog, name='getSimpleQuestionDialog'),
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),

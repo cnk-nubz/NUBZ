@@ -12,6 +12,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
+    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @addExhibitHandler)
     @_init()
 
   _init: =>
@@ -28,9 +29,14 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_getExhibitElementHTML()
     )
 
+  addExhibitHandler: (data) =>
+    @fireEvents("addExhibit", data)
+
   _setExhibitPanelHandlers: =>
     instance = this
-    jQuery("#exhibitPanel > button").click( => @fireEvents("addExhibit"))
+    jQuery("#exhibitPanel #addExhibit").click( =>
+      @_exhibitDialog.show()
+    )
     jQuery("#exhibitPanel > div.input-group span").click( =>
       @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").val()
       @_refreshExhibitsList()
@@ -60,8 +66,14 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       success: (data) ->
         @_exhibitElementHTML = data
         @addExhibits((id for id, _ of @mapData.exhibits))
+        @filterForCurrentFloor()
     )
     return
+
+  filterForCurrentFloor: () =>
+    jQuery("#filterButtons button:eq(#{1 - @mapData.activeFloor})").removeClass("active")
+    jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
+    @_refreshExhibitsList()
 
   addExhibits: (exhibitIdList) =>
     for id in exhibitIdList
@@ -83,7 +95,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
           obj = jQuery(this)
           instance._flyToExhibitHandler(obj, instance)
         )
-      jQuery(".exhibitCaption", exhibitListElement).click( do (id) => (=> @fireEvents("modifyExhibitWithId", id)))
+      jQuery(".exhibitCaption", exhibitListElement).click( do (id) => ( => @fireEvents("modifyExhibitWithId", id)))
       @_exhibits.push { exhibit: exhibitListElement, visible: true }
     @_refreshExhibitsList()
     return

@@ -3,6 +3,7 @@ class Handlers
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
     mapData = new MapDataHandler()
+    @exhibitEditDialog = new root.ExhibitDialog("getExhibitDialog/")
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -26,10 +27,8 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.on("addExhibit", =>
-      dialog = new ExhibitDialog(null, @mapData.activeFloor, @newExhibitRequest)
-      dialog.nameEditable = true
-      dialog.show()
+    @panel.on("addExhibit", (data) =>
+      @newExhibitRequest(data)
     )
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
@@ -38,13 +37,20 @@ class Handlers
         jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
         jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
       @canvas.flyToExhibit id
+      @panel.filterForCurrentFloor()
       jQuery(@button.plusZoom).prop "disabled", true
       jQuery(@button.minusZoom).prop "disabled", false
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
-      dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
-      dialog.show()
+      # TODO: color is dummy for now
+      data =
+        id: id
+        name: exhibit.name
+        floor: exhibit.frame?.mapLevel
+        color: "2468AC"
+      @exhibitEditDialog.bindData(data)
+      @exhibitEditDialog.show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
       jQuery(@button.plusZoom).prop("disabled", disablePlus)
@@ -73,6 +79,7 @@ class Handlers
       instance.canvas.setFloorLayer(floor)
       jQuery(instance.button.plusZoom).prop "disabled", false
       jQuery(instance.button.minusZoom).prop "disabled", true
+      instance.panel.filterForCurrentFloor()
 
   showLabelsHandler: =>
     instance = this
