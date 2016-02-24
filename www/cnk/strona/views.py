@@ -20,7 +20,7 @@ def get_const(name):
 
 def _pingServer():
 	tc = ThriftCommunicator()
-	result = tc.ping(1, 'x')
+	result = tc.ping(1, 'x')[0]
 	return result == 1
 
 defaultImage = {
@@ -32,14 +32,7 @@ defaultImage = {
 
 def _getMapImageInfo():
 	tc = ThriftCommunicator()
-	floorTiles = [
-		tc.getMapImageTiles(0),
-		tc.getMapImageTiles(1)
-	]
-
-	if not floorTiles:
-		return None
-
+	floorTiles = tc.getMapImageTiles()
 	floorTilesInfo = {}
 
 	for i in xrange(0, 2):
@@ -67,9 +60,7 @@ def _getMapImageInfo():
 
 def _getExhibits():
 	tc = ThriftCommunicator()
-	result = tc.getExhibits()
-	if not result:
-		return None
+	result = tc.getExhibits()[0]
 
 	exhibitDict = {}
 	for k in result.exhibits:
@@ -92,13 +83,13 @@ def _getExhibits():
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
-	if not _pingServer():
-		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
+	try:
+		_pingServer()
+		floorTilesInfo = _getMapImageInfo()
+		exhibits = _getExhibits()
+	except Exception as ex:
+		return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
-	floorTilesInfo = _getMapImageInfo()
-	exhibits = _getExhibits()
-	if floorTilesInfo is None or exhibits is None:
-		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template(file)
 
 	if len(floorTilesInfo[0]) == 1: #just default image
@@ -121,6 +112,7 @@ def getMapPage(request, file, activeLink):
 	})
 	return HttpResponse(template.render(context))
 
+@ensure_csrf_cookie
 def index(request):
 	return getMapPage(request, 'map/justMap.html', "0")
 
@@ -156,9 +148,10 @@ def uploadImage(request):
 	tc = ThriftCommunicator()
 	filename = m.image.name
 	#extract filename
-	setResult = tc.setMapImage(floor, os.path.basename(filename))
-	floorTilesInfo = _getMapImageInfo()
-	if not setResult or not floorTilesInfo:
+	try:
+		setResult = tc.setMapImage(floor, os.path.basename(filename))
+		floorTilesInfo = _getMapImageInfo()
+	except Exception as ex:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
 		}
@@ -188,9 +181,13 @@ def updateExhibitPosition(request):
 	jsonData = request.POST.get("jsonData")
 	frame = json.loads(jsonData)
 	tc = ThriftCommunicator()
-	setPosition = tc.setExhibitFrame(frame)
-	if not setPosition:
+
+	try:
+		tc.setExhibitFrame(frame)
+	except Exception as ex:
+		data['message'] = str(ex)
 		return JsonResponse(data)
+
 	data = {
 		"success": True,
 		"id": int(frame['id']),
@@ -210,8 +207,11 @@ def createNewExhibit(request):
 	jsonData = request.POST.get("jsonData")
 	exhibitRequest = json.loads(jsonData)
 	tc = ThriftCommunicator()
-	newExhibit = tc.createNewExhibit(exhibitRequest)
-	if not newExhibit:
+
+	try:
+		newExhibit = tc.createNewExhibit(exhibitRequest)[0]
+	except Exception as ex:
+		data['message'] = str(ex)
 		return JsonResponse(data)
 
 	if newExhibit.mapFrame:
