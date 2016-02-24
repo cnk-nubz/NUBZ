@@ -14,7 +14,7 @@ public:
     GetExhibits() = default;
     GetExhibits(std::int32_t exhibitId);
 
-    const std::vector<Exhibit> operator()(DatabaseSession &session);
+    std::vector<Exhibit> operator()(DatabaseSession &session);
     const std::vector<Exhibit> &getResult() const;
 
     boost::optional<std::int32_t> exhibitId;

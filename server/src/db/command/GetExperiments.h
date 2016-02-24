@@ -14,7 +14,7 @@ public:
     GetExperiments() = default;
     GetExperiments(std::int32_t experimentId);
 
-    const std::vector<Experiment> operator()(DatabaseSession &session);
+    std::vector<Experiment> operator()(DatabaseSession &session);
     const std::vector<Experiment> &getResult() const;
 
     boost::optional<std::int32_t> experimentId;

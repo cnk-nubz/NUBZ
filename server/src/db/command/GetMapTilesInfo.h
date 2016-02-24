@@ -11,7 +11,7 @@ class GetMapTilesInfo {
 public:
     GetMapTilesInfo(std::int32_t floor);
 
-    const std::vector<MapTilesInfo> operator()(DatabaseSession &session);
+    std::vector<MapTilesInfo> operator()(DatabaseSession &session);
     const std::vector<MapTilesInfo> &getResult() const;
 
 private:

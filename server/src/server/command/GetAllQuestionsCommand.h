@@ -8,6 +8,7 @@
 #include "commons.h"
 #include "GetAllSimpleQuestionsCommand.h"
 #include "GetAllMultipleChoiceQuestionsCommand.h"
+#include "GetAllSortQuestionsCommand.h"
 
 namespace server {
 namespace command {
@@ -22,7 +23,8 @@ public:
 private:
     GetAllSimpleQuestionsCommand getSimple;
     GetAllMultipleChoiceQuestionsCommand getMultiple;
-    
+    GetAllSortQuestionsCommand getSortQ;
+
     void generateOrder(io::QuestionsList &list) const;
 };
 }
