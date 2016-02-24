@@ -1,4 +1,4 @@
-package com.cnk.ui.exhibitwindow;
+package com.cnk.activities.exhibitwindow;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -10,14 +10,13 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 
 import com.cnk.R;
-import com.cnk.data.Action;
+import com.cnk.data.experiment.Action;
 import com.cnk.data.DataHandler;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 public class ExhibitDialog extends Activity {
     public static final String IS_BREAK = "IsBreak";

@@ -1,8 +1,8 @@
 package com.cnk.database;
 
-import com.cnk.data.FloorMap;
-import com.cnk.data.MapTiles;
-import com.cnk.data.Resolution;
+import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapTiles;
+import com.cnk.data.map.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;

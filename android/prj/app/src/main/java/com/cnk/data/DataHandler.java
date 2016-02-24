@@ -5,6 +5,16 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Log;
 
+import com.cnk.data.experiment.Action;
+import com.cnk.data.experiment.Experiment;
+import com.cnk.data.experiment.SimpleQuestion;
+import com.cnk.data.experiment.Survey;
+import com.cnk.data.map.FloorInfo;
+import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapTiles;
+import com.cnk.data.map.Resolution;
+import com.cnk.data.raport.Raport;
+import com.cnk.data.raport.RaportEvent;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
@@ -20,9 +30,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Queue;
 
 public class DataHandler extends Observable {
     public enum Item {
@@ -121,6 +133,21 @@ public class DataHandler extends Observable {
         experiment = newData;
         setChanged();
         notifyObservers(Item.EXPERIMENT_DATA);
+    }
+
+    public Survey getPreSurvey() {
+        Queue<Survey.QuestionType> types = new LinkedList<>();
+        for (int i = 0; i < 5; i++) {
+            types.add(Survey.QuestionType.SIMPLE);
+        }
+
+        Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
+        for (int i = 0; i < 5; i++) {
+            simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i), "test" + Integer.toString(i),
+                    i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
+        }
+
+        return new Survey(types, simpleQuestions);
     }
 
     public List<Action> getAllExhibitActions() {

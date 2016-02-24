@@ -10,9 +10,9 @@ import com.cnk.communication.thrift.NewMapImagesResponse;
 import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.Size;
 import com.cnk.data.DataHandler;
-import com.cnk.data.FloorMap;
-import com.cnk.data.MapTiles;
-import com.cnk.data.Resolution;
+import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapTiles;
+import com.cnk.data.map.Resolution;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Consts;
 

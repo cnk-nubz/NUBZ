@@ -1,4 +1,4 @@
-package com.cnk.data;
+package com.cnk.data.map;
 
 import java.util.ArrayList;
 

@@ -1,6 +1,6 @@
 package com.cnk.database.models;
 
-import com.cnk.data.Resolution;
+import com.cnk.data.map.Resolution;
 
 public class DetailLevelRes {
     private Integer floor;

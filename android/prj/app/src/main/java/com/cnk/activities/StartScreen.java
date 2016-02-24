@@ -1,4 +1,4 @@
-package com.cnk;
+package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -11,10 +11,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.thrift.Survey;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
-import com.cnk.ui.MapActivity;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -48,6 +49,16 @@ public class StartScreen extends AppCompatActivity implements Observer {
         downloadMap();
     }
 
+    public void mapActivityClick(View view) {
+        Intent i = new Intent(getApplicationContext(), MapActivity.class);
+        startActivity(i);
+    }
+
+    public void surveyClick(View view) {
+        Intent i = new Intent(getApplicationContext(), SurveyActivity.class);
+        startActivity(i);
+    }
+
     public void update(Observable observable, Object o) {
         if (o.equals(DataHandler.Item.MAP_UPDATE_COMPLETED)) {
             if (!dataLoaded) {
@@ -66,11 +77,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
             spinner.dismiss();
             DataHandler.getInstance().deleteObserver(this);
         }
-    }
-
-    public void mapActivityClick(View view) {
-        Intent i = new Intent(getApplicationContext(), MapActivity.class);
-        startActivity(i);
     }
 
     public void showAlert() {
