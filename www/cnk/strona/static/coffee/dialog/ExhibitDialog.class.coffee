@@ -9,9 +9,9 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
       jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})").addClass("active")
       jQuery("#dialog .popoverButton").css("background-color": "#" + @_dialogInfo.color)
-
-    radioGroup = @_data.data[1][1].radioGroup
-    jQuery("#dialog label.#{radioGroup}").filter(":first").addClass("active") unless @_dialogInfo?
+    else
+      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@currentFloor})").addClass("active")
+      jQuery("#dialog .popoverButton").css("background-color": "#9DE35A")
 
     instance = this
     jQuery "#dialog input[type=text]"
@@ -45,8 +45,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
             rgbvals = jQuery(this).css("background-color")
             hexval = instance._rgb2hex(rgbvals).toUpperCase()
             jQuery('.popoverButton').css("background-color", hexval)
-            colorError = jQuery(".popoverButton").parent().next()
-            instance._showInputError(colorError, "")
             instance._colorPopoverClose()
           )
         ))
@@ -56,6 +54,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("#dialog input").prop("readonly", true)
       jQuery("#dialog label.floorNum.btn:not(.active)").remove()
       jQuery("#dialog .popoverButton").prop("disabled", true)
+
+  setCurrentFloor: (@currentFloor) ->
 
   _inputKeyUp: (regex) =>
       (obj, e) =>
@@ -116,12 +116,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
           else
             instance._showInputError(error, instance._getEmptyInputError())
       )
-    colorError = jQuery(".popoverButton").parent().next()
-    if @_rgb2hex(jQuery(".popoverButton").css('background-color')) isnt '#ffffff'
-      @_showInputError(colorError, "")
-    else
-      isValid = false
-      @_showInputError(colorError, @_data.utils.text.colorError)
     isValid
 
   _rgb2hex: (rgb) ->

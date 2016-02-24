@@ -78,6 +78,7 @@ class Handlers
       instance.canvas.setFloorLayer(floor)
       jQuery(instance.button.plusZoom).prop "disabled", false
       jQuery(instance.button.minusZoom).prop "disabled", true
+      instance.panel.filterForCurrentFloor(floor)
 
   showLabelsHandler: =>
     instance = this

@@ -12,7 +12,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
-    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @exhibitAddHandler)
+    @_exhibitDialog = new root.ExhibitDialog("getExhibitDialog/", @addExhibitHandler)
     @_init()
 
   _init: =>
@@ -29,12 +29,13 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         @_getExhibitElementHTML()
     )
 
-  exhibitAddHandler: (data) =>
+  addExhibitHandler: (data) =>
     @fireEvents("addExhibit", data)
 
   _setExhibitPanelHandlers: =>
     instance = this
     jQuery("#exhibitPanel #addExhibit").click( =>
+      @_exhibitDialog.setCurrentFloor(@mapData.activeFloor)
       @_exhibitDialog.show()
     )
     jQuery("#exhibitPanel > div.input-group span").click( =>
@@ -66,8 +67,16 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       success: (data) ->
         @_exhibitElementHTML = data
         @addExhibits((id for id, _ of @mapData.exhibits))
+        jQuery("#filterButtons button:eq(#{1 - @mapData.activeFloor})").removeClass("active")
+        jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
+        @_refreshExhibitsList()
     )
     return
+
+  filterForCurrentFloor: (floor) =>
+    jQuery("#filterButtons button:eq(#{1 - floor})").removeClass("active")
+    jQuery("#filterButtons button:eq(#{floor})").addClass("active")
+    @_refreshExhibitsList()
 
   addExhibits: (exhibitIdList) =>
     for id in exhibitIdList

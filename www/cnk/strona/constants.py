@@ -171,7 +171,6 @@ EXHIBIT_DIALOG = {
         "text": {
             "title": "Tworzenie eksponatu",
             "editTitle": "Edycja eksponatu",
-            "colorError": "Należy ustawić kolor eksponatu",
         },
     }
 }
