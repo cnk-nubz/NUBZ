@@ -17,7 +17,7 @@ public:
     GetMultipleChoiceQuestionOptions() = default;
     GetMultipleChoiceQuestionOptions(std::int32_t questionId);
 
-    const std::vector<MultipleChoiceQuestionOption> operator()(DatabaseSession &session);
+    std::vector<MultipleChoiceQuestionOption> operator()(DatabaseSession &session);
     const std::vector<MultipleChoiceQuestionOption> &getResult() const;
 
     boost::optional<std::int32_t> questionId;

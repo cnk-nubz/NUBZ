@@ -35,10 +35,17 @@ struct RawReport {
             boost::optional<std::vector<std::int32_t>> choosenOptions;
         };
 
+        struct SortQuestionAnswer {
+            SortQuestionAnswer(const communication::SortQuestionAnswer &thrift);
+
+            boost::optional<std::vector<std::int32_t>> choosenOrder;
+        };
+
         SurveyAnswers(const communication::SurveyAnswers &thrift);
 
         std::vector<SimpleQuestionAnswer> simpleQuestionsAnswers;
         std::vector<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers;
+        std::vector<SortQuestionAnswer> sortQuestionsAnswers;
     };
 
     RawReport(const communication::RawReport &thrift);

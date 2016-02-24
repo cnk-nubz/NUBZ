@@ -25,6 +25,12 @@ RawReport::SurveyAnswers::SurveyAnswers(const communication::SurveyAnswers &thri
     for (const auto &raw : thrift.simpleQuestionsAnswers) {
         simpleQuestionsAnswers.emplace_back(raw);
     }
+    for (const auto &raw : thrift.multipleChoiceQuestionsAnswers) {
+        multipleChoiceQuestionsAnswers.emplace_back(raw);
+    }
+    for (const auto &raw : thrift.sortQuestionsAnswers) {
+        sortQuestionsAnswers.emplace_back(raw);
+    }
 }
 
 RawReport::SurveyAnswers::SimpleQuestionAnswer::SimpleQuestionAnswer(
@@ -38,6 +44,13 @@ RawReport::SurveyAnswers::MultipleChoiceQuestionAnswer::MultipleChoiceQuestionAn
     const communication::MultipleChoiceQuestionAnswer &thrift) {
     if (thrift.__isset.choosenOptions) {
         choosenOptions = thrift.choosenOptions;
+    }
+}
+
+RawReport::SurveyAnswers::SortQuestionAnswer::SortQuestionAnswer(
+    const communication::SortQuestionAnswer &thrift) {
+    if (thrift.__isset.choosenOrder) {
+        choosenOrder = thrift.choosenOrder;
     }
 }
 }

@@ -22,10 +22,10 @@ Value createSurvey(const Experiment::Survey &survey, Document::AllocatorType &al
 }
 
 std::string ExperimentFactory::createJson(const Experiment &experiment) {
-    static const auto keyActions = toStupidStringAdapter(field0_Actions);
-    static const auto keyBreakActions = toStupidStringAdapter(field1_BreakActions);
-    static const auto keySurveyBefore = toStupidStringAdapter(field2_SurveyBefore);
-    static const auto keySurveyAfter = toStupidStringAdapter(field2_SurveyAfter);
+    static const auto keyActions = toStrAdapter(field0_Actions);
+    static const auto keyBreakActions = toStrAdapter(field1_BreakActions);
+    static const auto keySurveyBefore = toStrAdapter(field2_SurveyBefore);
+    static const auto keySurveyAfter = toStrAdapter(field2_SurveyAfter);
 
     Document document;
     auto &allocator = document.GetAllocator();
@@ -45,20 +45,22 @@ std::string ExperimentFactory::createJson(const Experiment &experiment) {
 
 namespace {
 Value createSurvey(const Experiment::Survey &survey, Document::AllocatorType &allocator) {
-    static const auto keyOrder = toStupidStringAdapter(field20_TypesOrder);
-    static const auto keySimpleQuestions = toStupidStringAdapter(field21_SimpleQuestions);
-    static const auto keyMultipleChoiceQuestions =
-        toStupidStringAdapter(field22_MultipleChoiceQuestions);
+    static const auto keyOrder = toStrAdapter(field20_TypesOrder);
+    static const auto keySimpleQuestions = toStrAdapter(field21_SimpleQuestions);
+    static const auto keyMultipleChoiceQuestions = toStrAdapter(field22_MultipleChoiceQuestions);
+    static const auto keySortQuestions = toStrAdapter(field23_SortQuestions);
 
     auto jsonOrder = createTrivialArray(survey.order, allocator);
     auto jsonSimpleQuestions = createTrivialArray(survey.simpleQuestions, allocator);
     auto jsonMultipleChoiceQuestions =
         createTrivialArray(survey.multipleChoiceQuestions, allocator);
+    auto jsonSortQuestions = createTrivialArray(survey.sortQuestions, allocator);
 
     Value json(kObjectType);
     json.AddMember(keyOrder, jsonOrder, allocator);
     json.AddMember(keySimpleQuestions, jsonSimpleQuestions, allocator);
     json.AddMember(keyMultipleChoiceQuestions, jsonMultipleChoiceQuestions, allocator);
+    json.AddMember(keySortQuestions, jsonSortQuestions, allocator);
     return json;
 }
 }
@@ -86,12 +88,15 @@ Experiment ExperimentFactory::create(
 
 namespace {
 Experiment::Survey parseSurvey(const Value &json) {
+    assert(json.IsObject());
+
     Experiment::Survey survey;
     for (auto t : parse(parseIntArray, json, field20_TypesOrder)) {
         survey.order.push_back(static_cast<Experiment::Survey::QuestionType>(t));
     }
     survey.simpleQuestions = parse(parseIntArray, json, field21_SimpleQuestions);
     survey.multipleChoiceQuestions = parse(parseIntArray, json, field22_MultipleChoiceQuestions);
+    survey.sortQuestions = parse(parseIntArray, json, field23_SortQuestions);
     return survey;
 }
 }

@@ -7,7 +7,7 @@
 namespace db {
 namespace cmd {
 
-const std::vector<MapTile> GetMapTiles::operator()(db::DatabaseSession &session) {
+std::vector<MapTile> GetMapTiles::operator()(db::DatabaseSession &session) {
     return result = session.getResults<db::factory::MapTileFactory>(createQuery());
 }
 

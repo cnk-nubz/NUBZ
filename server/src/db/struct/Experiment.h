@@ -12,11 +12,13 @@ struct Experiment {
         enum QuestionType : int {
             Simple = 0,
             MultipleChoice = 1,
+            Sort = 2,
         };
 
         std::vector<QuestionType> order;
         std::vector<std::int32_t> simpleQuestions;
         std::vector<std::int32_t> multipleChoiceQuestions;
+        std::vector<std::int32_t> sortQuestions;
     };
 
     std::int32_t ID;

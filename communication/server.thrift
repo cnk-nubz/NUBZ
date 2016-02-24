@@ -76,6 +76,14 @@ service Server {
 
 
 /////////////////////////////////////////////////
+// Questions
+/////////////////////////////////////////////////
+
+	structs.QuestionsList getAllQuestions()
+		throws (1: structs.InternalError err),
+
+
+/////////////////////////////////////////////////
 // Simple Question
 /////////////////////////////////////////////////
 
@@ -94,5 +102,16 @@ service Server {
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 	list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
+		throws (1: structs.InternalError err),
+
+
+/////////////////////////////////////////////////
+// Sort Question
+/////////////////////////////////////////////////
+
+	structs.SortQuestion createSortQuestion(1: structs.CreateSortQuestionRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	list<structs.SortQuestion> getAllSortQuestions()
 		throws (1: structs.InternalError err),
 }

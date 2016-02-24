@@ -17,7 +17,7 @@ public:
     GetMultipleChoiceQuestions() = default;
     GetMultipleChoiceQuestions(std::int32_t questionId);
 
-    const std::vector<MultipleChoiceQuestion> operator()(DatabaseSession &session);
+    std::vector<MultipleChoiceQuestion> operator()(DatabaseSession &session);
     const std::vector<MultipleChoiceQuestion> &getResult() const;
 
 private:

@@ -177,27 +177,62 @@ struct CreateMultipleChoiceQuestionRequest {
 
 
 /////////////////////////////////////////////////
-// Experiment
+// Sort Question
+/////////////////////////////////////////////////
+
+struct SortQuestionOption {
+	1: i32 optionId,
+	2: string text,
+}
+
+struct SortQuestion {
+	1: i32 questionId,
+	2: string name,
+	3: string question,
+	4: list<SortQuestionOption> options,
+}
+
+struct SortQuestionAnswer {
+	1: optional list<i32> choosenOrder,
+}
+
+// name is optional, null means name == question
+struct CreateSortQuestionRequest {
+	1: optional string name,
+	2: string question,
+	3: list<string> options,
+}
+
+
+/////////////////////////////////////////////////
+// Questions List
 /////////////////////////////////////////////////
 
 enum QuestionType {
 	SIMPLE,
 	MULTIPLE_CHOICE,
+	SORT,
 }
 
-struct Survey {
+struct QuestionsList {
 	1: list<QuestionType> questionsOrder,
 	2: list<SimpleQuestion> simpleQuestions,
 	3: list<MultipleChoiceQuestion> multipleChoiceQuestions,
+	4: list<SortQuestion> sortQuestions,
 }
+
+
+/////////////////////////////////////////////////
+// Experiment
+/////////////////////////////////////////////////
 
 struct Experiment {
 	1: i32 experimentId,
 	2: string name,
-	3: Survey surveyBefore,
+	3: QuestionsList surveyBefore,
 	4: list<Action> exhibitActions,
 	5: list<Action> breakActions,
-	6: Survey surveyAfter,
+	6: QuestionsList surveyAfter,
 }
 
 struct CurrentExperimentResponse {
@@ -219,6 +254,7 @@ struct RawReportEvent {
 struct SurveyAnswers {
 	1: list<SimpleQuestionAnswer> simpleQuestionsAnswers,
 	2: list<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers,
+	3: list<SortQuestionAnswer> sortQuestionsAnswers,
 }
 
 struct RawReport {

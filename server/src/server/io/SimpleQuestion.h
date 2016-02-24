@@ -6,10 +6,12 @@
 
 #include <communication/structs_types.h>
 
+#include "Question.h"
+
 namespace server {
 namespace io {
 
-struct SimpleQuestion {
+struct SimpleQuestion : public Question {
     enum class AnswerType {
         Text,
         Number,
@@ -23,9 +25,6 @@ struct SimpleQuestion {
     SimpleQuestion() = default;
     thrift_t toThrift() const;
 
-    std::int32_t ID;
-    std::string name;
-    std::string question;
     AnswerType answerType;
 };
 }

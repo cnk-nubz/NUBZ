@@ -18,9 +18,12 @@
 #include "command/CreateActionCommand.h"
 #include "command/GetAllActionsCommand.h"
 
+#include "command/GetAllQuestionsCommand.h"
 #include "command/CreateSimpleQuestionCommand.h"
 #include "command/GetAllSimpleQuestionsCommand.h"
 #include "command/CreateMultipleChoiceQuestionCommand.h"
 #include "command/GetAllMultipleChoiceQuestionsCommand.h"
+#include "command/CreateSortQuestionCommand.h"
+#include "command/GetAllSortQuestionsCommand.h"
 
 #endif

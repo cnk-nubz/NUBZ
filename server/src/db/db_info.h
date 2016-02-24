@@ -97,6 +97,8 @@ static const std::string field10_SimpleQuestions = "simpleQuestions";
 static const std::string field100_Answer = "answer";
 static const std::string field11_MultipleChoiceQuestions = "multipleChoiceQuestions";
 static const std::string field110_Answer = "answer";
+static const std::string field12_SortQuestions = "sortQuestions";
+static const std::string field120_Answer = "answer";
 
 }  // reports
 
@@ -133,6 +135,22 @@ static const std::string colQuestionId = "question_id";
 static const std::string colText = "text";
 }  // multiple choice question options
 
+namespace sort_questions {
+static const std::string tableName = "sort_questions";
+
+static const std::string colId = "id";
+static const std::string colName = "name";
+static const std::string colQuestion = "question";
+}  // sort questions
+
+namespace sort_question_options {
+static const std::string tableName = "sort_question_options";
+
+static const std::string colId = "id";
+static const std::string colQuestionId = "question_id";
+static const std::string colText = "text";
+}  // sort question options
+
 namespace experiments {
 namespace current {
 static const std::string tableName = "active_experiment";
@@ -155,6 +173,7 @@ static const std::string field2_SurveyAfter = "surveyAfter";
 static const std::string field20_TypesOrder = "typesOrder";
 static const std::string field21_SimpleQuestions = "simpleQuestions";
 static const std::string field22_MultipleChoiceQuestions = "multipleChoiceQuestions";
+static const std::string field23_SortQuestions = "sortQuestions";
 }  // experiments
 }
 }

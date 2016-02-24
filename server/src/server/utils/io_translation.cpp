@@ -60,15 +60,47 @@ io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &
     return res;
 }
 
+io::SortQuestion toIO(const db::SortQuestion &question,
+                      const std::vector<db::SortQuestionOption> &options) {
+    io::SortQuestion res;
+    res.ID = question.ID;
+    res.name = question.name;
+    res.question = question.question;
+    ::utils::transform(options, res.options, [](const auto &o) { return toIO(o); });
+    return res;
+}
+
+io::SortQuestion::Option toIO(const db::SortQuestionOption &option) {
+    io::SortQuestion::Option res;
+    res.ID = option.ID;
+    res.text = option.text;
+    return res;
+}
+
 db::RawReport toDB(const io::input::RawReport &report) {
     db::RawReport res;
     res.ID = report.ID;
     ::utils::transform(report.history, res.history, [](const auto &e) { return toDB(e); });
+
     ::utils::transform(report.answersBefore.simpleQuestionsAnswers,
                        res.surveyBefore.simpleQuestions,
                        [](const auto &e) { return toDB(e); });
     ::utils::transform(report.answersAfter.simpleQuestionsAnswers,
                        res.surveyAfter.simpleQuestions,
+                       [](const auto &e) { return toDB(e); });
+
+    ::utils::transform(report.answersBefore.multipleChoiceQuestionsAnswers,
+                       res.surveyBefore.multipleChoiceQuestions,
+                       [](const auto &e) { return toDB(e); });
+    ::utils::transform(report.answersAfter.multipleChoiceQuestionsAnswers,
+                       res.surveyAfter.multipleChoiceQuestions,
+                       [](const auto &e) { return toDB(e); });
+
+    ::utils::transform(report.answersBefore.sortQuestionsAnswers,
+                       res.surveyBefore.sortQuestions,
+                       [](const auto &e) { return toDB(e); });
+    ::utils::transform(report.answersAfter.sortQuestionsAnswers,
+                       res.surveyAfter.sortQuestions,
                        [](const auto &e) { return toDB(e); });
     return res;
 }
@@ -85,6 +117,20 @@ db::RawReport::Survey::SimpleQuestionAnswer toDB(
     const io::input::RawReport::SurveyAnswers::SimpleQuestionAnswer &answer) {
     db::RawReport::Survey::SimpleQuestionAnswer res;
     res.answer = answer.answer;
+    return res;
+}
+
+db::RawReport::Survey::MultipleChoiceQuestionAnswer toDB(
+    const io::input::RawReport::SurveyAnswers::MultipleChoiceQuestionAnswer &answer) {
+    db::RawReport::Survey::MultipleChoiceQuestionAnswer res;
+    res.choosenOptions = answer.choosenOptions;
+    return res;
+}
+
+db::RawReport::Survey::SortQuestionAnswer toDB(
+    const io::input::RawReport::SurveyAnswers::SortQuestionAnswer &answer) {
+    db::RawReport::Survey::SortQuestionAnswer res;
+    res.choosenOrder = answer.choosenOrder;
     return res;
 }
 }

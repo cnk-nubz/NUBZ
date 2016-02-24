@@ -45,6 +45,8 @@ public:
                               const communication::CreateActionRequest &request) override;
     virtual void getAllActions(std::vector<communication::Action> &response) override;
 
+    virtual void getAllQuestions(communication::QuestionsList &response) override;
+
     virtual void createSimpleQuestion(
         communication::SimpleQuestion &response,
         const communication::CreateSimpleQuestionRequest &request) override;
@@ -56,6 +58,11 @@ public:
         const communication::CreateMultipleChoiceQuestionRequest &request) override;
     virtual void getAllMultipleChoiceQuestions(
         std::vector<communication::MultipleChoiceQuestion> &response) override;
+
+    virtual void createSortQuestion(
+        communication::SortQuestion &response,
+        const communication::CreateSortQuestionRequest &request) override;
+    virtual void getAllSortQuestions(std::vector<communication::SortQuestion> &response) override;
 
 private:
     db::Database &db;
