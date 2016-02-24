@@ -35,7 +35,6 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   _setExhibitPanelHandlers: =>
     instance = this
     jQuery("#exhibitPanel #addExhibit").click( =>
-      @_exhibitDialog.setCurrentFloor(@mapData.activeFloor)
       @_exhibitDialog.show()
     )
     jQuery("#exhibitPanel > div.input-group span").click( =>
@@ -67,15 +66,13 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       success: (data) ->
         @_exhibitElementHTML = data
         @addExhibits((id for id, _ of @mapData.exhibits))
-        jQuery("#filterButtons button:eq(#{1 - @mapData.activeFloor})").removeClass("active")
-        jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
-        @_refreshExhibitsList()
+        @filterForCurrentFloor()
     )
     return
 
-  filterForCurrentFloor: (floor) =>
-    jQuery("#filterButtons button:eq(#{1 - floor})").removeClass("active")
-    jQuery("#filterButtons button:eq(#{floor})").addClass("active")
+  filterForCurrentFloor: () =>
+    jQuery("#filterButtons button:eq(#{1 - @mapData.activeFloor})").removeClass("active")
+    jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
     @_refreshExhibitsList()
 
   addExhibits: (exhibitIdList) =>

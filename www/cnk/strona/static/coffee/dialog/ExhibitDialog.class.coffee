@@ -10,7 +10,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})").addClass("active")
       jQuery("#dialog .popoverButton").css("background-color": "#" + @_dialogInfo.color)
     else
-      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@currentFloor})").addClass("active")
+      @mapData = new MapDataHandler()
+      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})").addClass("active")
       jQuery("#dialog .popoverButton").css("background-color": "#9DE35A")
 
     instance = this
@@ -54,8 +55,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("#dialog input").prop("readonly", true)
       jQuery("#dialog label.floorNum.btn:not(.active)").remove()
       jQuery("#dialog .popoverButton").prop("disabled", true)
-
-  setCurrentFloor: (@currentFloor) ->
 
   _inputKeyUp: (regex) =>
       (obj, e) =>

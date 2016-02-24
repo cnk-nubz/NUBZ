@@ -37,6 +37,7 @@ class Handlers
         jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
         jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
       @canvas.flyToExhibit id
+      @panel.filterForCurrentFloor()
       jQuery(@button.plusZoom).prop "disabled", true
       jQuery(@button.minusZoom).prop "disabled", false
     )
@@ -78,7 +79,7 @@ class Handlers
       instance.canvas.setFloorLayer(floor)
       jQuery(instance.button.plusZoom).prop "disabled", false
       jQuery(instance.button.minusZoom).prop "disabled", true
-      instance.panel.filterForCurrentFloor(floor)
+      instance.panel.filterForCurrentFloor()
 
   showLabelsHandler: =>
     instance = this
