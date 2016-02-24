@@ -9,7 +9,7 @@
 #include <db/struct/MultipleChoiceQuestion.h>
 #include <db/struct/MultipleChoiceQuestionOption.h>
 #include <db/struct/SortQuestion.h>
-#include <db/struct/SortquestionOption.h>
+#include <db/struct/SortQuestionOption.h>
 
 #include <server/io/Action.h>
 #include <server/io/Exhibit.h>
