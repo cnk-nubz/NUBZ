@@ -33,7 +33,7 @@ std::string parseString(const rapidjson::Value &json) {
     return json.GetString();
 }
 
-rapidjson::GenericStringRef<char> toStupidStringAdapter(const std::string &str) {
+rapidjson::GenericStringRef<char> toStrAdapter(const std::string &str) {
     return rapidjson::GenericStringRef<char>(str.c_str());
 }
 

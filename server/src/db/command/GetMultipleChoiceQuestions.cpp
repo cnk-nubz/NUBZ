@@ -11,7 +11,7 @@ GetMultipleChoiceQuestions::GetMultipleChoiceQuestions(std::int32_t questionId)
     : questionId(questionId) {
 }
 
-const std::vector<MultipleChoiceQuestion> GetMultipleChoiceQuestions::operator()(
+std::vector<MultipleChoiceQuestion> GetMultipleChoiceQuestions::operator()(
     db::DatabaseSession &session) {
     return result = session.getResults<db::factory::MultipleChoiceQuestionFactory>(createQuery());
 }

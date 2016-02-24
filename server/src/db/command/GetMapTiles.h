@@ -11,7 +11,7 @@ namespace cmd {
 
 class GetMapTiles {
 public:
-    const std::vector<MapTile> operator()(DatabaseSession &session);
+    std::vector<MapTile> operator()(DatabaseSession &session);
     const std::vector<MapTile> &getResult() const;
 
     boost::optional<std::int32_t> floor;

@@ -7,6 +7,7 @@
 
 #include "SimpleQuestion.h"
 #include "MultipleChoiceQuestion.h"
+#include "SortQuestion.h"
 
 namespace server {
 namespace io {
@@ -15,6 +16,7 @@ struct QuestionsList {
     enum class QuestionType {
         Simple,
         MultipleChoice,
+        Sort,
     };
     static QuestionType QuestionTypeFromThrift(const communication::QuestionType::type &thrift);
     static communication::QuestionType::type QuestionTypeToThrift(const QuestionType &type);
@@ -27,6 +29,7 @@ struct QuestionsList {
     std::vector<QuestionType> questionsOrder;
     std::vector<SimpleQuestion> simpleQuestions;
     std::vector<MultipleChoiceQuestion> multipleChoiceQuestions;
+    std::vector<SortQuestion> sortQuestions;
 };
 }
 }

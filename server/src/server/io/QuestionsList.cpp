@@ -13,6 +13,8 @@ QuestionsList::QuestionType QuestionsList::QuestionTypeFromThrift(
             return QuestionsList::QuestionType::Simple;
         case communication::QuestionType::type::MULTIPLE_CHOICE:
             return QuestionsList::QuestionType::MultipleChoice;
+        case communication::QuestionType::type::SORT:
+            return QuestionsList::QuestionType::Sort;
     }
 }
 
@@ -23,6 +25,8 @@ communication::QuestionType::type QuestionsList::QuestionTypeToThrift(
             return communication::QuestionType::type::SIMPLE;
         case QuestionsList::QuestionType::MultipleChoice:
             return communication::QuestionType::type::MULTIPLE_CHOICE;
+        case QuestionsList::QuestionType::Sort:
+            return communication::QuestionType::type::SORT;
     }
 }
 
@@ -31,6 +35,7 @@ communication::QuestionsList QuestionsList::toThrift() const {
     ::utils::transform(questionsOrder, thrift.questionsOrder, QuestionTypeToThrift);
     thrift.simpleQuestions = ioToThrift(simpleQuestions);
     thrift.multipleChoiceQuestions = ioToThrift(multipleChoiceQuestions);
+    thrift.sortQuestions = ioToThrift(sortQuestions);
     return thrift;
 }
 }

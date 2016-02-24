@@ -23,5 +23,7 @@
 #include "command/GetAllSimpleQuestionsCommand.h"
 #include "command/CreateMultipleChoiceQuestionCommand.h"
 #include "command/GetAllMultipleChoiceQuestionsCommand.h"
+#include "command/CreateSortQuestionCommand.h"
+#include "command/GetAllSortQuestionsCommand.h"
 
 #endif

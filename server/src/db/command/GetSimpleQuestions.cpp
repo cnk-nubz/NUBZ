@@ -10,7 +10,7 @@ namespace cmd {
 GetSimpleQuestions::GetSimpleQuestions(std::int32_t simpleQId) : simpleQuestionId(simpleQId) {
 }
 
-const std::vector<SimpleQuestion> GetSimpleQuestions::operator()(DatabaseSession &session) {
+std::vector<SimpleQuestion> GetSimpleQuestions::operator()(DatabaseSession &session) {
     return result = session.getResults<db::factory::SimpleQuestionFactory>(createQuery());
 }
 
