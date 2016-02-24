@@ -10,7 +10,7 @@ namespace cmd {
 GetExhibits::GetExhibits(std::int32_t exhibitId) : exhibitId(exhibitId) {
 }
 
-const std::vector<Exhibit> GetExhibits::operator()(DatabaseSession &session) {
+std::vector<Exhibit> GetExhibits::operator()(DatabaseSession &session) {
     return result = session.getResults<db::factory::ExhibitFactory>(createQuery());
 }
 

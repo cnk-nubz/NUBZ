@@ -14,7 +14,7 @@ public:
     GetSimpleQuestions() = default;
     GetSimpleQuestions(std::int32_t simpleQId);
 
-    const std::vector<SimpleQuestion> operator()(DatabaseSession &session);
+    std::vector<SimpleQuestion> operator()(DatabaseSession &session);
     const std::vector<SimpleQuestion> &getResult() const;
 
     boost::optional<std::int32_t> simpleQuestionId;

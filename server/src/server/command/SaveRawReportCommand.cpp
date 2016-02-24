@@ -82,12 +82,14 @@ void SaveRawReportCommand::validateReport(db::DatabaseSession &session,
     }
     if (!reportChecker.checkQuestionsBeforeCount(
             input.answersBefore.simpleQuestionsAnswers.size(),
-            input.answersBefore.multipleChoiceQuestionsAnswers.size())) {
+            input.answersBefore.multipleChoiceQuestionsAnswers.size(),
+            input.answersBefore.sortQuestionsAnswers.size())) {
         throw io::InvalidInput("incorrect number of questions answers in survey before");
     }
     if (!reportChecker.checkQuestionsBeforeCount(
             input.answersAfter.simpleQuestionsAnswers.size(),
-            input.answersAfter.multipleChoiceQuestionsAnswers.size())) {
+            input.answersAfter.multipleChoiceQuestionsAnswers.size(),
+            input.answersAfter.sortQuestionsAnswers.size())) {
         throw io::InvalidInput("incorrect number of questions answers in survey after");
     }
 
@@ -122,6 +124,16 @@ void SaveRawReportCommand::validateAnswers(const utils::ReportChecker &reportChe
             if (options &&
                 !reportChecker.checkMultipleChoiceQuestionAnswer(*questionIt, options.value())) {
                 throw io::InvalidInput("incorrect answer for multiple choice question");
+            }
+            ++questionIt;
+        }
+    }
+    {
+        auto questionIt = survey.sortQuestions.begin();
+        for (const auto &ans : answers.sortQuestionsAnswers) {
+            const auto &options = ans.choosenOrder;
+            if (options && !reportChecker.checkSortQuestionAnswer(*questionIt, options.value())) {
+                throw io::InvalidInput("incorrect answer for sort question");
             }
             ++questionIt;
         }

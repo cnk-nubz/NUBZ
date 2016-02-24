@@ -32,7 +32,7 @@ auto parseArray(Parser &&parser, const rapidjson::Value &json)
 
 rapidjson::Document parseJson(const std::string &str);
 std::string jsonToString(const rapidjson::Value &json);
-rapidjson::GenericStringRef<char> toStupidStringAdapter(const std::string &str);
+rapidjson::GenericStringRef<char> toStrAdapter(const std::string &str);
 
 template <class Parser>
 auto parse(Parser &&parser, const rapidjson::Value &root, const std::string &path)

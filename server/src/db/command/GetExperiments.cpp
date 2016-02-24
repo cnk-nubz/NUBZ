@@ -10,7 +10,7 @@ namespace cmd {
 GetExperiments::GetExperiments(std::int32_t experimentId) : experimentId(experimentId) {
 }
 
-const std::vector<Experiment> GetExperiments::operator()(db::DatabaseSession &session) {
+std::vector<Experiment> GetExperiments::operator()(db::DatabaseSession &session) {
     return result = session.getResults<db::factory::json::ExperimentFactory>(createQuery());
 }
 

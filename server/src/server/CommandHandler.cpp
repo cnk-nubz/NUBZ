@@ -175,7 +175,7 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << "input: " << report;
 
     withExceptionTranslation([&]() {
-        io::input::RawReport input(report);
+        auto input = io::input::RawReport(report);
         command::SaveRawReportCommand{db}(input);
     });
 
@@ -190,8 +190,8 @@ void CommandHandler::createAction(communication::Action &response,
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::CreateActionRequest input(request);
-        io::Action output = command::CreateActionCommand{db}(input);
+        auto input = io::input::CreateActionRequest(request);
+        auto output = command::CreateActionCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -234,8 +234,8 @@ void CommandHandler::createSimpleQuestion(
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::CreateSimpleQuestionRequest input(request);
-        io::SimpleQuestion output = command::CreateSimpleQuestionCommand{db}(input);
+        auto input = io::input::CreateSimpleQuestionRequest(request);
+        auto output = command::CreateSimpleQuestionCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -264,8 +264,8 @@ void CommandHandler::createMultipleChoiceQuestion(
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::CreateMultipleChoiceQuestionRequest input(request);
-        io::MultipleChoiceQuestion output = command::CreateMultipleChoiceQuestionCommand{db}(input);
+        auto input = io::input::CreateMultipleChoiceQuestionRequest(request);
+        auto output = command::CreateMultipleChoiceQuestionCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -278,8 +278,37 @@ void CommandHandler::getAllMultipleChoiceQuestions(
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto questions = command::GetAllMultipleChoiceQuestionsCommand{db}();
-        response = server::io::ioToThrift(questions);
+        auto output = command::GetAllMultipleChoiceQuestionsCommand{db}();
+        response = server::io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+#pragma mark - SORT QUESTIONS
+
+void CommandHandler::createSortQuestion(communication::SortQuestion &response,
+                                        const communication::CreateSortQuestionRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() {
+        auto input = io::input::CreateSortQuestionRequest(request);
+        auto output = command::CreateSortQuestionCommand{db}(input);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getAllSortQuestions(std::vector<communication::SortQuestion> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetAllSortQuestionsCommand{db}();
+        response = server::io::ioToThrift(output);
     });
 
     LOG(INFO) << "output: " << response;

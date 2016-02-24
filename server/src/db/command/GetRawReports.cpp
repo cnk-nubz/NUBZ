@@ -9,7 +9,7 @@ namespace cmd {
 GetRawReports::GetRawReports(std::int32_t reportId) : reportId(reportId) {
 }
 
-const std::vector<RawReport> GetRawReports::operator()(DatabaseSession &session) {
+std::vector<RawReport> GetRawReports::operator()(DatabaseSession &session) {
     return result = session.getResults<db::factory::json::RawReportFactory>(createQuery());
 }
 

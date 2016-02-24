@@ -37,21 +37,23 @@ public:
               class = typename std::is_same<typename Container::value_type, std::int32_t>::type>
     bool checkBreakActionsIds(const Container &actionsIds) const;
 
-    bool checkQuestionsBeforeCount(std::size_t simpleQuestions,
-                                   std::size_t multipleChoiceQuestions) const;
-    bool checkQuestionsAfterCount(std::size_t simpleQuestions,
-                                  std::size_t multipleChoiceQuestions) const;
+    bool checkQuestionsBeforeCount(std::size_t simpleQuestions, std::size_t multipleChoiceQuestions,
+                                   std::size_t sortQuestions) const;
+    bool checkQuestionsAfterCount(std::size_t simpleQuestions, std::size_t multipleChoiceQuestions,
+                                  std::size_t sortQuestions) const;
 
     bool checkSimpleQuestionAnswer(std::int32_t questionId, const std::string &answer) const;
     bool checkMultipleChoiceQuestionAnswer(std::int32_t questionId,
                                            const std::vector<std::int32_t> &choosenOptions) const;
+    bool checkSortQuestionAnswer(std::int32_t questionId,
+                                 const std::vector<std::int32_t> &order) const;
 
 private:
     db::DatabaseSession &session;
     boost::optional<db::Experiment> experiment;
 
     bool checkQuestionsCount(const db::Experiment::Survey &survey, std::size_t simpleQuestions,
-                             std::size_t multipleChoiceQuestions) const;
+                             std::size_t multipleChoiceQuestions, std::size_t sortQuestions) const;
 };
 
 template <class Container, class>
