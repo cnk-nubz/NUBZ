@@ -4,8 +4,9 @@ import android.util.Log;
 
 import com.cnk.communication.thrift.CurrentExperimentResponse;
 import com.cnk.communication.thrift.Server;
-import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
+import com.cnk.data.experiment.Action;
+import com.cnk.data.experiment.Experiment;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -34,16 +35,16 @@ public class ExperimentDataDownloadTask extends ServerTask {
     }
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {
-        com.cnk.data.Experiment experiment = translateDataFromThrift(thriftData);
+        Experiment experiment = translateDataFromThrift(thriftData);
         DataHandler.getInstance().setNewExperimentData(experiment);
     }
 
-    private com.cnk.data.Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {
+    private Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {
         Integer id = thriftData.getExperiment().getExperimentId();
         String name = thriftData.getExperiment().getName();
         List<Action> exhibitActions = translateActionsFromThrift(thriftData.getExperiment().getExhibitActions());
         List<Action> breakActions = translateActionsFromThrift(thriftData.getExperiment().getBreakActions());
-        return new com.cnk.data.Experiment(id, name, exhibitActions, breakActions);
+        return new Experiment(id, name, exhibitActions, breakActions);
     }
 
     private List<Action> translateActionsFromThrift(List<com.cnk.communication.thrift.Action> thriftActions) {

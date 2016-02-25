@@ -2,7 +2,7 @@ package com.cnk.database;
 
 import android.content.Context;
 
-import com.cnk.data.FloorMap;
+import com.cnk.data.map.FloorMap;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;

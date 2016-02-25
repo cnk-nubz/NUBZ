@@ -1,4 +1,4 @@
-package com.cnk;
+package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -11,10 +11,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
+import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
-import com.cnk.ui.MapActivity;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -48,6 +48,18 @@ public class StartScreen extends AppCompatActivity implements Observer {
         downloadMap();
     }
 
+    public void mapActivityClick(View view) {
+        Intent i = new Intent(getApplicationContext(), MapActivity.class);
+        startActivity(i);
+    }
+
+    public void surveyClick(View view) {
+        Intent i = new Intent(getApplicationContext(), SurveyActivity.class);
+        i.putExtra("nextActivity", MapActivity.class);
+        i.putExtra("type", com.cnk.data.experiment.Survey.SurveyType.BEFORE);
+        startActivity(i);
+    }
+
     public void update(Observable observable, Object o) {
         if (o.equals(DataHandler.Item.MAP_UPDATE_COMPLETED)) {
             if (!dataLoaded) {
@@ -68,15 +80,10 @@ public class StartScreen extends AppCompatActivity implements Observer {
         }
     }
 
-    public void mapActivityClick(View view) {
-        Intent i = new Intent(getApplicationContext(), MapActivity.class);
-        startActivity(i);
-    }
-
     public void showAlert() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(R.string.error);
-        alert.setMessage(R.string.DataError);
+        alert.setMessage(R.string.dataError);
         alert.setPositiveButton("Spróbuj ponownie", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

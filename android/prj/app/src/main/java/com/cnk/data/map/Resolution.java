@@ -1,4 +1,4 @@
-package com.cnk.data;
+package com.cnk.data.map;
 
 public class Resolution {
 

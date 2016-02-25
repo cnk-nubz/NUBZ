@@ -1,7 +1,6 @@
-package com.cnk.ui;
+package com.cnk.activities;
 
 import android.app.ActivityOptions;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,13 +30,16 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
-import com.cnk.StartScreen;
+import com.cnk.activities.exhibitwindow.ExhibitDialog;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
-import com.cnk.data.Resolution;
+import com.cnk.data.map.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
-import com.cnk.ui.exhibitwindow.ExhibitDialog;
+import com.cnk.ui.AutoResizeTextView;
+import com.cnk.ui.ImageHelper;
+import com.cnk.ui.MapBitmapProvider;
+import com.cnk.ui.ScaleData;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
@@ -699,7 +701,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void showAlert() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(R.string.error);
-        alert.setMessage(R.string.MapIncompleteMessage);
+        alert.setMessage(R.string.mapIncompleteMessage);
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

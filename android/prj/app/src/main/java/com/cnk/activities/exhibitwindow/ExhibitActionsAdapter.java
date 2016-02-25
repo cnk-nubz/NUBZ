@@ -1,4 +1,4 @@
-package com.cnk.ui.exhibitwindow;
+package com.cnk.activities.exhibitwindow;
 
 import android.content.Context;
 import android.graphics.Color;

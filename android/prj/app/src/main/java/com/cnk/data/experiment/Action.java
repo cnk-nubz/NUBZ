@@ -1,4 +1,4 @@
-package com.cnk.data;
+package com.cnk.data.experiment;
 
 public class Action {
     private Integer id;

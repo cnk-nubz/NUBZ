@@ -1,4 +1,4 @@
-package com.cnk.data;
+package com.cnk.data.map;
 
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
