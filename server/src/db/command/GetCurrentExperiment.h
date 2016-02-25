@@ -11,7 +11,7 @@ namespace cmd {
 
 class GetCurrentExperiment {
 public:
-    const boost::optional<Experiment> operator()(DatabaseSession &session);
+    boost::optional<Experiment> operator()(DatabaseSession &session);
     const boost::optional<Experiment> &getResult() const;
 
 private:

@@ -59,6 +59,11 @@ public:
     virtual void getAllMultipleChoiceQuestions(
         std::vector<communication::MultipleChoiceQuestion> &response) override;
 
+    virtual void createSortQuestion(
+        communication::SortQuestion &response,
+        const communication::CreateSortQuestionRequest &request) override;
+    virtual void getAllSortQuestions(std::vector<communication::SortQuestion> &response) override;
+
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;

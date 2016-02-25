@@ -18,6 +18,8 @@ cur.execute('DROP TABLE IF EXISTS experiments')
 cur.execute('DROP TABLE IF EXISTS simple_questions')
 cur.execute('DROP TABLE IF EXISTS multiple_choice_question_options')
 cur.execute('DROP TABLE IF EXISTS multiple_choice_questions')
+cur.execute('DROP TABLE IF EXISTS sort_question_options')
+cur.execute('DROP TABLE IF EXISTS sort_questions')
 
 ######### create
 cur.execute('''
@@ -109,6 +111,22 @@ cur.execute('''
 ''')
 
 cur.execute('''
+	CREATE TABLE sort_questions (
+		id SERIAL PRIMARY KEY,
+		name VARCHAR NOT NULL,
+		question VARCHAR NOT NULL
+	)
+''')
+
+cur.execute('''
+	CREATE TABLE sort_question_options (
+		id SERIAL PRIMARY KEY,
+		question_id INT NOT NULL REFERENCES sort_questions(id) ON DELETE CASCADE,
+		text VARCHAR NOT NULL
+	)
+''')
+
+cur.execute('''
 	CREATE TABLE experiments (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
@@ -171,14 +189,16 @@ cur.execute('''
 				"actions": [5, 1, 4, 3, 7, 8],
 				"breakActions": [12, 9, 11],
 				"surveyBefore": {
-					"typesOrder": [0, 1, 0],
+					"typesOrder": [0, 2, 1, 0, 2],
 					"simpleQuestions": [2, 1],
-					"multipleChoiceQuestions": [2]
+					"multipleChoiceQuestions": [2],
+					"sortQuestions": [1, 2]
 				},
 				"surveyAfter": {
-					"typesOrder": [0, 1, 1],
+					"typesOrder": [2, 0, 1, 2, 1],
 					"simpleQuestions": [1],
-					"multipleChoiceQuestions": [1, 2]
+					"multipleChoiceQuestions": [1, 2],
+					"sortQuestions": [2, 1]
 				}
 			}
 		')
@@ -225,6 +245,13 @@ cur.execute('''
 						{
 							"answer": [5, 6, 9, 12]
 						}
+					],
+					"sortQuestions": [
+						{
+
+						}, {
+							"answer": [7, 6, 5, 12, 8, 9, 10, 11]
+						}
 					]
 				},
 				"surveyAfter": {
@@ -237,6 +264,12 @@ cur.execute('''
 						{
 							"answer": [2]
 						}, {
+						}
+					],
+					"sortQuestions": [
+						{
+						}, {
+							"answer": [3, 1, 4, 2]
 						}
 					]
 				}
@@ -289,6 +322,29 @@ cur.execute('''
 		(2, 'ff'),
 		(2, 'gg'),
 		(2, 'hh')
+''')
+
+# sort questions
+cur.execute('''
+	INSERT INTO sort_questions (name, question) VALUES
+		('sort question 1', 'best language ??'),
+		('aa sort question 2', 'sort question ??')
+''')
+
+cur.execute('''
+	INSERT INTO sort_question_options (question_id, text) VALUES
+		(1, 'javascript'),
+		(1, 'python'),
+		(1, 'bash'),
+		(1, 'perl'),
+		(2, 'aaa'),
+		(2, 'bbb'),
+		(2, 'ccc'),
+		(2, 'ddd'),
+		(2, 'eee'),
+		(2, 'fff'),
+		(2, 'ggg'),
+		(2, 'hhh')
 ''')
 
 # current experiment

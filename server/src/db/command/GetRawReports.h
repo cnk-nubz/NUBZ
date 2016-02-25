@@ -14,7 +14,7 @@ public:
     GetRawReports() = default;
     GetRawReports(std::int32_t reportId);
 
-    const std::vector<RawReport> operator()(DatabaseSession &session);
+    std::vector<RawReport> operator()(DatabaseSession &session);
     const std::vector<RawReport> &getResult() const;
 
 private:

@@ -2,6 +2,11 @@
 
 #include <db/command/GetActions.h>
 #include <db/command/GetCurrentExperiment.h>
+#include <db/command/GetSimpleQuestions.h>
+#include <db/command/GetMultipleChoiceQuestions.h>
+#include <db/command/GetMultipleChoiceQuestionOptions.h>
+#include <db/command/GetSortQuestions.h>
+#include <db/command/GetSortQuestionOptions.h>
 
 #include <server/utils/io_translation.h>
 
@@ -34,12 +39,48 @@ io::output::CurrentExperimentResponse GetCurrentExperimentCommand::operator()() 
 
 void GetCurrentExperimentCommand::fillExperimentData(const db::Experiment &experiment,
                                                      db::DatabaseSession &session) {
-    auto getActions = [&](std::int32_t actionId) {
-        return utils::toIO(db::cmd::GetActions{actionId}(session).front());
+    auto getActions = [&](std::int32_t id) {
+        return utils::toIO(db::cmd::GetActions{id}(session).front());
     };
 
     ::utils::transform(experiment.actions, currentExperiment.exhibitActions, getActions);
     ::utils::transform(experiment.breakActions, currentExperiment.breakActions, getActions);
+    fillSurvey(experiment.surveyBefore, currentExperiment.surveyBefore, session);
+    fillSurvey(experiment.surveyAfter, currentExperiment.surveyAfter, session);
+}
+
+void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &survey,
+                                             io::QuestionsList &qList,
+                                             db::DatabaseSession &session) {
+    using namespace db::cmd;
+    using namespace utils;
+    using QType = db::Experiment::Survey::QuestionType;
+
+    auto getType = [&](QType qType) {
+        switch (qType) {
+            case QType::Simple:
+                return io::QuestionsList::QuestionType::Simple;
+            case QType::MultipleChoice:
+                return io::QuestionsList::QuestionType::MultipleChoice;
+            case QType::Sort:
+                return io::QuestionsList::QuestionType::Sort;
+        }
+    };
+    auto getSimpleQ = [&](std::int32_t id) {
+        return toIO(GetSimpleQuestions{id}(session).front());
+    };
+    auto getMultiQ = [&](std::int32_t id) {
+        return toIO(GetMultipleChoiceQuestions{id}(session).front(),
+                    GetMultipleChoiceQuestionOptions{id}(session));
+    };
+    auto getSortQ = [&](std::int32_t id) {
+        return toIO(GetSortQuestions{id}(session).front(), GetSortQuestionOptions{id}(session));
+    };
+
+    ::utils::transform(survey.order, qList.questionsOrder, getType);
+    ::utils::transform(survey.simpleQuestions, qList.simpleQuestions, getSimpleQ);
+    ::utils::transform(survey.multipleChoiceQuestions, qList.multipleChoiceQuestions, getMultiQ);
+    ::utils::transform(survey.sortQuestions, qList.sortQuestions, getSortQ);
 }
 }
 }
