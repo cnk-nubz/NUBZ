@@ -22,6 +22,8 @@ public abstract class QuestionView extends RelativeLayout {
         setLayoutParams(params);
     }
 
+    public abstract void saveAnswer();
+
     private void setUpNameLabel(String name, Context context) {
         TextView nameLabel = new TextView(context);
         LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

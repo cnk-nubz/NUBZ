@@ -5,11 +5,11 @@
         android:id="@+id/action_prev_question"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
-        android:title="Poprzednie"/>
+        android:title="@string/prev"/>
 
     <item
         android:id="@+id/action_next_question"
         android:orderInCategory="100"
         app:showAsAction="ifRoom"
-        android:title="Następne"/>
+        android:title="@string/next"/>
 </menu>

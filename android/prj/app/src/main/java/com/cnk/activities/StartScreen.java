@@ -13,7 +13,6 @@ import android.view.View;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.communication.thrift.Survey;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
 
@@ -56,6 +55,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
     public void surveyClick(View view) {
         Intent i = new Intent(getApplicationContext(), SurveyActivity.class);
+        i.putExtra("nextActivity", MapActivity.class);
+        i.putExtra("type", com.cnk.data.experiment.Survey.SurveyType.PRE);
         startActivity(i);
     }
 
@@ -82,7 +83,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     public void showAlert() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(R.string.error);
-        alert.setMessage(R.string.DataError);
+        alert.setMessage(R.string.dataError);
         alert.setPositiveButton("Spróbuj ponownie", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

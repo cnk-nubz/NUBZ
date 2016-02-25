@@ -1,22 +1,27 @@
 package com.cnk.activities;
 
 import android.content.Context;
-import android.support.v7.app.AppCompatActivity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.data.DataHandler;
+import com.cnk.data.experiment.Survey;
+import com.cnk.data.experiment.answers.AllAnswers;
+import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SurveyActivity extends AppCompatActivity {
@@ -27,6 +32,7 @@ public class SurveyActivity extends AppCompatActivity {
     private RelativeLayout mainView;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
+    private AllAnswers answers;
     private MenuItem nextItem;
     private MenuItem prevItem;
 
@@ -35,8 +41,9 @@ public class SurveyActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
-        questionViews = QuestionViewFactory.createQuestionViews(DataHandler.getInstance().getPreSurvey(), this);
-        allQuestionsCount = DataHandler.getInstance().getPreSurvey().getRemainingQuestionsCount();
+        questionViews = new ArrayList<>();
+        answers = new AllAnswers();
+        initViews();
         setUpCounterLabel();
         showView(0);
     }
@@ -45,18 +52,24 @@ public class SurveyActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(final MenuItem item) {
         hideKeyboard();
         if (item.getItemId() == R.id.action_prev_question) {
-            nextItem.setEnabled(true);
+            nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {
                 prevItem.setEnabled(false);
             }
             showView(currentQuestionNo - 1);
         } else if (item.getItemId() == R.id.action_next_question) {
             prevItem.setEnabled(true);
-            if (currentQuestionNo + 1 >= allQuestionsCount - 1) {
-                nextItem.setEnabled(false);
+            if (currentQuestionNo >= allQuestionsCount - 1) {
+                showDialog();
+            } else {
+                if (currentQuestionNo >= allQuestionsCount - 2) {
+                    nextItem.setTitle(R.string.finish);
+                }
+                showView(currentQuestionNo + 1);
             }
-            showView(currentQuestionNo + 1);
+
         }
+        currentQuestionView.saveAnswer();
         return super.onOptionsItemSelected(item);
     }
 
@@ -84,7 +97,6 @@ public class SurveyActivity extends AppCompatActivity {
     }
 
     private void showView(Integer no) {
-        Log.i("SurveyActivity", no.toString());
         currentQuestionNo = no;
         mainView.removeView(currentQuestionView);
         currentQuestionView = questionViews.get(no);
@@ -92,8 +104,45 @@ public class SurveyActivity extends AppCompatActivity {
         updateCounterLabel();
     }
 
-    public void hideKeyboard() {
+    private void initViews() {
+        Survey currentSurvey = null;
+        if (getIntent().getSerializableExtra("type") == Survey.SurveyType.PRE) {
+            currentSurvey = DataHandler.getInstance().getPreSurvey();
+        }
+        allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
+        while (currentSurvey.getRemainingQuestionsCount() > 0) {
+            Survey.QuestionType type = currentSurvey.popNextQuestionType();
+            if (type == Survey.QuestionType.SIMPLE) {
+                SimpleQuestionAnswer answer = new SimpleQuestionAnswer();
+                answers.addSimpleAnswer(answer);
+                questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, answer));
+            }
+        }
+    }
+
+    private void hideKeyboard() {
         InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
+    }
+
+    private void showDialog() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setMessage(R.string.confirmation);
+        alert.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent i = new Intent(getApplicationContext(), (Class) getIntent().getSerializableExtra("nextActivity"));
+                finish();
+                startActivity(i);
+            }
+        });
+        alert.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // does nothing
+            }
+        });
+        alert.setCancelable(false);
+        alert.show();
     }
 }

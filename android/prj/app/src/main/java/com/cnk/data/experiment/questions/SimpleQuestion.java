@@ -1,4 +1,4 @@
-package com.cnk.data.experiment;
+package com.cnk.data.experiment.questions;
 
 public class SimpleQuestion {
     public enum AnswerType {

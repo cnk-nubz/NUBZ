@@ -5,22 +5,29 @@ import android.text.InputType;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
-import com.cnk.data.experiment.SimpleQuestion;
-import com.cnk.data.experiment.SimpleQuestionAnswer;
+import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.questions.SimpleQuestion;
 
 public class SimpleQuestionView extends QuestionView {
 
     private static final float TEXT_SIZE = 25.0f;
     private EditText answerBox;
+    private SimpleQuestionAnswer answer;
 
-    public SimpleQuestionView(Context context, String name, SimpleQuestion.AnswerType type) {
+    public SimpleQuestionView(Context context,
+                              String name,
+                              SimpleQuestion.AnswerType type,
+                              SimpleQuestionAnswer answer) {
         super(context, name);
         setUpAnswerBox(context, type);
+        this.answer = answer;
     }
 
-    public SimpleQuestionAnswer getAnswer() {
-        return new SimpleQuestionAnswer(answerBox.getText().toString());
+    @Override
+    public void saveAnswer() {
+        answer.setAnswer(answerBox.getText().toString());
     }
+
 
     private void setUpAnswerBox(Context context, SimpleQuestion.AnswerType type) {
         answerBox = new EditText(context);

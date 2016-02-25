@@ -1,11 +1,13 @@
-package com.cnk.data.experiment;
-
+package com.cnk.data.experiment.answers;
 
 public class SimpleQuestionAnswer {
-
     private String answer;
 
-    public SimpleQuestionAnswer(String answer) {
+    public SimpleQuestionAnswer() {
+        answer = "";
+    }
+
+    public void setAnswer(String answer) {
         this.answer = answer;
     }
 

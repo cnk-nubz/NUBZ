@@ -10,8 +10,8 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 
 import com.cnk.R;
-import com.cnk.data.experiment.Action;
 import com.cnk.data.DataHandler;
+import com.cnk.data.experiment.Action;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.utilities.Consts;
 

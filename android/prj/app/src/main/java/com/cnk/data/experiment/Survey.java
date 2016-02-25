@@ -1,11 +1,18 @@
 package com.cnk.data.experiment;
 
+import com.cnk.data.experiment.questions.SimpleQuestion;
+
 import java.util.Queue;
 
 public class Survey {
     public enum QuestionType {
         SIMPLE,
         MULTIPLE_CHOICE;
+    }
+
+    public enum SurveyType {
+        PRE,
+        POST;
     }
 
     private Queue<QuestionType> questionOrder;

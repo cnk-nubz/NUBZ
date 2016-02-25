@@ -7,8 +7,8 @@ import android.util.Log;
 
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
-import com.cnk.data.experiment.SimpleQuestion;
 import com.cnk.data.experiment.Survey;
+import com.cnk.data.experiment.questions.SimpleQuestion;
 import com.cnk.data.map.FloorInfo;
 import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapTiles;

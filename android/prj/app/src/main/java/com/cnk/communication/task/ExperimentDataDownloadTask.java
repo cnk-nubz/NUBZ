@@ -4,8 +4,8 @@ import android.util.Log;
 
 import com.cnk.communication.thrift.CurrentExperimentResponse;
 import com.cnk.communication.thrift.Server;
-import com.cnk.data.experiment.Action;
 import com.cnk.data.DataHandler;
+import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
 import com.cnk.notificators.Notificator;
 
