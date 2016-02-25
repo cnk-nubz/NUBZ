@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.answers.AllAnswers;
+import com.cnk.data.experiment.answers.SurveyAnswers;
 import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
@@ -32,7 +32,7 @@ public class SurveyActivity extends AppCompatActivity {
     private RelativeLayout mainView;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
-    private AllAnswers answers;
+    private SurveyAnswers answers;
     private MenuItem nextItem;
     private MenuItem prevItem;
 
@@ -42,7 +42,7 @@ public class SurveyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        answers = new AllAnswers();
+        answers = new SurveyAnswers();
         initViews();
         setUpCounterLabel();
         showView(0);
@@ -62,7 +62,7 @@ public class SurveyActivity extends AppCompatActivity {
             if (currentQuestionNo >= allQuestionsCount - 1) {
                 showDialog();
             } else {
-                if (currentQuestionNo >= allQuestionsCount - 2) {
+                if (currentQuestionNo == allQuestionsCount - 2) {
                     nextItem.setTitle(R.string.finish);
                 }
                 showView(currentQuestionNo + 1);
@@ -105,17 +105,16 @@ public class SurveyActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        Survey currentSurvey = null;
-        if (getIntent().getSerializableExtra("type") == Survey.SurveyType.PRE) {
-            currentSurvey = DataHandler.getInstance().getPreSurvey();
-        }
+        Survey.SurveyType surveyType = (Survey.SurveyType) getIntent().getSerializableExtra("type");
+        Survey currentSurvey = DataHandler.getInstance().getSurvey(surveyType);
         allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
         while (currentSurvey.getRemainingQuestionsCount() > 0) {
             Survey.QuestionType type = currentSurvey.popNextQuestionType();
-            if (type == Survey.QuestionType.SIMPLE) {
-                SimpleQuestionAnswer answer = new SimpleQuestionAnswer();
-                answers.addSimpleAnswer(answer);
-                questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, answer));
+            switch (type) {
+                case SIMPLE:
+                    SimpleQuestionAnswer answer = new SimpleQuestionAnswer();
+                    answers.addSimpleAnswer(answer);
+                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, answer));
             }
         }
     }

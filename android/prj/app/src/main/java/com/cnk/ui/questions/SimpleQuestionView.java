@@ -15,11 +15,10 @@ public class SimpleQuestionView extends QuestionView {
     private SimpleQuestionAnswer answer;
 
     public SimpleQuestionView(Context context,
-                              String name,
-                              SimpleQuestion.AnswerType type,
+                              SimpleQuestion question,
                               SimpleQuestionAnswer answer) {
-        super(context, name);
-        setUpAnswerBox(context, type);
+        super(context, question.getQuestion());
+        setUpAnswerBox(context, question.getAnswerType());
         this.answer = answer;
     }
 

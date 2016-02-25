@@ -135,7 +135,7 @@ public class DataHandler extends Observable {
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
-    public Survey getPreSurvey() {
+    public Survey getSurvey(Survey.SurveyType type) {
         Queue<Survey.QuestionType> types = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
             types.add(Survey.QuestionType.SIMPLE);
@@ -143,7 +143,7 @@ public class DataHandler extends Observable {
 
         Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
-            simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i), "test" + Integer.toString(i),
+            simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i),
                     i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
         }
 

@@ -11,8 +11,8 @@ public class Survey {
     }
 
     public enum SurveyType {
-        PRE,
-        POST;
+        BEFORE,
+        AFTER;
     }
 
     private Queue<QuestionType> questionOrder;

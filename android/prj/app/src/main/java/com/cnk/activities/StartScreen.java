@@ -56,7 +56,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     public void surveyClick(View view) {
         Intent i = new Intent(getApplicationContext(), SurveyActivity.class);
         i.putExtra("nextActivity", MapActivity.class);
-        i.putExtra("type", com.cnk.data.experiment.Survey.SurveyType.PRE);
+        i.putExtra("type", com.cnk.data.experiment.Survey.SurveyType.BEFORE);
         startActivity(i);
     }
 

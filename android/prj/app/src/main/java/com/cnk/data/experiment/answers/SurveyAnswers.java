@@ -3,10 +3,10 @@ package com.cnk.data.experiment.answers;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AllAnswers {
+public class SurveyAnswers {
     private List<SimpleQuestionAnswer> simpleAnswers;
 
-    public AllAnswers() {
+    public SurveyAnswers() {
         simpleAnswers = new ArrayList<>();
     }
 
