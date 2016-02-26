@@ -95,24 +95,25 @@ class Actions
     @_actionDialog.bindData(@_list[id]).show()
 
 class Handlers
-  constructor: ->
+  constructor: (initQuestionsList, initActionsList) ->
     @_DOM =
       chooseListTitle: ".chooseList .myHeader span"
+      chooseListContainer: ".chooseList .middle"
       actionButton: ".chooseList .myFooter button:first-child"
       questionButton: ".chooseList .myFooter button:last-child"
       attachToExperimentContainer: "td:last-child"
       attachToExperimentContainerSign: "td:last-child > i"
       addElement: ".chooseList .addElement"
-      experimentTitle: ".experimentTitle .myHeader span"
-      experimentSave: ".experimentTitle .myHeader .addElement"
+      experimentTitle: ".experimentTitle input"
+      saveExperiment: ".saveExperiment button"
 
     # TODO: add questions and actions from server
-    @_questions = new Questions()
-    @_actions = new Actions()
+    @_questions = new Questions(initQuestionsList)
+    @_actions = new Actions(initActionsList)
     @_questionsList = new root.ThreeColumnList(".chooseList .middle", 'plus')
     @_actionsList = new root.TwoColumnList(".chooseList .middle", 'plus')
-    @_questionsBeforeList = new root.TwoColumnList(".questionsBefore .middle", 'minus')
-    @_questionsAfterList = new root.TwoColumnList(".questionsAfter .middle", 'minus')
+    @_questionsBeforeList = new root.ThreeColumnList(".questionsBefore .middle", 'minus')
+    @_questionsAfterList = new root.ThreeColumnList(".questionsAfter .middle", 'minus')
     @_experimentActionsList = new root.TwoColumnList(".experimentActions .middle", 'minus')
     @_breakActionsList = new root.TwoColumnList(".breakActions .middle", 'minus')
     @_setHandlers()
@@ -121,7 +122,7 @@ class Handlers
     @_setListsHandlers()
     @_setActionButtonClickHandler()
     @_setQuestionButtonClickHandler()
-    @_setExperimentSaveHandler()
+    @_setSaveExperimentHandler()
 
   _setListsHandlers: =>
     #default state
@@ -212,8 +213,21 @@ class Handlers
     )
     return
 
-  _setExperimentSaveHandler: =>
-    jQuery(@_DOM.experimentSave).click( =>
+  _setSaveExperimentHandler: =>
+    jQuery(@_DOM.saveExperiment).click( =>
+      experimentTitle = jQuery(@_DOM.experimentTitle)
+      titleText = experimentTitle.val()
+      experimentTitle.val(jQuery.trim(titleText))
+      if not titleText.match root.inputRegex
+        experimentTitle.tooltip('show')
+        experimentTitle.parent().addClass("has-error")
+        experimentTitle.one('focus', ->
+          jQuery(this).parent().removeClass("has-error")
+          jQuery(this).tooltip('destroy')
+        )
+        jQuery("#experiment").scrollTop(0)
+        return
+      # otherwise collect data and try to save them
       questionsBefore = @_questionsBeforeList.getAllElementsId()
       questionsAfter = @_questionsAfterList.getAllElementsId()
       experimentActions = @_experimentActionsList.getAllElementsId()
@@ -233,8 +247,7 @@ class Handlers
         context: this
         data: (jsonData: JSON.stringify(dataToSend))
         url: '/saveExperiment/'
-        success: (data) ->
-          @_displayError(data.message) unless data.success
+        success: (data) -> @_displayError(data.message) unless data.success
       )
     )
 
@@ -243,7 +256,6 @@ class Handlers
     jQuery(@_DOM.attachToExperimentContainer, obj).click((e) ->
       if not jQuery(e.target).is("button")
         jQuery(this).children("i").focus()
-      e.stopPropagation()
     )
     jQuery(@_DOM.attachToExperimentContainerSign, obj)
       .popover()
@@ -251,9 +263,7 @@ class Handlers
         jQuery(".popover-content button").each((index) ->
           jQuery(this).mousedown( ->
             rowData = jQuery(this).parents("tr").data("rowData")
-            toAdd = {}
-            toAdd[id] = {first: element.first} for id, element of rowData
-            contextList[index].addElements(toAdd).show()
+            contextList[index].addElements(rowData).show()
           )
         )
       )
@@ -330,7 +340,8 @@ class Handlers
       return
     @_questions.addElements([data])
     toAdd = @_questions.parseElementForThreeColumns(data.questionId)
-    @_questionsList.addElements(toAdd).show()
+    @_questionsList.addElements(toAdd).showLast()
+    @_showNewEntry()
     return
 
   _setNewAction: (data) =>
@@ -339,8 +350,18 @@ class Handlers
       return
     @_actions.addElements([data])
     toAdd = @_actions.parseElementForTwoColumns(data.actionId)
-    @_actionsList.addElements(toAdd).show()
+    @_actionsList.addElements(toAdd).showLast()
+    @_showNewEntry()
     return
+
+  _showNewEntry: =>
+    chooseListContainer = jQuery(@_DOM.chooseListContainer)
+    scrollHeight = chooseListContainer[0].scrollHeight - chooseListContainer.height()
+    chooseListContainer.scrollTop(scrollHeight)
+    jQuery("tr:last-child", chooseListContainer)
+      .addClass('newListEntry')
+      .one('click', ->
+        jQuery(this).removeClass('newListEntry'))
 
   _displayError: (message) =>
     BootstrapDialog.show(
@@ -348,6 +369,7 @@ class Handlers
       title: 'Wystąpił błąd'
       type: BootstrapDialog.TYPE_DANGER
     )
+
 jQuery(document).ready( ->
-  new Handlers()
+  new Handlers(root.questionsList, root.actionsList)
 )

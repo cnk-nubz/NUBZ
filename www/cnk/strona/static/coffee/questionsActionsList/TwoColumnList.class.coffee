@@ -27,8 +27,3 @@ root.TwoColumnList = class TwoColumnList extends root.questionsActionsTable
     jQuery(listElement).appendTo(container)
     jQuery("div:eq(0)", listElement).shortenText()
     @fireEvents("elementAdded", listElement)
-
-  removeElement: (pos) =>
-    jQuery(".questionsActionsTable tr:eq(#{pos})", @_containerId).remove()
-    @_elementsToAdd.splice(pos, 1)
-    @

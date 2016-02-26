@@ -7,8 +7,21 @@ table.questionsActionsTable {
 table.questionsActionsTable > tbody > tr {
   height: 42px;
   background: #fff;
-  border: 1px solid #ddd;
-  border-top: none;
+  border-bottom: 1px solid #ddd;
+}
+
+table.questionsActionsTable > tbody > tr.newListEntry {
+  background: #ADDFFF;
+  border-bottom: 1px solid #ACCEEE;
+}
+
+table.questionsActionsTable > tbody > tr.newListEntry > td:hover {
+  background: #85B7D7;
+}
+
+table.questionsActionsTable > tbody > tr.newListEntry > td:not(:last-child):not(:first-child):hover {
+  background: #ADDFFF;
+  cursor: default;
 }
 
 table.questionsActionsTable > tbody > tr > td {

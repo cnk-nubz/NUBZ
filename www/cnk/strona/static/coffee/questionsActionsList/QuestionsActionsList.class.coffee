@@ -42,6 +42,10 @@ root.questionsActionsTable = class QuestionsActionsList extends root.View
     @_addElementToDOM(id, element) for [id, element] in @_elementsToAdd
     @
 
+  showLast: =>
+    @_addElementToDOM(id, element) for [id, element] in @_elementsToAdd[-1..]
+    @
+
   getAllElementsId: =>
     container = jQuery(@_containerId)
     elements = []
@@ -49,3 +53,8 @@ root.questionsActionsTable = class QuestionsActionsList extends root.View
       elements.push id for id, element of jQuery(this).data("rowData")
     )
     elements
+
+  removeElement: (pos) =>
+    jQuery(".questionsActionsTable tr:eq(#{pos})", @_containerId).remove()
+    @_elementsToAdd.splice(pos, 1)
+    @

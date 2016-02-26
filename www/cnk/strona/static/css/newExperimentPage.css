@@ -17,17 +17,24 @@
 /* dem looks classes */
 
 .myHeader {
-  height: 50px;
-  line-height: 50px;
+  height: 46px;
+  line-height: 46px;
   border: 1px solid #ddd;
   font-size: 22px;
   font-weight: 600;
+  background: #eee;
 }
 
 .myFooter {
-  height: 50px;
-  line-height: 50px;
+  height: 46px;
+  line-height: 46px;
   font-size: 22px;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
 }
 
 .addElement {
@@ -36,7 +43,7 @@
   right: 0px;
   bottom: 0px;
   font-size: 14px;
-  line-height: 51px;
+  line-height: 46px;
   width: 42px;
   border-left: 1px solid #ddd;
   cursor: pointer;
@@ -47,7 +54,7 @@
   border: 1px solid #bbb;
 }
 
-/* positions of tables */
+/* positions */
 .questionsBefore {
   padding: 10px 5%;
   margin-bottom: 50px;
@@ -66,26 +73,26 @@
 .questionsAfter {
   clear: both;
   padding: 10px 5%;
-  margin-bottom: 50px;
 }
 
 .experimentTitle {
   padding: 10px 5%;
 }
 
-.experimentTitle .myHeader {
-  position: relative;
-  background: #eee;
-  width: 100%;
-  height: 50px;
+.experimentTitle .form-control,
+.experimentTitle .input-group-addon {
+  font-family: OpenSans-Semibold;
+  border-radius: 0px;
 }
 
-.questionsBefore > div,
-.questionsAfter > div,
-.chooseList > div,
-.experimentActions > div,
-.breakActions > div {
-  background: #eee;
+.saveExperiment {
+  padding: 15px 5%;
+}
+
+.saveExperiment button {
+  width: 100%;
+  height: 46px;
+  font-size: 18px;
 }
 
 /* positioning chooseList */
@@ -110,10 +117,10 @@
 
 .chooseList .middle {
   position: absolute;
-  top: 50px;
+  top: 46px;
   left: 0px;
   right: 0px;
-  bottom: 50px;
+  bottom: 51px;
   overflow-y: scroll;
 }
 
@@ -142,11 +149,16 @@
 }
 
 .actions .experimentActions {
-  width: 50%;
+  width: 49%;
   float: left;
 }
 
 .actions .breakActions {
-  width: 50%;
+  width: 49%;
   float: right;
+  margin-left: 2%;
+}
+
+.middle .questionsActionsTable > tbody > tr > td:first-child {
+  text-align: left;
 }

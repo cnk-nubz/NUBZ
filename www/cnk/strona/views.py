@@ -18,17 +18,34 @@ from ThriftCommunicator import ThriftCommunicator
 def get_const(name):
     return getattr(settings, name, None)
 
-def _pingServer():
-	tc = ThriftCommunicator()
-	result = tc.ping(1, 'x')[0]
-	return result == 1
-
 defaultImage = {
     'tileWidth': 2200,
     'tileHeight': 1700,
     'scaledWidth': 2200,
     'scaledHeight': 1700
 }
+
+class uploadError(Enum):
+	SUCCESS = 1
+	NOT_AN_IMAGE = 2
+	SERVER_PROBLEM = 3
+	WRONG_REQUEST_METHOD = 4
+	INVALID_DATA = 5
+
+class QuestionType(Enum):
+    SIMPLE = 0
+    MULTIPLE = 1
+    SORT = 2
+
+class ActiveLink(Enum):
+    JUST_MAP = '0'
+    EDIT_MAP = '1'
+    NEW_EXPERIMENT = '2'
+
+def _pingServer():
+    tc = ThriftCommunicator()
+    result = tc.ping(1, 'x')[0]
+    return result == 1
 
 def _getMapImageInfo():
 	tc = ThriftCommunicator()
@@ -114,18 +131,11 @@ def getMapPage(request, file, activeLink):
 
 @ensure_csrf_cookie
 def index(request):
-	return getMapPage(request, 'map/justMap.html', "0")
+	return getMapPage(request, 'map/justMap.html', ActiveLink.JUST_MAP.value)
 
 @ensure_csrf_cookie
 def editMapPage(request):
-    return getMapPage(request, 'map/editMap.html', "1")
-
-class uploadError(Enum):
-	SUCCESS = 1
-	NOT_AN_IMAGE = 2
-	SERVER_PROBLEM = 3
-	WRONG_REQUEST_METHOD = 4
-	INVALID_DATA = 5
+    return getMapPage(request, 'map/editMap.html', ActiveLink.EDIT_MAP.value)
 
 def uploadImage(request):
 	if request.method != 'POST':
@@ -233,10 +243,6 @@ def createNewExhibit(request):
 	}
 	return JsonResponse(data)
 
-def surveys(request):
-	template = loader.get_template('surveys.html')
-	return HttpResponse(template.render(RequestContext(request, {'activeLink' : "2"})))
-
 def getDialog(request, dialog):
 	contextDict = {
 		'data': dialog['data']
@@ -274,8 +280,69 @@ def getChangeMapDialog(request):
     return JsonResponse({'html': html.replace("\n", "")})
 
 def newExperimentPage(request):
+    tc = ThriftCommunicator()
+    try:
+        allQuestions = tc.getAllQuestions()[0]
+        allActions = tc.getAllActions()[0]
+        idxSimple = 0
+        idxMultiple = 0
+        idxSort = 0
+        questionsList = []
+        # sort questions in order
+        for order in allQuestions.questionsOrder:
+            if order == QuestionType.SIMPLE.value:
+                q = allQuestions.simpleQuestions[idxSimple]
+                idxSimple += 1
+                questionsList.append({
+                    'questionId': q.questionId,
+                    'type': QuestionType.SIMPLE.value,
+                    'name': q.name,
+                    'question': q.question,
+                    'answerType': q.answerType
+                })
+            elif order == QuestionType.MULTIPLE.value:
+                q = allQuestions.multipleChoiceQuestions[idxMultiple]
+                idxMultiple += 1
+                questionsList.append({
+                    'questionId': q.questionId,
+                    'type': QuestionType.MULTIPLE.value,
+                    'name': q.name,
+                    'question': q.question,
+                    'singleAnswer': q.singleAnswer,
+                    'options': [o.text for o in q.options]
+                })
+            else:
+                q = allQuestions.sortQuestions[idxSort]
+                idxSort += 1
+                questionsList.append({
+                    'questionId': q.questionId,
+                    'type': QuestionType.SORT.value,
+                    'name': q.name,
+                    'question': q.question,
+                    'options': [o.text for o in q.options]
+                })
+
+        actionsList = [{
+            'actionId': a.actionId,
+            'text': a.text
+        } for a in allActions]
+
+        inputRegex = get_const("DEFAULT_CONSTANTS")['utils']['regex']['input']
+        result = {
+            'success': True,
+            'activeLink' : ActiveLink.NEW_EXPERIMENT.value,
+            'questionsList': questionsList,
+            'actionsList': actionsList,
+            'inputRegex': inputRegex
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'activeLink': ActiveLink.NEW_EXPERIMENT.value,
+            'message': str(ex)
+        }
     template = loader.get_template('newExperimentPage.html')
-    return HttpResponse(template.render(RequestContext(request, {'activeLink' : "3"})))
+    return HttpResponse(template.render(RequestContext(request, result)))
 
 def getQuestionsActionsList(request, element):
     myList = render_to_string('questionActionList/list.html')
@@ -295,16 +362,11 @@ def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
 
-class QuestionType(Enum):
-    SIMPLE = 0
-    MULTIPLE = 1
-    SORT = 2
-
 def setSimpleQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
     try:
-        simpleQuestion = tc.createSimpleQuestion(data)
+        simpleQuestion = tc.createSimpleQuestion(data)[0]
         result = {
             'success': True,
             'type': QuestionType.SIMPLE.value,
@@ -324,13 +386,14 @@ def setMultipleChoiceQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
     try:
-        multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)
+        multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)[0]
         result = {
             'success': True,
             'type': QuestionType.MULTIPLE.value,
             'questionId': multipleChoiceQuestion.questionId,
             'name': multipleChoiceQuestion.name,
             'question': multipleChoiceQuestion.question,
+            'singleAnswer': multipleChoiceQuestion.singleAnswer,
             'options': [o.text for o in multipleChoiceQuestion.options]
         }
     except Exception as ex:
@@ -342,18 +405,29 @@ def setMultipleChoiceQuestion(request):
 
 def setSortQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
-    #TODO
-    result = {
-        'success': False,
-		'message': "TODO"
-    }
+    tc = ThriftCommunicator()
+    try:
+        sortQuestion = tc.createSortQuestion(data)[0]
+        result = {
+            'success': True,
+            'type': QuestionType.SORT.value,
+            'questionId': sortQuestion.questionId,
+            'name': sortQuestion.name,
+            'question': sortQuestion.question,
+            'options': [o.text for o in sortQuestion.options]
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
     return JsonResponse(result)
 
 def setAction(request):
     data = json.loads(request.POST.get("jsonData"))
     tc = ThriftCommunicator()
     try:
-    	action = tc.createAction(data)
+    	action = tc.createAction(data)[0]
         result = {
             'success': True,
             'actionId': action.actionId,
@@ -372,6 +446,6 @@ def saveExperiment(request):
     # TODO
     result = {
         'success': False,
-		'message': "TODO"
+        'message': "TODO"
     }
     return JsonResponse(result)

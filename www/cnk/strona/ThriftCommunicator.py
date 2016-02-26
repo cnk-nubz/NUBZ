@@ -131,3 +131,19 @@ class ThriftCommunicator:
 			msg = CreateActionRequest(request['text'])
 			return self.client.createAction(msg)
 		return self._perform_actions([action])
+
+	def createSortQuestion(self, request):
+		def action():
+			msg = CreateSortQuestionRequest(request['name'], request['question'], request['options'])
+			return self.client.createSortQuestion(msg)
+		return self._perform_actions([action])
+
+	def getAllQuestions(self):
+		def action():
+			return self.client.getAllQuestions()
+		return self._perform_actions([action])
+
+	def getAllActions(self):
+		def action():
+			return self.client.getAllActions()
+		return self._perform_actions([action])
