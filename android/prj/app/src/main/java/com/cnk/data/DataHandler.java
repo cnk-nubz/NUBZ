@@ -8,6 +8,8 @@ import android.util.Log;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
 import com.cnk.data.experiment.Survey;
+import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
 import com.cnk.data.experiment.questions.SimpleQuestion;
 import com.cnk.data.map.FloorInfo;
 import com.cnk.data.map.FloorMap;
@@ -141,13 +143,27 @@ public class DataHandler extends Observable {
             types.add(Survey.QuestionType.SIMPLE);
         }
 
+        for (int i = 0; i < 5; i++) {
+            types.add(Survey.QuestionType.MULTIPLE_CHOICE);
+        }
+
         Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
+        Queue<MultipleChoiceQuestion> multipleChoiceQuestions = new LinkedList<>();
         for (int i = 0; i < 5; i++) {
             simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i),
                     i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
         }
 
-        return new Survey(types, simpleQuestions);
+        List<MultipleChoiceQuestionOption> options = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            options.add(new MultipleChoiceQuestionOption(i, "TESTESTESTESTESTESTEST"));
+        }
+
+        for (int i = 0; i < 5; i++) {
+            multipleChoiceQuestions.add(new MultipleChoiceQuestion(i, "TEST" + Integer.toString(i), i % 2 == 0, options));
+        }
+
+        return new Survey(types, simpleQuestions, multipleChoiceQuestions);
     }
 
     public List<Action> getAllExhibitActions() {

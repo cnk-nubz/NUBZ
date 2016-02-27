@@ -30,7 +30,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
-import com.cnk.activities.exhibitwindow.ExhibitDialog;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.data.map.Resolution;

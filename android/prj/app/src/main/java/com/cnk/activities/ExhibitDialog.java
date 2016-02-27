@@ -1,4 +1,4 @@
-package com.cnk.activities.exhibitwindow;
+package com.cnk.activities;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,6 +14,7 @@ import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.utilities.Consts;
+import com.cnk.utilities.SelectListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public class ExhibitDialog extends Activity {
     private List<String> actionsStrings;
     private String name;
     private Boolean isBreak;
-    private ExhibitActionsAdapter actionsAdapter;
+    private SelectListAdapter<Action> actionsAdapter;
     private long startTime;
 
     @Override
@@ -55,7 +56,7 @@ public class ExhibitDialog extends Activity {
         for (Action a : actions) {
             actionsStrings.add(a.getText());
         }
-        actionsAdapter = new ExhibitActionsAdapter(ExhibitDialog.this, actionsStrings);
+        actionsAdapter = new SelectListAdapter<>(actions, false, ExhibitDialog.this);
 
         Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
         cancel.setOnClickListener(new CancelListener());
@@ -96,7 +97,7 @@ public class ExhibitDialog extends Activity {
             long endTime = System.currentTimeMillis() / Consts.SECOND;
             Intent intent = new Intent();
             intent.putExtra(TIME, endTime - startTime);
-            intent.putStringArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedActions());
+            intent.putIntegerArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedOptions());
             setResult(RESULT_OK, intent);
             finish();
         }

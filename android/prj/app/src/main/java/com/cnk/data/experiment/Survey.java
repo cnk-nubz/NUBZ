@@ -1,5 +1,6 @@
 package com.cnk.data.experiment;
 
+import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.SimpleQuestion;
 
 import java.util.Queue;
@@ -17,10 +18,15 @@ public class Survey {
 
     private Queue<QuestionType> questionOrder;
     private Queue<SimpleQuestion> simpleQuestions;
+    private Queue<MultipleChoiceQuestion> multipleChoiceQuestions;
 
-    public Survey(Queue<QuestionType> questionOrder, Queue<SimpleQuestion> simpleQuestions) {
+    public Survey(Queue<QuestionType> questionOrder,
+                  Queue<SimpleQuestion> simpleQuestions,
+                  Queue<MultipleChoiceQuestion> multipleChoiceQuestions
+                 ) {
         this.questionOrder = questionOrder;
         this.simpleQuestions = simpleQuestions;
+        this.multipleChoiceQuestions = multipleChoiceQuestions;
     }
 
     public Integer getRemainingQuestionsCount() {
@@ -33,5 +39,9 @@ public class Survey {
 
     public SimpleQuestion popNextSimpleQuestion() {
         return simpleQuestions.remove();
+    }
+
+    public MultipleChoiceQuestion popNextMultipleChoiceQuestion() {
+        return multipleChoiceQuestions.remove();
     }
 }
