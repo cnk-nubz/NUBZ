@@ -28,7 +28,7 @@ public class ExhibitDialog extends Activity {
     private List<String> actionsStrings;
     private String name;
     private Boolean isBreak;
-    private SelectListAdapter<Action> actionsAdapter;
+    private SelectListAdapter<Action, AutoResizeTextView> actionsAdapter;
     private long startTime;
 
     @Override
@@ -56,7 +56,7 @@ public class ExhibitDialog extends Activity {
         for (Action a : actions) {
             actionsStrings.add(a.getText());
         }
-        actionsAdapter = new SelectListAdapter<>(actions, false, ExhibitDialog.this);
+        actionsAdapter = new SelectListAdapter<>(actions, false, ExhibitDialog.this, AutoResizeTextView.class);
 
         Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
         cancel.setOnClickListener(new CancelListener());

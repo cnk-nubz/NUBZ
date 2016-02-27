@@ -19,6 +19,7 @@ import com.cnk.data.experiment.Survey;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
 import com.cnk.data.experiment.answers.SurveyAnswers;
+import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
@@ -120,7 +121,8 @@ public class SurveyActivity extends AppCompatActivity {
                 case MULTIPLE_CHOICE:
                     MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextMultipleChoiceQuestion(),
+                    MultipleChoiceQuestion nextQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextQuestion,
                                                                              this,
                                                                              multipleChoiceAnswer)
                     );

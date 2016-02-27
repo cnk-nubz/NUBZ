@@ -40,7 +40,6 @@ import com.cnk.ui.ImageHelper;
 import com.cnk.ui.MapBitmapProvider;
 import com.cnk.ui.ScaleData;
 import com.cnk.utilities.Consts;
-import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
 
@@ -168,6 +167,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         spinner = new ProgressDialog(this);
         spinner.setTitle("Ładowanie");
         spinner.setMessage("Oczekiwanie na pobranie akcji");
+        spinner.setCancelable(false);
         spinner.show();
     }
 
@@ -382,8 +382,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
-        Util.waitDelay(Consts.SECOND);
-        spinner.dismiss();
         mapState = new MapState(this);
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");

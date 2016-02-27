@@ -1,10 +1,24 @@
 package com.cnk.data.experiment.questions;
 
-import com.cnk.utilities.IdTextObject;
+import com.cnk.utilities.ListObject;
 
-public class MultipleChoiceQuestionOption extends IdTextObject {
+public class MultipleChoiceQuestionOption implements ListObject {
+
+    private Integer id;
+    private String text;
 
     public MultipleChoiceQuestionOption(Integer id, String text) {
-        super(id, text);
+        this.id = id;
+        this.text = text;
+    }
+
+    @Override
+    public Integer getId() {
+        return id;
+    }
+
+    @Override
+    public String getText() {
+        return text;
     }
 }

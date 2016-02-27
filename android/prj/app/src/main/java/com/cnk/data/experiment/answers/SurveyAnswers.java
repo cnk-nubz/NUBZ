@@ -5,11 +5,11 @@ import java.util.List;
 
 public class SurveyAnswers {
     private List<SimpleQuestionAnswer> simpleAnswers;
-    private List<MultipleChoiceQuestionAnswer> multipleChoiceanswers;
+    private List<MultipleChoiceQuestionAnswer> multipleChoiceAnswers;
 
     public SurveyAnswers() {
         simpleAnswers = new ArrayList<>();
-        multipleChoiceanswers = new ArrayList<>();
+        multipleChoiceAnswers = new ArrayList<>();
     }
 
     public void addSimpleAnswer(SimpleQuestionAnswer answer) {
@@ -17,6 +17,6 @@ public class SurveyAnswers {
     }
 
     public void addMultipleChoiceAnswer(MultipleChoiceQuestionAnswer answer) {
-        multipleChoiceanswers.add(answer);
+        multipleChoiceAnswers.add(answer);
     }
 }
