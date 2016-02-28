@@ -1,6 +1,7 @@
 package com.cnk.ui.questions;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -10,6 +11,7 @@ import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
 import com.cnk.ui.AutoResizeTextView;
+import com.cnk.ui.ListItemStyle;
 import com.cnk.utilities.SelectListAdapter;
 
 public class MultipleChoiceQuestionView extends QuestionView {

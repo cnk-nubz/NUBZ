@@ -2,20 +2,18 @@ package com.cnk.utilities;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import com.cnk.ui.ListItemStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class SelectListAdapter<T extends ListObject, V extends TextView> extends BaseAdapter {
-    private static final Integer ACTIVE_COLOR = Color.GREEN;
-    private static final Integer NOTACTIVE_COLOR = Color.LTGRAY;
-
     private List<T> options;
     private Context context;
     private Boolean optionChecked[];
@@ -23,20 +21,31 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
     private View activeView;
     private Integer activeId;
     private Class<V> viewType;
+    private ListItemStyle style;
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context,
-                             Class<V> viewType
+                             Class<V> viewType,
+                             ListItemStyle style
     ) {
         this.options = options;
         this.context = context;
         this.optionChecked = new Boolean[options.size()];
         this.singleAnswer = singleAnswer;
         this.viewType = viewType;
+        this.style = style == null ? new ListItemStyle() : style;
         activeId = null;
         activeView = null;
         Arrays.fill(optionChecked, false);
+    }
+
+    public SelectListAdapter(List<T> options,
+                             Boolean singleAnswer,
+                             Context context,
+                             Class<V> viewType
+    ) {
+        this(options, singleAnswer, context, viewType, null);
     }
 
     @Override
@@ -64,11 +73,7 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
         } catch (Exception e) {
             throw new RuntimeException();
         }
-        optionLabel.setMaxLines(3);
-        optionLabel.setTextSize(20f);
-        optionLabel.setHeight(80);
-        optionLabel.setGravity(Gravity.CENTER);
-        optionLabel.setBackgroundColor(NOTACTIVE_COLOR);
+        style.apply(optionLabel);
         optionLabel.setText(options.get(idx).getText());
         optionLabel.setOnClickListener(new OptionOnClickListener(this, idx));
         return optionLabel;
@@ -79,7 +84,7 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
     }
 
     private void selectOption(Integer id, View v) {
-        v.setBackgroundColor(ACTIVE_COLOR);
+        v.setBackgroundColor(style.getActiveColor());
         optionChecked[id] = true;
         if (activeId != null && activeView != null && singleAnswer) {
             unselectOption(activeId, activeView);
@@ -89,7 +94,7 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
     }
 
     private void unselectOption(Integer id, View v) {
-        v.setBackgroundColor(NOTACTIVE_COLOR);
+        v.setBackgroundColor(style.getNotActiveColor());
         optionChecked[id] = false;
         activeId = null;
         activeView = null;

@@ -30,6 +30,7 @@
         </activity>
         <activity
             android:name=".activities.SurveyActivity"
+            android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" >
         </activity>
     </application>

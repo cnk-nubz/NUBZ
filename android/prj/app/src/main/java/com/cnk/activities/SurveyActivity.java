@@ -49,7 +49,7 @@ public class SurveyActivity extends AppCompatActivity {
         setUpCounterLabel();
         showView(0);
     }
-
+    
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         hideKeyboard();
