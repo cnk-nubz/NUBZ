@@ -16,8 +16,10 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.answers.SurveyAnswers;
+import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.answers.SurveyAnswers;
+import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
@@ -47,7 +49,7 @@ public class SurveyActivity extends AppCompatActivity {
         setUpCounterLabel();
         showView(0);
     }
-
+    
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         hideKeyboard();
@@ -112,9 +114,19 @@ public class SurveyActivity extends AppCompatActivity {
             Survey.QuestionType type = currentSurvey.popNextQuestionType();
             switch (type) {
                 case SIMPLE:
-                    SimpleQuestionAnswer answer = new SimpleQuestionAnswer();
-                    answers.addSimpleAnswer(answer);
-                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, answer));
+                    SimpleQuestionAnswer simpleAnswer = new SimpleQuestionAnswer();
+                    answers.addSimpleAnswer(simpleAnswer);
+                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, simpleAnswer));
+                    break;
+                case MULTIPLE_CHOICE:
+                    MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
+                    answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
+                    MultipleChoiceQuestion nextQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextQuestion,
+                                                                             this,
+                                                                             multipleChoiceAnswer)
+                    );
+                    break;
             }
         }
     }

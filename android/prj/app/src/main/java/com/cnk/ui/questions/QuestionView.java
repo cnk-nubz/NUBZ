@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.cnk.R;
+
 public abstract class QuestionView extends RelativeLayout {
     private static final float NAME_SIZE = 40.0f;
     private static final Integer QUESTION_COLOR = Color.RED;
@@ -19,6 +21,7 @@ public abstract class QuestionView extends RelativeLayout {
         LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        params.addRule(ABOVE, R.id.counterLabel);
         setLayoutParams(params);
     }
 
@@ -32,6 +35,7 @@ public abstract class QuestionView extends RelativeLayout {
         nameLabel.setTextSize(NAME_SIZE);
         nameLabel.setTextColor(QUESTION_COLOR);
         nameLabel.setLayoutParams(params);
+        nameLabel.setId(R.id.questionNameLabelId);
         this.addView(nameLabel);
     }
 

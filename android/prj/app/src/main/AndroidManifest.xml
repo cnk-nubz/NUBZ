@@ -24,12 +24,13 @@
             android:screenOrientation="landscape" >
         </activity>
         <activity
-            android:name=".activities.exhibitwindow.ExhibitDialog"
+            android:name=".activities.ExhibitDialog"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.AppCompat.Light.Dialog" >
         </activity>
         <activity
             android:name=".activities.SurveyActivity"
+            android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" >
         </activity>
     </application>

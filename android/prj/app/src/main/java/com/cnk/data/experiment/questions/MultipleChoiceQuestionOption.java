@@ -1,13 +1,13 @@
-package com.cnk.data.experiment;
+package com.cnk.data.experiment.questions;
 
 import com.cnk.utilities.ListObject;
 
-public class Action implements ListObject {
+public class MultipleChoiceQuestionOption implements ListObject {
 
     private Integer id;
     private String text;
 
-    public Action(Integer id, String text) {
+    public MultipleChoiceQuestionOption(Integer id, String text) {
         this.id = id;
         this.text = text;
     }
