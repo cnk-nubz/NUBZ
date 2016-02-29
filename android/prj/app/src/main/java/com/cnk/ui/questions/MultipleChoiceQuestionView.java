@@ -1,7 +1,6 @@
 package com.cnk.ui.questions;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -10,19 +9,18 @@ import com.cnk.R;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.ui.AutoResizeTextView;
-import com.cnk.ui.ListItemStyle;
-import com.cnk.utilities.SelectListAdapter;
+import com.cnk.ui.adapters.SelectListAdapter;
 
 public class MultipleChoiceQuestionView extends QuestionView {
 
     private static final float HEADER_SIZE = 25.0f;
-    SelectListAdapter<MultipleChoiceQuestionOption, AutoResizeTextView> adapter;
+    SelectListAdapter<MultipleChoiceQuestionOption> adapter;
     private MultipleChoiceQuestionAnswer answer;
 
     public MultipleChoiceQuestionView(Context c,
                                       MultipleChoiceQuestion question,
-                                      MultipleChoiceQuestionAnswer answer) {
+                                      MultipleChoiceQuestionAnswer answer
+    ) {
         super(c, question.getQuestion());
         setUpTable(c, question);
         this.answer = answer;
@@ -47,6 +45,7 @@ public class MultipleChoiceQuestionView extends QuestionView {
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
         table.setLayoutParams(params);
         table.addHeaderView(header);
+        table.setDivider(getBackground());
         table.setDividerHeight(5);
         addView(table);
 
@@ -54,7 +53,7 @@ public class MultipleChoiceQuestionView extends QuestionView {
     }
 
     private void setUpTableRows(Context c, ListView table, MultipleChoiceQuestion question) {
-        adapter = new SelectListAdapter<>(question.getOptions(), question.isSingleAnswer(), c, AutoResizeTextView.class);
+        adapter = new SelectListAdapter<>(question.getOptions(), question.isSingleAnswer(), c);
         table.setAdapter(adapter);
     }
 }

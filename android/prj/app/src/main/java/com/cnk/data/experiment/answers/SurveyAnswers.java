@@ -6,10 +6,12 @@ import java.util.List;
 public class SurveyAnswers {
     private List<SimpleQuestionAnswer> simpleAnswers;
     private List<MultipleChoiceQuestionAnswer> multipleChoiceAnswers;
+    private List<SortQuestionAnswer> sortQuestionAnswers;
 
     public SurveyAnswers() {
         simpleAnswers = new ArrayList<>();
         multipleChoiceAnswers = new ArrayList<>();
+        sortQuestionAnswers = new ArrayList<>();
     }
 
     public void addSimpleAnswer(SimpleQuestionAnswer answer) {
@@ -18,5 +20,9 @@ public class SurveyAnswers {
 
     public void addMultipleChoiceAnswer(MultipleChoiceQuestionAnswer answer) {
         multipleChoiceAnswers.add(answer);
+    }
+
+    public void addSortQuestionAnswer(SortQuestionAnswer answer) {
+        sortQuestionAnswers.add(answer);
     }
 }

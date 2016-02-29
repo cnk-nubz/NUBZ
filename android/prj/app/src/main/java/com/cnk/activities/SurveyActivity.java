@@ -18,8 +18,10 @@ import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Survey;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.answers.SortQuestionAnswer;
 import com.cnk.data.experiment.answers.SurveyAnswers;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.questions.SortQuestion;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
@@ -53,6 +55,7 @@ public class SurveyActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         hideKeyboard();
+        currentQuestionView.saveAnswer();
         if (item.getItemId() == R.id.action_prev_question) {
             nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {
@@ -71,7 +74,6 @@ public class SurveyActivity extends AppCompatActivity {
             }
 
         }
-        currentQuestionView.saveAnswer();
         return super.onOptionsItemSelected(item);
     }
 
@@ -92,7 +94,7 @@ public class SurveyActivity extends AppCompatActivity {
 
     private void updateCounterLabel() {
         counterLabel.setText(
-                Integer.toString(currentQuestionNo + 1) +
+                        Integer.toString(currentQuestionNo + 1) +
                         "/" +
                         Integer.toString(allQuestionsCount)
         );
@@ -121,10 +123,19 @@ public class SurveyActivity extends AppCompatActivity {
                 case MULTIPLE_CHOICE:
                     MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion nextQuestion = currentSurvey.popNextMultipleChoiceQuestion();
-                    questionViews.add(QuestionViewFactory.createQuestionView(nextQuestion,
+                    MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
                                                                              this,
                                                                              multipleChoiceAnswer)
+                    );
+                    break;
+                case SORT:
+                    SortQuestionAnswer sortAnswer = new SortQuestionAnswer();
+                    answers.addSortQuestionAnswer(sortAnswer);
+                    SortQuestion nextSortQuestion = currentSurvey.popNextSortQuestions();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextSortQuestion,
+                                                                             this,
+                                                                             sortAnswer)
                     );
                     break;
             }

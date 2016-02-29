@@ -13,8 +13,8 @@ import com.cnk.R;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
 import com.cnk.ui.AutoResizeTextView;
+import com.cnk.ui.adapters.SelectListAdapter;
 import com.cnk.utilities.Consts;
-import com.cnk.utilities.SelectListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ public class ExhibitDialog extends Activity {
     private List<String> actionsStrings;
     private String name;
     private Boolean isBreak;
-    private SelectListAdapter<Action, AutoResizeTextView> actionsAdapter;
+    private SelectListAdapter<Action> actionsAdapter;
     private long startTime;
 
     @Override
@@ -56,7 +56,7 @@ public class ExhibitDialog extends Activity {
         for (Action a : actions) {
             actionsStrings.add(a.getText());
         }
-        actionsAdapter = new SelectListAdapter<>(actions, false, ExhibitDialog.this, AutoResizeTextView.class);
+        actionsAdapter = new SelectListAdapter<>(actions, false, ExhibitDialog.this);
 
         Button cancel = (Button) findViewById(R.id.bExbibitDialogCancel);
         cancel.setOnClickListener(new CancelListener());

@@ -1,4 +1,4 @@
-package com.cnk.utilities;
+package com.cnk.data;
 
 public interface ListObject {
 
