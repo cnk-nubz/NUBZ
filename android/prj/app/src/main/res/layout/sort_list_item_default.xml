@@ -2,7 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#ffd3d3d3">
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -10,7 +11,7 @@
         android:id="@+id/downButton"
         android:layout_weight="1"
         android:src="@android:drawable/arrow_down_float"
-        android:background="#d3d3d3d3"/>
+        android:background="#ffd3d3d3"/>
 
     <com.cnk.ui.AutoResizeTextView
         android:layout_width="wrap_content"
@@ -18,7 +19,7 @@
         android:id="@+id/text"
         android:layout_weight="8"
         android:maxLines="3"
-        android:background="#d3d3d3d3"
+        android:background="#ffd3d3d3"
         android:textSize="20sp"
         android:gravity="center" />
 
@@ -28,7 +29,7 @@
         android:id="@+id/upButton"
         android:layout_weight="1"
         android:src="@android:drawable/arrow_up_float"
-        android:background="#d3d3d3d3"/>
+        android:background="#ffd3d3d3"/>
 
 
 </LinearLayout>

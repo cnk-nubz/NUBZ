@@ -1,6 +1,6 @@
 package com.cnk.data.experiment;
 
-import com.cnk.utilities.ListObject;
+import com.cnk.data.ListObject;
 
 public class Action implements ListObject {
 

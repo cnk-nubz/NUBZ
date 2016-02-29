@@ -1,6 +1,6 @@
 package com.cnk.data.experiment.questions;
 
-import com.cnk.utilities.ListObject;
+import com.cnk.data.ListObject;
 
 public class SortQuestionOption implements ListObject {
 

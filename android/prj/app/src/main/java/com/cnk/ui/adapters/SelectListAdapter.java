@@ -1,4 +1,4 @@
-package com.cnk.utilities;
+package com.cnk.ui.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.data.ListObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     private static final Integer ACTIVE_COLOR = Color.GREEN;
-    private static final Integer NOT_ACTIVE_COLOR = 0xd3d3d3d3;
+    private static final Integer NOT_ACTIVE_COLOR = 0xffd3d3d3;
     private static final Integer DEFAULT_LAYOUT = R.layout.select_list_item_default;
     private List<T> options;
     private Context context;
@@ -25,13 +26,13 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     private View activeView;
     private Integer activeId;
     private Integer layout;
-    private SelectItemIds ids;
+    private SelectViewItemIds viewIds;
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context
     ) {
-        this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectItemIds());
+        this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectViewItemIds());
     }
 
     public SelectListAdapter(List<T> options,
@@ -39,21 +40,21 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
                              Context context,
                              Integer layout
     ) {
-        this(options, singleAnswer, context, layout, new SelectItemIds());
+        this(options, singleAnswer, context, layout, new SelectViewItemIds());
     }
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context,
                              Integer layout,
-                             SelectItemIds ids
+                             SelectViewItemIds viewIds
     ) {
         this.options = options;
         this.context = context;
         this.optionChecked = new Boolean[options.size()];
         this.singleAnswer = singleAnswer;
         this.layout = layout;
-        this.ids = ids;
+        this.viewIds = viewIds;
         activeId = null;
         activeView = null;
         Arrays.fill(optionChecked, false);
@@ -82,7 +83,7 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     public View getView(final int idx, View view, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View optionLabel = inflater.inflate(layout, null);
-        TextView text = (TextView) optionLabel.findViewById(ids.getTextView());
+        TextView text = (TextView) optionLabel.findViewById(viewIds.getTextViewId());
         if (text != null) {
             text.setText(options.get(idx).getText());
         }

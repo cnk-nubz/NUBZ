@@ -9,7 +9,7 @@ import com.cnk.R;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.utilities.SelectListAdapter;
+import com.cnk.ui.adapters.SelectListAdapter;
 
 public class MultipleChoiceQuestionView extends QuestionView {
 

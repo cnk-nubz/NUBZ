@@ -1,4 +1,4 @@
-package com.cnk.utilities;
+package com.cnk.ui.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.data.ListObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,23 +21,21 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
     private List<T> options;
     private Context context;
     private Integer layout;
-    private Integer mainViewId;
-    private Integer textId;
-    SortItemIds ids;
+    SortViewItemIds viewIds;
 
     public SortListAdapter(List<T> options, Context context) {
-        this(options, context, DEFAULT_LAYOUT, new SortItemIds());
+        this(options, context, DEFAULT_LAYOUT, new SortViewItemIds());
     }
 
     public SortListAdapter(List<T> options, Context context, Integer layout) {
-        this(options, context, layout, new SortItemIds());
+        this(options, context, layout, new SortViewItemIds());
     }
 
-    public SortListAdapter(List<T> options, Context context, Integer layout, SortItemIds ids) {
+    public SortListAdapter(List<T> options, Context context, Integer layout, SortViewItemIds viewIds) {
         this.options = options;
         this.context = context;
         this.layout = layout;
-        this.ids = ids;
+        this.viewIds = viewIds;
     }
 
     @Override
@@ -60,13 +59,19 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
     public View getView(final int idx, View view, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View option = inflater.inflate(layout, null);
-        TextView text = (TextView) option.findViewById(ids.getTextView());
-        ImageButton downButon = (ImageButton) option.findViewById(ids.getDownButton());
-        ImageButton upButton = (ImageButton) option.findViewById(ids.getUpButton());
+        TextView text = (TextView) option.findViewById(viewIds.getTextViewId());
+        ImageButton downButon = (ImageButton) option.findViewById(viewIds.getDownButtonId());
+        ImageButton upButton = (ImageButton) option.findViewById(viewIds.getUpButtonId());
         if (upButton != null) {
+            if (idx == 0) {
+                upButton.setVisibility(View.INVISIBLE);
+            }
             upButton.setOnClickListener(new UpClickListener(idx));
         }
         if (downButon != null) {
+            if (idx == options.size() - 1) {
+                downButon.setVisibility(View.INVISIBLE);
+            }
             downButon.setOnClickListener(new DownClickListener(idx));
         }
         if (text != null) {
@@ -91,10 +96,8 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
         }
         @Override
         public void onClick(View v) {
-            if (idx < getCount() - 1) {
-                Collections.swap(options, idx, idx + 1);
-                notifyDataSetChanged();
-            }
+            Collections.swap(options, idx, idx + 1);
+            notifyDataSetChanged();
         }
     }
 
@@ -106,10 +109,8 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
         }
         @Override
         public void onClick(View v) {
-            if (idx > 0) {
-                Collections.swap(options, idx, idx - 1);
-                notifyDataSetChanged();
-            }
+            Collections.swap(options, idx, idx - 1);
+            notifyDataSetChanged();
         }
     }
 }

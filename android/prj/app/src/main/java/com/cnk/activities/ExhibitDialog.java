@@ -13,8 +13,8 @@ import com.cnk.R;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
 import com.cnk.ui.AutoResizeTextView;
+import com.cnk.ui.adapters.SelectListAdapter;
 import com.cnk.utilities.Consts;
-import com.cnk.utilities.SelectListAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
