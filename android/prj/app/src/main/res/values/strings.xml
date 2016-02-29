@@ -20,4 +20,5 @@
     <string name="prev">Poprzednie</string>
     <string name="chooseOne">Zaznacz jedną odpowiedź</string>
     <string name="chooseMultiple">Zaznacz dowolną liczbę odpowiedzi</string>
+    <string name="sort">Posortuj poniższe opcje</string>
 </resources>

@@ -13,12 +13,12 @@ public class ListItemStyle {
     private int notActiveColor;
     private float textSize;
 
-    public void apply(TextView view) {
+    public void apply(TextView view, Boolean selected) {
         view.setGravity(gravity);
         view.setMaxLines(maxLines);
         view.setHeight(height);
         view.setTextSize(textSize);
-        view.setBackgroundColor(notActiveColor);
+        view.setBackgroundColor(selected ? activeColor : notActiveColor);
     }
 
     public ListItemStyle() {
@@ -27,7 +27,7 @@ public class ListItemStyle {
         height = 80;
         textSize = 20f;
         activeColor = Color.GREEN;
-        notActiveColor = Color.LTGRAY;
+        notActiveColor = 0xd3d3d3d3;
     }
 
     public void setGravity(int gravity) {

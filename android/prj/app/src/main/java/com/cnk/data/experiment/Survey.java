@@ -2,13 +2,15 @@ package com.cnk.data.experiment;
 
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.SimpleQuestion;
+import com.cnk.data.experiment.questions.SortQuestion;
 
 import java.util.Queue;
 
 public class Survey {
     public enum QuestionType {
         SIMPLE,
-        MULTIPLE_CHOICE;
+        MULTIPLE_CHOICE,
+        SORT;
     }
 
     public enum SurveyType {
@@ -19,14 +21,17 @@ public class Survey {
     private Queue<QuestionType> questionOrder;
     private Queue<SimpleQuestion> simpleQuestions;
     private Queue<MultipleChoiceQuestion> multipleChoiceQuestions;
+    private Queue<SortQuestion> sortQuestions;
 
     public Survey(Queue<QuestionType> questionOrder,
                   Queue<SimpleQuestion> simpleQuestions,
-                  Queue<MultipleChoiceQuestion> multipleChoiceQuestions
-                 ) {
+                  Queue<MultipleChoiceQuestion> multipleChoiceQuestions,
+                  Queue<SortQuestion> sortQuestions
+    ) {
         this.questionOrder = questionOrder;
         this.simpleQuestions = simpleQuestions;
         this.multipleChoiceQuestions = multipleChoiceQuestions;
+        this.sortQuestions = sortQuestions;
     }
 
     public Integer getRemainingQuestionsCount() {
@@ -43,5 +48,9 @@ public class Survey {
 
     public MultipleChoiceQuestion popNextMultipleChoiceQuestion() {
         return multipleChoiceQuestions.remove();
+    }
+
+    public SortQuestion popNextSortQuestions() {
+        return sortQuestions.remove();
     }
 }

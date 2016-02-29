@@ -2,51 +2,64 @@ package com.cnk.utilities;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.cnk.ui.ListItemStyle;
+import com.cnk.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SelectListAdapter<T extends ListObject, V extends TextView> extends BaseAdapter {
+public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
+    private static final Integer ACTIVE_COLOR = Color.GREEN;
+    private static final Integer NOT_ACTIVE_COLOR = 0xd3d3d3d3;
+    private static final Integer DEFAULT_LAYOUT = R.layout.select_list_item_default;
     private List<T> options;
     private Context context;
     private Boolean optionChecked[];
     private Boolean singleAnswer;
     private View activeView;
     private Integer activeId;
-    private Class<V> viewType;
-    private ListItemStyle style;
+    private Integer layout;
+    private SelectItemIds ids;
+
+    public SelectListAdapter(List<T> options,
+                             Boolean singleAnswer,
+                             Context context
+    ) {
+        this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectItemIds());
+    }
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context,
-                             Class<V> viewType,
-                             ListItemStyle style
+                             Integer layout
+    ) {
+        this(options, singleAnswer, context, layout, new SelectItemIds());
+    }
+
+    public SelectListAdapter(List<T> options,
+                             Boolean singleAnswer,
+                             Context context,
+                             Integer layout,
+                             SelectItemIds ids
     ) {
         this.options = options;
         this.context = context;
         this.optionChecked = new Boolean[options.size()];
         this.singleAnswer = singleAnswer;
-        this.viewType = viewType;
-        this.style = style == null ? new ListItemStyle() : style;
+        this.layout = layout;
+        this.ids = ids;
         activeId = null;
         activeView = null;
         Arrays.fill(optionChecked, false);
     }
 
-    public SelectListAdapter(List<T> options,
-                             Boolean singleAnswer,
-                             Context context,
-                             Class<V> viewType
-    ) {
-        this(options, singleAnswer, context, viewType, null);
-    }
+
 
     @Override
     public int getCount() {
@@ -67,14 +80,19 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
 
     @Override
     public View getView(final int idx, View view, ViewGroup viewGroup) {
-        V optionLabel;
-        try {
-            optionLabel = viewType.getConstructor(Context.class).newInstance(context);
-        } catch (Exception e) {
-            throw new RuntimeException();
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View optionLabel = inflater.inflate(layout, null);
+        TextView text = (TextView) optionLabel.findViewById(ids.getTextView());
+        if (text != null) {
+            text.setText(options.get(idx).getText());
         }
-        style.apply(optionLabel);
-        optionLabel.setText(options.get(idx).getText());
+        if (isSelected(idx)) {
+            optionLabel.setBackgroundColor(ACTIVE_COLOR);
+            activeId = idx;
+            activeView = optionLabel;
+        } else {
+            optionLabel.setBackgroundColor(NOT_ACTIVE_COLOR);
+        }
         optionLabel.setOnClickListener(new OptionOnClickListener(this, idx));
         return optionLabel;
     }
@@ -84,18 +102,18 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
     }
 
     private void selectOption(Integer id, View v) {
-        v.setBackgroundColor(style.getActiveColor());
-        optionChecked[id] = true;
         if (activeId != null && activeView != null && singleAnswer) {
             unselectOption(activeId, activeView);
         }
+        optionChecked[id] = true;
+        v.setBackgroundColor(ACTIVE_COLOR);
         activeId = id;
         activeView = v;
     }
 
     private void unselectOption(Integer id, View v) {
-        v.setBackgroundColor(style.getNotActiveColor());
         optionChecked[id] = false;
+        v.setBackgroundColor(NOT_ACTIVE_COLOR);
         activeId = null;
         activeView = null;
     }
@@ -112,9 +130,9 @@ public class SelectListAdapter<T extends ListObject, V extends TextView> extends
 
     private class OptionOnClickListener implements View.OnClickListener {
         private Integer optionId;
-        private SelectListAdapter<T, V> adapterRef;
+        private SelectListAdapter<T> adapterRef;
 
-        public OptionOnClickListener(SelectListAdapter<T, V> adapterRef, Integer optionId) {
+        public OptionOnClickListener(SelectListAdapter<T> adapterRef, Integer optionId) {
             this.optionId = optionId;
             this.adapterRef = adapterRef;
         }

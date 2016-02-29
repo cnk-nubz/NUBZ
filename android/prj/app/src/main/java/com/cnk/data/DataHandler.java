@@ -11,6 +11,8 @@ import com.cnk.data.experiment.Survey;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
 import com.cnk.data.experiment.questions.SimpleQuestion;
+import com.cnk.data.experiment.questions.SortQuestion;
+import com.cnk.data.experiment.questions.SortQuestionOption;
 import com.cnk.data.map.FloorInfo;
 import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapTiles;
@@ -139,31 +141,39 @@ public class DataHandler extends Observable {
 
     public Survey getSurvey(Survey.SurveyType type) {
         Queue<Survey.QuestionType> types = new LinkedList<>();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             types.add(Survey.QuestionType.SIMPLE);
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             types.add(Survey.QuestionType.MULTIPLE_CHOICE);
+        }
+
+        for (int i = 0; i < 3; i++) {
+            types.add(Survey.QuestionType.SORT);
         }
 
         Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
         Queue<MultipleChoiceQuestion> multipleChoiceQuestions = new LinkedList<>();
-        for (int i = 0; i < 5; i++) {
+        Queue<SortQuestion> sortQuestions = new LinkedList<>();
+        for (int i = 0; i < 3; i++) {
             simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i),
                     i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
         }
 
         List<MultipleChoiceQuestionOption> options = new ArrayList<>();
+        List<SortQuestionOption> sortOptions = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            options.add(new MultipleChoiceQuestionOption(i, "TESTESTESTESTESTESTEST"));
+            options.add(new MultipleChoiceQuestionOption(i, "TEST" + Integer.toString(i)));
+            sortOptions.add(new SortQuestionOption(i, "TEST" + Integer.toString(i)));
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             multipleChoiceQuestions.add(new MultipleChoiceQuestion(i, "TEST" + Integer.toString(i), i % 2 == 0, options));
+            sortQuestions.add(new SortQuestion(i, "TEST" + Integer.toString(i), sortOptions));
         }
 
-        return new Survey(types, simpleQuestions, multipleChoiceQuestions);
+        return new Survey(types, simpleQuestions, multipleChoiceQuestions, sortQuestions);
     }
 
     public List<Action> getAllExhibitActions() {
