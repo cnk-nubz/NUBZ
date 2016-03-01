@@ -12,21 +12,21 @@ namespace db {
 namespace sql {
 
 template <class Subclass, class... Cols>
-class InsertCore {
+class _Insert {
     template <class Subclass2, class... Cols2>
-    friend class InsertCore;
+    friend class _Insert;
 
     static_assert(utils::same_table<Cols...>::value, "all columns should be from the same table");
 
 public:
     template <class Subclass2, class... Cols2>
-    InsertCore(InsertCore<Subclass2, Cols2...> that)
+    _Insert(_Insert<Subclass2, Cols2...> that)
         : vals(std::move(that.vals)) {
         static_assert(std::is_same<std::tuple<Cols...>, std::tuple<Cols2...>>::value,
-                      "two InsertCores should have the same set of columns");
+                      "two _Inserts should have the same set of columns");
     }
 
-    InsertCore() = default;
+    _Insert() = default;
 
     template <class... Values>
     Subclass &values(const std::tuple<Values...> &vals) {
@@ -64,14 +64,14 @@ template <class, class...>
 class ReturningInsert;
 
 template <class... Cols>
-class Insert : public InsertCore<Insert<Cols...>, Cols...> {
+class Insert : public _Insert<Insert<Cols...>, Cols...> {
 public:
     template <class RetColumn>
     auto returning(const RetColumn &retCol) const {
         static_assert(utils::same_table<RetColumn, Cols...>::value,
                       "returned column should be from the same table as inserted columns");
         return ReturningInsert<RetColumn, Cols...>{
-            retCol, *static_cast<const InsertCore<Insert<Cols...>, Cols...> *>(this)};
+            retCol, *static_cast<const _Insert<Insert<Cols...>, Cols...> *>(this)};
     }
 
     std::string str() const {
@@ -80,16 +80,16 @@ public:
 };
 
 template <class RetCol, class... Cols>
-class ReturningInsert : public InsertCore<ReturningInsert<RetCol, Cols...>, Cols...> {
+class ReturningInsert : public _Insert<ReturningInsert<RetCol, Cols...>, Cols...> {
     static_assert(utils::same_table<RetCol, Cols...>::value,
                   "returned column should be from the same table as inserted columns");
 
 public:
     using return_type = std::tuple<typename RetCol::value_type>;
 
-    template <class InsertCore2>
-    ReturningInsert(const RetCol &, InsertCore2 &&core)
-        : InsertCore<ReturningInsert<RetCol, Cols...>, Cols...>{std::forward<InsertCore2>(core)} {
+    template <class _Insert2>
+    ReturningInsert(const RetCol &, _Insert2 &&core)
+        : _Insert<ReturningInsert<RetCol, Cols...>, Cols...>{std::forward<_Insert2>(core)} {
     }
 
     std::string str() const {

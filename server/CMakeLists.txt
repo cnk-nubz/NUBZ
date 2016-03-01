@@ -27,11 +27,12 @@ link_directories(${Pqxx_LIBRARY_DIRS})
 
 add_subdirectory(src/utils)
 add_subdirectory(src/db)
+add_subdirectory(src/repository)
+add_subdirectory(src/communication)
 add_subdirectory(src/server)
 
-file(GLOB SOURCES
-    src/*.cpp
-    src/communication/*.cpp
+set(SOURCES
+    src/main.cpp
 )
 
 add_executable(main ${SOURCES})
@@ -39,6 +40,7 @@ add_executable(main ${SOURCES})
 target_link_libraries(
     main
     server
+    utils
     ssl
     thrift
     thriftnb

@@ -3,9 +3,15 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
+#include <utility>
 
 #include <boost/optional.hpp>
 #include <pqxx/pqxx>
+
+#include <utils/fp_algorithm.h>
+
+#include <db/table/Value.h>
 
 namespace db {
 
@@ -16,42 +22,72 @@ public:
 
     DatabaseSession(pqxx::work &work);
 
+    // raw commands
     void execute(const std::string &sqlStmt);
 
-    // first result
     Row getResult(const std::string &sqlQuery);
 
-    // all results
     std::vector<Row> getResults(const std::string &sqlQuery);
 
-    // first result
+    // commands parametrized with factory
     template <class T>
-    typename T::Product getResult(const std::string &sqlQuery);
+    typename T::Product getResult(const std::string &sqlQuery) {
+        return T::create(getResult(sqlQuery));
+    }
 
-    // all results
     template <class T>
-    std::vector<typename T::Product> getResults(const std::string &sqlQuery);
+    std::vector<typename T::Product> getResults(const std::string &sqlQuery) {
+        std::vector<typename T::Product> res;
+        for (const auto &row : getResults(sqlQuery)) {
+            res.emplace_back(T::create(row));
+        }
+        return res;
+    }
+
+    // commands using db::sql
+    template <class SQL>
+    void execute(const SQL &sql) {
+        execute(sql.str());
+    }
+
+    // returns optional instead of raising error in case of no result (as previous versions do)
+    template <class SQL>
+    boost::optional<typename SQL::return_type> getResult(const SQL &sql) {
+        auto res = getResults(sql);
+        if (!res.empty()) {
+            return res.front();
+        } else {
+            return {};
+        }
+    }
+
+    template <class SQL>
+    std::vector<typename SQL::return_type> getResults(const SQL &sql) {
+        using return_t = typename SQL::return_type;
+
+        auto rows = getResults(sql.str());
+        std::vector<return_t> result;
+        utils::transform(rows, result, translate<return_t>);
+        return result;
+    }
 
 private:
-    pqxx::work &work;
-
-    Row translate(const pqxx::tuple &row) const;
-    Field translate(const pqxx::field &field) const;
-};
-
-template <class T>
-typename T::Product DatabaseSession::getResult(const std::string &sqlQuery) {
-    return T::create(getResult(sqlQuery));
-}
-
-template <class T>
-std::vector<typename T::Product> DatabaseSession::getResults(const std::string &sqlQuery) {
-    std::vector<typename T::Product> res;
-    for (const auto &row : getResults(sqlQuery)) {
-        res.push_back(std::move(T::create(row)));
+    template <class Tuple>
+    static Tuple translate(const std::vector<Field> &vec) {
+        return translateImpl<Tuple>(vec, std::make_index_sequence<std::tuple_size<Tuple>::value>());
     }
-    return res;
-}
+
+    template <class Tuple, std::size_t... Idxs>
+    static Tuple translateImpl(const std::vector<Field> &vec, std::index_sequence<Idxs...>) {
+        return std::make_tuple(
+            db::table::ValueFactory<std::tuple_element_t<Idxs, Tuple>>::create(vec[Idxs])...);
+    }
+
+    static DatabaseSession::Row translate(const pqxx::tuple &row);
+    static DatabaseSession::Field translate(const pqxx::field &field);
+
+    pqxx::work &work;
+};
 }
 
 #endif
