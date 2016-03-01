@@ -42,13 +42,27 @@
   <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/questionsActionsList/QuestionsActionsList.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/Actions.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/Questions.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/questionsActionsList/TwoColumnList.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/lists/ListView.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/questionsActionsList/ThreeColumnList.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/rows/ChooseQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/rows/ChooseActionRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/rows/ExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/rows/ExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/lists/QuestionsList.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/lists/ActionsList.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
 {% endblock %}
 {% block init %}
@@ -58,6 +72,12 @@
       root.questionsList = {{questionsList|jsvar}}
       root.actionsList = {{actionsList|jsvar}}
       root.inputRegex = new RegExp("{{inputRegex}}")
+      root.HTML =
+        chooseQuestionRow: '{{chooseQuestionRow}}'
+        experimentQuestionRow: '{{experimentQuestionRow}}'
+        chooseActionRow: '{{chooseActionRow}}'
+        experimentActionRow: '{{experimentActionRow}}'
+        tableList: '{{tableList}}'
     </script>
   {% endcompress %}
 {% endblock %}

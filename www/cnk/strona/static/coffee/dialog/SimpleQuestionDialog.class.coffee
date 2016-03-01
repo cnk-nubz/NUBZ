@@ -36,9 +36,9 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
   extractData: =>
     name = jQuery("#dialog .form-group:eq(0) input").val()
     question = jQuery("#dialog .form-group:eq(1) input").val()
-    answerType = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
+    answerAsNumber = not jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
     data =
       name: name
       question: question
-      answerType: if answerType then 0 else 1
+      answerAsNumber: answerAsNumber
     data

@@ -18,84 +18,69 @@ class ThriftCommunicator:
 		self.protocol = None
 		self.client = None
 
-	def start_connection(self):
-		try:
-			socket = TSocket.TSocket(self.host, self.port)
-			self.transport = TTransport.TFramedTransport(socket)
-			self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-			self.transport.open()
-			self.client = Server.Client(self.protocol)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			raise Exception('Brak polaczenia z serwerem: {} Upewnij sie, ze serwer jest wlaczony'.format(ex.args))
+	def _start_connection(self):
+		socket = TSocket.TSocket(self.host, self.port)
+		self.transport = TTransport.TFramedTransport(socket)
+		self.protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
+		self.transport.open()
+		self.client = Server.Client(self.protocol)
+		return self.client
 
-	def end_connection(self):
-		try:
-			self.transport.close()
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			raise Exception('Brak polaczenia z serwerem: {} Upewnij sie, ze serwer jest wlaczony'.format(ex.args))
+	def _end_connection(self):
+		self.transport.close()
 
-	def _perform_actions(self, actions):
-		self.start_connection()
+	def _perform_in_single_connection(self, actions):
 		try:
-			ret = [action() for action in actions]
+			client = self._start_connection()
+			ret = [action(client) for action in actions]
+			self._end_connection()
 		except Exception as ex:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)
 			print message
 			raise Exception(message)
-
-		self.end_connection()
 		return ret
 
 	def ping(self, number, text):
-		def action():
+		def action(client):
 			msg = HelloMsg(number, text)
-			return self.client.ping(msg)
-		return self._perform_actions([action])
+			return client.ping(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def getMapImages(self):
-		def action():
+		def action(client):
 			msg = MapImagesRequest()
-			return self.client.getMapImages(msg)
-		return self._perform_actions([action])
+			return client.getMapImages(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def setMapImage(self, floor, filename):
-		def action():
+		def action(client):
 			msg = SetMapImageRequest(floor, filename)
-			self.client.setMapImage(msg)
-			return True
-		return self._perform_actions([action])
+			client.setMapImage(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def getExhibits(self):
-		def action():
+		def action(client):
 			msg = NewExhibitsRequest()
-			return self.client.getNewExhibits(msg)
-		return self._perform_actions([action])
+			return client.getNewExhibits(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def getMapImageTiles(self):
-		def get_floor0():
-			floor0_msg = MapImageTilesRequest(0)
-			return self.client.getMapImageTiles(floor0_msg)
-		def get_floor1():
-			floor1_msg = MapImageTilesRequest(1)
-			return self.client.getMapImageTiles(floor1_msg)
-		return self._perform_actions([get_floor0, get_floor1])
+		def get_floor(floor):
+			def action(client):
+				floor_msg = MapImageTilesRequest(floor)
+				return client.getMapImageTiles(floor_msg)
+			return action
+		return self._perform_in_single_connection([get_floor(0), get_floor(1)])
 
 	def setExhibitFrame(self, frame):
-		def action():
+		def action(client):
 			msg = SetExhibitFrameRequest(int(frame['id']), Frame(frame['x'], frame['y'], Size(frame['width'], frame['height'])))
-			self.client.setExhibitFrame(msg)
-			return True
-		return self._perform_actions([action])
+			client.setExhibitFrame(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def createNewExhibit(self, request):
-		def action():
+		def action(client):
 			if 'floor' in request.keys() and request['floor'] != None:
 				floor = request['floor']
 			else:
@@ -107,43 +92,43 @@ class ThriftCommunicator:
 			else:
 				frame = None
 			msg = CreateExhibitRequest(request['name'], floor, frame)
-			return self.client.createExhibit(msg)
-		return self._perform_actions([action])
+			return client.createExhibit(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def createSimpleQuestion(self, request):
-		def action():
-			if request['answerType'] == 1:
+		def action(client):
+			if request['answerAsNumber'] == 1:
 				answerType = SimpleQuestionAnswerType.NUMBER
 			else:
 				answerType = SimpleQuestionAnswerType.TEXT
 			msg = CreateSimpleQuestionRequest(request['name'], request['question'], answerType)
-			return self.client.createSimpleQuestion(msg)
-		return self._perform_actions([action])
+			return client.createSimpleQuestion(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def createMultipleChoiceQuestion(self, request):
-		def action():
+		def action(client):
 			msg = CreateMultipleChoiceQuestionRequest(request['name'], request['question'], request['singleAnswer'], request['options'])
-			return self.client.createMultipleChoiceQuestion(msg)
-		return self._perform_actions([action])
+			return client.createMultipleChoiceQuestion(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def createAction(self, request):
-		def action():
+		def action(client):
 			msg = CreateActionRequest(request['text'])
-			return self.client.createAction(msg)
-		return self._perform_actions([action])
+			return client.createAction(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def createSortQuestion(self, request):
-		def action():
+		def action(client):
 			msg = CreateSortQuestionRequest(request['name'], request['question'], request['options'])
-			return self.client.createSortQuestion(msg)
-		return self._perform_actions([action])
+			return client.createSortQuestion(msg)
+		return self._perform_in_single_connection([action])[0]
 
 	def getAllQuestions(self):
-		def action():
-			return self.client.getAllQuestions()
-		return self._perform_actions([action])
+		def action(client):
+			return client.getAllQuestions()
+		return self._perform_in_single_connection([action])[0]
 
 	def getAllActions(self):
-		def action():
-			return self.client.getAllActions()
-		return self._perform_actions([action])
+		def action(client):
+			return client.getAllActions()
+		return self._perform_in_single_connection([action])[0]

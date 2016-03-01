@@ -40,7 +40,7 @@ table.questionsActionsTable > tbody > tr > td > div:first-child {
 }
 
 table.questionsActionsTable > tbody > tr > td:not(:last-child):not(:first-child) {
-  width: 100px;
+  width: 120px;
 }
 
 table.questionsActionsTable > tbody > tr > td:not(:last-child):not(:first-child):hover {

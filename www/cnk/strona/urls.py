@@ -21,13 +21,11 @@ urlpatterns = [
     url(r'getActionDialog/$', views.getActionDialog, name='getActionDialog'),
     url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
     url(r'getChooseQuestionTypeDialog/$', views.getChooseQuestionTypeDialog, name='getChooseQuestionTypeDialog'),
-    url(r'getTwoColumnList/$', views.getTwoColumnList, name='getTwoColumnList'),
-    url(r'getThreeColumnList/$', views.getThreeColumnList, name='getThreeColumnList'),
     # dialogs
-    url(r'setSimpleQuestion/$', views.setSimpleQuestion, name='setSimpleQuestion'),
-    url(r'setMultipleChoiceQuestion/$', views.setMultipleChoiceQuestion, name='setMultipleChoiceQuestion'),
-    url(r'setSortQuestion/$', views.setSortQuestion, name='setSortQuestion'),
-    url(r'setAction/$', views.setAction, name='setAction'),
+    url(r'createSimpleQuestion/$', views.createSimpleQuestion, name='createSimpleQuestion'),
+    url(r'createMultipleChoiceQuestion/$', views.createMultipleChoiceQuestion, name='createMultipleChoiceQuestion'),
+    url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
+    url(r'createAction/$', views.createAction, name='createAction'),
     #experiment
-    url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment')
+    url(r'createExperiment/$', views.createExperiment, name='saveExperiment')
 ]

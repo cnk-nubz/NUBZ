@@ -8,13 +8,14 @@ from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.safestring import mark_safe
 from django.conf import settings
-from django.views.decorators.csrf import ensure_csrf_cookie
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
+thriftCommunicator = ThriftCommunicator()
 def get_const(name):
     return getattr(settings, name, None)
 
@@ -43,13 +44,11 @@ class ActiveLink(Enum):
     NEW_EXPERIMENT = '2'
 
 def _pingServer():
-    tc = ThriftCommunicator()
-    result = tc.ping(1, 'x')[0]
+    result = thriftCommunicator.ping(1, 'x')
     return result == 1
 
 def _getMapImageInfo():
-	tc = ThriftCommunicator()
-	floorTiles = tc.getMapImageTiles()
+	floorTiles = thriftCommunicator.getMapImageTiles()
 	floorTilesInfo = {}
 
 	for i in xrange(0, 2):
@@ -76,10 +75,9 @@ def _getMapImageInfo():
 	return floorTilesInfo
 
 def _getExhibits():
-	tc = ThriftCommunicator()
-	result = tc.getExhibits()[0]
+	result = thriftCommunicator.getExhibits()
 
-	exhibitDict = {}
+	exhibitsDict = {}
 	for k in result.exhibits:
 		e = result.exhibits[k]
 		frame = None
@@ -91,12 +89,12 @@ def _getExhibits():
 				'height': e.mapFrame.frame.size.height,
 				'mapLevel': e.mapFrame.floor
 			}
-		exhibitDict[k] = {
+		exhibitsDict[k] = {
 			'name': e.name,
 			'id': k,
 			'frame': frame
 		}
-	return exhibitDict
+	return exhibitsDict
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
@@ -155,11 +153,10 @@ def uploadImage(request):
 	m.save()
 	floor = form.cleaned_data['floor']
 	#send information about update
-	tc = ThriftCommunicator()
 	filename = m.image.name
 	#extract filename
 	try:
-		setResult = tc.setMapImage(floor, os.path.basename(filename))
+		setResult = thriftCommunicator.setMapImage(floor, os.path.basename(filename))
 		floorTilesInfo = _getMapImageInfo()
 	except Exception as ex:
 		data = {
@@ -190,10 +187,9 @@ def updateExhibitPosition(request):
 		return JsonResponse(data)
 	jsonData = request.POST.get("jsonData")
 	frame = json.loads(jsonData)
-	tc = ThriftCommunicator()
 
 	try:
-		tc.setExhibitFrame(frame)
+		thriftCommunicator.setExhibitFrame(frame)
 	except Exception as ex:
 		data['message'] = str(ex)
 		return JsonResponse(data)
@@ -216,10 +212,9 @@ def createNewExhibit(request):
 		return JsonResponse(data)
 	jsonData = request.POST.get("jsonData")
 	exhibitRequest = json.loads(jsonData)
-	tc = ThriftCommunicator()
 
 	try:
-		newExhibit = tc.createNewExhibit(exhibitRequest)[0]
+		newExhibit = thriftCommunicator.createNewExhibit(exhibitRequest)
 	except Exception as ex:
 		data['message'] = str(ex)
 		return JsonResponse(data)
@@ -243,22 +238,22 @@ def createNewExhibit(request):
 	}
 	return JsonResponse(data)
 
-def getDialog(request, dialog):
+def getDialog(request, dialogName):
 	contextDict = {
-		'data': dialog['data']
+		'data': get_const(dialogName)['data']
 	}
 	html = render_to_string('dialog/dialog.html', contextDict)
 	retDict = {
-		'data': dialog,
+		'data': get_const(dialogName),
 		'html': html.replace("\n", "")
 	}
 	return JsonResponse(retDict)
 
 def getSimpleQuestionDialog(request):
-	return getDialog(request, get_const("SIMPLE_QUESTION_DIALOG"))
+	return getDialog(request, "SIMPLE_QUESTION_DIALOG")
 
 def getMultipleChoiceQuestionDialog(request):
-    return getDialog(request, get_const("MULTIPLE_CHOICE_QUESTION_DIALOG"))
+    return getDialog(request, "MULTIPLE_CHOICE_QUESTION_DIALOG")
 
 def getExhibitPanel(request):
     html = render_to_string('exhibitPanel/exhibitPanel.html')
@@ -269,71 +264,83 @@ def getExhibitListElement(request):
     return HttpResponse(html)
 
 def getSortQuestionDialog(request):
-    return getDialog(request, get_const("SORT_QUESTION_DIALOG"))
+    return getDialog(request, "SORT_QUESTION_DIALOG")
 
 def getActionDialog(request):
-    return getDialog(request, get_const("NEW_ACTION_DIALOG"))
+    return getDialog(request, "NEW_ACTION_DIALOG")
 
 def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
 
+def _getAllQuestions(newId = -1, newType = -1):
+    allQuestions = thriftCommunicator.getAllQuestions()
+    idxSimple = 0
+    idxMultiple = 0
+    idxSort = 0
+    questionsList = []
+    # sort questions in order
+    for order in allQuestions.questionsOrder:
+        if order == QuestionType.SIMPLE.value:
+            q = allQuestions.simpleQuestions[idxSimple]
+            idxSimple += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': True if newId == q.questionId and order == newType else False,
+                'type': QuestionType.SIMPLE.value,
+                'name': q.name,
+                'question': q.question,
+                'answerType': q.answerType
+            })
+        elif order == QuestionType.MULTIPLE.value:
+            q = allQuestions.multipleChoiceQuestions[idxMultiple]
+            idxMultiple += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': True if newId == q.questionId and order == newType else False,
+                'type': QuestionType.MULTIPLE.value,
+                'name': q.name,
+                'question': q.question,
+                'singleAnswer': q.singleAnswer,
+                'options': [o.text for o in q.options]
+            })
+        else:
+            q = allQuestions.sortQuestions[idxSort]
+            idxSort += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': True if newId == q.questionId and order == newType else False,
+                'type': QuestionType.SORT.value,
+                'name': q.name,
+                'question': q.question,
+                'options': [o.text for o in q.options]
+            })
+    return questionsList
+
+def _getAllActions(newId = -1):
+    allActions = thriftCommunicator.getAllActions()
+    actionsList = [{
+        'actionId': a.actionId,
+        'isNew': True if newId == a.actionId else False,
+        'text': a.text
+    } for a in allActions]
+    return actionsList
+
 def newExperimentPage(request):
-    tc = ThriftCommunicator()
     try:
-        allQuestions = tc.getAllQuestions()[0]
-        allActions = tc.getAllActions()[0]
-        idxSimple = 0
-        idxMultiple = 0
-        idxSort = 0
-        questionsList = []
-        # sort questions in order
-        for order in allQuestions.questionsOrder:
-            if order == QuestionType.SIMPLE.value:
-                q = allQuestions.simpleQuestions[idxSimple]
-                idxSimple += 1
-                questionsList.append({
-                    'questionId': q.questionId,
-                    'type': QuestionType.SIMPLE.value,
-                    'name': q.name,
-                    'question': q.question,
-                    'answerType': q.answerType
-                })
-            elif order == QuestionType.MULTIPLE.value:
-                q = allQuestions.multipleChoiceQuestions[idxMultiple]
-                idxMultiple += 1
-                questionsList.append({
-                    'questionId': q.questionId,
-                    'type': QuestionType.MULTIPLE.value,
-                    'name': q.name,
-                    'question': q.question,
-                    'singleAnswer': q.singleAnswer,
-                    'options': [o.text for o in q.options]
-                })
-            else:
-                q = allQuestions.sortQuestions[idxSort]
-                idxSort += 1
-                questionsList.append({
-                    'questionId': q.questionId,
-                    'type': QuestionType.SORT.value,
-                    'name': q.name,
-                    'question': q.question,
-                    'options': [o.text for o in q.options]
-                })
-
-        actionsList = [{
-            'actionId': a.actionId,
-            'text': a.text
-        } for a in allActions]
-
         inputRegex = get_const("DEFAULT_CONSTANTS")['utils']['regex']['input']
         result = {
             'success': True,
             'activeLink' : ActiveLink.NEW_EXPERIMENT.value,
-            'questionsList': questionsList,
-            'actionsList': actionsList,
-            'inputRegex': inputRegex
+            'questionsList': _getAllQuestions(),
+            'actionsList': _getAllActions(),
+            'inputRegex': inputRegex,
+            'chooseQuestionRow': render_to_string('rows/chooseQuestionRow.html'),
+            'chooseActionRow': render_to_string('rows/chooseActionRow.html'),
+            'experimentActionRow': render_to_string('rows/experimentActionRow.html'),
+            'experimentQuestionRow': render_to_string('rows/experimentQuestionRow.html'),
+            'tableList': render_to_string('lists/dataList.html')
         }
     except Exception as ex:
         result = {
@@ -344,36 +351,17 @@ def newExperimentPage(request):
     template = loader.get_template('newExperimentPage.html')
     return HttpResponse(template.render(RequestContext(request, result)))
 
-def getQuestionsActionsList(request, element):
-    myList = render_to_string('questionActionList/list.html')
-    tableRow = render_to_string(element)
-    return JsonResponse({
-        "list": myList,
-        "row": tableRow
-    })
-
-def getTwoColumnList(request):
-    return getQuestionsActionsList(request, 'questionActionList/twoColumnListElement.html')
-
-def getThreeColumnList(request):
-    return getQuestionsActionsList(request, 'questionActionList/threeColumnListElement.html')
-
 def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
 
-def setSimpleQuestion(request):
+def createSimpleQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
-    tc = ThriftCommunicator()
     try:
-        simpleQuestion = tc.createSimpleQuestion(data)[0]
+        simpleQuestion = thriftCommunicator.createSimpleQuestion(data)
         result = {
             'success': True,
-            'type': QuestionType.SIMPLE.value,
-            'questionId': simpleQuestion.questionId,
-            'name': simpleQuestion.name,
-            'question': simpleQuestion.question,
-            'answerType': simpleQuestion.answerType
+            'questionsList': _getAllQuestions(simpleQuestion.questionId, QuestionType.SIMPLE.value)
         }
     except Exception as ex:
         result = {
@@ -382,19 +370,13 @@ def setSimpleQuestion(request):
         }
     return JsonResponse(result)
 
-def setMultipleChoiceQuestion(request):
+def createMultipleChoiceQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
-    tc = ThriftCommunicator()
     try:
-        multipleChoiceQuestion = tc.createMultipleChoiceQuestion(data)[0]
+        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(data)
         result = {
             'success': True,
-            'type': QuestionType.MULTIPLE.value,
-            'questionId': multipleChoiceQuestion.questionId,
-            'name': multipleChoiceQuestion.name,
-            'question': multipleChoiceQuestion.question,
-            'singleAnswer': multipleChoiceQuestion.singleAnswer,
-            'options': [o.text for o in multipleChoiceQuestion.options]
+            'questionsList': _getAllQuestions(multipleChoiceQuestion.questionId, QuestionType.MULTIPLE.value)
         }
     except Exception as ex:
         result = {
@@ -403,18 +385,13 @@ def setMultipleChoiceQuestion(request):
         }
     return JsonResponse(result)
 
-def setSortQuestion(request):
+def createSortQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
-    tc = ThriftCommunicator()
     try:
-        sortQuestion = tc.createSortQuestion(data)[0]
+        sortQuestion = thriftCommunicator.createSortQuestion(data)
         result = {
             'success': True,
-            'type': QuestionType.SORT.value,
-            'questionId': sortQuestion.questionId,
-            'name': sortQuestion.name,
-            'question': sortQuestion.question,
-            'options': [o.text for o in sortQuestion.options]
+            'questionsList': _getAllQuestions(sortQuestion.questionId, QuestionType.SORT.value)
         }
     except Exception as ex:
         result = {
@@ -423,15 +400,13 @@ def setSortQuestion(request):
         }
     return JsonResponse(result)
 
-def setAction(request):
+def createAction(request):
     data = json.loads(request.POST.get("jsonData"))
-    tc = ThriftCommunicator()
     try:
-    	action = tc.createAction(data)[0]
+    	action = thriftCommunicator.createAction(data)
         result = {
             'success': True,
-            'actionId': action.actionId,
-            'text': action.text
+            'actionsList': _getAllActions(action.actionId)
         }
 
     except Exception as ex:
@@ -441,7 +416,7 @@ def setAction(request):
         }
     return JsonResponse(result)
 
-def saveExperiment(request):
+def createExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
     # TODO
     result = {
