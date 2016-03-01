@@ -12,14 +12,14 @@ root.ExperimentQuestionRow = class ExperimentQuestionRow extends root.View
       .click( do (id) =>
         ->
           pos = jQuery(this).parent().index()
-          instance.fireEvents("allEvents", "nameClicked", id, pos)
+          instance.fireEvents("rowEvent", "nameClicked", id, pos)
       )
     jQuery("td:eq(1) span", listElement).html(element.typeName)
     jQuery("td:eq(2)", listElement)
       .click( do (id) =>
         ->
           pos = jQuery(this).parent().index()
-          instance.fireEvents("allEvents", "removeFromExperiment", id, pos)
+          instance.fireEvents("rowEvent", "removeFromExperiment", id, pos)
       )
     rowData = {}
     rowData[id] = element

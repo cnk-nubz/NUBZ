@@ -2,7 +2,7 @@ root = exports ? this
 root.ListView = class ListView extends root.View
   constructor: (@_containerId, @_rowFactory) ->
     super()
-    @_rowFactory.on("allEvents", (event, id, pos) => @fireEvents(event, id, pos))
+    @_rowFactory.on("rowEvent", (event, id, pos) => @fireEvents(event, id, pos))
     @_tableListHTML = root.HTML.tableList
     @_elementsOnList = []
     @_newElementsId = {}
@@ -42,10 +42,10 @@ root.ListView = class ListView extends root.View
 
   show: =>
     container = jQuery(@_containerId)
-    jQuery(".questionsActionsTable", container).remove()
-    jQuery(@_tableListHTML).appendTo(@_containerId)
+    jQuery("table", container).remove()
+    jQuery(@_tableListHTML).addClass(@_listType).appendTo(@_containerId)
     for row in @_elementsOnList
-      list = jQuery(".questionsActionsTable", container)
+      list = jQuery("table", container)
       rowClone = jQuery(row).clone(true, true)
       rowClone = rowClone.appendTo(list)
       jQuery("td:eq(0) > div", rowClone).shortenText()
@@ -55,7 +55,7 @@ root.ListView = class ListView extends root.View
   showLast: =>
     container = jQuery(@_containerId)
     for row in @_elementsOnList[-1..]
-      list = jQuery(".questionsActionsTable", container)
+      list = jQuery("table", container)
       rowClone = jQuery(row).clone(true, true)
       rowClone = jQuery(rowClone).appendTo(list)
       jQuery("td:eq(0) > div", rowClone).shortenText()
@@ -64,13 +64,13 @@ root.ListView = class ListView extends root.View
 
   getAllElementsId: =>
     elements = []
-    jQuery(".questionsActionsTable tr", @_containerId).each( ->
+    jQuery("table > tbody > tr", @_containerId).each( ->
       elements.push id for id, _ of jQuery(this).data("rowData")
     )
     elements
 
   removeElement: (pos) =>
-    jQuery(".questionsActionsTable tr:eq(#{pos})", @_containerId).remove()
+    jQuery("table > tbody > tr:eq(#{pos})", @_containerId).remove()
     @_elementsOnList.splice(pos, 1)
     @
 

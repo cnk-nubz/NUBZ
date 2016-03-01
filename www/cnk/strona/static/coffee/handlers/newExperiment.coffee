@@ -39,9 +39,9 @@ class Handlers
 
   _setListsInitHandler: =>
     instance = this
-    @_questionsList.addElements(@_questions.parseAllForList())
+    @_questionsList.addElements(@_questions.listFormat())
     jQuery(@_DOM.questionButton).click()
-    @_actionsList.addElements(@_actions.parseAllForList())
+    @_actionsList.addElements(@_actions.listFormat())
     @_questionsBeforeList.show()
     @_questionsAfterList.show()
     @_experimentActionsList.show()
@@ -240,8 +240,8 @@ class Handlers
     if not data.success
       @_displayError(data.message)
       return
-    @_questions.addElements(data.questionsList)
-    toAdd = @_questions.parseAllForList(data.questionsList)
+    @_questions.setElements(data.questionsList)
+    toAdd = @_questions.listFormat(data.questionsList)
     @_questionsList.replaceElements(toAdd).show()
     return
 
@@ -249,8 +249,8 @@ class Handlers
     if not data.success
       @_displayError(data.message)
       return
-    @_actions.addElements(data.actionsList)
-    toAdd = @_actions.parseAllForList(data.actionsList)
+    @_actions.setElements(data.actionsList)
+    toAdd = @_actions.listFormat(data.actionsList)
     @_actionsList.replaceElements(toAdd).show()
     return
 

@@ -12,7 +12,7 @@ root.ChooseActionRow = class ChooseActionRow extends root.View
       .click( do (id) =>
         ->
           pos = jQuery(this).parent().index()
-          instance.fireEvents("allEvents", "nameClicked", id, pos)
+          instance.fireEvents("rowEvent", "nameClicked", id, pos)
       )
     rowData = {}
     rowData[id] = element

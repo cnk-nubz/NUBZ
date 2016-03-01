@@ -6,25 +6,20 @@ root.Actions = class Actions
   _init: =>
     @_actionDialog = new root.ActionDialog('getActionDialog/')
 
-  addElements: (elements) =>
+  setElements: (elements) =>
     @_list = elements
     @
 
-  parseAllForList: =>
+  listFormat: =>
     data = {}
-    data[key] = @_parseForList key for key in Object.keys(@_list)
+    data[key] = @_elementListFormat key for key in Object.keys(@_list)
     data
 
-  parseElementForList: (id) =>
-    data = {}
-    data[id] = @_parseForList(id)
-    data
-
-  _parseForList: (id) =>
+  _elementListFormat: (id) =>
     text: @_list[id].text
     id: @_list[id].actionId
     isNew: @_list[id].isNew
 
   showDialog: (id, readonly = false) =>
-    @_actionDialog.readonly = readonly is true
+    @_actionDialog.readonly = readonly
     @_actionDialog.bindData(@_list[id]).show()

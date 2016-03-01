@@ -12,7 +12,7 @@ root.ChooseQuestionRow = class ChooseQuestionRow extends root.View
     jQuery("td:eq(0)", listElement).click( do (id) => (
       ->
         pos = jQuery(this).parent().index()
-        instance.fireEvents("allEvents", "nameClicked", id, pos)
+        instance.fireEvents("rowEvent", "nameClicked", id, pos)
       )
     )
     rowData = {}

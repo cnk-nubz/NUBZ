@@ -250,7 +250,7 @@ def getDialog(request, dialogName):
 	return JsonResponse(retDict)
 
 def getSimpleQuestionDialog(request):
-	return getDialog(request, "SIMPLE_QUESTION_DIALOG")
+    return getDialog(request, "SIMPLE_QUESTION_DIALOG")
 
 def getMultipleChoiceQuestionDialog(request):
     return getDialog(request, "MULTIPLE_CHOICE_QUESTION_DIALOG")
@@ -274,7 +274,7 @@ def getChangeMapDialog(request):
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
 
-def _getAllQuestions(newId = -1, newType = -1):
+def _getAllQuestions(newId = None, newType = None):
     allQuestions = thriftCommunicator.getAllQuestions()
     idxSimple = 0
     idxMultiple = 0
@@ -287,7 +287,7 @@ def _getAllQuestions(newId = -1, newType = -1):
             idxSimple += 1
             questionsList.append({
                 'questionId': q.questionId,
-                'isNew': True if newId == q.questionId and order == newType else False,
+                'isNew': newId == q.questionId and order == newType,
                 'type': QuestionType.SIMPLE.value,
                 'name': q.name,
                 'question': q.question,
@@ -298,7 +298,7 @@ def _getAllQuestions(newId = -1, newType = -1):
             idxMultiple += 1
             questionsList.append({
                 'questionId': q.questionId,
-                'isNew': True if newId == q.questionId and order == newType else False,
+                'isNew': newId == q.questionId and order == newType,
                 'type': QuestionType.MULTIPLE.value,
                 'name': q.name,
                 'question': q.question,
@@ -310,7 +310,7 @@ def _getAllQuestions(newId = -1, newType = -1):
             idxSort += 1
             questionsList.append({
                 'questionId': q.questionId,
-                'isNew': True if newId == q.questionId and order == newType else False,
+                'isNew': newId == q.questionId and order == newType,
                 'type': QuestionType.SORT.value,
                 'name': q.name,
                 'question': q.question,
@@ -318,11 +318,11 @@ def _getAllQuestions(newId = -1, newType = -1):
             })
     return questionsList
 
-def _getAllActions(newId = -1):
+def _getAllActions(newId = None):
     allActions = thriftCommunicator.getAllActions()
     actionsList = [{
         'actionId': a.actionId,
-        'isNew': True if newId == a.actionId else False,
+        'isNew': newId == a.actionId,
         'text': a.text
     } for a in allActions]
     return actionsList
@@ -336,11 +336,11 @@ def newExperimentPage(request):
             'questionsList': _getAllQuestions(),
             'actionsList': _getAllActions(),
             'inputRegex': inputRegex,
-            'chooseQuestionRow': render_to_string('rows/chooseQuestionRow.html'),
-            'chooseActionRow': render_to_string('rows/chooseActionRow.html'),
-            'experimentActionRow': render_to_string('rows/experimentActionRow.html'),
-            'experimentQuestionRow': render_to_string('rows/experimentQuestionRow.html'),
-            'tableList': render_to_string('lists/dataList.html')
+            'chooseQuestionRow': render_to_string('row/chooseQuestionRow.html'),
+            'chooseActionRow': render_to_string('row/chooseActionRow.html'),
+            'experimentActionRow': render_to_string('row/experimentActionRow.html'),
+            'experimentQuestionRow': render_to_string('row/experimentQuestionRow.html'),
+            'tableList': render_to_string('list/dataList.html')
         }
     except Exception as ex:
         result = {

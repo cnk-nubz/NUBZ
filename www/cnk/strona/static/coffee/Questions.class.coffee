@@ -18,18 +18,13 @@ root.Questions = class Questions
         name: 'sortowanie'
         dialog: @_sortQuestionDialog
 
-  addElements: (elements) =>
+  setElements: (elements) =>
     @_list = elements
     @
 
-  parseAllForList: =>
+  listFormat: =>
     data = {}
     data[key] = @_parseForList key for key in Object.keys(@_list)
-    data
-
-  parseElementForList: (id) =>
-    data = {}
-    data[id] = @_parseForList(id)
     data
 
   _parseForList: (id) =>
