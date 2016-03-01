@@ -32,10 +32,10 @@ struct DefaultRepo : _DefaultRepo<DBTable> {
     using typename _DefaultRepo<DBTable>::val_type;
 
     static void insert(db::DatabaseSession &session, const val_type &val) {
-        insert(session, std::vector<val_type>{val});
+        insertAll(session, {val});
     }
 
-    static void insert(db::DatabaseSession &session, const std::vector<val_type> &vals) {
+    static void insertAll(db::DatabaseSession &session, const std::vector<val_type> &vals) {
         auto sql = DBTable::insert();
         for (const auto &v : vals) {
             sql.insert(DBTable::RowFactory::toDB(v));
@@ -54,8 +54,7 @@ struct DefaultRepoWithID : _DefaultRepo<DBTable> {
         auto sql = DBTable::select();
         sql.where(DBTable::colId == ID);
 
-        auto row = session.getResult(sql);
-        if (row) {
+        if (auto row = session.getResult(sql)) {
             return DBTable::RowFactory::fromDB(row.value());
         } else {
             return {};
@@ -69,12 +68,12 @@ struct DefaultRepoWithID : _DefaultRepo<DBTable> {
 
     // returns id of inserted row
     static id_type insert(db::DatabaseSession &session, const val_type &val) {
-        return insert(session, std::vector<val_type>{val}).front();
+        return insertAll(session, {val}).front();
     }
 
     // returns ids of inserted rows
-    static std::vector<id_type> insert(db::DatabaseSession &session,
-                                       const std::vector<val_type> &vals) {
+    static std::vector<id_type> insertAll(db::DatabaseSession &session,
+                                          const std::vector<val_type> &vals) {
         auto sql = DBTable::insert().returning(DBTable::colId);
         for (const auto &val : vals) {
             sql.values(DBTable::RowFactory::toDB(val));

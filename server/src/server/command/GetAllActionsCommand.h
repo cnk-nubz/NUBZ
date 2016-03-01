@@ -2,7 +2,8 @@
 #define SERVER_COMMAND__GET_ALL_ACTIONS_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/Action.h>
+
+#include <server/io/Action.h>
 
 #include "commons.h"
 

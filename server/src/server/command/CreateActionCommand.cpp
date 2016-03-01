@@ -1,4 +1,4 @@
-#include <db/command/InsertAction.h>
+#include <repository/Actions.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -13,16 +13,18 @@ CreateActionCommand::CreateActionCommand(db::Database &db) : db(db) {
 }
 
 io::Action CreateActionCommand::operator()(const io::input::CreateActionRequest &input) {
-    io::Action action;
-    db.execute([&](db::DatabaseSession &session) {
+    auto dbAction = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        db::Action dbAction;
-        dbAction.text = input.text;
-        dbAction.ID = db::cmd::InsertAction{dbAction}(session);
-        action = utils::toIO(dbAction);
+        auto action = repository::Action{};
+        action.text = input.text;
+
+        auto repo = repository::Actions{session};
+        repo.insert(&action);
+        return action;
     });
-    return action;
+
+    return io::Action{dbAction};
 }
 
 void CreateActionCommand::validateInput(db::DatabaseSession &session,

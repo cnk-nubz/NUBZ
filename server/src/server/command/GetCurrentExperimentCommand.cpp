@@ -1,6 +1,7 @@
 #include <utils/fp_algorithm.h>
 
-#include <db/command/GetActions.h>
+#include <repository/Actions.h>
+
 #include <db/command/GetCurrentExperiment.h>
 #include <db/command/GetSimpleQuestions.h>
 #include <db/command/GetMultipleChoiceQuestions.h>
@@ -39,12 +40,11 @@ io::output::CurrentExperimentResponse GetCurrentExperimentCommand::operator()() 
 
 void GetCurrentExperimentCommand::fillExperimentData(const db::Experiment &experiment,
                                                      db::DatabaseSession &session) {
-    auto getActions = [&](std::int32_t id) {
-        return utils::toIO(db::cmd::GetActions{id}(session).front());
-    };
+    auto actionsRepo = repository::Actions{session};
+    auto getAction = [&](auto id) { return actionsRepo.get(id).value(); };
 
-    ::utils::transform(experiment.actions, currentExperiment.exhibitActions, getActions);
-    ::utils::transform(experiment.breakActions, currentExperiment.breakActions, getActions);
+    ::utils::transform(experiment.actions, currentExperiment.exhibitActions, getAction);
+    ::utils::transform(experiment.breakActions, currentExperiment.breakActions, getAction);
     fillSurvey(experiment.surveyBefore, currentExperiment.surveyBefore, session);
     fillSurvey(experiment.surveyAfter, currentExperiment.surveyAfter, session);
 }

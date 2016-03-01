@@ -24,10 +24,23 @@ public:
     Database &operator=(Database &&) = delete;
 
     // thread-safe
-    template <class CMD>
-    void execute(CMD &&cmd);
+    template <class Cmd>
+    std::result_of_t<Cmd(DatabaseSession &)> execute(Cmd &&cmd);
 
 private:
+    class WorkGuard {
+    public:
+        WorkGuard(pqxx::lazyconnection &lc);
+        ~WorkGuard();
+
+        pqxx::work &getWork();
+        void cancel();
+
+    private:
+        bool canceled;
+        pqxx::work work;
+    };
+
     std::unique_ptr<pqxx::lazyconnection> connection;
     std::mutex cmdMutex;
 };
@@ -37,19 +50,20 @@ struct DatabaseException : public std::runtime_error {
     DatabaseException(const pqxx::sql_error &e);
 };
 
-template <class CMD>
-void Database::execute(CMD &&cmd) {
+template <class Cmd>
+std::result_of_t<Cmd(DatabaseSession &)> Database::execute(Cmd &&cmd) {
     std::lock_guard<std::mutex> lock(cmdMutex);
-    pqxx::work work(*connection);
-    DatabaseSession session(work);
+    WorkGuard transaction(*connection);
+    DatabaseSession session(transaction.getWork());
 
     try {
-        cmd(session);
-        work.commit();
+        return cmd(session);
     } catch (pqxx::broken_connection &e) {
+        transaction.cancel();
         LOG(DEBUG) << e.what();
         throw DatabaseException(e);
     } catch (pqxx::sql_error &e) {
+        transaction.cancel();
         LOG(DEBUG) << e.what();
         throw DatabaseException(e);
     }

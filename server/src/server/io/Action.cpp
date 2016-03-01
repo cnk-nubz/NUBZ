@@ -12,5 +12,8 @@ communication::Action Action::toThrift() const {
     thrift.text = text;
     return thrift;
 }
+
+Action::Action(const repository::Action &repo) : ID(repo.ID), text(repo.text) {
+}
 }
 }

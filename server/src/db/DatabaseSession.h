@@ -45,14 +45,14 @@ public:
     }
 
     // commands using db::sql
-    template <class SQL>
-    void execute(const SQL &sql) {
+    template <class Sql>
+    void execute(const Sql &sql) {
         execute(sql.str());
     }
 
     // returns optional instead of raising error in case of no result (as previous versions do)
-    template <class SQL>
-    boost::optional<typename SQL::return_type> getResult(const SQL &sql) {
+    template <class Sql>
+    boost::optional<typename Sql::return_type> getResult(const Sql &sql) {
         auto res = getResults(sql);
         if (!res.empty()) {
             return res.front();
@@ -61,9 +61,9 @@ public:
         }
     }
 
-    template <class SQL>
-    std::vector<typename SQL::return_type> getResults(const SQL &sql) {
-        using return_t = typename SQL::return_type;
+    template <class Sql>
+    std::vector<typename Sql::return_type> getResults(const Sql &sql) {
+        using return_t = typename Sql::return_type;
 
         auto rows = getResults(sql.str());
         std::vector<return_t> result;

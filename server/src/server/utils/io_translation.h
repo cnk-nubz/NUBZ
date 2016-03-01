@@ -1,7 +1,8 @@
 #ifndef SERVER_UTILS__IO_TRANSLATION__H
 #define SERVER_UTILS__IO_TRANSLATION__H
 
-#include <db/struct/Action.h>
+#include <vector>
+
 #include <db/struct/Exhibit.h>
 #include <db/struct/MapFrame.h>
 #include <db/struct/RawReport.h>
@@ -11,7 +12,6 @@
 #include <db/struct/SortQuestion.h>
 #include <db/struct/SortQuestionOption.h>
 
-#include <server/io/Action.h>
 #include <server/io/Exhibit.h>
 #include <server/io/MapFrame.h>
 #include <server/io/SimpleQuestion.h>
@@ -22,7 +22,15 @@
 namespace server {
 namespace utils {
 
-io::Action toIO(const db::Action &action);
+template <class IOType>
+std::vector<IOType> toIO(const std::vector<typename IOType::repo_t> &repo) {
+    std::vector<IOType> res;
+    for (const auto &r : repo) {
+        res.emplace_back(r);
+    }
+    return res;
+}
+
 io::Exhibit toIO(const db::Exhibit &exhibit);
 io::MapFrame toIO(const db::MapFrame &mapFrame);
 io::SimpleQuestion toIO(const db::SimpleQuestion &question);

@@ -5,13 +5,6 @@
 namespace server {
 namespace utils {
 
-io::Action toIO(const db::Action &action) {
-    io::Action res;
-    res.ID = action.ID;
-    res.text = action.text;
-    return res;
-}
-
 io::Exhibit toIO(const db::Exhibit &exhibit) {
     io::Exhibit res;
     res.name = exhibit.name;
