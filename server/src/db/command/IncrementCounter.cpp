@@ -1,5 +1,5 @@
-#include "IncrementCounter.h"
 #include "GetCounter.h"
+#include "IncrementCounter.h"
 #include "SetCounter.h"
 
 namespace db {

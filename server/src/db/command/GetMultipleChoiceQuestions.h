@@ -1,13 +1,13 @@
 #ifndef DB_CMD__GET_MULTIPLE_CHOICE_QUESTIONS__H
 #define DB_CMD__GET_MULTIPLE_CHOICE_QUESTIONS__H
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 #include <boost/optional.hpp>
 
-#include <db/struct/MultipleChoiceQuestion.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/MultipleChoiceQuestion.h>
 
 namespace db {
 namespace cmd {

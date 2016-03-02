@@ -1,8 +1,8 @@
 #ifndef DB_CMD__GET_MAP_IMAGES__H
 #define DB_CMD__GET_MAP_IMAGES__H
 
-#include <db/struct/MapImage.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/MapImage.h>
 
 namespace db {
 namespace cmd {

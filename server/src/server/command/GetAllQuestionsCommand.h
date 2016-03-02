@@ -5,10 +5,10 @@
 
 #include <server/io/QuestionsList.h>
 
-#include "commons.h"
-#include "GetAllSimpleQuestionsCommand.h"
 #include "GetAllMultipleChoiceQuestionsCommand.h"
+#include "GetAllSimpleQuestionsCommand.h"
 #include "GetAllSortQuestionsCommand.h"
+#include "commons.h"
 
 namespace server {
 namespace command {

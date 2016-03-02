@@ -3,8 +3,8 @@
 
 #include <db/Database.h>
 
-#include <server/io/input/CreateActionRequest.h>
 #include <server/io/Action.h>
+#include <server/io/input/CreateActionRequest.h>
 
 #include "commons.h"
 

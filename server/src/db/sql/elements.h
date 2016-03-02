@@ -2,8 +2,8 @@
 #define DB_SQL__ELEMENTS__H
 
 #include <string>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 #include <boost/format.hpp>
 
@@ -202,8 +202,7 @@ inline SqlString::SqlString(bool raw) : safe(raw ? "true" : "false") {
 }
 
 template <class T, class>
-SqlString::SqlString(const T &t)
-    : safe(std::to_string(t)) {
+SqlString::SqlString(const T &t) : safe(std::to_string(t)) {
 }
 
 inline SqlString::operator std::string() const {

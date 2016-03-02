@@ -1,8 +1,8 @@
 #ifndef SERVER_IO__ACTION__H
 #define SERVER_IO__ACTION__H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 #include <communication/structs_types.h>
 

@@ -4,8 +4,8 @@
 #include <db/Database.h>
 #include <db/struct/MultipleChoiceQuestionOption.h>
 
-#include <server/io/input/CreateMultipleChoiceQuestionRequest.h>
 #include <server/io/MultipleChoiceQuestion.h>
+#include <server/io/input/CreateMultipleChoiceQuestionRequest.h>
 
 #include "commons.h"
 

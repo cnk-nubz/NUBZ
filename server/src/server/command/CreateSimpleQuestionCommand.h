@@ -3,8 +3,8 @@
 
 #include <db/Database.h>
 
-#include <server/io/input/CreateSimpleQuestionRequest.h>
 #include <server/io/SimpleQuestion.h>
+#include <server/io/input/CreateSimpleQuestionRequest.h>
 
 #include "commons.h"
 

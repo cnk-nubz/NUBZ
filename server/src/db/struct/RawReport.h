@@ -2,8 +2,8 @@
 #define DB_STRUCT__RAW_REPORT__H
 
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 

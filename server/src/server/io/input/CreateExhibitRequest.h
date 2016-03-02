@@ -1,8 +1,8 @@
 #ifndef SERVER_IO_INPUT__CREATE_EXHIBIT_REQUEST__H
 #define SERVER_IO_INPUT__CREATE_EXHIBIT_REQUEST__H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 #include <boost/optional.hpp>
 

@@ -21,12 +21,12 @@ struct Question {
             op std::make_tuple(rhs.name, rhs.question, rhs.ID); \
     }
 
-    CMP_OP(< )
-    CMP_OP(> )
-    CMP_OP(<= )
-    CMP_OP(>= )
-    CMP_OP(== )
-    CMP_OP(!= )
+    CMP_OP(<)
+    CMP_OP(>)
+    CMP_OP(<=)
+    CMP_OP(>=)
+    CMP_OP(==)
+    CMP_OP(!=)
 
 #undef CMP_OP
 };

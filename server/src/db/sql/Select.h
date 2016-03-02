@@ -1,9 +1,9 @@
 #ifndef DB_SQL__SELECT__H
 #define DB_SQL__SELECT__H
 
-#include <vector>
 #include <string>
 #include <tuple>
+#include <vector>
 
 #include <boost/format.hpp>
 

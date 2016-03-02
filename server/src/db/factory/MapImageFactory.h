@@ -5,8 +5,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/MapImage.h>
 #include <db/db_info.h>
+#include <db/struct/MapImage.h>
 
 namespace db {
 namespace factory {

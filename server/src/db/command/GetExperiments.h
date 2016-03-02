@@ -3,8 +3,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/Experiment.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/Experiment.h>
 
 namespace db {
 namespace cmd {

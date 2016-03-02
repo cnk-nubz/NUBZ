@@ -1,9 +1,9 @@
 #ifndef DB_CMD__GET_COUNTER__H
 #define DB_CMD__GET_COUNTER__H
 
-#include <db/struct/MapImage.h>
 #include <db/DatabaseSession.h>
 #include <db/db_info.h>
+#include <db/struct/MapImage.h>
 
 namespace db {
 namespace cmd {

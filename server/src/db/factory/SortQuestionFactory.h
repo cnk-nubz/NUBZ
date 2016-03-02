@@ -5,8 +5,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/SortQuestion.h>
 #include <db/db_info.h>
+#include <db/struct/SortQuestion.h>
 
 namespace db {
 namespace factory {

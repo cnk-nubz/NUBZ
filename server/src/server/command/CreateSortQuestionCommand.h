@@ -4,8 +4,8 @@
 #include <db/Database.h>
 #include <db/struct/SortQuestionOption.h>
 
-#include <server/io/input/CreateSortQuestionRequest.h>
 #include <server/io/SortQuestion.h>
+#include <server/io/input/CreateSortQuestionRequest.h>
 
 #include "commons.h"
 

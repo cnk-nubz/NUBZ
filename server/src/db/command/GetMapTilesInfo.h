@@ -1,8 +1,8 @@
 #ifndef DB_CMD__GET_MAP_TILES_INFO__H
 #define DB_CMD__GET_MAP_TILES_INFO__H
 
-#include <db/struct/MapTilesInfo.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/MapTilesInfo.h>
 
 namespace db {
 namespace cmd {

@@ -1,5 +1,5 @@
-#include <db/command/GetExhibits.h>
 #include <db/command/GetCounter.h>
+#include <db/command/GetExhibits.h>
 #include <db/command/GetRawReports.h>
 
 #include <server/utils/io_translation.h>

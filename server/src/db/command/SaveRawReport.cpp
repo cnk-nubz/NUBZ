@@ -1,5 +1,5 @@
-#include <db/factory/json/RawReportFactory.h>
 #include <db/db_info.h>
+#include <db/factory/json/RawReportFactory.h>
 #include <db/sql.h>
 
 #include "SaveRawReport.h"

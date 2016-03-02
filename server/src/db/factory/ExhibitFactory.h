@@ -5,8 +5,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/Exhibit.h>
 #include <db/db_info.h>
+#include <db/struct/Exhibit.h>
 
 namespace db {
 namespace factory {

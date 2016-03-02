@@ -18,10 +18,9 @@ std::vector<io::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
         return repo.getAll();
     });
 
-    std::sort(dbQuestions.begin(), dbQuestions.end(), [](auto &lhs, auto &rhs) {
-        return std::make_pair(lhs.name, lhs.ID) < std::make_pair(rhs.name, rhs.ID);
-    });
-    return utils::toIO<io::SimpleQuestion>(dbQuestions);
+    auto questions = utils::toIO<io::SimpleQuestion>(dbQuestions);
+    std::sort(questions.begin(), questions.end());
+    return questions;
 }
 }
 }

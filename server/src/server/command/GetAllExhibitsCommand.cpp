@@ -17,9 +17,9 @@ std::vector<io::Exhibit> GetAllExhibitsCommand::operator()() {
     db.execute(getExhibits);
 
     std::vector<db::Exhibit> dbExhibits = getExhibits.getResult();
-    std::sort(dbExhibits.begin(),
-              dbExhibits.end(),
-              [](const auto &lhs, const auto &rhs) { return lhs.name < rhs.name; });
+    std::sort(dbExhibits.begin(), dbExhibits.end(), [](const auto &lhs, const auto &rhs) {
+        return lhs.name < rhs.name;
+    });
 
     std::vector<io::Exhibit> exhibits;
     ::utils::transform(dbExhibits, exhibits, [](const auto &e) { return utils::toIO(e); });

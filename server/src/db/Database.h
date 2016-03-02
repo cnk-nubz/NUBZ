@@ -1,9 +1,9 @@
 #ifndef DB__Database__H
 #define DB__Database__H
 
-#include <thread>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 #include <pqxx/pqxx>
 

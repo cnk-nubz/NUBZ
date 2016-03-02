@@ -6,8 +6,8 @@
 #include <db/Database.h>
 #include <db/struct/MapFrame.h>
 
-#include <server/io/input/CreateExhibitRequest.h>
 #include <server/io/Exhibit.h>
+#include <server/io/input/CreateExhibitRequest.h>
 
 #include "commons.h"
 

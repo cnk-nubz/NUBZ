@@ -3,8 +3,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/RawReport.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/RawReport.h>
 
 namespace db {
 namespace cmd {

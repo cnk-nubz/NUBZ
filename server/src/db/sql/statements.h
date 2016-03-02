@@ -1,14 +1,14 @@
 #ifndef DB_SQL__STATEMENTS__H
 #define DB_SQL__STATEMENTS__H
 
-#include <string>
-#include <vector>
 #include <array>
+#include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
-#include <boost/optional.hpp>
 #include <boost/format.hpp>
+#include <boost/optional.hpp>
 
 #include "elements.h"
 

@@ -1,5 +1,5 @@
-#include <db/factory/MultipleChoiceQuestionFactory.h>
 #include <db/db_info.h>
+#include <db/factory/MultipleChoiceQuestionFactory.h>
 #include <db/sql.h>
 
 #include "GetMultipleChoiceQuestions.h"

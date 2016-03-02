@@ -1,5 +1,5 @@
-#include "ImageProcessor.h"
 #include "FileHandler.h"
+#include "ImageProcessor.h"
 
 namespace utils {
 

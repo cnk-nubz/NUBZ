@@ -1,8 +1,8 @@
 #ifndef CONFIG__H
 #define CONFIG__H
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 namespace utils {
 

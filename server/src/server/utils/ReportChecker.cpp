@@ -1,12 +1,13 @@
 #include <boost/none.hpp>
 
-#include <db/command/GetExperiments.h>
+#include <repository/SimpleQuestions.h>
+
 #include <db/command/GetCurrentExperiment.h>
-#include <db/command/GetSimpleQuestions.h>
-#include <db/command/GetMultipleChoiceQuestions.h>
+#include <db/command/GetExperiments.h>
 #include <db/command/GetMultipleChoiceQuestionOptions.h>
-#include <db/command/GetSortQuestions.h>
+#include <db/command/GetMultipleChoiceQuestions.h>
 #include <db/command/GetSortQuestionOptions.h>
+#include <db/command/GetSortQuestions.h>
 
 #include "InputChecker.h"
 #include "ReportChecker.h"
@@ -69,13 +70,13 @@ bool ReportChecker::checkQuestionsCount(const db::Experiment::Survey &survey,
 
 bool ReportChecker::checkSimpleQuestionAnswer(std::int32_t questionId,
                                               const std::string &answer) const {
-    const auto questions = db::cmd::GetSimpleQuestions{questionId}(session);
-    if (questions.empty()) {
+    auto repo = repository::SimpleQuestions{session};
+    if (auto question = repo.get(questionId)) {
+        return (!question.value().numberAnswer && InputChecker::checkText(answer)) ||
+               ::utils::all_of(answer, isdigit);
+    } else {
         return false;
     }
-    auto question = questions.front();
-    return (!question.numberAnswer && InputChecker::checkText(answer)) ||
-           ::utils::all_of(answer, isdigit);
 }
 
 bool ReportChecker::checkMultipleChoiceQuestionAnswer(

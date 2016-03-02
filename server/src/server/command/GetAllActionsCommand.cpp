@@ -18,12 +18,9 @@ std::vector<io::Action> GetAllActionsCommand::operator()() {
         return repo.getAll();
     });
 
-    std::sort(dbActions.begin(),
-              dbActions.end(),
-              [](auto &lhs, auto &rhs) {
-                  return std::make_pair(lhs.text, lhs.ID) < std::make_pair(rhs.text, rhs.ID);
-              });
-
+    std::sort(dbActions.begin(), dbActions.end(), [](auto &lhs, auto &rhs) {
+        return std::make_pair(lhs.text, lhs.ID) < std::make_pair(rhs.text, rhs.ID);
+    });
     return utils::toIO<io::Action>(dbActions);
 }
 }

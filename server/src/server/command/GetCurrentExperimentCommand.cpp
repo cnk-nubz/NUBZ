@@ -3,11 +3,10 @@
 #include <repository/Actions.h>
 
 #include <db/command/GetCurrentExperiment.h>
-#include <db/command/GetSimpleQuestions.h>
-#include <db/command/GetMultipleChoiceQuestions.h>
 #include <db/command/GetMultipleChoiceQuestionOptions.h>
-#include <db/command/GetSortQuestions.h>
+#include <db/command/GetMultipleChoiceQuestions.h>
 #include <db/command/GetSortQuestionOptions.h>
+#include <db/command/GetSortQuestions.h>
 
 #include <server/utils/io_translation.h>
 
@@ -56,6 +55,8 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
     using namespace utils;
     using QType = db::Experiment::Survey::QuestionType;
 
+    auto simpleQRepo = repository::SimpleQuestions{session};
+
     auto getType = [&](QType qType) {
         switch (qType) {
             case QType::Simple:
@@ -66,9 +67,7 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
                 return io::QuestionsList::QuestionType::Sort;
         }
     };
-    auto getSimpleQ = [&](std::int32_t id) {
-        return toIO(GetSimpleQuestions{id}(session).front());
-    };
+    auto getSimpleQ = [&](auto id) { return io::SimpleQuestion{simpleQRepo.get(id).value()}; };
     auto getMultiQ = [&](std::int32_t id) {
         return toIO(GetMultipleChoiceQuestions{id}(session).front(),
                     GetMultipleChoiceQuestionOptions{id}(session));

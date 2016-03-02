@@ -1,5 +1,5 @@
-#include <db/factory/MapTileFactory.h>
 #include <db/db_info.h>
+#include <db/factory/MapTileFactory.h>
 #include <db/sql.h>
 
 #include "GetMapTiles.h"

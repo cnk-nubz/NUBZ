@@ -5,8 +5,8 @@
 
 #include <communication/structs_types.h>
 
-#include "SimpleQuestion.h"
 #include "MultipleChoiceQuestion.h"
+#include "SimpleQuestion.h"
 #include "SortQuestion.h"
 
 namespace server {

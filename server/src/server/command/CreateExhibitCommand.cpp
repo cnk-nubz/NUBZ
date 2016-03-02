@@ -1,7 +1,7 @@
-#include <db/struct/Exhibit.h>
 #include <db/command/GetMapImages.h>
 #include <db/command/IncrementCounter.h>
 #include <db/command/InsertExhibit.h>
+#include <db/struct/Exhibit.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>

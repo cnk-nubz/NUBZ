@@ -1,7 +1,7 @@
 #include <utils/fp_algorithm.h>
 
-#include "utils.h"
 #include "QuestionsList.h"
+#include "utils.h"
 
 namespace server {
 namespace io {

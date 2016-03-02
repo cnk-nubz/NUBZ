@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include <db/factory/SingleFieldFactory.h>
 #include <db/db_info.h>
+#include <db/factory/SingleFieldFactory.h>
 #include <db/sql.h>
 
 #include "GetCounter.h"

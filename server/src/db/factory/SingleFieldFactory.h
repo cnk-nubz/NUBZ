@@ -1,8 +1,8 @@
 #ifndef DB_FACTORY__SINGLE_FIELD_FACTORY__H
 #define DB_FACTORY__SINGLE_FIELD_FACTORY__H
 
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>

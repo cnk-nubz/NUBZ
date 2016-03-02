@@ -2,8 +2,8 @@
 #define DB_FACTORY_JSON__COMMONS__H
 
 #include <string>
-#include <vector>
 #include <type_traits>
+#include <vector>
 
 #include <boost/optional.hpp>
 

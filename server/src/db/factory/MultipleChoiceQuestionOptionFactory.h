@@ -5,8 +5,8 @@
 
 #include <boost/optional.hpp>
 
-#include <db/struct/MultipleChoiceQuestionOption.h>
 #include <db/db_info.h>
+#include <db/struct/MultipleChoiceQuestionOption.h>
 
 namespace db {
 namespace factory {

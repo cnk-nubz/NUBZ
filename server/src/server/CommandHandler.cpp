@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "io/input/HelloMsg.h"
-#include "io/utils.h"
 #include "CommandHandler.h"
 #include "commands.h"
+#include "io/input/HelloMsg.h"
+#include "io/utils.h"
 
 namespace server {
 

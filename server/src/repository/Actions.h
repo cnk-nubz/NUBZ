@@ -1,8 +1,8 @@
 #ifndef REPOSITORY__ACTIONS__H
 #define REPOSITORY__ACTIONS__H
 
-#include <string>
 #include <cstdint>
+#include <string>
 
 #include <boost/optional.hpp>
 

@@ -2,9 +2,9 @@
 #define DB__DATABASE_SESSION__H
 
 #include <string>
-#include <vector>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include <boost/optional.hpp>
 #include <pqxx/pqxx>

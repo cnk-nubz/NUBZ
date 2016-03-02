@@ -1,20 +1,20 @@
-#include <boost/filesystem.hpp>
 #include <Magick++.h>
+#include <boost/filesystem.hpp>
 
-#include <utils/log.h>
 #include <utils/ImageProcessor.h>
+#include <utils/log.h>
 
 #include <db/command/GetMapImages.h>
-#include <db/command/IncrementCounter.h>
-#include <db/command/SaveMapImage.h>
 #include <db/command/GetMapTiles.h>
+#include <db/command/IncrementCounter.h>
 #include <db/command/RemoveMapTiles.h>
 #include <db/command/RemoveMapTilesInfo.h>
+#include <db/command/SaveMapImage.h>
 #include <db/command/SaveMapTile.h>
 #include <db/command/SaveMapTilesInfo.h>
 
-#include <server/utils/FileHelper.h>
 #include <server/io/InvalidInput.h>
+#include <server/utils/FileHelper.h>
 
 #include "SetMapImageCommand.h"
 

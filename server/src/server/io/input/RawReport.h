@@ -2,8 +2,8 @@
 #define SERVER_IO_INPUT__RAW_REPORT__H
 
 #include <cstdint>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 

@@ -1,5 +1,5 @@
-#include <db/factory/ExhibitFactory.h>
 #include <db/db_info.h>
+#include <db/factory/ExhibitFactory.h>
 #include <db/sql.h>
 
 #include "GetExhibits.h"

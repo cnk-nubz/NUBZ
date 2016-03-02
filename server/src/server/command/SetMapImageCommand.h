@@ -10,8 +10,8 @@
 #include <db/struct/MapTile.h>
 #include <db/struct/MapTilesInfo.h>
 
-#include <utils/ImageProcessor.h>
 #include <utils/FileHandler.h>
+#include <utils/ImageProcessor.h>
 
 #include <server/io/input/SetMapImageRequest.h>
 

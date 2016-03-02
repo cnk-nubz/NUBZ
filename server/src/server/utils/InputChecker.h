@@ -1,9 +1,9 @@
 #ifndef SERVER_UTILS__INPUT_CHECKER__H
 #define SERVER_UTILS__INPUT_CHECKER__H
 
-#include <unordered_set>
 #include <algorithm>
 #include <functional>
+#include <unordered_set>
 
 #include <utils/fp_algorithm.h>
 

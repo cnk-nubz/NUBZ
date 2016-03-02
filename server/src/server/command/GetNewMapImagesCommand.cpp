@@ -1,5 +1,5 @@
-#include <db/command/GetMapImages.h>
 #include <db/command/GetCounter.h>
+#include <db/command/GetMapImages.h>
 
 #include "GetNewMapImagesCommand.h"
 

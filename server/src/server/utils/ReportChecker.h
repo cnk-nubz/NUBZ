@@ -1,15 +1,15 @@
 #ifndef SERVER_UTILS__REPORT_CHECKER__H
 #define SERVER_UTILS__REPORT_CHECKER__H
 
-#include <unordered_set>
 #include <functional>
+#include <unordered_set>
 
 #include <boost/optional.hpp>
 
 #include <utils/fp_algorithm.h>
 
-#include <db/struct/Experiment.h>
 #include <db/DatabaseSession.h>
+#include <db/struct/Experiment.h>
 
 #include <server/command/commons.h>
 

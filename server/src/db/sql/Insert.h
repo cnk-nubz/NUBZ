@@ -1,8 +1,8 @@
 #ifndef DB_SQL__INSERT__H
 #define DB_SQL__INSERT__H
 
-#include <string>
 #include <cassert>
+#include <string>
 
 #include <boost/format.hpp>
 
@@ -20,8 +20,7 @@ class _Insert {
 
 public:
     template <class Subclass2, class... Cols2>
-    _Insert(_Insert<Subclass2, Cols2...> that)
-        : vals(std::move(that.vals)) {
+    _Insert(_Insert<Subclass2, Cols2...> that) : vals(std::move(that.vals)) {
         static_assert(std::is_same<std::tuple<Cols...>, std::tuple<Cols2...>>::value,
                       "two _Inserts should have the same set of columns");
     }

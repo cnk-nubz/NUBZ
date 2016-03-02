@@ -1,13 +1,13 @@
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
+#include <thrift/concurrency/ThreadManager.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TNonblockingServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TTransportUtils.h>
-#include <thrift/concurrency/ThreadManager.h>
-#include <boost/program_options.hpp>
 #include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 
 #include <db/Database.h>
 
@@ -15,8 +15,8 @@
 #include <utils/log.h>
 
 #include <server/CommandHandler.h>
-#include <server/command/GetNewMapImagesCommand.h>
 #include <server/command/GetMapImageTilesCommand.h>
+#include <server/command/GetNewMapImagesCommand.h>
 #include <server/utils/FileHelper.h>
 
 INITIALIZE_EASYLOGGINGPP

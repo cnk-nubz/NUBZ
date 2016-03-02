@@ -1,4 +1,4 @@
-#include <db/command/InsertSimpleQuestion.h>
+#include <repository/SimpleQuestions.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -14,21 +14,23 @@ CreateSimpleQuestionCommand::CreateSimpleQuestionCommand(db::Database &db) : db(
 
 io::SimpleQuestion CreateSimpleQuestionCommand::operator()(
     const io::input::CreateSimpleQuestionRequest &input) {
-    io::SimpleQuestion sQuestion;
-    db.execute([&](db::DatabaseSession &session) {
+    auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        db::SimpleQuestion dbSQuestion;
-        dbSQuestion.name = input.question;
-        dbSQuestion.question = input.question;
+        auto question = repository::SimpleQuestion{};
+        question.question = input.question;
+        question.numberAnswer = input.answerType == io::SimpleQuestion::AnswerType::Number;
         if (input.name) {
-            dbSQuestion.name = input.name.value();
+            question.name = input.name.value();
+        } else {
+            question.name = question.question;
         }
-        dbSQuestion.numberAnswer = input.answerType == io::SimpleQuestion::AnswerType::Number;
-        dbSQuestion.ID = db::cmd::InsertSimpleQuestion{dbSQuestion}(session);
-        sQuestion = utils::toIO(dbSQuestion);
+
+        auto repo = repository::SimpleQuestions{session};
+        repo.insert(&question);
+        return question;
     });
-    return sQuestion;
+    return io::SimpleQuestion{dbQuestion};
 }
 
 void CreateSimpleQuestionCommand::validateInput(

@@ -22,14 +22,14 @@ struct SimpleQuestion : public Question {
         Number,
     };
 
+    static AnswerType AnswerTypeFromThrift(
+        const communication::SimpleQuestionAnswerType::type &thrift);
+    static communication::SimpleQuestionAnswerType::type AnswerTypeToThrift(const AnswerType &type);
+
     SimpleQuestion() = default;
     thrift_t toThrift() const;
 
     SimpleQuestion(const repo_t &repo);
-
-    static AnswerType AnswerTypeFromThrift(
-        const communication::SimpleQuestionAnswerType::type &thrift);
-    static communication::SimpleQuestionAnswerType::type AnswerTypeToThrift(const AnswerType &type);
 
     AnswerType answerType;
 };

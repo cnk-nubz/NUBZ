@@ -1,7 +1,7 @@
 #include <string>
 
-#include <db/factory/MapImageFactory.h>
 #include <db/db_info.h>
+#include <db/factory/MapImageFactory.h>
 #include <db/sql.h>
 
 #include "GetMapImages.h"

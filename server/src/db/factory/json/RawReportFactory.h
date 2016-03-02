@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include <db/struct/RawReport.h>
 #include <db/db_info.h>
+#include <db/struct/RawReport.h>
 
 namespace db {
 namespace factory {

@@ -2,8 +2,8 @@
 
 #include <db/table/Actions.h>
 
-#include "DefaultRepo.h"
 #include "Actions.h"
+#include "DefaultRepo.h"
 
 namespace repository {
 

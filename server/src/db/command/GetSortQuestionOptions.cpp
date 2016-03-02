@@ -1,5 +1,5 @@
-#include <db/factory/SortQuestionOptionFactory.h>
 #include <db/db_info.h>
+#include <db/factory/SortQuestionOptionFactory.h>
 #include <db/sql.h>
 
 #include "GetSortQuestionOptions.h"

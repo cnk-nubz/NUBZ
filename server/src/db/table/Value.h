@@ -1,14 +1,14 @@
 #ifndef DB_TABLE__VALUE__H
 #define DB_TABLE__VALUE__H
 
-#include <string>
 #include <cassert>
 #include <cstdint>
-#include <unordered_set>
+#include <string>
 #include <type_traits>
+#include <unordered_set>
 
-#include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 namespace db {
 namespace table {

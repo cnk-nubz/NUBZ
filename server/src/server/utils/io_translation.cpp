@@ -25,16 +25,6 @@ io::MapFrame toIO(const db::MapFrame &mapFrame) {
     return res;
 }
 
-io::SimpleQuestion toIO(const db::SimpleQuestion &simpleQuestion) {
-    io::SimpleQuestion res;
-    res.ID = simpleQuestion.ID;
-    res.name = simpleQuestion.name;
-    res.question = simpleQuestion.question;
-    res.answerType = (simpleQuestion.numberAnswer) ? io::SimpleQuestion::AnswerType::Number
-                                                   : io::SimpleQuestion::AnswerType::Text;
-    return res;
-}
-
 io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
                                 const std::vector<db::MultipleChoiceQuestionOption> &options) {
     io::MultipleChoiceQuestion res;
