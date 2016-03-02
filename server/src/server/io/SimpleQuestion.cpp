@@ -31,5 +31,12 @@ communication::SimpleQuestion SimpleQuestion::toThrift() const {
     thrift.answerType = AnswerTypeToThrift(answerType);
     return thrift;
 }
+
+SimpleQuestion::SimpleQuestion(const repository::SimpleQuestion &repo) {
+    ID = repo.ID;
+    name = repo.name;
+    question = repo.question;
+    answerType = repo.numberAnswer ? AnswerType::Number : AnswerType::Text;
+}
 }
 }

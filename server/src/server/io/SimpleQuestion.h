@@ -6,24 +6,30 @@
 
 #include <communication/structs_types.h>
 
+#include <repository/SimpleQuestions.h>
+
 #include "Question.h"
 
 namespace server {
 namespace io {
 
 struct SimpleQuestion : public Question {
+    using thrift_t = communication::SimpleQuestion;
+    using repo_t = repository::SimpleQuestion;
+
     enum class AnswerType {
         Text,
         Number,
     };
-    static AnswerType AnswerTypeFromThrift(
-        const communication::SimpleQuestionAnswerType::type &thrift);
-    static communication::SimpleQuestionAnswerType::type AnswerTypeToThrift(const AnswerType &type);
-
-    using thrift_t = communication::SimpleQuestion;
 
     SimpleQuestion() = default;
     thrift_t toThrift() const;
+
+    SimpleQuestion(const repo_t &repo);
+
+    static AnswerType AnswerTypeFromThrift(
+        const communication::SimpleQuestionAnswerType::type &thrift);
+    static communication::SimpleQuestionAnswerType::type AnswerTypeToThrift(const AnswerType &type);
 
     AnswerType answerType;
 };
