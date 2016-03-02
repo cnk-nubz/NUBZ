@@ -3,7 +3,6 @@ package com.cnk.ui;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -38,6 +37,9 @@ import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.ui.exhibitwindow.ExhibitActionsAdapter;
+import com.cnk.ui.models.DialogsState;
+import com.cnk.ui.models.ExhibitSpot;
+import com.cnk.ui.models.MapState;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
@@ -52,11 +54,6 @@ import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "MapActivity";
-    private static final String BREAK_NAME = "Przerwa";
-    private static final String TITLE_PREFIX = "Piętro";
-    private static final Integer BREAK_ID = 0;
-    private static final Float MAXIMUM_SCALE = 4.0f;
-    private static final Float MINIMUM_SCALE = 0.01f;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
@@ -65,18 +62,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
     private RelativeLayout rlRootLayout;
-    private RelativeLayout voidLayout;
-    private Point lastClick;
     private ProgressDialog spinner;
     private ActionBarDrawerToggle drawerToggle;
     private Integer openedDialogs;
 
-    private AlertDialog.Builder breakAlertDialogBuilder;
+    DialogsState dialogsState;
     private AlertDialog breakDialog;
-    private View breakDialogView;
-    private AlertDialog.Builder exhibitAlertDialogBuilder;
     private AlertDialog exhibitDialog;
-    private View exhibitDialogView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,17 +88,15 @@ public class MapActivity extends AppCompatActivity implements Observer {
         setSpinner();
 
         networkHandler.downloadExperimentData();
-
-        createDialogs();
     }
 
     private void createDialogs() {
-        breakAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
-        breakDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
+        // ----------------- Break dialog: -------------------- //
+        AlertDialog.Builder breakAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
+        View breakDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
         breakAlertDialogBuilder.setView(breakDialogView);
 
         List<Action> breakActions = DataHandler.getInstance().getAllBreakActions();
-
         List<String> breakActionsStrings = new ArrayList<>();
         for (Action a : breakActions) {
             breakActionsStrings.add(a.getText());
@@ -118,14 +108,20 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         breakAlertDialogBuilder.setCancelable(false);
         breakDialog = breakAlertDialogBuilder.create();
+        breakDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
 
+        dialogsState.tvBreakDialogName = (AutoResizeTextView) breakDialogView.findViewById(R.id.tvExhibitDialogName);
+        dialogsState.breakAdapter = (ExhibitActionsAdapter)
+                ((GridView) breakDialogView.findViewById(R.id.gvActions)).getAdapter();
+        dialogsState.cancelBreak = (Button) breakDialogView.findViewById(R.id.bExbibitDialogCancel);
+        dialogsState.finishBreak = (Button) breakDialogView.findViewById(R.id.bExbibitDialogFinish);
 
-        exhibitAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
-        exhibitDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
+        // ----------------- Exhibit dialog: -------------------- //
+        AlertDialog.Builder exhibitAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
+        View exhibitDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
         exhibitAlertDialogBuilder.setView(exhibitDialogView);
 
         List<Action> exhibitActions = DataHandler.getInstance().getAllExhibitActions();
-
         List<String> exhibitActionsStrings = new ArrayList<>();
         for (Action a : exhibitActions) {
             exhibitActionsStrings.add(a.getText());
@@ -137,6 +133,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         exhibitAlertDialogBuilder.setCancelable(false);
         exhibitDialog = exhibitAlertDialogBuilder.create();
+        exhibitDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+
+        dialogsState.tvExhibitDialogName = (AutoResizeTextView) exhibitDialogView.findViewById(R.id.tvExhibitDialogName);
+        dialogsState.exhibitAdapter = (ExhibitActionsAdapter)
+                ((GridView) exhibitDialogView.findViewById(R.id.gvActions)).getAdapter();
+        dialogsState.cancelExhibit = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogCancel);
+        dialogsState.finishExhibit = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogFinish);
     }
 
     private void dialogButtonHandler(AlertDialog toDissmiss, Integer requestCode, boolean cancel, ExhibitActionsAdapter toTakeResultFrom) {
@@ -152,7 +155,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void dialogReturn(Integer requestCode, boolean canceled, List<String> result) {
         if (!canceled) {
             Toast.makeText(MapActivity.this, result.toString(), Toast.LENGTH_LONG).show();
-            if (requestCode != BREAK_ID) {
+            if (requestCode != Consts.BREAK_DIALOG_ID) {
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
                 if (mapState.lastExhibitTextView != null) {
                     mapState.lastExhibitTextView
@@ -171,7 +174,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
-        showExhibitDialog(true, BREAK_NAME, BREAK_ID);
+        showExhibitDialog(true, Consts.BREAK_DIALOG_NAME, Consts.BREAK_DIALOG_ID);
     }
 
     public void endClick(View view) {
@@ -212,7 +215,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "Setting views");
         setContentView(R.layout.map_activity_layout);
         rlRootLayout = (RelativeLayout) findViewById(R.id.rlRootViewMapActivity);
-        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
+        setTitle(Consts.TITLE_PREFIX + " " + currentFloorNum.toString());
         setDrawer();
         Log.i(LOG_TAG, "Views set");
     }
@@ -272,12 +275,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-//    @Override
-//    public boolean dispatchTouchEvent(MotionEvent ev) {
-//        lastClick = new Point((int) ev.getX(), (int) ev.getY());
-//        return super.dispatchTouchEvent(ev);
-//    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -307,14 +304,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
             Log.i(LOG_TAG, "switching floor to 1");
             currentFloorNum = Consts.FLOOR1;
         }
-        setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
+        setTitle(Consts.TITLE_PREFIX + " " + currentFloorNum.toString());
         if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
             new MapChangeFloor().execute();
         } else {
             layoutMapMissing.setVisibility(View.VISIBLE);
         }
     }
-
 
     // Layout setting:
     private void prepareTileView(final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
@@ -348,8 +344,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 tileView.setTransitionsEnabled(false);
                 tileView.setShouldRecycleBitmaps(false);
                 tileView.setShouldScaleToFit(true);
-                tileView.setScaleLimits(MINIMUM_SCALE, MAXIMUM_SCALE);
-                tileView.setScale(MINIMUM_SCALE);
+                tileView.setScaleLimits(Consts.MINIMUM_MAP_SCALE, Consts.MAXIMUM_MAP_SCALE);
+                tileView.setScale(Consts.MINIMUM_MAP_SCALE);
 
                 mapState.exhibitsOverlay = new RelativeLayout(MapActivity.this);
                 tileView.addScalingViewGroup(mapState.exhibitsOverlay);
@@ -380,7 +376,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     tileView.setVisibility(View.INVISIBLE);
                 }
 
-                voidLayout = addVoidLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
                 layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
                 if (currentFloorExists) {
@@ -396,15 +391,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         });
 
         localUISynchronization.acquireUninterruptibly();
-    }
-
-    private RelativeLayout addVoidLayout(RelativeLayout parent, Context c) {
-        RelativeLayout rl = new RelativeLayout(c);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-        parent.addView(rl, lp);
-
-        return rl;
     }
 
     private LinearLayout addLoadingLayout(RelativeLayout parent, Context c) {
@@ -449,7 +435,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ll;
     }
 
-
     // Data updating:
     @Override
     public void update(Observable observable, Object o) {
@@ -466,10 +451,17 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Util.waitDelay(Consts.SECOND);
         spinner.dismiss();
         mapState = new MapState(this);
+        dialogsState = new DialogsState();
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
         spinner.dismiss();
+        runOnUiThread(new Runnable() {
+                          @Override
+                          public void run() {
+                              createDialogs();
+                          }
+                      });
     }
 
     // Map changing:
@@ -664,54 +656,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         waitOnUI.acquireUninterruptibly();
     }
 
-
-    // Private classes declarations:
-    private class ExhibitSpot extends HotSpot {
-        private Integer exhibitId;
-        private Integer listId;
-        private String name;
-        private AutoResizeTextView exhibitTextView;
-
-        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
-            super();
-            this.listId = listId;
-            this.exhibitId = exhibitId;
-            this.name = name;
-            this.exhibitTextView = exhibitTextView;
-        }
-
-        public Integer getExhibitId() {
-            return exhibitId;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public AutoResizeTextView getExhibitTextView() {
-            return exhibitTextView;
-        }
-
-        public Integer getListId() {
-            return listId;
-        }
-    }
-
-    private class MapState {
-        public MapState(MapActivity activity) {
-            hotSpotsForFloor = new ArrayList<>();
-            exhibitsOverlay = new RelativeLayout(activity);
-        }
-
-        Resolution currentMapSize, originalMapSize;
-
-        ArrayList<HotSpot> hotSpotsForFloor;
-        RelativeLayout exhibitsOverlay;
-
-        AutoResizeTextView lastExhibitTextView;
-    }
-
-
     // Action listeners:
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
@@ -721,7 +665,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 openedDialogs++;
                 // only if exhibit is clicked first time
 
-                final Integer floorId = ((ExhibitSpot) hotSpot).listId;
+                final Integer floorId = ((ExhibitSpot) hotSpot).getListId();
                 showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
             }
         }
@@ -729,55 +673,43 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void showExhibitDialog(boolean isBreak, String name, final Integer requestCode) {
         if (isBreak) {
-            AutoResizeTextView tvBreakDialogName = (AutoResizeTextView) breakDialogView.findViewById(R.id.tvExhibitDialogName);
-            tvBreakDialogName.setText(name);
-            tvBreakDialogName.setMinTextSize(2f);
-            tvBreakDialogName.setTextSize(100f);
+            dialogsState.tvBreakDialogName.setText(name);
+            dialogsState.tvBreakDialogName.setMinTextSize(2f);
+            dialogsState.tvBreakDialogName.setTextSize(100f);
 
-            final ExhibitActionsAdapter eaa = (ExhibitActionsAdapter)
-                    ((GridView) breakDialogView.findViewById(R.id.gvActions)).getAdapter();
-            eaa.clearClickedState();
+            dialogsState.breakAdapter.clearClickedState();
 
-            Button cancel = (Button) breakDialogView.findViewById(R.id.bExbibitDialogCancel);
-            cancel.setOnClickListener(new View.OnClickListener() {
+            dialogsState.cancelBreak.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    dialogButtonHandler(breakDialog, requestCode, true, eaa);
+                    dialogButtonHandler(breakDialog, requestCode, true, dialogsState.breakAdapter);
                 }
             });
-
-            Button finish = (Button) breakDialogView.findViewById(R.id.bExbibitDialogFinish);
-            finish.setOnClickListener(new View.OnClickListener() {
+            dialogsState.finishBreak.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    dialogButtonHandler(breakDialog, requestCode, false, eaa);
+                    dialogButtonHandler(breakDialog, requestCode, false, dialogsState.breakAdapter);
                 }
             });
 
             breakDialog.show();
         } else {
-            AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) exhibitDialogView.findViewById(R.id.tvExhibitDialogName);
-            tvExhibitDialogName.setText(name);
-            tvExhibitDialogName.setMinTextSize(2f);
-            tvExhibitDialogName.setTextSize(100f);
+            dialogsState.tvExhibitDialogName.setText(name);
+            dialogsState.tvExhibitDialogName.setMinTextSize(2f);
+            dialogsState.tvExhibitDialogName.setTextSize(100f);
 
-            final ExhibitActionsAdapter eaa = (ExhibitActionsAdapter)
-                    ((GridView) exhibitDialogView.findViewById(R.id.gvActions)).getAdapter();
-            eaa.clearClickedState();
+            dialogsState.exhibitAdapter.clearClickedState();
 
-            Button cancel = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogCancel);
-            cancel.setOnClickListener(new View.OnClickListener() {
+            dialogsState.cancelExhibit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    dialogButtonHandler(exhibitDialog, requestCode, true, eaa);
+                    dialogButtonHandler(exhibitDialog, requestCode, true, dialogsState.exhibitAdapter);
                 }
             });
-
-            Button finish = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogFinish);
-            finish.setOnClickListener(new View.OnClickListener() {
+            dialogsState.finishExhibit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    dialogButtonHandler(exhibitDialog, requestCode, false, eaa);
+                    dialogButtonHandler(exhibitDialog, requestCode, false, dialogsState.exhibitAdapter);
                 }
             });
 

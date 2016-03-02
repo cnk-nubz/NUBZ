@@ -24,11 +24,6 @@
             android:screenOrientation="landscape">
         </activity>
 
-        <activity android:name=".ui.exhibitwindow.ExhibitDialog"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            android:screenOrientation="landscape">
-        </activity>
-
     </application>
 
 </manifest>

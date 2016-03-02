@@ -13,4 +13,8 @@
         <item name="android:windowNoTitle">true</item>
     </style>
 
+    <style name="DialogAnimation">
+        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
+    </style>
+
 </resources>
