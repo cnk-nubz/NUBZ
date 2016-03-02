@@ -8,8 +8,6 @@
 #include <db/struct/MultipleChoiceQuestion.h>
 #include <db/struct/MultipleChoiceQuestionOption.h>
 #include <db/struct/RawReport.h>
-#include <db/struct/SortQuestion.h>
-#include <db/struct/SortQuestionOption.h>
 
 #include <server/io/Exhibit.h>
 #include <server/io/MapFrame.h>
@@ -21,23 +19,11 @@
 namespace server {
 namespace utils {
 
-template <class IOType>
-std::vector<IOType> toIO(const std::vector<typename IOType::repo_t> &repo) {
-    std::vector<IOType> res;
-    for (const auto &r : repo) {
-        res.emplace_back(r);
-    }
-    return res;
-}
-
 io::Exhibit toIO(const db::Exhibit &exhibit);
 io::MapFrame toIO(const db::MapFrame &mapFrame);
 io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
                                 const std::vector<db::MultipleChoiceQuestionOption> &options);
 io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &option);
-io::SortQuestion toIO(const db::SortQuestion &question,
-                      const std::vector<db::SortQuestionOption> &options);
-io::SortQuestion::Option toIO(const db::SortQuestionOption &option);
 
 db::RawReport toDB(const io::input::RawReport &report);
 db::RawReport::Event toDB(const io::input::RawReport::Event &event);

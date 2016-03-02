@@ -43,23 +43,6 @@ io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &
     return res;
 }
 
-io::SortQuestion toIO(const db::SortQuestion &question,
-                      const std::vector<db::SortQuestionOption> &options) {
-    io::SortQuestion res;
-    res.ID = question.ID;
-    res.name = question.name;
-    res.question = question.question;
-    ::utils::transform(options, res.options, [](const auto &o) { return toIO(o); });
-    return res;
-}
-
-io::SortQuestion::Option toIO(const db::SortQuestionOption &option) {
-    io::SortQuestion::Option res;
-    res.ID = option.ID;
-    res.text = option.text;
-    return res;
-}
-
 db::RawReport toDB(const io::input::RawReport &report) {
     db::RawReport res;
     res.ID = report.ID;

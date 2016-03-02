@@ -1,5 +1,6 @@
-#include <db/command/InsertSortQuestion.h>
-#include <db/command/InsertSortQuestionOption.h>
+#include <utils/fp_algorithm.h>
+
+#include <repository/SortQuestions.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -15,22 +16,29 @@ CreateSortQuestionCommand::CreateSortQuestionCommand(db::Database &db) : db(db) 
 
 io::SortQuestion CreateSortQuestionCommand::operator()(
     const io::input::CreateSortQuestionRequest &input) {
-    io::SortQuestion ioQuestion;
-    db.execute([&](db::DatabaseSession &session) {
+    auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        db::SortQuestion question;
-        question.name = input.question;
+        auto question = repository::SortQuestion{};
+
         question.question = input.question;
         if (input.name) {
             question.name = input.name.value();
+        } else {
+            question.name = question.question;
         }
-        question.ID = db::cmd::InsertSortQuestion{question}(session);
+        ::utils::transform(input.options, question.options, [](auto &text) {
+            auto opt = repository::SortQuestion::Option{};
+            opt.text = text;
+            return opt;
+        });
 
-        ioQuestion = utils::toIO(question, createOptions(session, input.options, question.ID));
+        auto repo = repository::SortQuestions{session};
+        repo.insert(&question);
+        return question;
     });
 
-    return ioQuestion;
+    return io::SortQuestion{dbQuestion};
 }
 
 void CreateSortQuestionCommand::validateInput(
@@ -48,20 +56,6 @@ void CreateSortQuestionCommand::validateInput(
     if (!::utils::all_of(input.options, &decltype(checker)::checkText)) {
         throw io::InvalidInput("incorrect option");
     }
-}
-
-std::vector<db::SortQuestionOption> CreateSortQuestionCommand::createOptions(
-    db::DatabaseSession &session, const std::vector<std::string> &optionsText,
-    std::int32_t questionId) const {
-    std::vector<db::SortQuestionOption> options;
-    db::SortQuestionOption option;
-    option.questionId = questionId;
-    for (const auto &text : optionsText) {
-        option.text = text;
-        option.ID = db::cmd::InsertSortQuestionOption{option}(session);
-        options.push_back(option);
-    }
-    return options;
 }
 }
 }

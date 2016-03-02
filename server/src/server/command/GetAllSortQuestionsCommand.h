@@ -2,7 +2,6 @@
 #define SERVER_COMMAND__GET_ALL_SORT_QUESTIONS_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/SortQuestionOption.h>
 
 #include <server/io/SortQuestion.h>
 
@@ -20,9 +19,6 @@ public:
 
 private:
     db::Database &db;
-
-    std::vector<db::SortQuestionOption> getOptions(db::DatabaseSession &session,
-                                                   std::int32_t questionId) const;
 };
 }
 }

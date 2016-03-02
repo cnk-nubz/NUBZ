@@ -15,6 +15,15 @@ std::vector<typename T::thrift_t> ioToThrift(const std::vector<T> &io) {
     return res;
 }
 
+template <class IOType>
+std::vector<IOType> repoToIO(const std::vector<typename IOType::repo_t> &repo) {
+    std::vector<IOType> res;
+    for (const auto &r : repo) {
+        res.emplace_back(r);
+    }
+    return res;
+}
+
 template <class T>
 void removeDuplicatedIds(std::vector<T> &vec) {
     std::sort(vec.begin(), vec.end());

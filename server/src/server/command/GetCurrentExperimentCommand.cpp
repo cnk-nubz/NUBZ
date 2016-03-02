@@ -5,8 +5,6 @@
 #include <db/command/GetCurrentExperiment.h>
 #include <db/command/GetMultipleChoiceQuestionOptions.h>
 #include <db/command/GetMultipleChoiceQuestions.h>
-#include <db/command/GetSortQuestionOptions.h>
-#include <db/command/GetSortQuestions.h>
 
 #include <server/utils/io_translation.h>
 
@@ -56,6 +54,7 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
     using QType = db::Experiment::Survey::QuestionType;
 
     auto simpleQRepo = repository::SimpleQuestions{session};
+    auto sortQRepo = repository::SortQuestions{session};
 
     auto getType = [&](QType qType) {
         switch (qType) {
@@ -72,9 +71,7 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
         return toIO(GetMultipleChoiceQuestions{id}(session).front(),
                     GetMultipleChoiceQuestionOptions{id}(session));
     };
-    auto getSortQ = [&](std::int32_t id) {
-        return toIO(GetSortQuestions{id}(session).front(), GetSortQuestionOptions{id}(session));
-    };
+    auto getSortQ = [&](auto id) { return io::SortQuestion{sortQRepo.get(id).value()}; };
 
     ::utils::transform(survey.order, qList.questionsOrder, getType);
     ::utils::transform(survey.simpleQuestions, qList.simpleQuestions, getSimpleQ);

@@ -13,11 +13,22 @@ communication::SortQuestion SortQuestion::toThrift() const {
     return thrift;
 }
 
+SortQuestion::SortQuestion(const repository::SortQuestions::Question &repo) {
+    ID = repo.ID;
+    name = repo.name;
+    question = repo.question;
+    options = repoToIO<Option>(repo.options);
+}
+
 communication::SortQuestionOption SortQuestion::Option::toThrift() const {
     communication::SortQuestionOption thrift;
     thrift.optionId = ID;
     thrift.text = text;
     return thrift;
+}
+
+SortQuestion::Option::Option(const repository::SortQuestions::Question::Option &repo)
+    : ID(repo.ID), text(repo.text) {
 }
 }
 }

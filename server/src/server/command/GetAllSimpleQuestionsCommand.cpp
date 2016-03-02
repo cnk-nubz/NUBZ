@@ -2,7 +2,7 @@
 
 #include <repository/SimpleQuestions.h>
 
-#include <server/utils/io_translation.h>
+#include <server/io/utils.h>
 
 #include "GetAllSimpleQuestionsCommand.h"
 
@@ -13,12 +13,12 @@ GetAllSimpleQuestionsCommand::GetAllSimpleQuestionsCommand(db::Database &db) : d
 }
 
 std::vector<io::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
-    auto dbQuestions = db.execute([&](db::DatabaseSession &session) {
+    auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::SimpleQuestions{session};
         return repo.getAll();
     });
 
-    auto questions = utils::toIO<io::SimpleQuestion>(dbQuestions);
+    auto questions = ::server::io::repoToIO<io::SimpleQuestion>(repoQuestions);
     std::sort(questions.begin(), questions.end());
     return questions;
 }

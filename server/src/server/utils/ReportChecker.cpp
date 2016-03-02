@@ -1,13 +1,12 @@
 #include <boost/none.hpp>
 
 #include <repository/SimpleQuestions.h>
+#include <repository/SortQuestions.h>
 
 #include <db/command/GetCurrentExperiment.h>
 #include <db/command/GetExperiments.h>
 #include <db/command/GetMultipleChoiceQuestionOptions.h>
 #include <db/command/GetMultipleChoiceQuestions.h>
-#include <db/command/GetSortQuestionOptions.h>
-#include <db/command/GetSortQuestions.h>
 
 #include "InputChecker.h"
 #include "ReportChecker.h"
@@ -92,7 +91,9 @@ bool ReportChecker::checkMultipleChoiceQuestionAnswer(
 
 bool ReportChecker::checkSortQuestionAnswer(std::int32_t questionId,
                                             const std::vector<std::int32_t> &order) const {
-    const auto options = db::cmd::GetSortQuestionOptions{questionId}(session);
+    auto repo = repository::SortQuestions{session};
+    auto options = repo.get(questionId).value().options;
+
     std::unordered_set<std::int32_t> possibilities;
     for (const auto &opt : options) {
         possibilities.insert(opt.ID);

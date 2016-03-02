@@ -2,7 +2,6 @@
 #define SERVER_COMMAND__CREATE_SORT_QUESTION_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/SortQuestionOption.h>
 
 #include <server/io/SortQuestion.h>
 #include <server/io/input/CreateSortQuestionRequest.h>
@@ -24,9 +23,6 @@ private:
 
     void validateInput(db::DatabaseSession &session,
                        const io::input::CreateSortQuestionRequest &input) const;
-    std::vector<db::SortQuestionOption> createOptions(db::DatabaseSession &session,
-                                                      const std::vector<std::string> &optionsText,
-                                                      std::int32_t questionId) const;
 };
 }
 }

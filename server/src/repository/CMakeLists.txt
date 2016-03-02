@@ -1,6 +1,7 @@
 set(SOURCES
     Actions.cpp
     SimpleQuestions.cpp
+    SortQuestions.cpp
 )
 
 add_library(repository ${SOURCES})
