@@ -58,7 +58,7 @@ cur.execute('''
 
 cur.execute('''
 	CREATE TABLE counters (
-		element VARCHAR NOT NULL UNIQUE,
+		name VARCHAR NOT NULL UNIQUE,
 		counter INT NOT NULL
 	)
 ''')
@@ -165,9 +165,9 @@ cur.execute('''
 # counters
 cur.execute('''
 	INSERT INTO counters VALUES
-		('map_images_version', 2),
-		('exhibits_version', 5),
-		('reports_last_id', 3)
+		('last_map_version', 2),
+		('last_exhibit_version', 5),
+		('last_report_version', 3)
 ''')
 
 # exhibits

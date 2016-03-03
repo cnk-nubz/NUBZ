@@ -135,7 +135,7 @@ private:
     template <class V>
     std::string createStmt(std::string lhs, std::string op, V&& rhs) const {
         return (boost::format("%1% %2% %3%") % std::move(lhs) % std::move(op) %
-                std::forward<V>(rhs))
+                utils::sqlVal(std::forward<V>(rhs)))
             .str();
     }
 

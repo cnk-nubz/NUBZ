@@ -3,6 +3,7 @@ set(SOURCES
     SimpleQuestions.cpp
     SortQuestions.cpp
     Exhibits.cpp
+    Counters.cpp
 )
 
 add_library(repository ${SOURCES})

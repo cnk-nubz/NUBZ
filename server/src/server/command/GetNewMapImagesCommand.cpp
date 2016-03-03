@@ -1,4 +1,5 @@
-#include <db/command/GetCounter.h>
+#include <repository/Counters.h>
+
 #include <db/command/GetMapImages.h>
 
 #include "GetNewMapImagesCommand.h"
@@ -21,23 +22,27 @@ GetNewMapImagesCommand::GetNewMapImagesCommand(db::Database &db) : db(db) {
 
 io::output::NewMapImagesResponse GetNewMapImagesCommand::operator()(
     const io::input::NewMapImagesRequest &input) {
-    db::cmd::GetCounter getCounter(db::info::counters::element_type::map_images);
-    db::cmd::GetMapImages getMapImages;
-    if (input.acquiredVersion) {
-        getMapImages.minVersion = *input.acquiredVersion + 1;
-    }
-
-    db.execute([&](db::DatabaseSession &session) {
-        getCounter(session);
+    auto mapImages = std::vector<db::MapImage>{};
+    std::int32_t version;
+    std::tie(version, mapImages) = db.execute([&](db::DatabaseSession &session) {
+        auto getMapImages = db::cmd::GetMapImages{};
+        if (input.acquiredVersion) {
+            getMapImages.minVersion = *input.acquiredVersion + 1;
+        }
         getMapImages(session);
+        auto mapImages = getMapImages.getResult();
+
+        auto countersRepo = repository::Counters{session};
+        auto version = countersRepo.get(repository::CounterType::LastMapVersion);
+
+        return std::make_tuple(version, mapImages);
     });
 
-    io::output::NewMapImagesResponse response;
-    response.version = getCounter.getResult();
-    for (const auto &mapImage : getMapImages.getResult()) {
+    auto response = io::output::NewMapImagesResponse{};
+    response.version = version;
+    for (const auto &mapImage : mapImages) {
         response.floorImageUrls[mapImage.floor] = createFullUrl(mapImage.filename);
     }
-
     return response;
 }
 

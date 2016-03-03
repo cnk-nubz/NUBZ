@@ -2,7 +2,8 @@
 
 #include <utils/fp_algorithm.h>
 
-#include <db/command/GetCounter.h>
+#include <repository/Counters.h>
+
 #include <db/command/GetMapImages.h>
 
 #include "InputChecker.h"
@@ -14,8 +15,8 @@ InputChecker::InputChecker(db::DatabaseSession &session) : session(session) {
 }
 
 bool InputChecker::checkReportId(std::int32_t reportId) {
-    return reportId >= 0 &&
-           reportId <= db::cmd::GetCounter{db::info::counters::element_type::reports}(session);
+    auto repo = repository::Counters{session};
+    return reportId >= 0 && reportId <= repo.get(repository::CounterType::LastReportID);
 }
 
 bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y,

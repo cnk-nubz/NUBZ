@@ -1,5 +1,6 @@
+#include <repository/Counters.h>
+
 #include <db/command/GetMapImages.h>
-#include <db/command/IncrementCounter.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -19,13 +20,14 @@ io::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitReque
 
         auto exhibit = repository::Exhibit{};
         exhibit.name = input.name;
-        exhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
         if (input.floor) {
             exhibit.frame = createExhibitFrame(input.floor.value(), input.visibleFrame);
         }
 
-        auto repo = repository::Exhibits{session};
-        repo.insert(&exhibit);
+        auto exhibitsRepo = repository::Exhibits{session};
+        auto countersRepo = repository::Counters{session};
+        exhibit.version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
+        exhibitsRepo.insert(&exhibit);
         return exhibit;
     });
     return io::Exhibit{repoExhibit};

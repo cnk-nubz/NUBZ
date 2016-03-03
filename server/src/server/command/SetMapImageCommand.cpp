@@ -4,9 +4,10 @@
 #include <utils/ImageProcessor.h>
 #include <utils/log.h>
 
+#include <repository/Counters.h>
+
 #include <db/command/GetMapImages.h>
 #include <db/command/GetMapTiles.h>
-#include <db/command/IncrementCounter.h>
 #include <db/command/RemoveMapTiles.h>
 #include <db/command/RemoveMapTilesInfo.h>
 #include <db/command/SaveMapImage.h>
@@ -50,7 +51,8 @@ void SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) 
         filesToDelete.push_back(finalTilesDir(input.floor));
         filesToDelete.push_back(utils::FileHelper::getInstance().pathForTmpFile(input.filename));
 
-        fullMap.version = db::cmd::IncrementCounter::mapVersion()(session);
+        auto countersRepo = repository::Counters{session};
+        fullMap.version = countersRepo.increment(repository::CounterType::LastMapVersion);
         db::cmd::SaveMapImage{fullMap}(session);
 
         db::cmd::RemoveMapTiles{input.floor}(session);

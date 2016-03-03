@@ -1,6 +1,5 @@
+#include <repository/Counters.h>
 #include <repository/Exhibits.h>
-
-#include <db/command/IncrementCounter.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -19,17 +18,19 @@ void SetExhibitFrameCommand::operator()(const io::input::SetExhibitFrameRequest 
     db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        auto repo = repository::Exhibits{session};
+        auto countersRepo = repository::Counters{session};
+        auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
 
-        auto exhibit = repo.get(input.exhibitId).value();
+        auto exhibitsRepo = repository::Exhibits{session};
+        auto exhibit = exhibitsRepo.get(input.exhibitId).value();
         auto repoFrame = exhibit.frame.value();
         repoFrame.x = input.frame.x;
         repoFrame.y = input.frame.y;
         repoFrame.width = input.frame.size.width;
         repoFrame.height = input.frame.size.height;
 
-        repo.setFrame(exhibit.ID, repoFrame);
-        repo.setVersion(exhibit.ID, db::cmd::IncrementCounter::exhibitVersion()(session));
+        exhibitsRepo.setVersion(exhibit.ID, version);
+        exhibitsRepo.setFrame(exhibit.ID, repoFrame);
     });
 }
 
