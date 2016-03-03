@@ -1,9 +1,6 @@
-#include <utils/fp_algorithm.h>
+#include <repository/MultiplechoiceQuestions.h>
 
-#include <db/command/GetMultipleChoiceQuestions.h>
-#include <db/command/GetMultipleChoiceQuestionOptions.h>
-
-#include <server/utils/io_translation.h>
+#include <server/io/utils.h>
 
 #include "GetAllMultipleChoiceQuestionsCommand.h"
 
@@ -15,21 +12,15 @@ GetAllMultipleChoiceQuestionsCommand::GetAllMultipleChoiceQuestionsCommand(db::D
 }
 
 std::vector<io::MultipleChoiceQuestion> GetAllMultipleChoiceQuestionsCommand::operator()() {
-    std::vector<io::MultipleChoiceQuestion> questions;
-    db.execute([&](db::DatabaseSession &session) {
-        db::cmd::GetMultipleChoiceQuestions getQuestions;
-        for (const auto &question : getQuestions(session)) {
-            questions.push_back(utils::toIO(question, getOptions(session, question.ID)));
-        }
+    auto questions = std::vector<io::MultipleChoiceQuestion>{};
+    auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::MultipleChoiceQuestions{session};
+        return repo.getAll();
     });
 
-    std::sort(questions.begin(), questions.end());
-    return questions;
-}
-
-std::vector<db::MultipleChoiceQuestionOption> GetAllMultipleChoiceQuestionsCommand::getOptions(
-    db::DatabaseSession &session, std::int32_t questionId) const {
-    return db::cmd::GetMultipleChoiceQuestionOptions{questionId}(session);
+    auto result = ::server::io::repoToIO<io::MultipleChoiceQuestion>(repoQuestions);
+    std::sort(result.begin(), result.end());
+    return result;
 }
 }
 }

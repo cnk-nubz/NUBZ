@@ -4,8 +4,6 @@
 #include <vector>
 
 #include <db/struct/MapFrame.h>
-#include <db/struct/MultipleChoiceQuestion.h>
-#include <db/struct/MultipleChoiceQuestionOption.h>
 #include <db/struct/RawReport.h>
 
 #include <server/io/MapFrame.h>
@@ -16,9 +14,6 @@ namespace server {
 namespace utils {
 
 io::MapFrame toIO(const db::MapFrame &mapFrame);
-io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
-                                const std::vector<db::MultipleChoiceQuestionOption> &options);
-io::MultipleChoiceQuestion::Option toIO(const db::MultipleChoiceQuestionOption &option);
 
 db::RawReport toDB(const io::input::RawReport &report);
 db::RawReport::Event toDB(const io::input::RawReport::Event &event);

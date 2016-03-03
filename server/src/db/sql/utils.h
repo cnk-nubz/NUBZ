@@ -48,7 +48,7 @@ inline std::string asSqlList(const std::vector<std::string> &list,
 inline std::string sqlVal(const bool &raw) {
     return raw ? "TRUE" : "FALSE";
 }
-    
+
 inline std::string sqlVal(const std::string &raw) {
     return "'" + raw + "'";
 }

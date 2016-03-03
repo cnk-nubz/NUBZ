@@ -3,8 +3,6 @@
 #include <repository/Actions.h>
 
 #include <db/command/GetCurrentExperiment.h>
-#include <db/command/GetMultipleChoiceQuestionOptions.h>
-#include <db/command/GetMultipleChoiceQuestions.h>
 
 #include <server/utils/io_translation.h>
 
@@ -55,28 +53,28 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
 
     auto simpleQRepo = repository::SimpleQuestions{session};
     auto sortQRepo = repository::SortQuestions{session};
+    auto multiQRepo = repository::MultipleChoiceQuestions{session};
 
     auto getType = [&](QType qType) {
         switch (qType) {
             case QType::Simple:
                 return io::QuestionsList::QuestionType::Simple;
-            case QType::MultipleChoice:
-                return io::QuestionsList::QuestionType::MultipleChoice;
             case QType::Sort:
                 return io::QuestionsList::QuestionType::Sort;
+            case QType::MultipleChoice:
+                return io::QuestionsList::QuestionType::MultipleChoice;
         }
     };
     auto getSimpleQ = [&](auto id) { return io::SimpleQuestion{simpleQRepo.get(id).value()}; };
-    auto getMultiQ = [&](std::int32_t id) {
-        return toIO(GetMultipleChoiceQuestions{id}(session).front(),
-                    GetMultipleChoiceQuestionOptions{id}(session));
-    };
     auto getSortQ = [&](auto id) { return io::SortQuestion{sortQRepo.get(id).value()}; };
+    auto getMultiQ = [&](auto id) {
+        return io::MultipleChoiceQuestion{multiQRepo.get(id).value()};
+    };
 
     ::utils::transform(survey.order, qList.questionsOrder, getType);
     ::utils::transform(survey.simpleQuestions, qList.simpleQuestions, getSimpleQ);
-    ::utils::transform(survey.multipleChoiceQuestions, qList.multipleChoiceQuestions, getMultiQ);
     ::utils::transform(survey.sortQuestions, qList.sortQuestions, getSortQ);
+    ::utils::transform(survey.multipleChoiceQuestions, qList.multipleChoiceQuestions, getMultiQ);
 }
 }
 }

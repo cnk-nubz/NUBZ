@@ -1,6 +1,7 @@
 set(SOURCES
     Actions.cpp
     SimpleQuestions.cpp
+    MultipleChoiceQuestions.cpp
     SortQuestions.cpp
     Exhibits.cpp
     Counters.cpp
