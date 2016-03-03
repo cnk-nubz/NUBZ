@@ -3,23 +3,18 @@
 
 #include <vector>
 
-#include <db/struct/Exhibit.h>
 #include <db/struct/MapFrame.h>
 #include <db/struct/MultipleChoiceQuestion.h>
 #include <db/struct/MultipleChoiceQuestionOption.h>
 #include <db/struct/RawReport.h>
 
-#include <server/io/Exhibit.h>
 #include <server/io/MapFrame.h>
 #include <server/io/MultipleChoiceQuestion.h>
-#include <server/io/SimpleQuestion.h>
-#include <server/io/SortQuestion.h>
 #include <server/io/input/RawReport.h>
 
 namespace server {
 namespace utils {
 
-io::Exhibit toIO(const db::Exhibit &exhibit);
 io::MapFrame toIO(const db::MapFrame &mapFrame);
 io::MultipleChoiceQuestion toIO(const db::MultipleChoiceQuestion &question,
                                 const std::vector<db::MultipleChoiceQuestionOption> &options);

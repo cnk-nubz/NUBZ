@@ -5,16 +5,6 @@
 namespace server {
 namespace utils {
 
-io::Exhibit toIO(const db::Exhibit &exhibit) {
-    io::Exhibit res;
-    res.name = exhibit.name;
-    res.ID = exhibit.ID;
-    if (exhibit.frame) {
-        res.mapFrame = toIO(exhibit.frame.value());
-    }
-    return res;
-}
-
 io::MapFrame toIO(const db::MapFrame &mapFrame) {
     io::MapFrame res;
     res.frame.x = mapFrame.x;

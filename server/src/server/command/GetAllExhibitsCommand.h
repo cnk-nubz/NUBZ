@@ -2,7 +2,8 @@
 #define SERVER_COMMAND__GET_ALL_EXHIBITS_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/Exhibit.h>
+
+#include <server/io/Exhibit.h>
 
 #include "commons.h"
 

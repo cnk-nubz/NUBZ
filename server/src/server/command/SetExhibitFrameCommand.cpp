@@ -1,11 +1,11 @@
-#include "SetExhibitFrameCommand.h"
+#include <repository/Exhibits.h>
 
-#include <db/command/GetExhibits.h>
 #include <db/command/IncrementCounter.h>
-#include <db/command/UpdateExhibit.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
+
+#include "SetExhibitFrameCommand.h"
 
 namespace server {
 namespace command {
@@ -19,39 +19,36 @@ void SetExhibitFrameCommand::operator()(const io::input::SetExhibitFrameRequest 
     db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        // download data
-        db::Exhibit exhibit = db::cmd::GetExhibits{input.exhibitId}(session).front();
+        auto repo = repository::Exhibits{session};
 
-        // prepare new
-        // map level doesn't change
-        exhibit.frame.value().x = input.frame.x;
-        exhibit.frame.value().y = input.frame.y;
-        exhibit.frame.value().width = input.frame.size.width;
-        exhibit.frame.value().height = input.frame.size.height;
-        exhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
+        auto exhibit = repo.get(input.exhibitId).value();
+        auto repoFrame = exhibit.frame.value();
+        repoFrame.x = input.frame.x;
+        repoFrame.y = input.frame.y;
+        repoFrame.width = input.frame.size.width;
+        repoFrame.height = input.frame.size.height;
 
-        // update
-        db::cmd::UpdateExhibit{exhibit}(session);
+        repo.setFrame(exhibit.ID, repoFrame);
+        repo.setVersion(exhibit.ID, db::cmd::IncrementCounter::exhibitVersion()(session));
     });
 }
 
 void SetExhibitFrameCommand::validateInput(db::DatabaseSession &session,
                                            const io::input::SetExhibitFrameRequest &input) const {
-    db::cmd::GetExhibits getExhibit(input.exhibitId);
+    auto repo = repository::Exhibits{session};
 
-    getExhibit(session);
-    if (getExhibit.getResult().empty()) {
+    auto exhibitOpt = repo.get(input.exhibitId);
+    if (!exhibitOpt) {
         throw io::InvalidInput("incorrect exhibit id");
     }
-
-    db::Exhibit exhibit = getExhibit.getResult().front();
-    db::MapFrame frame = exhibit.frame.value();
+    auto exhibit = exhibitOpt.value();
 
     if (!exhibit.frame) {
         throw io::InvalidInput("given exhibit doesn't belong to any floor");
     }
+    auto frame = exhibit.frame.value();
 
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker(session);
     if (!checker.checkFrame(frame.floor,
                             input.frame.x,
                             input.frame.y,

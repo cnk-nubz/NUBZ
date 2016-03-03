@@ -1,7 +1,5 @@
 #include <db/command/GetMapImages.h>
 #include <db/command/IncrementCounter.h>
-#include <db/command/InsertExhibit.h>
-#include <db/struct/Exhibit.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -16,26 +14,26 @@ CreateExhibitCommand::CreateExhibitCommand(db::Database &db) : db(db) {
 }
 
 io::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
-    io::Exhibit exhibit;
-    db.execute([&](db::DatabaseSession &session) {
+    auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
-        db::Exhibit dbExhibit;
-        dbExhibit.name = input.name;
+        auto exhibit = repository::Exhibit{};
+        exhibit.name = input.name;
+        exhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
         if (input.floor) {
-            dbExhibit.frame = createExhibitFrame(input.floor.value(), input.visibleFrame);
+            exhibit.frame = createExhibitFrame(input.floor.value(), input.visibleFrame);
         }
-        dbExhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
-        dbExhibit.ID = db::cmd::InsertExhibit{dbExhibit}(session);
 
-        exhibit = utils::toIO(dbExhibit);
+        auto repo = repository::Exhibits{session};
+        repo.insert(&exhibit);
+        return exhibit;
     });
-    return exhibit;
+    return io::Exhibit{repoExhibit};
 }
 
 void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
                                          const io::input::CreateExhibitRequest &input) const {
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker(session);
     if (!checker.checkText(input.name)) {
         throw io::InvalidInput("incorrect name");
     }
@@ -52,7 +50,7 @@ void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
     }
 
     if (input.floor) {
-        db::cmd::GetMapImages getMapImages(input.floor.value());
+        auto getMapImages = db::cmd::GetMapImages(input.floor.value());
         getMapImages(session);
         if (getMapImages.getResult().empty()) {
             throw io::InvalidInput("floor without image and therefore without frame");
@@ -60,12 +58,12 @@ void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
     }
 }
 
-db::MapFrame CreateExhibitCommand::createExhibitFrame(
+repository::Exhibit::Frame CreateExhibitCommand::createExhibitFrame(
     std::int32_t dstFloor, const boost::optional<io::MapFrame> &visibleFrame) const {
     static const std::int32_t minSize = 200;
     static const std::int32_t screenProportion = 3;
 
-    db::MapFrame frame;
+    auto frame = repository::Exhibit::Frame{};
     frame.floor = dstFloor;
     if (!visibleFrame || visibleFrame.value().floor != dstFloor) {
         frame.x = frame.y = 0;
