@@ -329,13 +329,12 @@ def _getAllActions(newId = None):
 
 def newExperimentPage(request):
     try:
-        inputRegex = get_const("DEFAULT_CONSTANTS")['utils']['regex']['input']
         result = {
             'success': True,
             'activeLink' : ActiveLink.NEW_EXPERIMENT.value,
             'questionsList': _getAllQuestions(),
             'actionsList': _getAllActions(),
-            'inputRegex': inputRegex,
+            'inputRegex': get_const("DEFAULT_CONSTANTS")['utils']['regex']['input'],
             'chooseQuestionRow': render_to_string('row/chooseQuestionRow.html'),
             'chooseActionRow': render_to_string('row/chooseActionRow.html'),
             'experimentActionRow': render_to_string('row/experimentActionRow.html'),

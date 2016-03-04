@@ -42,8 +42,9 @@
   <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/Actions.class.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/Questions.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/ExperimentData.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/Actions.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/Questions.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/list/ListView.class.coffee" %}" type="text/coffeescript"></script>
@@ -82,6 +83,8 @@
       root.questionsList = {{questionsList|jsvar}}
       root.actionsList = {{actionsList|jsvar}}
       root.inputRegex = new RegExp("{{inputRegex}}")
+      root.questionsListHTML = '{{chooseQuestionRow}}'
+      root.actionsListHTML = '{{actionsListHTML}}'
       root.HTML =
         chooseQuestionRow: '{{chooseQuestionRow}}'
         experimentQuestionRow: '{{experimentQuestionRow}}'

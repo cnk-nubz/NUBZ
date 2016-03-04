@@ -27,5 +27,5 @@ urlpatterns = [
     url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
     url(r'createAction/$', views.createAction, name='createAction'),
     #experiment
-    url(r'createExperiment/$', views.createExperiment, name='saveExperiment')
+    url(r'createExperiment/$', views.createExperiment, name='createExperiment')
 ]

@@ -1,82 +1,41 @@
 root = exports ? this
 root.ListView = class ListView extends root.View
-  constructor: (@_containerId, @_rowFactory) ->
+  constructor: (@_containerId, DOMElements = document.createDocumentFragment()) ->
+    # DOMElements are initially in detached state
+    # need to implement in subclasses:
+    # generateId(element)
     super()
-    @_rowFactory.on("rowEvent", (event, id, pos) => @fireEvents(event, id, pos))
-    @_tableListHTML = root.HTML.tableList
-    @_elementsOnList = []
+    @_elementsOnList = {}
     @_newElementsId = {}
+    @_listElementsDOM = @_wrapElements(DOMElements)
 
-  # add whole list all at once
-  replaceElements: (elements) =>
-    @removeElements()
-    @addElements(elements)
+  addElement: (element) =>
+    @_elementsOnList[element.querySelector("tr").data] = true
+    @_listElementsDOM.querySelector("tbody").appendChild(element)
     @
 
-  addElements: (elements) =>
-    for orderId, element of elements
-      row = @_rowFactory.generateRow orderId, element
-      id = @generateId(element) #function to implement in subclasses
-      if element.isNew or (@_newElementsId[id]? and @_newElementsId[id])
-        @_newElementsId[id] = true
-        instance = this
-        row.addClass('newListEntry')
-          .one('click', do (id, row) ->
-            ->
-              # remove looks, remove from newElements and set as not new
-              jQuery(this).removeClass("newListEntry")
-              row.removeClass("newListEntry")
-              rowData = row.data("rowData")
-              rowDataId = Object.keys(rowData)[0]
-              rowData[rowDataId].isNew = false
-              row.data("rowData", rowData)
-              instance._newElementsId[id] = false
-          )
-        @_newElementsId[id] = true
-      @_elementsOnList.push row
+  replaceElements: (DOMElements) =>
+    @hide()
+    @_listElementsDOM = @_wrapElements(DOMElements)
+    @show()
     @
 
-  removeElements: =>
-    @_elementsOnList = []
-    @
+  _wrapElements: (DOMElements) =>
+    [].forEach.call(DOMElements.querySelectorAll("tr"), (element) =>
+      @_elementsOnList[element.data] = true
+    )
+    container = jQuery(root.HTML.tableList).addClass(@_listType)
+    container = container[0]
+    container.querySelector("tbody").appendChild(DOMElements)
+    container
 
   show: =>
-    container = jQuery(@_containerId)
-    jQuery("table", container).remove()
-    jQuery(@_tableListHTML).addClass(@_listType).appendTo(@_containerId)
-    for row in @_elementsOnList
-      list = jQuery("table", container)
-      rowClone = jQuery(row).clone(true, true)
-      rowClone = rowClone.appendTo(list)
-      jQuery("td:eq(0) > div", rowClone).shortenText()
-      @fireEvents("elementAdded", rowClone)
+    document.querySelector(@_containerId).appendChild(@_listElementsDOM)
     @
 
-  showLast: =>
-    container = jQuery(@_containerId)
-    for row in @_elementsOnList[-1..]
-      list = jQuery("table", container)
-      rowClone = jQuery(row).clone(true, true)
-      rowClone = jQuery(rowClone).appendTo(list)
-      jQuery("td:eq(0) > div", rowClone).shortenText()
-      @fireEvents("elementAdded", rowClone)
-    @
-
-  getAllElementsId: =>
-    elements = []
-    jQuery("table > tbody > tr", @_containerId).each( ->
-      elements.push id for id, _ of jQuery(this).data("rowData")
-    )
-    elements
-
-  removeElement: (pos) =>
-    jQuery("table > tbody > tr:eq(#{pos})", @_containerId).remove()
-    @_elementsOnList.splice(pos, 1)
+  hide: =>
+    document.querySelector(@_containerId).removeChild(@_listElementsDOM)
     @
 
   isElementOnList: (id) =>
-    for element in @_elementsOnList
-      elementId = tmpId for tmpId, _ of element.data("rowData")
-      if id is elementId
-        return true
-    false
+    @_elementsOnList[id] is true

@@ -1,6 +1,6 @@
 root = exports ? this
 root.ActionsList = class ActionsList extends root.ListView
-  constructor: (_containerId, _rowFactory) ->
-    super _containerId, _rowFactory
+  constructor: ->
     @_listType = "questionsActionsTable"
+    super
   generateId: (element) => "#{element.id}"

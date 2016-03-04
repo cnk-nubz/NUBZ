@@ -1,9 +1,10 @@
 root = exports ? this
-root.Questions = class Questions
+root.Questions = class Questions extends root.ExperimentData
   constructor: (@_list = []) ->
-    @_init()
+    super
 
   _init: =>
+    super
     @_simpleQuestionDialog = new root.SimpleQuestionDialog('getSimpleQuestionDialog/')
     @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/')
     @_sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/')
@@ -18,23 +19,16 @@ root.Questions = class Questions
         name: 'sortowanie'
         dialog: @_sortQuestionDialog
 
-  setElements: (elements) =>
-    @_list = elements
-    @
-
-  listFormat: =>
-    data = {}
-    data[key] = @_parseForList key for key in Object.keys(@_list)
-    data
-
-  _parseForList: (id) =>
-    name: @_list[id].name
-    typeName: @_questionType[@_list[id].type].name
-    id: @_list[id].questionId
-    isNew: @_list[id].isNew
-    type: @_list[id].type
+  _elementListFormat: (id) =>
+    name: @_elements[id].name
+    typeName: @_questionType[@_elements[id].type].name
+    id: @_elements[id].questionId
+    isNew: @_elements[id].isNew
+    type: @_elements[id].type
 
   showDialog: (id, readonly = false) =>
-    dialog = @_questionType[@_list[id].type].dialog
+    dialog = @_questionType[@_elements[id].type].dialog
     dialog.readonly = readonly is true
-    @_questionType[@_list[id].type].dialog.bindData(@_list[id]).show()
+    @_questionType[@_elements[id].type].dialog.bindData(@_elements[id]).show()
+
+  getRealId: (index) => "#{@_list[index].type}$#{@_list[index].questionId}"

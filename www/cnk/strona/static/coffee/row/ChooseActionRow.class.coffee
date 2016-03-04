@@ -2,18 +2,9 @@ root = exports ? this
 root.ChooseActionRow = class ChooseActionRow extends root.View
   constructor: ->
     super()
-    @_rowData = root.HTML.chooseActionRow
+    @_baseElement = jQuery(root.HTML.chooseActionRow)[0]
 
-  generateRow: (id, element) =>
-    listElement = jQuery(@_rowData)
-    instance = this
-    jQuery("td:eq(0) > div", listElement).html(element.text)
-    jQuery("td:eq(0)", listElement)
-      .click( do (id) =>
-        ->
-          pos = jQuery(this).parent().index()
-          instance.fireEvents("rowEvent", "nameClicked", id, pos)
-      )
-    rowData = {}
-    rowData[id] = element
-    jQuery(listElement).data("rowData", jQuery.extend({}, rowData))
+  generateRow: (element) =>
+    listElement = @_baseElement.cloneNode(true)
+    listElement.querySelector("div").innerHTML = element.text
+    listElement

@@ -2,24 +2,9 @@ root = exports ? this
 root.ExperimentActionRow = class ExperimentActionRow extends root.View
   constructor: ->
     super()
-    @_rowData = root.HTML.experimentActionRow
+    @_baseElement = jQuery(root.HTML.experimentActionRow)[0]
 
-  generateRow: (id, element) =>
-    listElement = jQuery(@_rowData)
-    instance = this
-    jQuery("td:eq(0) > div", listElement).html(element.text)
-    jQuery("td:eq(0)", listElement)
-      .click( do (id) ->
-        ->
-          pos = jQuery(this).parent().index()
-          instance.fireEvents("rowEvent", "nameClicked", id, pos)
-      )
-    jQuery("td:eq(1)", listElement)
-      .click( do (id) ->
-        ->
-          pos = jQuery(this).parent().index()
-          instance.fireEvents("rowEvent", "removeFromExperiment", id, pos)
-      )
-    rowData = {}
-    rowData[id] = element
-    jQuery(listElement).data("rowData", jQuery.extend({}, rowData))
+  generateRow: (element) =>
+    listElement = @_baseElement.cloneNode(true)
+    listElement.querySelector("div").innerHTML = element.text
+    listElement

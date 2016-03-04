@@ -15,70 +15,126 @@ class Handlers
     @_questions = new root.Questions(initQuestionsList)
     @_actions = new root.Actions(initActionsList)
 
-    @_questionsList = new root.QuestionsList(".chooseList .middle", new root.ChooseQuestionRow())
-    @_actionsList = new root.ActionsList(".chooseList .middle", new root.ChooseActionRow())
-    @_questionsBeforeList = new root.QuestionsList(".questionsBefore .middle", new root.ExperimentQuestionRow())
-    @_questionsAfterList = new root.QuestionsList(".questionsAfter .middle", new root.ExperimentQuestionRow())
-    @_experimentActionsList = new root.ActionsList(".experimentActions .middle", new root.ExperimentActionRow())
-    @_breakActionsList = new root.ActionsList(".breakActions .middle", new root.ExperimentActionRow())
+    @_chooseQuestionRow = new root.ChooseQuestionRow()
+    @_chooseActionRow = new root.ChooseActionRow()
+    @_experimentQuestionRow = new root.ExperimentQuestionRow()
+    @_experimentActionRow = new root.ExperimentActionRow()
+
     @_setHandlers()
 
   _setHandlers: =>
+    @_setLists()
     @_setActionButtonClickHandler()
     @_setQuestionButtonClickHandler()
-    @_setListsHandlers()
     @_setSaveExperimentHandler()
+    @_setDefaultState()
 
-  _setListsHandlers: =>
-    #default state
-    @_setListsElementAddedHandler()
-    @_setListsInitHandler()
-    @_setNameClickedHandler()
-    @_setRemoveFromExperimentHandler()
+  _setLists: =>
+    @_questionsBeforeList = new root.QuestionsList('.questionsBefore .middle')
+    @_questionsAfterList = new root.QuestionsList('.questionsAfter .middle')
+    @_experimentActionsList = new root.ActionsList('.experimentActions .middle')
+    @_breakActionsList = new root.ActionsList('.breakActions .middle')
+    questionsDOM =  @_prepareQuestionsList()
+    @_questionsList = new root.QuestionsList(".chooseList .middle", questionsDOM)
+    actionsDOM = @_prepareActionsList()
+    @_actionsList = new root.ActionsList(".chooseList .middle", actionsDOM)
     return
 
-  _setListsInitHandler: =>
+  _prepareQuestionsList: =>
+    # tl;dr:
+    # get all questions as DOM elements
+    # attach listeners:
+    # 1) first column click: show corresponding dialog
+    # 2) last column click: show popover -> call _setAddToExperimentHandler
+    questionsDOM = @_questions.getAllElementsAsDOM(@_chooseQuestionRow)
+    questionsRows = questionsDOM.querySelectorAll("tr")
+    [].forEach.call(questionsRows, (element) =>
+      elementId = element.data
+      element.querySelector("td:first-child")
+        .addEventListener("click", =>
+          @_questions.showDialog(elementId, true)
+        )
+      # contextList has entries corresponding to each popover button
+      contextList = [
+        @_questionsBeforeList,
+        @_questionsAfterList
+      ]
+      @_setAddToExperimentHandler(element, elementId, contextList, @_questions, @_experimentQuestionRow)
+    )
+    questionsDOM
+
+  _prepareActionsList: =>
+    # tl;dr look at _createQuestionsList, it's similiar
+    actionsDOM = @_actions.getAllElementsAsDOM(@_chooseActionRow)
+    actionsRows = actionsDOM.querySelectorAll("tr")
+    [].forEach.call(actionsRows, (element) =>
+      elementId = element.data
+      element.querySelector("div")
+        .addEventListener("click", =>
+          @_actions.showDialog(elementId, true)
+        )
+      contextList = [
+        @_experimentActionsList,
+        @_breakActionsList
+      ]
+      @_setAddToExperimentHandler(element, elementId, contextList, @_actions, @_experimentActionRow)
+    )
+    actionsDOM
+
+  _setAddToExperimentHandler: (obj, id, contextList, dataList, newElementRowFactory) =>
+    # Attach listeners when popover is shown :
+    # 1 and 2)
+    #    Every button has corresponsing list on contextList
+    #    Clicking on some button creates new element based on
+    #    id, dataList and newElementRowFactory
+    #    And attaches some listeners to it:
+    #    1) first column click: show corresponsing dialog
+    #    2) last column click: remove element from list
     instance = this
-    @_questionsList.addElements(@_questions.listFormat())
-    jQuery(@_DOM.questionButton).click()
-    @_actionsList.addElements(@_actions.listFormat())
+    dataContentButtons = null
+    jQuery("td:last-child", obj).click((e) ->
+      if not jQuery(e.target).is("button")
+        jQuery("i", this).focus()
+    )
+    jQuery("td:last-child > i", obj)
+      .popover()
+      .on('shown.bs.popover', ->
+        jQuery(".popover-content button").each((index) ->
+          if contextList[index].isElementOnList(id)
+            jQuery(this).addClass("disabled")
+          else
+            jQuery(this).mousedown( ->
+              newElement = dataList.getElementAsDOM(id, newElementRowFactory)
+              jQuery("i", newElement).parent().click( ->
+                jQuery(this).parents("tr").remove()
+              )
+              jQuery("td:first-child", newElement).click( ->
+                dataList.showDialog(id, true)
+              )
+              contextList[index].addElement(newElement)
+            )
+        )
+      )
+      .each((index) ->
+        jQuery(this).attr(tabindex: index)
+        # add bootstrap class to every popover button
+        dataContent = jQuery(this).attr("data-content")
+        dataContentButtons = jQuery(dataContent).each( ->
+          jQuery(this).addClass("btn btn-default btn-xs")
+        )
+      )
+      .attr("data-content", "#{dataContentButtons[0].outerHTML}#{dataContentButtons[1].outerHTML}")
+    return
+
+  _setDefaultState: =>
+    jQuery(@_DOM.chooseListTitle).text("Pytania")
+    @_questionsList.show()
+    jQuery(@_DOM.questionButton).addClass("active")
+    jQuery(@_DOM.addElementToList).click( => @_addNewQuestion())
     @_questionsBeforeList.show()
     @_questionsAfterList.show()
     @_experimentActionsList.show()
     @_breakActionsList.show()
-    return
-
-  _setNameClickedHandler: =>
-    @_questionsList.on("nameClicked", (id) => @_questions.showDialog(id, true))
-    @_actionsList.on("nameClicked", (id) => @_actions.showDialog(id, true))
-    @_questionsBeforeList.on("nameClicked", (id) => @_questions.showDialog(id, true))
-    @_questionsAfterList.on("nameClicked", (id) => @_questions.showDialog(id, true))
-    @_experimentActionsList.on("nameClicked", (id) => @_actions.showDialog(id, true))
-    @_breakActionsList.on("nameClicked", (id) => @_actions.showDialog(id, true))
-    return
-
-  _setRemoveFromExperimentHandler: =>
-    @_questionsBeforeList.on("removeFromExperiment", (id, pos) => @_questionsBeforeList.removeElement(pos))
-    @_questionsAfterList.on("removeFromExperiment", (id, pos) => @_questionsAfterList.removeElement(pos))
-    @_experimentActionsList.on("removeFromExperiment", (id, pos) => @_experimentActionsList.removeElement(pos))
-    @_breakActionsList.on("removeFromExperiment", (id, pos) => @_breakActionsList.removeElement(pos))
-    return
-
-  _setListsElementAddedHandler: =>
-    @_questionsList.on("elementAdded", (obj) =>
-      contextList = [
-        @_questionsBeforeList
-        @_questionsAfterList
-      ]
-      @_setAddToExperimentHandler(obj, contextList)
-    )
-    @_actionsList.on("elementAdded", (obj) =>
-      contextList = [
-        @_experimentActionsList
-        @_breakActionsList
-      ]
-      @_setAddToExperimentHandler(obj, contextList)
-    )
     return
 
   _setQuestionButtonClickHandler: =>
@@ -89,6 +145,7 @@ class Handlers
       jQuery(this).addClass("active")
       jQuery(instance._DOM.actionButton).removeClass("active")
       jQuery(instance._DOM.chooseListTitle).text("Pytania")
+      instance._actionsList.hide()
       instance._questionsList.show()
       jQuery(instance._DOM.addElementToList).off("click").click( =>
         instance._addNewQuestion()
@@ -104,6 +161,7 @@ class Handlers
       jQuery(this).addClass("active")
       jQuery(instance._DOM.questionButton).removeClass("active")
       jQuery(instance._DOM.chooseListTitle).text("Akcje")
+      instance._questionsList.hide()
       instance._actionsList.show()
       actionSave = instance._newEntryRequest("/createAction/", instance._createNewAction)
       actionDialog = new root.ActionDialog("getActionDialog/", actionSave)
@@ -128,15 +186,14 @@ class Handlers
         jQuery("#experiment").scrollTop(0)
         return
       # otherwise collect data and try to save them
-      questionsBefore = @_questionsBeforeList.getAllElementsId()
-      questionsAfter = @_questionsAfterList.getAllElementsId()
-      experimentActions = @_experimentActionsList.getAllElementsId()
-      breakActions = @_breakActionsList.getAllElementsId()
+      # TODO collect data
       dataToSend = {
+        ###
         questionsBefore: questionsBefore
         questionsAfter: questionsAfter
         experimentActions: experimentActions
         breakActions: breakActions
+        ###
       }
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -150,35 +207,6 @@ class Handlers
         success: (data) -> @_displayError(data.message) unless data.success
       )
     )
-
-  _setAddToExperimentHandler: (obj, contextList) ->
-    dataContentButtons = null
-    jQuery(@_DOM.attachToExperimentContainer, obj).click((e) ->
-      if not jQuery(e.target).is("button")
-        jQuery("i", this).focus()
-    )
-    jQuery(@_DOM.attachToExperimentContainerSign, obj)
-      .popover()
-      .on('shown.bs.popover', ->
-        jQuery(".popover-content button").each((index) ->
-          rowData = jQuery(this).parents("tr").data("rowData")
-          elementId = Object.keys(rowData)[0]
-          if contextList[index].isElementOnList(elementId)
-            jQuery(this).addClass("disabled")
-          else
-            jQuery(this).mousedown( -> contextList[index].addElements(rowData).showLast())
-        )
-      )
-      .each((index) ->
-        jQuery(this).attr(tabindex: index)
-        # add bootstrap class to every popover button
-        dataContent = jQuery(this).attr("data-content")
-        dataContentButtons = jQuery(dataContent).each( ->
-          jQuery(this).addClass("btn btn-default btn-xs")
-        )
-      )
-      .attr("data-content", "#{dataContentButtons[0].outerHTML}#{dataContentButtons[1].outerHTML}")
-    return
 
   _addNewQuestion: =>
     jQuery.ajaxSetup(
@@ -206,7 +234,6 @@ class Handlers
     )
     return
 
-  # handlers for dialog to select question type
   _setChooseQuestionTypeHandlers: (dialog) =>
     # Long names are long. Are you gazing into the abyss? Because it's gazing back at us.
     simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
@@ -241,8 +268,8 @@ class Handlers
       @_displayError(data.message)
       return
     @_questions.setElements(data.questionsList)
-    toAdd = @_questions.listFormat(data.questionsList)
-    @_questionsList.replaceElements(toAdd).show()
+    toAdd = @_prepareQuestionsList()
+    @_questionsList.replaceElements(toAdd)
     return
 
   _createNewAction: (data) =>
@@ -250,8 +277,8 @@ class Handlers
       @_displayError(data.message)
       return
     @_actions.setElements(data.actionsList)
-    toAdd = @_actions.listFormat(data.actionsList)
-    @_actionsList.replaceElements(toAdd).show()
+    toAdd = @_prepareActionsList()
+    @_actionsList.replaceElements(toAdd)
     return
 
   _displayError: (message) =>
