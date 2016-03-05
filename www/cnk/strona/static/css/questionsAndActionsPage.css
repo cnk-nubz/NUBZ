@@ -23,63 +23,56 @@
   padding: 10px 150px 10px 50px;
 }
 
-#questionList div.myList,
-#actionList div.myList {
-  position: absolute;
-  top: 68px;
-  bottom: 5px;
+#questionList td:last-child {
+  width: 120px;
+}
 
-  background: #eee;
+#questionList td:last-child:hover {
+  cursor: default;
+  background: #fff;
+}
+
+#questionList tr.newListEntry td:last-child:hover {
+  background: #ADDFFF;
+}
+
+#questionList .middle,
+#actionList .middle {
+  position: absolute;
+  top: 56px;
+  bottom: 5px;
+  background: #fff;
   overflow-y: scroll;
 }
 
-#questionList div.myList {
+#questionList .middle {
   right: 50px;
   left: 150px;
 }
 
-#actionList div.myList {
+#actionList .middle {
   right: 150px;
   left: 50px;
 }
 
-table.myTable {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 20px 10px;
-  table-layout: fixed;
+.middle .questionsActionsTable > tbody > tr > td:first-child {
+  text-align: left;
 }
 
-table.myTable > tbody > tr {
-  height: 42px;
-  background: #fff;
-}
-
-table.myTable > tbody > tr > td {
-  border: 1px solid #ddd;
-  padding-left: 8px;
-  padding-right: 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-table.myTable > tbody > tr > td:hover {
-  background: #ddd;
-  border: 1px solid #ccc;
-}
-
-table.myTable > tbody > tr > td > div {
-  white-space: nowrap;
-  overflow-x: hidden;
-}
-
-div.panel-heading {
+.myHeader {
   position: relative;
-  background: #eee;
-  border-radius: 4px 4px 0px 0px;
+  height: 46px;
+  line-height: 46px;
   border: 1px solid #ddd;
   font-size: 22px;
-  font-family: OpenSans-Semibold;
+  font-weight: 600;
+  background: #eee;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
 }
 
 .addElement {
@@ -88,7 +81,7 @@ div.panel-heading {
   right: 0px;
   bottom: 0px;
   font-size: 14px;
-  line-height: 51px;
+  line-height: 46px;
   width: 42px;
   border-left: 1px solid #ddd;
   cursor: pointer;

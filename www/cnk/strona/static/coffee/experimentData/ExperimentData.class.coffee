@@ -25,9 +25,10 @@ root.ExperimentData = class ExperimentData
         @_newElements[viewId] = true
         instance = this
         jQuery(row).addClass('newListEntry')
-          .one('click', ->
-            jQuery(this).removeClass('newListEntry')
-            instance._newElements[viewId] = false
+          .one('click', do (viewId) ->
+            ->
+              jQuery(this).removeClass('newListEntry')
+              instance._newElements[viewId] = false
           )
       fragment.appendChild(row)
     fragment
