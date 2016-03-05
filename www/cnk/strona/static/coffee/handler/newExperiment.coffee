@@ -49,17 +49,17 @@ class Handlers
     questionsDOM = @_questions.getAllElementsAsDOM(@_chooseQuestionRow)
     questionsRows = questionsDOM.querySelectorAll("tr")
     [].forEach.call(questionsRows, (element) =>
-      elementId = element.data
+      viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", =>
-          @_questions.showDialog(elementId, true)
+          @_questions.showDialog(viewId, true)
         )
       # contextList has entries corresponding to each popover button
       contextList = [
         @_questionsBeforeList,
         @_questionsAfterList
       ]
-      @_setAddToExperimentHandler(element, elementId, contextList, @_questions, @_experimentQuestionRow)
+      @_setAddToExperimentHandler(element, viewId, contextList, @_questions, @_experimentQuestionRow)
     )
     questionsDOM
 
@@ -68,16 +68,16 @@ class Handlers
     actionsDOM = @_actions.getAllElementsAsDOM(@_chooseActionRow)
     actionsRows = actionsDOM.querySelectorAll("tr")
     [].forEach.call(actionsRows, (element) =>
-      elementId = element.data
+      viewId = element.data
       element.querySelector("div")
         .addEventListener("click", =>
-          @_actions.showDialog(elementId, true)
+          @_actions.showDialog(viewId, true)
         )
       contextList = [
         @_experimentActionsList,
         @_breakActionsList
       ]
-      @_setAddToExperimentHandler(element, elementId, contextList, @_actions, @_experimentActionRow)
+      @_setAddToExperimentHandler(element, viewId, contextList, @_actions, @_experimentActionRow)
     )
     actionsDOM
 
@@ -107,6 +107,7 @@ class Handlers
               newElement = dataList.getElementAsDOM(id, newElementRowFactory)
               jQuery("i", newElement).parent().click( ->
                 jQuery(this).parents("tr").remove()
+                contextList[index].removeElement(id)
               )
               jQuery("td:first-child", newElement).click( ->
                 dataList.showDialog(id, true)
@@ -141,13 +142,14 @@ class Handlers
     instance = this
     jQuery(@_DOM.questionButton).click( ->
       jQuery(this).blur()
-      return if jQuery(this).hasClass("active")
+      if jQuery(this).hasClass("active")
+        return
       jQuery(this).addClass("active")
       jQuery(instance._DOM.actionButton).removeClass("active")
       jQuery(instance._DOM.chooseListTitle).text("Pytania")
       instance._actionsList.hide()
       instance._questionsList.show()
-      jQuery(instance._DOM.addElementToList).off("click").click( =>
+      jQuery(instance._DOM.addElementToList).off("click").click( ->
         instance._addNewQuestion()
       )
     )
@@ -157,7 +159,8 @@ class Handlers
     instance = this
     jQuery(@_DOM.actionButton).click( ->
       jQuery(this).blur()
-      return if jQuery(this).hasClass("active")
+      if jQuery(this).hasClass("active")
+        return
       jQuery(this).addClass("active")
       jQuery(instance._DOM.questionButton).removeClass("active")
       jQuery(instance._DOM.chooseListTitle).text("Akcje")
@@ -165,10 +168,19 @@ class Handlers
       instance._actionsList.show()
       actionSave = instance._newEntryRequest("/createAction/", instance._createNewAction)
       actionDialog = new root.ActionDialog("getActionDialog/", actionSave)
-      jQuery(instance._DOM.addElementToList).off("click").click( =>
+      jQuery(instance._DOM.addElementToList).off("click").click( ->
         actionDialog.show()
       )
     )
+    return
+
+  _createNewAction: (data) =>
+    if not data.success
+      @_displayError(data.message)
+      return
+    @_actions.setElements(data.actionsList)
+    toAdd = @_prepareActionsList()
+    @_actionsList.replaceElements(toAdd)
     return
 
   _setSaveExperimentHandler: =>
@@ -185,28 +197,32 @@ class Handlers
         )
         jQuery("#experiment").scrollTop(0)
         return
-      # otherwise collect data and try to save them
-      # TODO collect data
-      dataToSend = {
-        ###
-        questionsBefore: questionsBefore
-        questionsAfter: questionsAfter
-        experimentActions: experimentActions
-        breakActions: breakActions
-        ###
-      }
-      jQuery.ajaxSetup(
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      )
-      jQuery.ajax(
-        type: 'POST'
-        dataType: 'json'
-        context: this
-        data: (jsonData: JSON.stringify(dataToSend))
-        url: '/createExperiment/'
-        success: (data) -> @_displayError(data.message) unless data.success
-      )
+      @_saveExperimentRequest()
     )
+
+  _saveExperimentRequest: =>
+    dataToSend = {
+      ###
+      questionsBefore: questionsBefore
+      questionsAfter: questionsAfter
+      experimentActions: experimentActions
+      breakActions: breakActions
+      ###
+    }
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      context: this
+      data: (jsonData: JSON.stringify(dataToSend))
+      url: '/createExperiment/'
+      success: (data) ->
+        if not data.success
+          @_displayError(data.message)
+    )
+    return
 
   _addNewQuestion: =>
     jQuery.ajaxSetup(
@@ -270,15 +286,6 @@ class Handlers
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)
-    return
-
-  _createNewAction: (data) =>
-    if not data.success
-      @_displayError(data.message)
-      return
-    @_actions.setElements(data.actionsList)
-    toAdd = @_prepareActionsList()
-    @_actionsList.replaceElements(toAdd)
     return
 
   _displayError: (message) =>

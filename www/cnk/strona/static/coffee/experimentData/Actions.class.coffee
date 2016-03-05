@@ -1,19 +1,19 @@
 root = exports ? this
 root.Actions = class Actions extends root.ExperimentData
-  constructor: (@_list = []) ->
-    super
+  constructor: (_list = []) ->
+    super _list
 
   _init: =>
     super
     @_actionDialog = new root.ActionDialog('getActionDialog/')
 
-  _elementListFormat: (id) =>
-    text: @_elements[id].text
-    id: @_elements[id].actionId
-    isNew: @_elements[id].isNew
+  _elementListFormat: (viewId) =>
+    text: @_elementsDict[viewId].text
+    id: @_elementsDict[viewId].actionId
+    isNew: @_elementsDict[viewId].isNew
 
-  showDialog: (id, readonly = false) =>
+  showDialog: (viewId, readonly = false) =>
     @_actionDialog.readonly = readonly
-    @_actionDialog.bindData(@_elements[id]).show()
+    @_actionDialog.bindData(@_elementsDict[viewId]).show()
 
-  getRealId: (index) => @_list[index].actionId
+  _getViewId: (index) => @_orderedList[index].actionId

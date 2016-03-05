@@ -1,7 +1,7 @@
 root = exports ? this
 root.Questions = class Questions extends root.ExperimentData
-  constructor: (@_list = []) ->
-    super
+  constructor: (_list = []) ->
+    super _list
 
   _init: =>
     super
@@ -19,16 +19,16 @@ root.Questions = class Questions extends root.ExperimentData
         name: 'sortowanie'
         dialog: @_sortQuestionDialog
 
-  _elementListFormat: (id) =>
-    name: @_elements[id].name
-    typeName: @_questionType[@_elements[id].type].name
-    id: @_elements[id].questionId
-    isNew: @_elements[id].isNew
-    type: @_elements[id].type
+  _elementListFormat: (viewId) =>
+    name: @_elementsDict[viewId].name
+    typeName: @_questionType[@_elementsDict[viewId].type].name
+    id: @_elementsDict[viewId].questionId
+    isNew: @_elementsDict[viewId].isNew
+    type: @_elementsDict[viewId].type
 
-  showDialog: (id, readonly = false) =>
-    dialog = @_questionType[@_elements[id].type].dialog
-    dialog.readonly = readonly is true
-    @_questionType[@_elements[id].type].dialog.bindData(@_elements[id]).show()
+  showDialog: (viewId, readonly = false) =>
+    dialog = @_questionType[@_elementsDict[viewId].type].dialog
+    dialog.readonly = readonly
+    @_questionType[@_elementsDict[viewId].type].dialog.bindData(@_elementsDict[viewId]).show()
 
-  getRealId: (index) => "#{@_list[index].type}$#{@_list[index].questionId}"
+  _getViewId: (index) => "#{@_orderedList[index].type}$#{@_orderedList[index].questionId}"

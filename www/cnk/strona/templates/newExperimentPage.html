@@ -5,9 +5,9 @@
 {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
   {% compress js %}
-  <script src="{% static "coffee/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/handlers/newExperiment.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/plugin/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/handler/newExperiment.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   <script src="{% static "include/js/bootstrap.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
@@ -50,16 +50,16 @@
   <script src="{% static "coffee/list/ListView.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/row/ChooseQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ChooseQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/row/ChooseActionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ChooseActionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/row/ExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/row/ExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/list/QuestionsList.class.coffee" %}" type="text/coffeescript"></script>
@@ -83,8 +83,6 @@
       root.questionsList = {{questionsList|jsvar}}
       root.actionsList = {{actionsList|jsvar}}
       root.inputRegex = new RegExp("{{inputRegex}}")
-      root.questionsListHTML = '{{chooseQuestionRow}}'
-      root.actionsListHTML = '{{actionsListHTML}}'
       root.HTML =
         chooseQuestionRow: '{{chooseQuestionRow}}'
         experimentQuestionRow: '{{experimentQuestionRow}}'

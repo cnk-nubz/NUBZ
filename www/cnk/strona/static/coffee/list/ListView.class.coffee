@@ -3,10 +3,9 @@ root.ListView = class ListView extends root.View
   constructor: (@_containerId, DOMElements = document.createDocumentFragment()) ->
     # DOMElements are initially in detached state
     # need to implement in subclasses:
-    # generateId(element)
+    # generateId(id)
     super()
     @_elementsOnList = {}
-    @_newElementsId = {}
     @_listElementsDOM = @_wrapElements(DOMElements)
 
   addElement: (element) =>
@@ -31,11 +30,17 @@ root.ListView = class ListView extends root.View
 
   show: =>
     document.querySelector(@_containerId).appendChild(@_listElementsDOM)
+    [].forEach.call(@_listElementsDOM.querySelectorAll("tr"), (element) ->
+      jQuery("td:first-child > div", element).shortenText()
+    )
     @
 
   hide: =>
     document.querySelector(@_containerId).removeChild(@_listElementsDOM)
     @
 
-  isElementOnList: (id) =>
-    @_elementsOnList[id] is true
+  removeElement: (viewId) =>
+    @_elementsOnList[viewId] = false
+
+  isElementOnList: (viewId) =>
+    @_elementsOnList[viewId] is true
