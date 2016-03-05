@@ -335,10 +335,10 @@ def newExperimentPage(request):
             'questionsList': _getAllQuestions(),
             'actionsList': _getAllActions(),
             'inputRegex': get_const("DEFAULT_CONSTANTS")['utils']['regex']['input'],
-            'chooseQuestionRow': render_to_string('row/chooseQuestionRow.html'),
-            'chooseActionRow': render_to_string('row/chooseActionRow.html'),
-            'experimentActionRow': render_to_string('row/experimentActionRow.html'),
-            'experimentQuestionRow': render_to_string('row/experimentQuestionRow.html'),
+            'chooseQuestionRow': render_to_string('list/row/chooseQuestionRow.html'),
+            'chooseActionRow': render_to_string('list/row/chooseActionRow.html'),
+            'experimentActionRow': render_to_string('list/row/experimentActionRow.html'),
+            'experimentQuestionRow': render_to_string('list/row/experimentQuestionRow.html'),
             'tableList': render_to_string('list/dataList.html')
         }
     except Exception as ex:

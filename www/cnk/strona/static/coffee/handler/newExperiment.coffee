@@ -30,14 +30,14 @@ class Handlers
     @_setDefaultState()
 
   _setLists: =>
-    @_questionsBeforeList = new root.QuestionsList('.questionsBefore .middle')
-    @_questionsAfterList = new root.QuestionsList('.questionsAfter .middle')
-    @_experimentActionsList = new root.ActionsList('.experimentActions .middle')
-    @_breakActionsList = new root.ActionsList('.breakActions .middle')
+    @_questionsBeforeList = new root.QuestionsList('.questionsBefore .middle', 'questionsActionsTable')
+    @_questionsAfterList = new root.QuestionsList('.questionsAfter .middle', 'questionsActionsTable')
+    @_experimentActionsList = new root.ActionsList('.experimentActions .middle', 'questionsActionsTable')
+    @_breakActionsList = new root.ActionsList('.breakActions .middle', 'questionsActionsTable')
     questionsDOM =  @_prepareQuestionsList()
-    @_questionsList = new root.QuestionsList(".chooseList .middle", questionsDOM)
+    @_questionsList = new root.QuestionsList(".chooseList .middle", 'questionsActionsTable', questionsDOM)
     actionsDOM = @_prepareActionsList()
-    @_actionsList = new root.ActionsList(".chooseList .middle", actionsDOM)
+    @_actionsList = new root.ActionsList(".chooseList .middle", 'questionsActionsTable', actionsDOM)
     return
 
   _prepareQuestionsList: =>
@@ -106,8 +106,7 @@ class Handlers
             jQuery(this).mousedown( ->
               newElement = dataList.getElementAsDOM(id, newElementRowFactory)
               jQuery("i", newElement).parent().click( ->
-                jQuery(this).parents("tr").remove()
-                contextList[index].removeElement(id)
+                contextList[index].removeElement(this)
               )
               jQuery("td:first-child", newElement).click( ->
                 dataList.showDialog(id, true)

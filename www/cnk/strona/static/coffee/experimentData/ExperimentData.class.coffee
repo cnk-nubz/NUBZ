@@ -3,11 +3,9 @@ root.ExperimentData = class ExperimentData
   # functions to implement by subclasses:
   # _getViewId(index)
   # _elementListFormat(id)
-  constructor: (@_orderedList) ->
-    @_init()
+  constructor: (_list) ->
+    @setElements(_list)
     @_newElements = {}
-
-  _init: => @_processElements()
 
   setElements: (elements) =>
     @_orderedList = elements

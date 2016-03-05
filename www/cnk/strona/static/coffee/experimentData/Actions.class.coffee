@@ -2,9 +2,6 @@ root = exports ? this
 root.Actions = class Actions extends root.ExperimentData
   constructor: (_list = []) ->
     super _list
-
-  _init: =>
-    super
     @_actionDialog = new root.ActionDialog('getActionDialog/')
 
   _elementListFormat: (viewId) =>

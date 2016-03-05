@@ -1,6 +1,6 @@
 root = exports ? this
 root.ListView = class ListView extends root.View
-  constructor: (@_containerId, DOMElements = document.createDocumentFragment()) ->
+  constructor: (@_containerId, @_listType, DOMElements = document.createDocumentFragment()) ->
     # DOMElements are initially in detached state
     # need to implement in subclasses:
     # generateId(id)
@@ -39,7 +39,10 @@ root.ListView = class ListView extends root.View
     document.querySelector(@_containerId).removeChild(@_listElementsDOM)
     @
 
-  removeElement: (viewId) =>
+  removeElement: (DOMElement) =>
+    TRElement = jQuery(DOMElement).parents("tr")
+    viewId = TRElement[0].data
+    TRElement.remove()
     @_elementsOnList[viewId] = false
 
   isElementOnList: (viewId) =>

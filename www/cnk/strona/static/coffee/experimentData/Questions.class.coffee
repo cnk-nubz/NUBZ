@@ -2,9 +2,6 @@ root = exports ? this
 root.Questions = class Questions extends root.ExperimentData
   constructor: (_list = []) ->
     super _list
-
-  _init: =>
-    super
     @_simpleQuestionDialog = new root.SimpleQuestionDialog('getSimpleQuestionDialog/')
     @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/')
     @_sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/')
