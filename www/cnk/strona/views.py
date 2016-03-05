@@ -42,6 +42,7 @@ class ActiveLink(Enum):
     JUST_MAP = '0'
     EDIT_MAP = '1'
     NEW_EXPERIMENT = '2'
+    QUESTIONS_ACTIONS_PAGE = '3'
 
 def _pingServer():
     result = thriftCommunicator.ping(1, 'x')
@@ -353,6 +354,26 @@ def newExperimentPage(request):
 def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
+
+def questionsAndActionsPage(request):
+    try:
+        result = {
+            'success': True,
+            'activeLink': ActiveLink.QUESTIONS_ACTIONS_PAGE.value,
+            'questionsList': _getAllQuestions(),
+            'actionsList': _getAllActions(),
+            'showQuestionRow': render_to_string('list/row/showQuestionRow.html'),
+            'showActionRow': render_to_string('list/row/showActionRow.html'),
+            'tableList': render_to_string('list/dataList.html')
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'activeLink': ActiveLink.QUESTIONS_ACTIONS_PAGE.value,
+            'message': str(ex)
+        }
+    template = loader.get_template('questionsAndActionsPage.html')
+    return HttpResponse(template.render(RequestContext(request, result)))
 
 def createSimpleQuestion(request):
     data = json.loads(request.POST.get("jsonData"))

@@ -7,10 +7,11 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
     url(r'nowe-badanie/$', views.newExperimentPage, name='newExperimentPage'),
-    # file uploads
-    url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
-    # actions
-    url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
+    url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
+
+	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
+
+	url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
     # get all the html you need
     url(r'getExhibitPanel/$', views.getExhibitPanel, name='getExhibitPanel'),
