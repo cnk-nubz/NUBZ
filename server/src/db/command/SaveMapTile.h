@@ -1,24 +1,24 @@
 #ifndef DB_CMD__SAVE_MAP_TILE__H
 #define DB_CMD__SAVE_MAP_TILE__H
 
-#include "db/DatabaseSession.h"
-#include "db/struct/MapTile.h"
+#include <db/DatabaseSession.h>
+#include <db/struct/MapTile.h>
 
 namespace db {
-    namespace cmd {
-        class SaveMapTile {
-        public:
-            SaveMapTile(const MapTile &MapTile);
-            ~SaveMapTile() = default;
+namespace cmd {
 
-            void operator()(DatabaseSession &session);
+class SaveMapTile {
+public:
+    SaveMapTile(const MapTile &MapTile);
 
-        private:
-            const MapTile mapTile;
+    void operator()(DatabaseSession &session);
 
-            std::string createInsert() const;
-        };
-    }
+private:
+    const MapTile mapTile;
+
+    std::string createInsert() const;
+};
+}
 }
 
 #endif

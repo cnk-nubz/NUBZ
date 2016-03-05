@@ -3,28 +3,28 @@
 
 #include <boost/optional.hpp>
 
-#include "db/DatabaseSession.h"
-#include "db/struct/Action.h"
+#include <db/struct/Action.h>
+#include <db/DatabaseSession.h>
 
 namespace db {
-    namespace cmd {
-        class GetActions {
-        public:
-            GetActions() = default;
-            ~GetActions() = default;
-            
-            void operator()(DatabaseSession &session);
-            const std::vector<Action> &getResult() const;
-            
-            boost::optional<bool> inExperimentCondition;
-            boost::optional<bool> duringBreakCondition;
-            
-        private:
-            std::vector<db::Action> result;
-            
-            std::string createQuery() const;
-        };
-    }
+namespace cmd {
+
+class GetActions {
+public:
+    GetActions() = default;
+    GetActions(std::int32_t actionId);
+
+    std::vector<Action> operator()(DatabaseSession &session);
+    const std::vector<Action> &getResult() const;
+
+    boost::optional<std::int32_t> actionId;
+
+private:
+    std::vector<db::Action> result;
+
+    std::string createQuery() const;
+};
+}
 }
 
 #endif

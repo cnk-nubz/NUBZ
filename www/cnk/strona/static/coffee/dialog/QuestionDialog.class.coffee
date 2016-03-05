@@ -1,24 +1,32 @@
 root = exports ? this
 root.QuestionDialog = class QuestionDialog
-  constructor: (@_url, @_button, @_saveHandler = (->)) ->
-    instance = this
-    jQuery(@_button).on "click", =>
-      jQuery.ajaxSetup(
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      )
-      jQuery.ajax(
-        type: 'POST'
-        url: @_url
-        success: (data) =>
-          instance._data = data.data
-          BootstrapDialog.show(
-            message: data.html
-            title: data.data.utils.text.title
-            onshown: @_dialogCreated
-            closable: false
-            buttons: [@_closeButton(), @_saveButton()]
-          )
-      )
+  readonly: false
+  constructor: (@_url, @_saveHandler = (->)) ->
+    @_getDialogMessage()
+
+  _getDialogMessage: =>
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      url: @_url
+      context: this
+      success: (data) ->
+        @_data = data.data
+        @_dialog = new BootstrapDialog(
+          message: data.html
+          title: data.data.utils.text.title
+          onshown: @_dialogCreated
+          closable: false
+          buttons: [@_closeButton(), @_saveButton()]
+        )
+    )
+
+  bindData: (@_dialogInfo) => @
+
+  show: =>
+    @_dialog.open()
 
   _dialogCreated: =>
     instance = this
@@ -50,7 +58,7 @@ root.QuestionDialog = class QuestionDialog
     label: @_data.utils.text.saveButton
     action: (dialog) =>
       if @_validateForm()
-        @_saveHandler()
+        @_saveHandler(@extractData())
         dialog.close()
 
   _validateForm: =>

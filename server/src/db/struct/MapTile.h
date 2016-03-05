@@ -5,13 +5,13 @@
 #include <string>
 
 namespace db {
-    struct MapTile {
-        std::int32_t floor;
-        std::int32_t zoomLevel;
-        std::int32_t row;
-        std::int32_t col;
-        std::string filename;
-    };
+struct MapTile {
+    std::int32_t floor;
+    std::int32_t zoomLevel;
+    std::int32_t row;
+    std::int32_t col;
+    std::string filename;
+};
 }
 
 #endif

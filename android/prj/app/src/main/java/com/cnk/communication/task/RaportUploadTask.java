@@ -2,12 +2,12 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.RawReport;
-import com.cnk.communication.RawReportEvent;
-import com.cnk.communication.Server;
+import com.cnk.communication.thrift.RawReport;
+import com.cnk.communication.thrift.RawReportEvent;
+import com.cnk.communication.thrift.Server;
 import com.cnk.data.DataHandler;
-import com.cnk.data.Raport;
-import com.cnk.data.RaportEvent;
+import com.cnk.data.raport.Raport;
+import com.cnk.data.raport.RaportEvent;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;

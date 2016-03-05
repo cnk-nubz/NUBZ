@@ -9,26 +9,30 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light"
-        android:largeHeap="true">
-        <activity android:name=".StartScreen" >
+        android:theme="@style/Theme.AppCompat.Light">
+        <activity android:name=".activities.StartScreen" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".ui.MapActivity"
-            android:screenOrientation="landscape">
+        <activity
+            android:name=".activities.MapActivity"
+            android:screenOrientation="landscape" >
         </activity>
-
-        <activity android:name=".ui.exhibitwindow.ExhibitDialog"
-            android:theme="@style/Theme.AppCompat.Light.Dialog"
-            android:screenOrientation="landscape">
+        <activity
+            android:name=".activities.ExhibitDialog"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.AppCompat.Light.Dialog" >
         </activity>
-
+        <activity
+            android:name=".activities.SurveyActivity"
+            android:screenOrientation="landscape"
+            android:windowSoftInputMode="adjustResize" >
+        </activity>
     </application>
 
 </manifest>

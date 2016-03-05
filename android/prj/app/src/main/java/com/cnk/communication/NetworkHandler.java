@@ -2,7 +2,6 @@ package com.cnk.communication;
 
 import android.util.Log;
 
-import com.cnk.utilities.Consts;
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;
@@ -11,6 +10,7 @@ import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
 import com.cnk.notificators.Notificator;
+import com.cnk.utilities.Consts;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -21,6 +21,7 @@ public class NetworkHandler implements Observer {
 
     private static final String LOG_TAG = "NetworkHandler";
     private static final long SECONDS_DELAY = 30;
+    private static NetworkHandler instance;
 
     private long bgDelaySeconds;
     private BlockingQueue<Task> tasks;
@@ -54,7 +55,14 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    public NetworkHandler() {
+    public static NetworkHandler getInstance() {
+        if (instance == null) {
+            instance = new NetworkHandler();
+        }
+        return instance;
+    }
+
+    private NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
         exhibitsDownload = new Notificator(this);
