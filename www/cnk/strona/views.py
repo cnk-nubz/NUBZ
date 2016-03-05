@@ -7,20 +7,17 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
-from django.conf import settings
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.safestring import mark_safe
+from django.conf import settings
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from .models import MapUploader
 from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
+thriftCommunicator = ThriftCommunicator()
 def get_const(name):
     return getattr(settings, name, None)
-
-def _pingServer():
-	tc = ThriftCommunicator()
-	result = tc.ping(1, 'x')
-	return result == 1
 
 defaultImage = {
     'tileWidth': 2200,
@@ -29,16 +26,29 @@ defaultImage = {
     'scaledHeight': 1700
 }
 
+class uploadError(Enum):
+	SUCCESS = 1
+	NOT_AN_IMAGE = 2
+	SERVER_PROBLEM = 3
+	WRONG_REQUEST_METHOD = 4
+	INVALID_DATA = 5
+
+class QuestionType(Enum):
+    SIMPLE = 0
+    MULTIPLE = 1
+    SORT = 2
+
+class ActiveLink(Enum):
+    JUST_MAP = '0'
+    EDIT_MAP = '1'
+    NEW_EXPERIMENT = '2'
+
+def _pingServer():
+    result = thriftCommunicator.ping(1, 'x')
+    return result == 1
+
 def _getMapImageInfo():
-	tc = ThriftCommunicator()
-	floorTiles = [
-		tc.getMapImageTiles(0),
-		tc.getMapImageTiles(1)
-	]
-
-	if not floorTiles:
-		return None
-
+	floorTiles = thriftCommunicator.getMapImageTiles()
 	floorTilesInfo = {}
 
 	for i in xrange(0, 2):
@@ -65,13 +75,9 @@ def _getMapImageInfo():
 	return floorTilesInfo
 
 def _getExhibits():
-	tc = ThriftCommunicator()
-	result = tc.getExhibits()
-	if not result:
-		print >>sys.stderr, "kurde xxxxxxxxxxxxxxxxx2"
-		return None
+	result = thriftCommunicator.getExhibits()
 
-	exhibitDict = {}
+	exhibitsDict = {}
 	for k in result.exhibits:
 		e = result.exhibits[k]
 		frame = None
@@ -83,21 +89,22 @@ def _getExhibits():
 				'height': e.mapFrame.frame.size.height,
 				'mapLevel': e.mapFrame.floor
 			}
-		exhibitDict[k] = {
+		exhibitsDict[k] = {
 			'name': e.name,
 			'id': k,
 			'frame': frame
 		}
-	return exhibitDict
+	return exhibitsDict
 
+@ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
-	if not _pingServer():
-		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
+	try:
+		_pingServer()
+		floorTilesInfo = _getMapImageInfo()
+		exhibits = _getExhibits()
+	except Exception as ex:
+		return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
-	floorTilesInfo = _getMapImageInfo()
-	exhibits = _getExhibits()
-	if floorTilesInfo is None or exhibits is None:
-		return HttpResponse('<h1>Nie mozna pobrac informacji o eksponatach, sprawdz czy baza danych jest wlaczona</h1>')
 	template = loader.get_template(file)
 
 	if len(floorTilesInfo[0]) == 1: #just default image
@@ -120,19 +127,13 @@ def getMapPage(request, file, activeLink):
 	})
 	return HttpResponse(template.render(context))
 
+@ensure_csrf_cookie
 def index(request):
-	return getMapPage(request, 'map/justMap.html', "0")
+	return getMapPage(request, 'map/justMap.html', ActiveLink.JUST_MAP.value)
 
 @ensure_csrf_cookie
 def editMapPage(request):
-    return getMapPage(request, 'map/editMap.html', "1")
-
-class uploadError(Enum):
-	SUCCESS = 1
-	NOT_AN_IMAGE = 2
-	SERVER_PROBLEM = 3
-	WRONG_REQUEST_METHOD = 4
-	INVALID_DATA = 5
+    return getMapPage(request, 'map/editMap.html', ActiveLink.EDIT_MAP.value)
 
 def uploadImage(request):
 	if request.method != 'POST':
@@ -152,12 +153,12 @@ def uploadImage(request):
 	m.save()
 	floor = form.cleaned_data['floor']
 	#send information about update
-	tc = ThriftCommunicator()
 	filename = m.image.name
 	#extract filename
-	setResult = tc.setMapImage(floor, os.path.basename(filename))
-	floorTilesInfo = _getMapImageInfo()
-	if not setResult or not floorTilesInfo:
+	try:
+		setResult = thriftCommunicator.setMapImage(floor, os.path.basename(filename))
+		floorTilesInfo = _getMapImageInfo()
+	except Exception as ex:
 		data = {
 			"err": uploadError.SERVER_PROBLEM.value,
 		}
@@ -186,10 +187,13 @@ def updateExhibitPosition(request):
 		return JsonResponse(data)
 	jsonData = request.POST.get("jsonData")
 	frame = json.loads(jsonData)
-	tc = ThriftCommunicator()
-	setPosition = tc.setExhibitFrame(frame)
-	if not setPosition:
+
+	try:
+		thriftCommunicator.setExhibitFrame(frame)
+	except Exception as ex:
+		data['message'] = str(ex)
 		return JsonResponse(data)
+
 	data = {
 		"success": True,
 		"id": int(frame['id']),
@@ -208,9 +212,11 @@ def createNewExhibit(request):
 		return JsonResponse(data)
 	jsonData = request.POST.get("jsonData")
 	exhibitRequest = json.loads(jsonData)
-	tc = ThriftCommunicator()
-	newExhibit = tc.createNewExhibit(exhibitRequest)
-	if not newExhibit:
+
+	try:
+		newExhibit = thriftCommunicator.createNewExhibit(exhibitRequest)
+	except Exception as ex:
+		data['message'] = str(ex)
 		return JsonResponse(data)
 
 	if newExhibit.mapFrame:
@@ -232,26 +238,22 @@ def createNewExhibit(request):
 	}
 	return JsonResponse(data)
 
-def surveys(request):
-	template = loader.get_template('surveys.html')
-	return HttpResponse(template.render(RequestContext(request, {'activeLink' : "2"})))
-
-def getDialog(request, dialog):
+def getDialog(request, dialogName):
 	contextDict = {
-		'data': dialog['data']
+		'data': get_const(dialogName)['data']
 	}
 	html = render_to_string('dialog/dialog.html', contextDict)
 	retDict = {
-		'data': dialog,
+		'data': get_const(dialogName),
 		'html': html.replace("\n", "")
 	}
 	return JsonResponse(retDict)
 
 def getSimpleQuestionDialog(request):
-	return getDialog(request, get_const("SIMPLE_QUESTION_DIALOG"))
+    return getDialog(request, "SIMPLE_QUESTION_DIALOG")
 
 def getMultipleChoiceQuestionDialog(request):
-    return getDialog(request, get_const("MULTIPLE_CHOICE_QUESTION_DIALOG"))
+    return getDialog(request, "MULTIPLE_CHOICE_QUESTION_DIALOG")
 
 def getExhibitPanel(request):
     html = render_to_string('exhibitPanel/exhibitPanel.html')
@@ -262,20 +264,162 @@ def getExhibitListElement(request):
     return HttpResponse(html)
 
 def getSortQuestionDialog(request):
-    return getDialog(request, get_const("SORT_QUESTION_DIALOG"))
+    return getDialog(request, "SORT_QUESTION_DIALOG")
 
-def getNewActionDialog(request):
-    return getDialog(request, get_const("NEW_ACTION_DIALOG"))
+def getActionDialog(request):
+    return getDialog(request, "NEW_ACTION_DIALOG")
 
 def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
 
-def getQuestionsList(request):
-    html = render_to_string('questionsList/questionsList.html')
-    return HttpResponse(html)
+def _getAllQuestions(newId = None, newType = None):
+    allQuestions = thriftCommunicator.getAllQuestions()
+    idxSimple = 0
+    idxMultiple = 0
+    idxSort = 0
+    questionsList = []
+    # sort questions in order
+    for order in allQuestions.questionsOrder:
+        if order == QuestionType.SIMPLE.value:
+            q = allQuestions.simpleQuestions[idxSimple]
+            idxSimple += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': newId == q.questionId and order == newType,
+                'type': QuestionType.SIMPLE.value,
+                'name': q.name,
+                'question': q.question,
+                'answerType': q.answerType
+            })
+        elif order == QuestionType.MULTIPLE.value:
+            q = allQuestions.multipleChoiceQuestions[idxMultiple]
+            idxMultiple += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': newId == q.questionId and order == newType,
+                'type': QuestionType.MULTIPLE.value,
+                'name': q.name,
+                'question': q.question,
+                'singleAnswer': q.singleAnswer,
+                'options': [o.text for o in q.options]
+            })
+        else:
+            q = allQuestions.sortQuestions[idxSort]
+            idxSort += 1
+            questionsList.append({
+                'questionId': q.questionId,
+                'isNew': newId == q.questionId and order == newType,
+                'type': QuestionType.SORT.value,
+                'name': q.name,
+                'question': q.question,
+                'options': [o.text for o in q.options]
+            })
+    return questionsList
 
-def getQuestionsListElement(request):
-    html = render_to_string('questionsList/questionsListElement.html')
-    return HttpResponse(html)
+def _getAllActions(newId = None):
+    allActions = thriftCommunicator.getAllActions()
+    actionsList = [{
+        'actionId': a.actionId,
+        'isNew': newId == a.actionId,
+        'text': a.text
+    } for a in allActions]
+    return actionsList
+
+def newExperimentPage(request):
+    try:
+        result = {
+            'success': True,
+            'activeLink' : ActiveLink.NEW_EXPERIMENT.value,
+            'questionsList': _getAllQuestions(),
+            'actionsList': _getAllActions(),
+            'inputRegex': get_const("DEFAULT_CONSTANTS")['utils']['regex']['input'],
+            'chooseQuestionRow': render_to_string('list/row/chooseQuestionRow.html'),
+            'chooseActionRow': render_to_string('list/row/chooseActionRow.html'),
+            'experimentActionRow': render_to_string('list/row/experimentActionRow.html'),
+            'experimentQuestionRow': render_to_string('list/row/experimentQuestionRow.html'),
+            'tableList': render_to_string('list/dataList.html')
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'activeLink': ActiveLink.NEW_EXPERIMENT.value,
+            'message': str(ex)
+        }
+    template = loader.get_template('newExperimentPage.html')
+    return HttpResponse(template.render(RequestContext(request, result)))
+
+def getChooseQuestionTypeDialog(request):
+    html = render_to_string('dialog/chooseQuestionType.html')
+    return JsonResponse({'html': html.replace("\n", "")})
+
+def createSimpleQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    try:
+        simpleQuestion = thriftCommunicator.createSimpleQuestion(data)
+        result = {
+            'success': True,
+            'questionsList': _getAllQuestions(simpleQuestion.questionId, QuestionType.SIMPLE.value)
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def createMultipleChoiceQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    try:
+        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(data)
+        result = {
+            'success': True,
+            'questionsList': _getAllQuestions(multipleChoiceQuestion.questionId, QuestionType.MULTIPLE.value)
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def createSortQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    try:
+        sortQuestion = thriftCommunicator.createSortQuestion(data)
+        result = {
+            'success': True,
+            'questionsList': _getAllQuestions(sortQuestion.questionId, QuestionType.SORT.value)
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def createAction(request):
+    data = json.loads(request.POST.get("jsonData"))
+    try:
+    	action = thriftCommunicator.createAction(data)
+        result = {
+            'success': True,
+            'actionsList': _getAllActions(action.actionId)
+        }
+
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def createExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    # TODO
+    result = {
+        'success': False,
+        'message': "TODO"
+    }
+    return JsonResponse(result)

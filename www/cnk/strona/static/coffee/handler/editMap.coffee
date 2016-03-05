@@ -215,7 +215,7 @@ class Handlers
   ajaxNewExhibitSuccess: (data) =>
     if not data.success
       BootstrapDialog.alert(
-        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
+        message: "<p align=\"center\">#{data.message}</p>"
         type: BootstrapDialog.TYPE_DANGER
         title: 'Błąd serwera'
       )

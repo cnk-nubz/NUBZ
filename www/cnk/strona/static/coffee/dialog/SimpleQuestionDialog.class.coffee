@@ -2,11 +2,13 @@ root = exports ? this
 root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
+    if @_dialogInfo?
+      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
+      jQuery("#dialog .form-group:eq(1) input").val(@_dialogInfo.question)
+      jQuery("#dialog .form-group:eq(2) .btn-group label:eq(#{@_dialogInfo.answerType})").addClass("active")
     radioGroup = @_data.data[2][1].radioGroup
     instance = this
-    jQuery "#dialog label.#{radioGroup}"
-      .filter ":first"
-      .addClass "active"
+    jQuery("#dialog label.#{radioGroup}").filter(":first").addClass("active") unless @_dialogInfo?.type?
 
     jQuery "#dialog input[type=text]"
       .each( ->
@@ -24,4 +26,21 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
             obj.parent().next().html("")
         )
       )
+
+    if @readonly
+      jQuery("#dialog input").prop("readonly", true)
+      jQuery("#dialog .btn:not(.active)").remove()
+
     return
+
+  extractData: =>
+    answerAsNumberInput = jQuery("#dialog input[type=radio]").first()
+    answerAsNumberLabel = answerAsNumberInput.parent()
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    answerAsNumber = not answerAsNumberLabel.hasClass("active")
+    data =
+      name: name
+      question: question
+      answerAsNumber: answerAsNumber
+    data
