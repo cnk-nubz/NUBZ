@@ -7,18 +7,25 @@ public class Exhibit {
     private Integer width;
     private Integer height;
     private Integer floor;
+    private Integer colorR;
+    private Integer colorG;
+    private Integer colorB;
     private String name;
 
     public Exhibit() {
     }
 
-    public Exhibit(Integer id, Integer x, Integer y, Integer width, Integer height, Integer floor, String name) {
+    public Exhibit(Integer id, Integer x, Integer y, Integer width, Integer height, Integer floor,
+                   Integer colorR, Integer colorG, Integer colorB, String name) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.floor = floor;
+        this.colorR = colorR;
+        this.colorG = colorG;
+        this.colorB = colorB;
         this.name = name;
     }
 
@@ -31,6 +38,10 @@ public class Exhibit {
             this.width = exhibitFromServer.getFrame().getWidth();
             this.height = exhibitFromServer.getFrame().getHeight();
             this.floor = exhibitFromServer.getFrame().getMapLevel();
+            // TODO CHANGE:
+            this.colorR = 0x64;
+            this.colorG = 0xB3;
+            this.colorB = 0xE0;
         }
     }
 
@@ -80,6 +91,30 @@ public class Exhibit {
 
     public void setFloor(Integer floor) {
         this.floor = floor;
+    }
+
+    public Integer getColorR() {
+        return colorR;
+    }
+
+    public void setColorR(Integer colorR) {
+        this.colorR = colorR;
+    }
+
+    public Integer getColorG() {
+        return colorG;
+    }
+
+    public void setColorG(Integer colorG) {
+        this.colorG = colorG;
+    }
+
+    public Integer getColorB() {
+        return colorB;
+    }
+
+    public void setColorB(Integer colorB) {
+        this.colorB = colorB;
     }
 
     public String getName() {

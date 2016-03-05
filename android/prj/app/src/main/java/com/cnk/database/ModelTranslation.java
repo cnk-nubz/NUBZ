@@ -45,7 +45,8 @@ public class ModelTranslation {
         Exhibit e = null;
         if (er != null) {
             e = new Exhibit(er.getId(), er.getX(), er.getY(), er.getWidth(),
-                    er.getHeight(), er.getFloor(), er.getName());
+                    er.getHeight(), er.getFloor(), er.getColorR(), er.getColorG(),
+                    er.getColorB(), er.getName());
         }
 
         return e;
@@ -61,6 +62,9 @@ public class ModelTranslation {
         er.setWidth(e.getWidth());
         er.setHeight(e.getHeight());
         er.setFloor(e.getFloor());
+        er.setColorR(e.getColorR());
+        er.setColorG(e.getColorG());
+        er.setColorB(e.getColorB());
         er.setName(e.getName());
 
         return er;

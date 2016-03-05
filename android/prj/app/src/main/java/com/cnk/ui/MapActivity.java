@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
@@ -520,7 +521,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         RelativeLayout.LayoutParams tvLP;
         ExhibitSpot es;
         Integer posX, posY, width, height;
-        Drawable bcgDrawable;
+        GradientDrawable bcgDrawable;
 
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
@@ -542,9 +543,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             artv = new AutoResizeTextView(this);
             artv.setText(e.getName());
+            artv.setTextColor(ColorHelper.getRgbHexTextColorForBackground(e.getColorR(), e.getColorG(), e.getColorB()));
 
             //TODO - hardcoded background color and border color - to change later
-            bcgDrawable = getResources().getDrawable(R.drawable.exhibit_back);
+            bcgDrawable = new GradientDrawable();
+            bcgDrawable.setColor(ColorHelper.getArgbHexFromRGB(e.getColorR(), e.getColorG(), e.getColorB()));
+            bcgDrawable.setStroke(5, ColorHelper.getArgbBorderHexFromRGH(e.getColorR(), e.getColorG(), e.getColorB()));
+
             artv.setBackground(bcgDrawable);
 
             artv.setGravity(Gravity.CENTER);
@@ -557,7 +562,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
 
-            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
+            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv, bcgDrawable);
             es.setTag(this);
             es.set(new Rect(posX, posY, posX + width, posY + height));
             es.setHotSpotTapListener(exhibitsListener);
@@ -590,13 +595,15 @@ public class MapActivity extends AppCompatActivity implements Observer {
         private Integer listId;
         private String name;
         private AutoResizeTextView exhibitTextView;
+        private GradientDrawable bcgDrawable;
 
-        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
+        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView, GradientDrawable bcgDrawable) {
             super();
             this.listId = listId;
             this.exhibitId = exhibitId;
             this.name = name;
             this.exhibitTextView = exhibitTextView;
+            this.bcgDrawable = bcgDrawable;
         }
 
         public Integer getExhibitId() {
@@ -614,6 +621,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public Integer getListId() {
             return listId;
         }
+
+        public GradientDrawable getBcgDrawable() {
+            return bcgDrawable;
+        }
     }
 
     private class MapState {
@@ -627,7 +638,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         ArrayList<HotSpot> hotSpotsForFloor;
         RelativeLayout exhibitsOverlay;
 
-        AutoResizeTextView lastExhibitTextView;
+        ExhibitSpot lastExhibit;
     }
 
 
@@ -660,11 +671,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
         if (resultCode == RESULT_OK) {
             if (requestCode != BREAK_ID) {
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
-                if (mapState.lastExhibitTextView != null) {
-                    mapState.lastExhibitTextView
-                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                if (mapState.lastExhibit != null) {
+                    mapState.lastExhibit.getExhibitTextView()
+                            .setBackground(mapState.lastExhibit.getBcgDrawable());
                 }
-                mapState.lastExhibitTextView = es.getExhibitTextView();
+                mapState.lastExhibit = es;
                 es.getExhibitTextView()
                         .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
