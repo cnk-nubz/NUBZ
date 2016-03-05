@@ -9,10 +9,6 @@ root.ExperimentData = class ExperimentData
 
   setElements: (elements) =>
     @_orderedList = elements
-    @_processElements()
-    @
-
-  _processElements: =>
     @_elementsDict = {}
     for element, index in @_orderedList
       @_elementsDict[@_getViewId(index)] = element
