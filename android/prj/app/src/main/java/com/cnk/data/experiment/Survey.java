@@ -7,17 +7,6 @@ import com.cnk.data.experiment.questions.SortQuestion;
 import java.util.Queue;
 
 public class Survey {
-    public enum QuestionType {
-        SIMPLE,
-        MULTIPLE_CHOICE,
-        SORT;
-    }
-
-    public enum SurveyType {
-        BEFORE,
-        AFTER;
-    }
-
     private Queue<QuestionType> questionOrder;
     private Queue<SimpleQuestion> simpleQuestions;
     private Queue<MultipleChoiceQuestion> multipleChoiceQuestions;
@@ -52,5 +41,16 @@ public class Survey {
 
     public SortQuestion popNextSortQuestions() {
         return sortQuestions.remove();
+    }
+
+    public enum QuestionType {
+        SIMPLE,
+        MULTIPLE_CHOICE,
+        SORT;
+    }
+
+    public enum SurveyType {
+        BEFORE,
+        AFTER;
     }
 }

@@ -61,7 +61,6 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     }
 
 
-
     @Override
     public int getCount() {
         return options.size();

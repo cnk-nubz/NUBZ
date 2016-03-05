@@ -35,33 +35,6 @@ public class NetworkHandler implements Observer {
     private boolean downloadInBg;
     private boolean uploadInBg;
 
-    private class QueueThread implements Runnable {
-        private static final int TRIES = 3;
-        private BlockingQueue<Task> queue;
-        public QueueThread(BlockingQueue<Task> queue) {
-            this.queue = queue;
-        }
-        public void run() {
-            while(true) {
-                try {
-                    Log.i(LOG_TAG, "Starting another task");
-                    queue.take().run(TRIES);
-                    Log.i(LOG_TAG, "Task finished");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Log.i(LOG_TAG, "Thread woken");
-                }
-            }
-        }
-    }
-
-    public static NetworkHandler getInstance() {
-        if (instance == null) {
-            instance = new NetworkHandler();
-        }
-        return instance;
-    }
-
     private NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
@@ -77,6 +50,13 @@ public class NetworkHandler implements Observer {
         Thread bgQueuer = new Thread(new QueueThread(bgTasks));
         bgQueuer.start();
         onDemendQueuer.start();
+    }
+
+    public static NetworkHandler getInstance() {
+        if (instance == null) {
+            instance = new NetworkHandler();
+        }
+        return instance;
     }
 
     public synchronized void downloadExperimentData() {
@@ -133,12 +113,12 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    public void setSecondsDelay(long seconds) {
-        bgDelaySeconds = seconds;
-    }
-
     public long getSecondsDelay() {
         return bgDelaySeconds;
+    }
+
+    public void setSecondsDelay(long seconds) {
+        bgDelaySeconds = seconds;
     }
 
     private synchronized void addWaitTask() {
@@ -182,6 +162,28 @@ public class NetworkHandler implements Observer {
         } else if (o == experimentDataDownload) {
             Log.e(LOG_TAG, "Experiment data download task failed");
             downloadExperimentData();
+        }
+    }
+
+    private class QueueThread implements Runnable {
+        private static final int TRIES = 3;
+        private BlockingQueue<Task> queue;
+
+        public QueueThread(BlockingQueue<Task> queue) {
+            this.queue = queue;
+        }
+
+        public void run() {
+            while (true) {
+                try {
+                    Log.i(LOG_TAG, "Starting another task");
+                    queue.take().run(TRIES);
+                    Log.i(LOG_TAG, "Task finished");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.i(LOG_TAG, "Thread woken");
+                }
+            }
         }
     }
 

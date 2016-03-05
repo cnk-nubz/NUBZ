@@ -1,11 +1,6 @@
 package com.cnk.data.experiment.questions;
 
 public class SimpleQuestion {
-    public enum AnswerType {
-        TEXT,
-        NUMBER;
-    }
-
     private Integer id;
     private String question;
     private AnswerType answerType;
@@ -26,5 +21,10 @@ public class SimpleQuestion {
 
     public AnswerType getAnswerType() {
         return answerType;
+    }
+
+    public enum AnswerType {
+        TEXT,
+        NUMBER;
     }
 }

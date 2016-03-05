@@ -1,11 +1,13 @@
 package com.cnk.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,6 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Survey;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
@@ -27,8 +30,12 @@ import com.cnk.ui.questions.QuestionViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
-public class SurveyActivity extends AppCompatActivity {
+public class SurveyActivity extends AppCompatActivity implements Observer {
+
+    private static final String LOG_TAG = "SurveyActivity";
 
     private int allQuestionsCount;
     private int currentQuestionNo;
@@ -39,6 +46,8 @@ public class SurveyActivity extends AppCompatActivity {
     private SurveyAnswers answers;
     private MenuItem nextItem;
     private MenuItem prevItem;
+    private ProgressDialog spinner;
+    private Survey.SurveyType type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +56,19 @@ public class SurveyActivity extends AppCompatActivity {
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
         answers = new SurveyAnswers();
-        initViews();
-        setUpCounterLabel();
-        showView(0);
+        DataHandler.getInstance().addObserver(this);
+        type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
+        if (type == Survey.SurveyType.BEFORE) {
+            Log.i(LOG_TAG, "Survey before");
+            setSpinner();
+            NetworkHandler.getInstance().downloadExperimentData();
+        } else {
+            Log.i(LOG_TAG, "Survey after");
+            init();
+        }
+
     }
-    
+
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
         hideKeyboard();
@@ -87,6 +104,20 @@ public class SurveyActivity extends AppCompatActivity {
         return true;
     }
 
+    private void init() {
+        initViews();
+        setUpCounterLabel();
+        showView(0);
+    }
+
+    private void setSpinner() {
+        spinner = new ProgressDialog(this);
+        spinner.setTitle("Ładowanie");
+        spinner.setMessage("Oczekiwanie na pobranie danych");
+        spinner.setCancelable(false);
+        spinner.show();
+    }
+
     private void setUpCounterLabel() {
         counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
         updateCounterLabel();
@@ -94,7 +125,7 @@ public class SurveyActivity extends AppCompatActivity {
 
     private void updateCounterLabel() {
         counterLabel.setText(
-                        Integer.toString(currentQuestionNo + 1) +
+                Integer.toString(currentQuestionNo + 1) +
                         "/" +
                         Integer.toString(allQuestionsCount)
         );
@@ -109,8 +140,7 @@ public class SurveyActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        Survey.SurveyType surveyType = (Survey.SurveyType) getIntent().getSerializableExtra("type");
-        Survey currentSurvey = DataHandler.getInstance().getSurvey(surveyType);
+        Survey currentSurvey = DataHandler.getInstance().getSurvey(type);
         allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
         while (currentSurvey.getRemainingQuestionsCount() > 0) {
             Survey.QuestionType type = currentSurvey.popNextQuestionType();
@@ -125,8 +155,8 @@ public class SurveyActivity extends AppCompatActivity {
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
                     MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
-                                                                             this,
-                                                                             multipleChoiceAnswer)
+                                    this,
+                                    multipleChoiceAnswer)
                     );
                     break;
                 case SORT:
@@ -134,8 +164,8 @@ public class SurveyActivity extends AppCompatActivity {
                     answers.addSortQuestionAnswer(sortAnswer);
                     SortQuestion nextSortQuestion = currentSurvey.popNextSortQuestions();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextSortQuestion,
-                                                                             this,
-                                                                             sortAnswer)
+                                    this,
+                                    sortAnswer)
                     );
                     break;
             }
@@ -147,15 +177,40 @@ public class SurveyActivity extends AppCompatActivity {
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 
+    // Data updating:
+    @Override
+    public void update(Observable observable, Object o) {
+        DataHandler.Item notification = (DataHandler.Item) o;
+        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
+            DataHandler.getInstance().deleteObserver(this);
+            experimentDataDownloaded();
+        }
+    }
+
+    private void experimentDataDownloaded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
+        spinner.dismiss();
+    }
+
     private void showDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setMessage(R.string.confirmation);
         alert.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent(getApplicationContext(), (Class) getIntent().getSerializableExtra("nextActivity"));
-                finish();
-                startActivity(i);
+                Class next = (Class) getIntent().getSerializableExtra("nextActivity");
+                if (next == null) {
+                    finish();
+                } else {
+                    Intent i = new Intent(getApplicationContext(), next);
+                    finish();
+                    startActivity(i);
+                }
             }
         });
         alert.setNegativeButton("Nie", new DialogInterface.OnClickListener() {

@@ -3,16 +3,12 @@ package com.cnk.data;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
 import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
 import com.cnk.data.map.FloorInfo;
 import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapTiles;
@@ -34,42 +30,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Queue;
 
 public class DataHandler extends Observable {
-    public enum Item {
-        MAP_UPDATE_COMPLETED("Map update completed"),
-        EXPERIMENT_DATA("Experiment data"),
-        EXHIBITS("Exhibits"),
-        UNKNOWN("Unknown");
-
-        private String code;
-
-        private Item(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Item fromString(String code) {
-            if (code != null) {
-                for (Item i : Item.values()) {
-                    if (code.equals(i.code)) {
-                        return i;
-                    }
-                }
-            }
-            return Item.UNKNOWN;
-        }
-    }
-
     private static final String LOG_TAG = "DataHandler";
     private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
     private static final String RAPORT_DIRECTORY = "raports/";
@@ -78,15 +43,19 @@ public class DataHandler extends Observable {
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
     private static final Integer MAX_TRIES = 3;
-
     private static DataHandler instance;
-    private DatabaseHelper dbHelper;
-
-    private List<FloorInfo> floorInfos;
     Integer exhibitsVersion;
     Integer mapVersion;
+    private DatabaseHelper dbHelper;
+    private List<FloorInfo> floorInfos;
     private Raport currentRaport;
     private Experiment experiment;
+
+    private DataHandler() {
+        floorInfos = new ArrayList<>();
+        mapVersion = null;
+        exhibitsVersion = null;
+    }
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -97,12 +66,6 @@ public class DataHandler extends Observable {
 
     public void setDbHelper(DatabaseHelper dbHelper) {
         this.dbHelper = dbHelper;
-    }
-
-    private DataHandler() {
-        floorInfos = new ArrayList<>();
-        mapVersion = null;
-        exhibitsVersion = null;
     }
 
     public void loadDbData() {
@@ -139,46 +102,14 @@ public class DataHandler extends Observable {
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
-    public Survey getSurvey(Survey.SurveyType type) {
-        Queue<Survey.QuestionType> types = new LinkedList<>();
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.SIMPLE);
-        }
-
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.MULTIPLE_CHOICE);
-        }
-
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.SORT);
-        }
-
-        Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
-        Queue<MultipleChoiceQuestion> multipleChoiceQuestions = new LinkedList<>();
-        Queue<SortQuestion> sortQuestions = new LinkedList<>();
-        for (int i = 0; i < 3; i++) {
-            simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i),
-                    i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
-        }
-
-        List<MultipleChoiceQuestionOption> options = new ArrayList<>();
-        List<SortQuestionOption> sortOptions = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            options.add(new MultipleChoiceQuestionOption(i, "TEST" + Integer.toString(i)));
-            sortOptions.add(new SortQuestionOption(i, "TEST" + Integer.toString(i)));
-        }
-
-        for (int i = 0; i < 3; i++) {
-            multipleChoiceQuestions.add(new MultipleChoiceQuestion(i, "TEST" + Integer.toString(i), i % 2 == 0, options));
-            sortQuestions.add(new SortQuestion(i, "TEST" + Integer.toString(i), sortOptions));
-        }
-
-        return new Survey(types, simpleQuestions, multipleChoiceQuestions, sortQuestions);
+    public Survey getSurvey(@NonNull Survey.SurveyType type) {
+        return experiment.getSurvey(type);
     }
 
     public List<Action> getAllExhibitActions() {
         return experiment.getExhibitActions();
     }
+
     public List<Action> getAllBreakActions() {
         return experiment.getBreakActions();
     }
@@ -401,5 +332,34 @@ public class DataHandler extends Observable {
         FileHandler.getInstance().renameFile(tmpFile, realFile);
 
         return dir + realFile;
+    }
+
+    public enum Item {
+        MAP_UPDATE_COMPLETED("Map update completed"),
+        EXPERIMENT_DATA("Experiment data"),
+        EXHIBITS("Exhibits"),
+        UNKNOWN("Unknown");
+
+        private String code;
+
+        private Item(String code) {
+            this.code = code;
+        }
+
+        public static Item fromString(String code) {
+            if (code != null) {
+                for (Item i : Item.values()) {
+                    if (code.equals(i.code)) {
+                        return i;
+                    }
+                }
+            }
+            return Item.UNKNOWN;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
     }
 }

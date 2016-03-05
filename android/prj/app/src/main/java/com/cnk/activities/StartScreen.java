@@ -23,8 +23,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static final int SHOW_ALERT = 1;
 
     private static Handler uiHandler;
-    private ProgressDialog spinner;
     private static boolean dataLoaded;
+    private ProgressDialog spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,10 +116,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
     private static class UiHandler extends Handler {
         private StartScreen activity;
+
         public UiHandler(Looper looper, StartScreen activity) {
             super(looper);
             this.activity = activity;
         }
+
         @Override
         public void handleMessage(Message message) {
             if (message.what == SHOW_ALERT) {

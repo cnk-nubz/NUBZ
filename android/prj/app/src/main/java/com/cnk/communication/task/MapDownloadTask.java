@@ -69,7 +69,7 @@ public class MapDownloadTask extends ServerTask {
 
     private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {
         if (thriftResponse == null) {
-            return  null;
+            return null;
         }
         Size thriftSize = thriftResponse.getOriginalSize();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());

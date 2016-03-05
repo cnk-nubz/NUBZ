@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class MapTiles {
 
+    ArrayList<ArrayList<String>> tilesFiles;
     private Resolution scaledSize;
     private Resolution tileSize;
-    ArrayList<ArrayList<String>> tilesFiles;
 
     public MapTiles(Resolution scaledSize, Resolution tileSize, ArrayList<ArrayList<String>> tilesFiles) {
         this.scaledSize = scaledSize;

@@ -9,19 +9,19 @@ public class FloorDetailLevelsRealm extends RealmObject {
     private Integer floorNo;
     private Integer detailLevels;
 
-    public void setFloorNo(Integer floorNo) {
-        this.floorNo = floorNo;
-    }
-
-    public void setDetailLevels(Integer detailLevels) {
-        this.detailLevels = detailLevels;
-    }
-
     public Integer getFloorNo() {
         return floorNo;
     }
 
+    public void setFloorNo(Integer floorNo) {
+        this.floorNo = floorNo;
+    }
+
     public Integer getDetailLevels() {
         return detailLevels;
+    }
+
+    public void setDetailLevels(Integer detailLevels) {
+        this.detailLevels = detailLevels;
     }
 }
