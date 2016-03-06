@@ -1,6 +1,5 @@
 #include <repository/Counters.h>
-
-#include <db/command/GetMapImages.h>
+#include <repository/MapImages.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
@@ -14,7 +13,7 @@ namespace command {
 CreateExhibitCommand::CreateExhibitCommand(db::Database &db) : db(db) {
 }
 
-io::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
+io::output::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
     auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
@@ -30,7 +29,7 @@ io::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitReque
         exhibitsRepo.insert(&exhibit);
         return exhibit;
     });
-    return io::Exhibit{repoExhibit};
+    return io::output::Exhibit{repoExhibit};
 }
 
 void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
@@ -52,9 +51,7 @@ void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
     }
 
     if (input.floor) {
-        auto getMapImages = db::cmd::GetMapImages(input.floor.value());
-        getMapImages(session);
-        if (getMapImages.getResult().empty()) {
+        if (!repository::MapImages{session}.get(input.floor.value())) {
             throw io::InvalidInput("floor without image and therefore without frame");
         }
     }

@@ -8,8 +8,6 @@
 
 #include <communication/structs_types.h>
 
-#include <server/io/MultipleChoiceQuestion.h>
-
 namespace server {
 namespace io {
 namespace input {
@@ -20,8 +18,8 @@ struct CreateMultipleChoiceQuestionRequest {
 
     boost::optional<std::string> name;
     std::string question;
-    bool singleAnswer;
     std::vector<std::string> options;
+    bool singleAnswer;
 };
 }
 }

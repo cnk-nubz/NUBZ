@@ -7,10 +7,10 @@
 
 #include <communication/structs_types.h>
 
-#include <server/io/Action.h>
-#include <server/io/MultipleChoiceQuestion.h>
 #include <server/io/QuestionsList.h>
-#include <server/io/SimpleQuestion.h>
+#include <server/io/output/Action.h>
+#include <server/io/output/MultipleChoiceQuestion.h>
+#include <server/io/output/SimpleQuestion.h>
 
 namespace server {
 namespace io {

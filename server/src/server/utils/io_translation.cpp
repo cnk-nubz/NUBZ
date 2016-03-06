@@ -5,16 +5,6 @@
 namespace server {
 namespace utils {
 
-io::MapFrame toIO(const db::MapFrame &mapFrame) {
-    io::MapFrame res;
-    res.frame.x = mapFrame.x;
-    res.frame.y = mapFrame.y;
-    res.frame.size.width = mapFrame.width;
-    res.frame.size.height = mapFrame.height;
-    res.floor = mapFrame.floor;
-    return res;
-}
-
 db::RawReport toDB(const io::input::RawReport &report) {
     db::RawReport res;
     res.ID = report.ID;

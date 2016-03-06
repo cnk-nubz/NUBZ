@@ -15,9 +15,7 @@
 #include <utils/log.h>
 
 #include <server/CommandHandler.h>
-#include <server/command/GetMapImageTilesCommand.h>
-#include <server/command/GetNewMapImagesCommand.h>
-#include <server/utils/FileHelper.h>
+#include <server/utils/PathHelper.h>
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -26,18 +24,19 @@ void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
     srand((unsigned)time(NULL));
-    boost::optional<utils::Config> cfg = parseArguments(argc, argv);
-    if (!cfg) {
-        return 0;
+    if (auto cfg = parseArguments(argc, argv)) {
+        auto config = cfg.value();
+
+        server::utils::PathHelper::getInstance().setMapImgUrlPrefix(config.urlPrefixForMapImage);
+        server::utils::PathHelper::getInstance().setTileUrlPrefix(config.urlPrefixForMapImage);
+        server::utils::PathHelper::getInstance().setTmpDir(config.tmpFolderPath);
+        server::utils::PathHelper::getInstance().setPublicDir(config.publicFolderPath);
+        server::utils::PathHelper::getInstance().setMapTilesDir(config.mapTilesFolderPath);
+
+        db::Database db(
+            config.databaseUser, config.databaseName, config.databaseHost, config.databasePort);
+        runServer(config.serverPort, db);
     }
-
-    server::utils::FileHelper::configure(
-        cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
-    server::command::GetNewMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
-    server::command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
-
-    db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
-    runServer(cfg->serverPort, db);
 }
 
 boost::optional<utils::Config> parseArguments(int argc, char *argv[]) {
@@ -45,13 +44,13 @@ boost::optional<utils::Config> parseArguments(int argc, char *argv[]) {
     static const char *helpArg = "help";
     namespace po = boost::program_options;
 
-    std::string path;
-    po::options_description opts("Allowed options");
+    auto path = std::string{};
+    auto opts = po::options_description{"Allowed options"};
 
     opts.add_options()(helpArg, "produce help message");
     opts.add_options()(configFilePathArg, po::value<std::string>(&path), "set path to config file");
 
-    po::variables_map vm;
+    auto vm = po::variables_map{};
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
         po::notify(vm);

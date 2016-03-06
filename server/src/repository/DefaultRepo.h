@@ -16,7 +16,7 @@ struct _DefaultRepo {
 
     static std::vector<val_type> getAll(db::DatabaseSession &session) {
         auto sql = DBTable::select();
-        std::vector<val_type> result;
+        auto result = std::vector<val_type>{};
         utils::transform(session.getResults(sql), result, DBTable::RowFactory::fromDB);
         return result;
     }
@@ -38,7 +38,7 @@ struct DefaultRepo : _DefaultRepo<DBTable> {
     static void insertAll(db::DatabaseSession &session, const std::vector<val_type> &vals) {
         auto sql = DBTable::insert();
         for (const auto &v : vals) {
-            sql.insert(DBTable::RowFactory::toDB(v));
+            sql.values(DBTable::RowFactory::toDB(v));
         }
         session.execute(sql);
     }
@@ -80,7 +80,7 @@ struct DefaultRepoWithID : _DefaultRepo<DBTable> {
         }
 
         auto ids = session.getResults(sql);
-        std::vector<id_type> result;
+        auto result = std::vector<id_type>{};
         for (const auto insertedId : ids) {
             result.push_back(std::get<typename id_col_type::value_type>(insertedId).value);
         }

@@ -27,7 +27,7 @@ boost::optional<SimpleQuestions::Question> SimpleQuestions::get(std::int32_t ID)
 }
 
 std::vector<SimpleQuestions::Question> SimpleQuestions::getAll() {
-    std::vector<SimpleQuestions::Question> result;
+    auto result = std::vector<SimpleQuestions::Question>{};
     utils::transform(Impl::getAll(session), result, fromDB);
     return result;
 }
@@ -54,7 +54,7 @@ void SimpleQuestions::insert(SimpleQuestions::Question *question) {
 
 namespace {
 Table::Row toDB(const SimpleQuestions::Question &question) {
-    Table::Row res;
+    auto res = Table::Row{};
     res.ID = question.ID;
     res.name = question.name;
     res.question = question.question;
@@ -63,7 +63,7 @@ Table::Row toDB(const SimpleQuestions::Question &question) {
 }
 
 SimpleQuestions::Question fromDB(const Table::Row &question) {
-    SimpleQuestions::Question res;
+    auto res = SimpleQuestions::Question{};
     res.ID = question.ID;
     res.name = question.name;
     res.question = question.question;

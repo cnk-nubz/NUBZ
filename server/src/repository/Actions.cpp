@@ -27,7 +27,7 @@ boost::optional<Actions::Action> Actions::get(std::int32_t ID) {
 }
 
 std::vector<Actions::Action> Actions::getAll() {
-    std::vector<Actions::Action> result;
+    auto result = std::vector<Actions::Action>{};
     utils::transform(Impl::getAll(session), result, fromDB);
     return result;
 }
@@ -54,14 +54,14 @@ void Actions::insert(Actions::Action *action) {
 
 namespace {
 Table::Row toDB(const Actions::Action &action) {
-    Table::Row res;
+    auto res = Table::Row{};
     res.ID = action.ID;
     res.text = action.text;
     return res;
 }
 
 Actions::Action fromDB(const Table::Row &action) {
-    Actions::Action res;
+    auto res = Actions::Action{};
     res.ID = action.ID;
     res.text = action.text;
     return res;

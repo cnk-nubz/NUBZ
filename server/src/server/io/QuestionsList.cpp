@@ -31,12 +31,12 @@ communication::QuestionType::type QuestionsList::QuestionTypeToThrift(
 }
 
 communication::QuestionsList QuestionsList::toThrift() const {
-    communication::QuestionsList thrift;
-    ::utils::transform(questionsOrder, thrift.questionsOrder, QuestionTypeToThrift);
-    thrift.simpleQuestions = ioToThrift(simpleQuestions);
-    thrift.multipleChoiceQuestions = ioToThrift(multipleChoiceQuestions);
-    thrift.sortQuestions = ioToThrift(sortQuestions);
-    return thrift;
+    auto res = communication::QuestionsList{};
+    ::utils::transform(questionsOrder, res.questionsOrder, QuestionTypeToThrift);
+    res.simpleQuestions = ioToThrift(simpleQuestions);
+    res.multipleChoiceQuestions = ioToThrift(multipleChoiceQuestions);
+    res.sortQuestions = ioToThrift(sortQuestions);
+    return res;
 }
 }
 }

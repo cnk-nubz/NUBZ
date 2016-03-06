@@ -7,8 +7,6 @@ cur = con.cursor()
 
 ######### drop
 cur.execute('DROP TABLE IF EXISTS map_images')
-cur.execute('DROP TABLE IF EXISTS map_tiles')
-cur.execute('DROP TABLE IF EXISTS map_tiles_info')
 cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
 cur.execute('DROP TABLE IF EXISTS reports')
@@ -22,37 +20,15 @@ cur.execute('DROP TABLE IF EXISTS sort_question_options')
 cur.execute('DROP TABLE IF EXISTS sort_questions')
 
 ######### create
+
 cur.execute('''
 	CREATE TABLE map_images (
+		floor INT PRIMARY KEY,
 		filename VARCHAR NOT NULL,
 		width INT NOT NULL,
 		height INT NOT NULL,
-		floor INT NOT NULL UNIQUE,
-		version INT NOT NULL UNIQUE
-	)
-''')
-
-cur.execute('''
-	CREATE TABLE map_tiles (
-		floor INT NOT NULL,
-		zoom_level INT NOT NULL,
-		row INT NOT NULL,
-		col INT NOT NULL,
-		filename VARCHAR NOT NULL,
-		UNIQUE(floor, zoom_level, row, col)
-	)
-''')
-
-cur.execute('''
-	CREATE TABLE map_tiles_info (
-		floor INT NOT NULL,
-		zoom_level INT NOT NULL,
-		rows_count INT NOT NULL,
-		columns_count INT NOT NULL,
-		img_width INT NOT NULL,
-		img_height INT NOT NULL,
-		tile_size INT NOT NULL,
-		UNIQUE(floor, zoom_level)
+		version INT NOT NULL UNIQUE,
+		zoom_levels JSONB NOT NULL
 	)
 ''')
 
@@ -155,17 +131,11 @@ cur.execute('''
 ''')
 
 ######### sample data
-# map_images
-cur.execute('''
-	INSERT INTO map_images VALUES
-		('floorplan0.jpg', 2200, 1700, 0, 1),
-		('floorplan1.jpg', 2200, 1700, 1, 2)
-''')
 
 # counters
 cur.execute('''
 	INSERT INTO counters VALUES
-		('last_map_version', 2),
+		('last_map_version', 0),
 		('last_exhibit_version', 5),
 		('last_report_version', 3)
 ''')

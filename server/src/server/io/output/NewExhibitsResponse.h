@@ -6,7 +6,7 @@
 
 #include <communication/structs_types.h>
 
-#include <server/io/Exhibit.h>
+#include <server/io/output/Exhibit.h>
 
 namespace server {
 namespace io {

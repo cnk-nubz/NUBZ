@@ -3,8 +3,8 @@
 
 #include <db/Database.h>
 
-#include <server/io/Action.h>
 #include <server/io/input/CreateActionRequest.h>
+#include <server/io/output/Action.h>
 
 #include "commons.h"
 
@@ -16,13 +16,13 @@ public:
     CreateActionCommand(db::Database &db);
     SRV_CMD_CP_MV(CreateActionCommand);
 
-    io::Action operator()(const io::input::CreateActionRequest &input);
+    io::output::Action operator()(const io::input::CreateActionRequest &input);
 
 private:
-    db::Database &db;
-
     void validateInput(db::DatabaseSession &session,
                        const io::input::CreateActionRequest &input) const;
+
+    db::Database &db;
 };
 }
 }

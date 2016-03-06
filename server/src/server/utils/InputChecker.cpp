@@ -3,8 +3,7 @@
 #include <utils/fp_algorithm.h>
 
 #include <repository/Counters.h>
-
-#include <db/command/GetMapImages.h>
+#include <repository/MapImages.h>
 
 #include "InputChecker.h"
 
@@ -25,14 +24,11 @@ bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y
         return false;
     }
 
-    db::cmd::GetMapImages getMapImage(floor);
-    getMapImage(session);
-    if (getMapImage.getResult().empty()) {
+    if (auto mapImage = repository::MapImages{session}.get(floor)) {
+        return x + width <= mapImage.value().width && y + height <= mapImage.value().height;
+    } else {
         return false;
     }
-
-    db::MapImage mapImage = getMapImage.getResult().front();
-    return x + width <= mapImage.width && y + height <= mapImage.height;
 }
 
 bool InputChecker::checkText(const std::string &text) {

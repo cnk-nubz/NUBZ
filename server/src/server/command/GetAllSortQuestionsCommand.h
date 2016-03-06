@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/SortQuestion.h>
+#include <server/io/output/SortQuestion.h>
 
 #include "commons.h"
 
@@ -15,7 +15,7 @@ public:
     GetAllSortQuestionsCommand(db::Database &db);
     SRV_CMD_CP_MV(GetAllSortQuestionsCommand);
 
-    std::vector<io::SortQuestion> operator()();
+    std::vector<io::output::SortQuestion> operator()();
 
 private:
     db::Database &db;

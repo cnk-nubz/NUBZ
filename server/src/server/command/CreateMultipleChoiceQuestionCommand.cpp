@@ -13,7 +13,7 @@ CreateMultipleChoiceQuestionCommand::CreateMultipleChoiceQuestionCommand(db::Dat
     : db(db) {
 }
 
-io::MultipleChoiceQuestion CreateMultipleChoiceQuestionCommand::operator()(
+io::output::MultipleChoiceQuestion CreateMultipleChoiceQuestionCommand::operator()(
     const io::input::CreateMultipleChoiceQuestionRequest &input) {
     auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
@@ -37,13 +37,13 @@ io::MultipleChoiceQuestion CreateMultipleChoiceQuestionCommand::operator()(
         return question;
     });
 
-    return io::MultipleChoiceQuestion{dbQuestion};
+    return io::output::MultipleChoiceQuestion{dbQuestion};
 }
 
 void CreateMultipleChoiceQuestionCommand::validateInput(
     db::DatabaseSession &session,
     const io::input::CreateMultipleChoiceQuestionRequest &input) const {
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker{session};
     if (!checker.checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }

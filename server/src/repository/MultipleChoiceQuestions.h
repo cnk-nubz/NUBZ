@@ -34,8 +34,8 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
-    void insert(Question *MultipleChoiceQuestion);
-    void insert(std::vector<Question> *MultipleChoiceQuestion);
+    void insert(Question *multipleChoiceQuestion);
+    void insert(std::vector<Question> *multipleChoiceQuestion);
 
 private:
     std::vector<Question::Option> getOptions(std::int32_t questionID);

@@ -9,6 +9,7 @@
 
 namespace server {
 namespace io {
+
 struct MapFrame {
     using thrift_t = communication::MapFrame;
 

@@ -13,7 +13,7 @@ namespace command {
 GetAllExhibitsCommand::GetAllExhibitsCommand(db::Database &db) : db(db) {
 }
 
-std::vector<io::Exhibit> GetAllExhibitsCommand::operator()() {
+std::vector<io::output::Exhibit> GetAllExhibitsCommand::operator()() {
     auto repoExhibits = db.execute([](db::DatabaseSession &session) {
         auto repo = repository::Exhibits{session};
         return repo.getAll();
@@ -22,7 +22,7 @@ std::vector<io::Exhibit> GetAllExhibitsCommand::operator()() {
     std::sort(repoExhibits.begin(), repoExhibits.end(), [](const auto &lhs, const auto &rhs) {
         return lhs.name < rhs.name;
     });
-    return ::server::io::repoToIO<io::Exhibit>(repoExhibits);
+    return ::server::io::repoToIO<io::output::Exhibit>(repoExhibits);
 }
 }
 }

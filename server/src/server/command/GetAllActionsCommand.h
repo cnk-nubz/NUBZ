@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/Action.h>
+#include <server/io/output/Action.h>
 
 #include "commons.h"
 
@@ -15,7 +15,7 @@ public:
     GetAllActionsCommand(db::Database &db);
     SRV_CMD_CP_MV(GetAllActionsCommand);
 
-    std::vector<io::Action> operator()();
+    std::vector<io::output::Action> operator()();
 
 private:
     db::Database &db;

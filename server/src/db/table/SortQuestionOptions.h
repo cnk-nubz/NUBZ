@@ -13,6 +13,9 @@
 namespace db {
 namespace table {
 
+/*
+ * ColumnQuestionId references SortQuestions::ColumnId (on delete cascade)
+ */
 struct SortQuestionOptions {
     struct ValueId : detail::Value<std::int32_t> {
         using detail::Value<std::int32_t>::Value;

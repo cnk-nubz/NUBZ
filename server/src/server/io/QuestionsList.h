@@ -5,9 +5,9 @@
 
 #include <communication/structs_types.h>
 
-#include "MultipleChoiceQuestion.h"
-#include "SimpleQuestion.h"
-#include "SortQuestion.h"
+#include "output/MultipleChoiceQuestion.h"
+#include "output/SimpleQuestion.h"
+#include "output/SortQuestion.h"
 
 namespace server {
 namespace io {
@@ -27,9 +27,9 @@ struct QuestionsList {
     thrift_t toThrift() const;
 
     std::vector<QuestionType> questionsOrder;
-    std::vector<SimpleQuestion> simpleQuestions;
-    std::vector<MultipleChoiceQuestion> multipleChoiceQuestions;
-    std::vector<SortQuestion> sortQuestions;
+    std::vector<output::SimpleQuestion> simpleQuestions;
+    std::vector<output::MultipleChoiceQuestion> multipleChoiceQuestions;
+    std::vector<output::SortQuestion> sortQuestions;
 };
 }
 }

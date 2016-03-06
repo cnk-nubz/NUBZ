@@ -37,7 +37,7 @@ boost::optional<SortQuestions::Question> SortQuestions::get(std::int32_t ID) {
 }
 
 std::vector<SortQuestions::Question> SortQuestions::getAll() {
-    std::vector<SortQuestions::Question> result;
+    auto result = std::vector<SortQuestions::Question>{};
     utils::transform(MainImpl::getAll(session), result, fromDB);
     for (auto &q : result) {
         q.options = getOptions(q.ID);
@@ -46,12 +46,12 @@ std::vector<SortQuestions::Question> SortQuestions::getAll() {
 }
 
 std::vector<SortQuestions::Question::Option> SortQuestions::getOptions(std::int32_t questionID) {
-    std::vector<OptionsTable::Row> dbOptions;
+    auto dbOptions = std::vector<OptionsTable::Row>{};
     auto getOptionsSql = OptionsTable::select().where(OptionsTable::colQuestionId == questionID);
     ::utils::transform(
         session.getResults(getOptionsSql), dbOptions, OptionsTable::RowFactory::fromDB);
 
-    std::vector<Question::Option> result;
+    auto result = std::vector<Question::Option>{};
     ::utils::transform(dbOptions, result, optionFromDB);
     return result;
 }
@@ -86,14 +86,14 @@ void SortQuestions::insert(Question::Option *option, std::int32_t qID) {
 
 namespace {
 MainTable::Row toDB(const SortQuestions::Question &question) {
-    MainTable::Row res;
+    auto res = MainTable::Row{};
     res.name = question.name;
     res.question = question.question;
     return res;
 }
 
 SortQuestions::Question fromDB(const MainTable::Row &question) {
-    SortQuestions::Question res;
+    auto res = SortQuestions::Question{};
     res.ID = question.ID;
     res.name = question.name;
     res.question = question.question;

@@ -5,6 +5,7 @@ set(SOURCES
     SortQuestions.cpp
     Exhibits.cpp
     Counters.cpp
+    MapImages.cpp
 )
 
 add_library(repository ${SOURCES})

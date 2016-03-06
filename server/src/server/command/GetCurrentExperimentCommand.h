@@ -19,14 +19,14 @@ public:
     io::output::CurrentExperimentResponse operator()();
 
 private:
+    void fillExperimentData(const db::Experiment &experiment, db::DatabaseSession &session);
+    void fillSurvey(const db::Experiment::Survey &survey, io::QuestionsList &qList,
+                    db::DatabaseSession &session);
+
     db::Database &db;
 
     // temporary data, correct only inside operator()
     io::output::Experiment currentExperiment;
-
-    void fillExperimentData(const db::Experiment &experiment, db::DatabaseSession &session);
-    void fillSurvey(const db::Experiment::Survey &survey, io::QuestionsList &qList,
-                    db::DatabaseSession &session);
 };
 }
 }

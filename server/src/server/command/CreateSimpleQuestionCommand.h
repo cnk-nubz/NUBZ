@@ -3,8 +3,8 @@
 
 #include <db/Database.h>
 
-#include <server/io/SimpleQuestion.h>
 #include <server/io/input/CreateSimpleQuestionRequest.h>
+#include <server/io/output/SimpleQuestion.h>
 
 #include "commons.h"
 
@@ -16,13 +16,13 @@ public:
     CreateSimpleQuestionCommand(db::Database &db);
     SRV_CMD_CP_MV(CreateSimpleQuestionCommand);
 
-    io::SimpleQuestion operator()(const io::input::CreateSimpleQuestionRequest &input);
+    io::output::SimpleQuestion operator()(const io::input::CreateSimpleQuestionRequest &input);
 
 private:
-    db::Database &db;
-
     void validateInput(db::DatabaseSession &session,
                        const io::input::CreateSimpleQuestionRequest &input) const;
+
+    db::Database &db;
 };
 }
 }

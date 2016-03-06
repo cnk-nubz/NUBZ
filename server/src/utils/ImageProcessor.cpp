@@ -3,8 +3,8 @@
 
 namespace utils {
 
-ImageProcessor::ImageProcessor(const std::string &pathToOriginalImage)
-    : originalImgPath(pathToOriginalImage), tileSize(256) {
+ImageProcessor::ImageProcessor(const boost::filesystem::path &srcImagePath)
+    : srcImagePath(srcImagePath.string()), tileSize(256) {
     reset();
 }
 
@@ -17,7 +17,7 @@ std::size_t ImageProcessor::height() const {
 }
 
 void ImageProcessor::reset() {
-    img = Magick::Image(originalImgPath);
+    img = Magick::Image(srcImagePath);
 }
 
 void ImageProcessor::addFrameToBeDivisibleBy(std::size_t x) {

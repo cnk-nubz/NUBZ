@@ -21,13 +21,13 @@ public:
     void operator()(const io::input::RawReport &input);
 
 private:
-    db::Database &db;
-
     io::input::RawReport removeDuplicatedIds(io::input::RawReport input) const;
     void validateReport(db::DatabaseSession &session, const io::input::RawReport &input) const;
     void validateAnswers(const utils::ReportChecker &reportChecker,
                          const io::input::RawReport::SurveyAnswers &answers,
                          const db::Experiment::Survey &survey) const;
+
+    db::Database &db;
 };
 }
 }

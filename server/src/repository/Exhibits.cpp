@@ -36,11 +36,9 @@ std::vector<Exhibit> Exhibits::getAllNewerThan(std::int32_t version) {
     auto sql = Table::select().where(Table::colVersion > version);
     auto dbTuples = session.getResults(sql);
 
-    auto rows = std::vector<Table::Row>{};
-    utils::transform(dbTuples, rows, Table::RowFactory::fromDB);
-
-    auto result = std::vector<Exhibits::Exhibit>{};
-    utils::transform(rows, result, fromDB);
+    auto result = std::vector<Exhibit>{};
+    utils::transform(
+        dbTuples, result, [](auto &tuple) { return fromDB(Table::RowFactory::fromDB(tuple)); });
     return result;
 }
 

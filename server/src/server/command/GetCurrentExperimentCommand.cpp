@@ -65,11 +65,11 @@ void GetCurrentExperimentCommand::fillSurvey(const db::Experiment::Survey &surve
                 return io::QuestionsList::QuestionType::MultipleChoice;
         }
     };
-    auto getSimpleQ = [&](auto id) { return io::SimpleQuestion{simpleQRepo.get(id).value()}; };
-    auto getSortQ = [&](auto id) { return io::SortQuestion{sortQRepo.get(id).value()}; };
-    auto getMultiQ = [&](auto id) {
-        return io::MultipleChoiceQuestion{multiQRepo.get(id).value()};
-    };
+
+    using namespace io::output;
+    auto getSimpleQ = [&](auto id) { return SimpleQuestion{simpleQRepo.get(id).value()}; };
+    auto getSortQ = [&](auto id) { return SortQuestion{sortQRepo.get(id).value()}; };
+    auto getMultiQ = [&](auto id) { return MultipleChoiceQuestion{multiQRepo.get(id).value()}; };
 
     ::utils::transform(survey.order, qList.questionsOrder, getType);
     ::utils::transform(survey.simpleQuestions, qList.simpleQuestions, getSimpleQ);

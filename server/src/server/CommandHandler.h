@@ -25,9 +25,8 @@ public:
 
     virtual void getNewMapImages(communication::NewMapImagesResponse &response,
                                  const communication::NewMapImagesRequest &request) override;
-    virtual void getMapImageTiles(communication::MapImageTilesResponse &response,
-                                  const communication::MapImageTilesRequest &request) override;
-    virtual void setMapImage(const communication::SetMapImageRequest &request) override;
+    virtual void setMapImage(communication::MapImage &response,
+                             const communication::SetMapImageRequest &request) override;
 
     virtual void getNewExhibits(communication::NewExhibitsResponse &response,
                                 const communication::NewExhibitsRequest &request) override;
@@ -67,8 +66,6 @@ public:
 private:
     db::Database &db;
     apache::thrift::server::TServer *srv;
-
-    std::mutex setMapLock;
 
     template <class F>
     std::result_of_t<F()> withExceptionTranslation(F &&f);

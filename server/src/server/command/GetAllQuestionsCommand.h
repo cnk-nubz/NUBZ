@@ -21,11 +21,11 @@ public:
     io::QuestionsList operator()();
 
 private:
+    void generateOrder(io::QuestionsList &list) const;
+
     GetAllSimpleQuestionsCommand getSimple;
     GetAllMultipleChoiceQuestionsCommand getMultiple;
     GetAllSortQuestionsCommand getSortQ;
-
-    void generateOrder(io::QuestionsList &list) const;
 };
 }
 }

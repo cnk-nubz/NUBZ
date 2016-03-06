@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/Exhibit.h>
+#include <server/io/output/Exhibit.h>
 
 #include "commons.h"
 
@@ -15,7 +15,7 @@ public:
     GetAllExhibitsCommand(db::Database &db);
     SRV_CMD_CP_MV(GetAllExhibitsCommand);
 
-    std::vector<io::Exhibit> operator()();
+    std::vector<io::output::Exhibit> operator()();
 
 private:
     db::Database &db;

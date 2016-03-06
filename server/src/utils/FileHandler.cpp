@@ -14,13 +14,13 @@ FileHandler::FileHandler(FileHandler &&that) : released(that.released), path(tha
 
 FileHandler::~FileHandler() {
     if (!released) {
-        boost::system::error_code ec;
+        auto ec = boost::system::error_code{};
         boost::filesystem::remove_all(path, ec);
     }
 }
 
-const std::string &FileHandler::getPath() const noexcept {
-    return path.string();
+const boost::filesystem::path &FileHandler::getPath() const noexcept {
+    return path;
 }
 
 void FileHandler::release() noexcept {

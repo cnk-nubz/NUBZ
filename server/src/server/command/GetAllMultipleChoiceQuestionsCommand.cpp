@@ -11,14 +11,14 @@ GetAllMultipleChoiceQuestionsCommand::GetAllMultipleChoiceQuestionsCommand(db::D
     : db(db) {
 }
 
-std::vector<io::MultipleChoiceQuestion> GetAllMultipleChoiceQuestionsCommand::operator()() {
-    auto questions = std::vector<io::MultipleChoiceQuestion>{};
+std::vector<io::output::MultipleChoiceQuestion> GetAllMultipleChoiceQuestionsCommand::operator()() {
+    auto questions = std::vector<io::output::MultipleChoiceQuestion>{};
     auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::MultipleChoiceQuestions{session};
         return repo.getAll();
     });
 
-    auto result = ::server::io::repoToIO<io::MultipleChoiceQuestion>(repoQuestions);
+    auto result = io::repoToIO<io::output::MultipleChoiceQuestion>(repoQuestions);
     std::sort(result.begin(), result.end());
     return result;
 }

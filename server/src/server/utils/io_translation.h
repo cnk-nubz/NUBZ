@@ -3,17 +3,14 @@
 
 #include <vector>
 
-#include <db/struct/MapFrame.h>
 #include <db/struct/RawReport.h>
 
 #include <server/io/MapFrame.h>
-#include <server/io/MultipleChoiceQuestion.h>
 #include <server/io/input/RawReport.h>
+#include <server/io/output/MultipleChoiceQuestion.h>
 
 namespace server {
 namespace utils {
-
-io::MapFrame toIO(const db::MapFrame &mapFrame);
 
 db::RawReport toDB(const io::input::RawReport &report);
 db::RawReport::Event toDB(const io::input::RawReport::Event &event);

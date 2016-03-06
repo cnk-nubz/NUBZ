@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/SimpleQuestion.h>
+#include <server/io/output/SimpleQuestion.h>
 
 #include "commons.h"
 
@@ -15,7 +15,7 @@ public:
     GetAllSimpleQuestionsCommand(db::Database &db);
     SRV_CMD_CP_MV(GetAllSimpleQuestionsCommand);
 
-    std::vector<io::SimpleQuestion> operator()();
+    std::vector<io::output::SimpleQuestion> operator()();
 
 private:
     db::Database &db;

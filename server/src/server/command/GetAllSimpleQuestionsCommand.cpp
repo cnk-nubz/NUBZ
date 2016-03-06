@@ -12,13 +12,13 @@ namespace command {
 GetAllSimpleQuestionsCommand::GetAllSimpleQuestionsCommand(db::Database &db) : db(db) {
 }
 
-std::vector<io::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
+std::vector<io::output::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
     auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::SimpleQuestions{session};
         return repo.getAll();
     });
 
-    auto questions = ::server::io::repoToIO<io::SimpleQuestion>(repoQuestions);
+    auto questions = ::server::io::repoToIO<io::output::SimpleQuestion>(repoQuestions);
     std::sort(questions.begin(), questions.end());
     return questions;
 }

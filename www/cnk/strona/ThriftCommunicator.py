@@ -51,24 +51,6 @@ class ThriftCommunicator:
 			return None
 		return ret
 
-	def getMapImages(self):
-		msg = MapImagesRequest()
-		if not self.start_connection():
-			return None
-
-		try:
-			ret = self.client.getMapImages(msg)
-		except Exception as ex:
-			template = "An exception of type {0} occured. Arguments:\n{1!r}"
-			message = template.format(type(ex).__name__, ex.args)
-			print message
-			return None
-
-		if not self.end_connection():
-			return None
-
-		return ret
-
 	def setMapImage(self, floor, filename):
 		msg = SetMapImageRequest(floor, filename)
 		if not self.start_connection():
@@ -104,12 +86,12 @@ class ThriftCommunicator:
 		return ret
 
 	def getMapImageTiles(self, floor):
-		msg = MapImageTilesRequest(floor)
+		msg = NewMapImagesRequest(floor)
 		if not self.start_connection():
 			return None
 
 		try:
-			ret = self.client.getMapImageTiles(msg)
+			ret = self.client.getNewMapImages(msg).floors[floor]
 		except Exception as ex:
 			template = "An exception of type {0} occured. Arguments:\n{1!r}"
 			message = template.format(type(ex).__name__, ex.args)

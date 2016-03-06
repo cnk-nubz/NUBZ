@@ -6,7 +6,7 @@ namespace input {
 
 CreateMultipleChoiceQuestionRequest::CreateMultipleChoiceQuestionRequest(
     const communication::CreateMultipleChoiceQuestionRequest &thrift)
-    : question(thrift.question), singleAnswer(thrift.singleAnswer), options(thrift.options) {
+    : question(thrift.question), options(thrift.options), singleAnswer(thrift.singleAnswer) {
     if (thrift.__isset.name) {
         name = thrift.name;
     }

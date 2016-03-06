@@ -1,7 +1,6 @@
 #ifndef SERVER__COMMANDS__H
 #define SERVER__COMMANDS__H
 
-#include "command/GetMapImageTilesCommand.h"
 #include "command/GetNewMapImagesCommand.h"
 #include "command/SetMapImageCommand.h"
 

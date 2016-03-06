@@ -9,7 +9,7 @@ namespace io {
 namespace output {
 
 communication::Experiment Experiment::toThrift() const {
-    communication::Experiment res;
+    auto res = communication::Experiment{};
     res.experimentId = ID;
     res.name = name;
     res.exhibitActions = ioToThrift(exhibitActions);

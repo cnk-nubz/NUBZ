@@ -12,7 +12,7 @@ namespace command {
 CreateActionCommand::CreateActionCommand(db::Database &db) : db(db) {
 }
 
-io::Action CreateActionCommand::operator()(const io::input::CreateActionRequest &input) {
+io::output::Action CreateActionCommand::operator()(const io::input::CreateActionRequest &input) {
     auto dbAction = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
@@ -24,12 +24,12 @@ io::Action CreateActionCommand::operator()(const io::input::CreateActionRequest 
         return action;
     });
 
-    return io::Action{dbAction};
+    return io::output::Action{dbAction};
 }
 
 void CreateActionCommand::validateInput(db::DatabaseSession &session,
                                         const io::input::CreateActionRequest &input) const {
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker{session};
     if (!checker.checkText(input.text)) {
         throw io::InvalidInput("incorrect name");
     }

@@ -12,14 +12,14 @@ namespace command {
 CreateSimpleQuestionCommand::CreateSimpleQuestionCommand(db::Database &db) : db(db) {
 }
 
-io::SimpleQuestion CreateSimpleQuestionCommand::operator()(
+io::output::SimpleQuestion CreateSimpleQuestionCommand::operator()(
     const io::input::CreateSimpleQuestionRequest &input) {
     auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
 
         auto question = repository::SimpleQuestion{};
         question.question = input.question;
-        question.numberAnswer = input.answerType == io::SimpleQuestion::AnswerType::Number;
+        question.numberAnswer = input.answerType == io::output::SimpleQuestion::AnswerType::Number;
         if (input.name) {
             question.name = input.name.value();
         } else {
@@ -30,12 +30,12 @@ io::SimpleQuestion CreateSimpleQuestionCommand::operator()(
         repo.insert(&question);
         return question;
     });
-    return io::SimpleQuestion{dbQuestion};
+    return io::output::SimpleQuestion{dbQuestion};
 }
 
 void CreateSimpleQuestionCommand::validateInput(
     db::DatabaseSession &session, const io::input::CreateSimpleQuestionRequest &input) const {
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker{session};
     if (!checker.checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }

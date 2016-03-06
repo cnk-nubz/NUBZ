@@ -8,7 +8,7 @@ GetAllQuestionsCommand::GetAllQuestionsCommand(db::Database &db)
 }
 
 io::QuestionsList GetAllQuestionsCommand::operator()() {
-    io::QuestionsList qList;
+    auto qList = io::QuestionsList{};
     qList.simpleQuestions = getSimple();
     qList.multipleChoiceQuestions = getMultiple();
     qList.sortQuestions = getSortQ();
@@ -17,7 +17,7 @@ io::QuestionsList GetAllQuestionsCommand::operator()() {
 }
 
 void GetAllQuestionsCommand::generateOrder(io::QuestionsList &list) const {
-    std::vector<std::pair<io::Question, io::QuestionsList::QuestionType>> all;
+    auto all = std::vector<std::pair<io::output::Question, io::QuestionsList::QuestionType>>{};
     for (const auto &q : list.simpleQuestions) {
         all.push_back({q, io::QuestionsList::QuestionType::Simple});
     }

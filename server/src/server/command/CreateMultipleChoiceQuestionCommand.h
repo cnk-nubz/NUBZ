@@ -3,8 +3,8 @@
 
 #include <db/Database.h>
 
-#include <server/io/MultipleChoiceQuestion.h>
 #include <server/io/input/CreateMultipleChoiceQuestionRequest.h>
+#include <server/io/output/MultipleChoiceQuestion.h>
 
 #include "commons.h"
 
@@ -16,14 +16,14 @@ public:
     CreateMultipleChoiceQuestionCommand(db::Database &db);
     SRV_CMD_CP_MV(CreateMultipleChoiceQuestionCommand);
 
-    io::MultipleChoiceQuestion operator()(
+    io::output::MultipleChoiceQuestion operator()(
         const io::input::CreateMultipleChoiceQuestionRequest &input);
 
 private:
-    db::Database &db;
-
     void validateInput(db::DatabaseSession &session,
                        const io::input::CreateMultipleChoiceQuestionRequest &input) const;
+
+    db::Database &db;
 };
 }
 }

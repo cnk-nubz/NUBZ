@@ -94,7 +94,8 @@ public:
         check_column<Column>();
         check_value_type<Column, Value>();
 
-        stmt = createStmt(utils::getColumnName<Column>(), op.str(), std::forward<Value>(value));
+        stmt = createStmt(
+            utils::getColumnName<Column>(), op.str(), utils::sqlVal(std::forward<Value>(value)));
     }
 
     template <class... UsedColumns2>
@@ -135,7 +136,7 @@ private:
     template <class V>
     std::string createStmt(std::string lhs, std::string op, V&& rhs) const {
         return (boost::format("%1% %2% %3%") % std::move(lhs) % std::move(op) %
-                utils::sqlVal(std::forward<V>(rhs)))
+                std::forward<V>(rhs))
             .str();
     }
 

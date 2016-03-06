@@ -12,7 +12,7 @@ namespace command {
 GetAllActionsCommand::GetAllActionsCommand(db::Database &db) : db(db) {
 }
 
-std::vector<io::Action> GetAllActionsCommand::operator()() {
+std::vector<io::output::Action> GetAllActionsCommand::operator()() {
     auto repoActions = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Actions{session};
         return repo.getAll();
@@ -21,7 +21,7 @@ std::vector<io::Action> GetAllActionsCommand::operator()() {
     std::sort(repoActions.begin(), repoActions.end(), [](auto &lhs, auto &rhs) {
         return std::make_pair(lhs.text, lhs.ID) < std::make_pair(rhs.text, rhs.ID);
     });
-    return ::server::io::repoToIO<io::Action>(repoActions);
+    return ::server::io::repoToIO<io::output::Action>(repoActions);
 }
 }
 }

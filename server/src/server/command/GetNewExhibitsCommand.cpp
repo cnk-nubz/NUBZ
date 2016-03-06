@@ -3,8 +3,6 @@
 #include <repository/Counters.h>
 #include <repository/Exhibits.h>
 
-#include <db/command/GetRawReports.h>
-
 #include <server/io/utils.h>
 
 #include "GetNewExhibitsCommand.h"
@@ -17,7 +15,7 @@ GetNewExhibitsCommand::GetNewExhibitsCommand(db::Database &db) : db(db) {
 
 io::output::NewExhibitsResponse GetNewExhibitsCommand::operator()(
     const io::input::NewExhibitsRequest &input) {
-    std::vector<repository::Exhibit> repoExhibits;
+    auto repoExhibits = std::vector<repository::Exhibit>{};
     std::int32_t currentVersion;
     std::tie(currentVersion, repoExhibits) = db.execute([&](db::DatabaseSession &session) {
         auto exhibitsRepo = repository::Exhibits{session};
@@ -33,7 +31,7 @@ io::output::NewExhibitsResponse GetNewExhibitsCommand::operator()(
         return std::make_tuple(curVersion, exhibits);
     });
 
-    auto exhibits = ::server::io::repoToIO<io::Exhibit>(repoExhibits);
+    auto exhibits = io::repoToIO<io::output::Exhibit>(repoExhibits);
 
     auto response = io::output::NewExhibitsResponse{};
     response.version = currentVersion;

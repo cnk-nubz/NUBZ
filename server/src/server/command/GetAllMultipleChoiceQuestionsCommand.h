@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/MultipleChoiceQuestion.h>
+#include <server/io/output/MultipleChoiceQuestion.h>
 
 #include "commons.h"
 
@@ -15,7 +15,7 @@ public:
     GetAllMultipleChoiceQuestionsCommand(db::Database &db);
     SRV_CMD_CP_MV(GetAllMultipleChoiceQuestionsCommand);
 
-    std::vector<io::MultipleChoiceQuestion> operator()();
+    std::vector<io::output::MultipleChoiceQuestion> operator()();
 
 private:
     db::Database &db;

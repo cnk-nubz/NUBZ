@@ -10,6 +10,10 @@
 
 #include "MultipleChoiceQuestions.h"
 
+/*
+ * ColumnQuestionId references MultipleChoiceQuestions::ColumnId (on delete cascade)
+ */
+
 namespace db {
 namespace table {
 

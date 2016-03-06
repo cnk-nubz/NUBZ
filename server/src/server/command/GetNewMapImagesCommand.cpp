@@ -1,54 +1,39 @@
 #include <repository/Counters.h>
+#include <repository/MapImages.h>
 
-#include <db/command/GetMapImages.h>
+#include <server/utils/PathHelper.h>
 
 #include "GetNewMapImagesCommand.h"
 
 namespace server {
 namespace command {
 
-std::string GetNewMapImagesCommand::urlPathPrefix = "";
-
-void GetNewMapImagesCommand::setUrlPathPrefix(const std::string &urlPrefix) {
-    assert(urlPrefix.size() > 0);
-    urlPathPrefix = urlPrefix;
-    if (urlPathPrefix.back() != '/') {
-        urlPathPrefix += "/";
-    }
-}
-
 GetNewMapImagesCommand::GetNewMapImagesCommand(db::Database &db) : db(db) {
 }
 
 io::output::NewMapImagesResponse GetNewMapImagesCommand::operator()(
     const io::input::NewMapImagesRequest &input) {
-    auto mapImages = std::vector<db::MapImage>{};
+    auto mapImages = std::vector<repository::MapImage>{};
     std::int32_t version;
     std::tie(version, mapImages) = db.execute([&](db::DatabaseSession &session) {
-        auto getMapImages = db::cmd::GetMapImages{};
-        if (input.acquiredVersion) {
-            getMapImages.minVersion = *input.acquiredVersion + 1;
-        }
-        getMapImages(session);
-        auto mapImages = getMapImages.getResult();
-
         auto countersRepo = repository::Counters{session};
-        auto version = countersRepo.get(repository::CounterType::LastMapVersion);
+        auto curVersion = countersRepo.get(repository::Counters::Type::LastMapVersion);
 
-        return std::make_tuple(version, mapImages);
+        auto imagesRepo = repository::MapImages{session};
+        if (input.acquiredVersion) {
+            auto usersVersion = input.acquiredVersion.value();
+            return std::make_pair(curVersion, imagesRepo.getAllNewerThan(usersVersion));
+        } else {
+            return std::make_pair(curVersion, imagesRepo.getAll());
+        }
     });
 
-    auto response = io::output::NewMapImagesResponse{};
-    response.version = version;
+    auto result = io::output::NewMapImagesResponse{};
+    result.version = version;
     for (const auto &mapImage : mapImages) {
-        response.floorImageUrls[mapImage.floor] = createFullUrl(mapImage.filename);
+        result.floors[mapImage.floor] = io::output::MapImage{mapImage};
     }
-    return response;
-}
-
-std::string GetNewMapImagesCommand::createFullUrl(const std::string &imgFileName) const {
-    assert(urlPathPrefix.size() > 0);
-    return urlPathPrefix + imgFileName;
+    return result;
 }
 }
 }

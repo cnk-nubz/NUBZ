@@ -14,7 +14,7 @@ namespace command {
 CreateSortQuestionCommand::CreateSortQuestionCommand(db::Database &db) : db(db) {
 }
 
-io::SortQuestion CreateSortQuestionCommand::operator()(
+io::output::SortQuestion CreateSortQuestionCommand::operator()(
     const io::input::CreateSortQuestionRequest &input) {
     auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
         validateInput(session, input);
@@ -38,12 +38,12 @@ io::SortQuestion CreateSortQuestionCommand::operator()(
         return question;
     });
 
-    return io::SortQuestion{dbQuestion};
+    return io::output::SortQuestion{dbQuestion};
 }
 
 void CreateSortQuestionCommand::validateInput(
     db::DatabaseSession &session, const io::input::CreateSortQuestionRequest &input) const {
-    utils::InputChecker checker(session);
+    auto checker = utils::InputChecker{session};
     if (!checker.checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }
