@@ -11,6 +11,7 @@ import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.ui.MapActivity;
 
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -41,6 +42,13 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     public void mapActivityClick(View view) {
+        //TODO only for testing:
+        try {
+            DataHandler.getInstance().startNewRaport();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         Intent i = new Intent(getApplicationContext(), MapActivity.class);
         startActivity(i);
     }

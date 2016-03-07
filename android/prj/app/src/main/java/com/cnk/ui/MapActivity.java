@@ -26,18 +26,18 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cnk.R;
 import com.cnk.StartScreen;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.Action;
 import com.cnk.data.DataHandler;
+import com.cnk.data.RaportEvent;
 import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.ui.exhibitwindow.ExhibitActionsAdapter;
-import com.cnk.ui.models.DialogsState;
+import com.cnk.ui.models.DialogState;
 import com.cnk.ui.models.ExhibitSpot;
 import com.cnk.ui.models.MapState;
 import com.cnk.utilities.Consts;
@@ -45,6 +45,7 @@ import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,11 +55,13 @@ import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "MapActivity";
+    private static final Integer MILLIS_IN_SEC = 1000;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
     private MapState mapState;
-    private LinearLayout layoutLoading, layoutMapMissing;
+    private LinearLayout layoutLoading;
+    private LinearLayout layoutMapMissing;
     private Integer currentFloorNum;
     private NetworkHandler networkHandler;
     private RelativeLayout rlRootLayout;
@@ -66,9 +69,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private ActionBarDrawerToggle drawerToggle;
     private Integer openedDialogs;
 
-    DialogsState dialogsState;
-    private AlertDialog breakDialog;
-    private AlertDialog exhibitDialog;
+    private DialogState exhibitDialog;
+    private DialogState breakDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,73 +92,45 @@ public class MapActivity extends AppCompatActivity implements Observer {
         networkHandler.downloadExperimentData();
     }
 
-    private void createDialogs() {
-        // ----------------- Break dialog: -------------------- //
-        AlertDialog.Builder breakAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
-        View breakDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
-        breakAlertDialogBuilder.setView(breakDialogView);
+    private DialogState createDialog(List<Action> dialogActions) {
+        DialogState resultDialog = new DialogState();
 
-        List<Action> breakActions = DataHandler.getInstance().getAllBreakActions();
-        List<String> breakActionsStrings = new ArrayList<>();
-        for (Action a : breakActions) {
-            breakActionsStrings.add(a.getText());
-        }
-        ExhibitActionsAdapter breakActionsAdapter = new ExhibitActionsAdapter(MapActivity.this, breakActionsStrings);
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
+        View dialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
+        dialogBuilder.setView(dialogView);
 
-        GridView breakGridView = (GridView) breakDialogView.findViewById(R.id.gvActions);
-        breakGridView.setAdapter(breakActionsAdapter);
+        resultDialog.setAdapter(new ExhibitActionsAdapter(MapActivity.this, dialogActions));
 
-        breakAlertDialogBuilder.setCancelable(false);
-        breakDialog = breakAlertDialogBuilder.create();
-        breakDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        GridView breakGridView = (GridView) dialogView.findViewById(R.id.gvActions);
+        breakGridView.setAdapter(resultDialog.getAdapter());
 
-        dialogsState.tvBreakDialogName = (AutoResizeTextView) breakDialogView.findViewById(R.id.tvExhibitDialogName);
-        dialogsState.breakAdapter = (ExhibitActionsAdapter)
-                ((GridView) breakDialogView.findViewById(R.id.gvActions)).getAdapter();
-        dialogsState.cancelBreak = (Button) breakDialogView.findViewById(R.id.bExbibitDialogCancel);
-        dialogsState.finishBreak = (Button) breakDialogView.findViewById(R.id.bExbibitDialogFinish);
+        dialogBuilder.setCancelable(false);
+        resultDialog.setDialog(dialogBuilder.create());
+        resultDialog.getDialog().getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
 
-        // ----------------- Exhibit dialog: -------------------- //
-        AlertDialog.Builder exhibitAlertDialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
-        View exhibitDialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
-        exhibitAlertDialogBuilder.setView(exhibitDialogView);
+        resultDialog.setTvDialogName((AutoResizeTextView) dialogView.findViewById(R.id.tvExhibitDialogName));
+        resultDialog.setCancelButton((Button) dialogView.findViewById(R.id.bExbibitDialogCancel));
+        resultDialog.setFinishButton((Button) dialogView.findViewById(R.id.bExbibitDialogFinish));
 
-        List<Action> exhibitActions = DataHandler.getInstance().getAllExhibitActions();
-        List<String> exhibitActionsStrings = new ArrayList<>();
-        for (Action a : exhibitActions) {
-            exhibitActionsStrings.add(a.getText());
-        }
-        ExhibitActionsAdapter exhibitActionsAdapter = new ExhibitActionsAdapter(MapActivity.this, exhibitActionsStrings);
-
-        GridView exhibitsGridView = (GridView) exhibitDialogView.findViewById(R.id.gvActions);
-        exhibitsGridView.setAdapter(exhibitActionsAdapter);
-
-        exhibitAlertDialogBuilder.setCancelable(false);
-        exhibitDialog = exhibitAlertDialogBuilder.create();
-        exhibitDialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
-
-        dialogsState.tvExhibitDialogName = (AutoResizeTextView) exhibitDialogView.findViewById(R.id.tvExhibitDialogName);
-        dialogsState.exhibitAdapter = (ExhibitActionsAdapter)
-                ((GridView) exhibitDialogView.findViewById(R.id.gvActions)).getAdapter();
-        dialogsState.cancelExhibit = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogCancel);
-        dialogsState.finishExhibit = (Button) exhibitDialogView.findViewById(R.id.bExbibitDialogFinish);
+        return resultDialog;
     }
 
-    private void dialogButtonHandler(AlertDialog toDissmiss, Integer requestCode, boolean cancel, ExhibitActionsAdapter toTakeResultFrom) {
-        toDissmiss.dismiss();
+    private void dialogButtonHandler(DialogState dialogToClose, Integer requestCode, boolean cancel, ExhibitActionsAdapter toTakeResultFrom) {
+        Integer timeSpentInDialog  = dialogToClose.dismissDialogWithTime();
         if (cancel) {
-            dialogReturn(requestCode, true, null);
+            dialogReturn(requestCode, true, null, timeSpentInDialog);
         } else {
-            dialogReturn(requestCode, false, toTakeResultFrom.getSelectedActions());
+            dialogReturn(requestCode, false, toTakeResultFrom.getSelectedActions(), timeSpentInDialog);
         }
         openedDialogs--;
     }
 
-    private void dialogReturn(Integer requestCode, boolean canceled, List<String> result) {
+    private void dialogReturn(Integer requestCode, boolean canceled, List<Action> result, Integer timeSpentInDialog) {
         if (!canceled) {
-            Toast.makeText(MapActivity.this, result.toString(), Toast.LENGTH_LONG).show();
-            if (requestCode != Consts.BREAK_DIALOG_ID) {
+            if (!requestCode.equals(Consts.BREAK_DIALOG_ID)) {
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                requestCode = es.getExhibitId();
+
                 if (mapState.lastExhibitTextView != null) {
                     mapState.lastExhibitTextView
                             .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
@@ -166,9 +140,30 @@ public class MapActivity extends AppCompatActivity implements Observer {
                         .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
                 mapState.exhibitsOverlay.invalidate();
-            } else {
-                // TODO: after break
             }
+
+            Log.i(LOG_TAG, "Actions clicked: " + result.toString());
+
+            final ArrayList<Integer> actionsIds = new ArrayList<>();
+            for (int i = 0; i < result.size(); i++) {
+                actionsIds.add(result.get(i).getId());
+            }
+
+            final RaportEvent eventToSave = new RaportEvent(requestCode, timeSpentInDialog / MILLIS_IN_SEC, actionsIds);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < 5; i++) {
+                        try {
+                            DataHandler.getInstance().addEventToRaport(eventToSave);
+                            break;
+                        } catch (IOException ioe) {
+                            Log.e(LOG_TAG, "Error saving actions to raport", ioe);
+                        }
+                    }
+                }
+            }).run();
         }
     }
 
@@ -179,6 +174,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     public void endClick(View view) {
         Log.i(LOG_TAG, "Clicked end button");
+        //TODO only for testing:
+        try {
+            DataHandler.getInstance().markRaportAsReady();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Intent startScreenIntent = new Intent(getApplicationContext(), StartScreen.class);
         startActivity(startScreenIntent);
     }
@@ -451,7 +452,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Util.waitDelay(Consts.SECOND);
         spinner.dismiss();
         mapState = new MapState(this);
-        dialogsState = new DialogsState();
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
@@ -459,7 +459,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
         runOnUiThread(new Runnable() {
                           @Override
                           public void run() {
-                              createDialogs();
+                              breakDialog = createDialog(DataHandler.getInstance().getAllBreakActions());
+                              exhibitDialog = createDialog(DataHandler.getInstance().getAllExhibitActions());
                           }
                       });
     }
@@ -671,49 +672,34 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    private void showExhibitDialog(boolean isBreak, String name, final Integer requestCode) {
+    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
         if (isBreak) {
-            dialogsState.tvBreakDialogName.setText(name);
-            dialogsState.tvBreakDialogName.setMinTextSize(2f);
-            dialogsState.tvBreakDialogName.setTextSize(100f);
-
-            dialogsState.breakAdapter.clearClickedState();
-
-            dialogsState.cancelBreak.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialogButtonHandler(breakDialog, requestCode, true, dialogsState.breakAdapter);
-                }
-            });
-            dialogsState.finishBreak.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialogButtonHandler(breakDialog, requestCode, false, dialogsState.breakAdapter);
-                }
-            });
-
-            breakDialog.show();
+            startDialog(breakDialog, name, requestCode);
         } else {
-            dialogsState.tvExhibitDialogName.setText(name);
-            dialogsState.tvExhibitDialogName.setMinTextSize(2f);
-            dialogsState.tvExhibitDialogName.setTextSize(100f);
-
-            dialogsState.exhibitAdapter.clearClickedState();
-
-            dialogsState.cancelExhibit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialogButtonHandler(exhibitDialog, requestCode, true, dialogsState.exhibitAdapter);
-                }
-            });
-            dialogsState.finishExhibit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialogButtonHandler(exhibitDialog, requestCode, false, dialogsState.exhibitAdapter);
-                }
-            });
-
-            exhibitDialog.show();
+            startDialog(exhibitDialog, name, requestCode);
         }
+    }
+
+    private void startDialog(final DialogState dialogState, String name, final Integer requestCode) {
+        dialogState.getTvDialogName().setText(name);
+        dialogState.getTvDialogName().setMinTextSize(2f);
+        dialogState.getTvDialogName().setTextSize(100f);
+
+        dialogState.getAdapter().clearClickedState();
+
+        dialogState.getCancelButton().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogButtonHandler(dialogState, requestCode, true, dialogState.getAdapter());
+            }
+        });
+        dialogState.getFinishButton().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialogButtonHandler(dialogState, requestCode, false, dialogState.getAdapter());
+            }
+        });
+
+        dialogState.showDialog();
     }
 }

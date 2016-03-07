@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 
+import com.cnk.data.Action;
 import com.cnk.ui.AutoResizeTextView;
 
 import java.util.ArrayList;
@@ -16,10 +17,10 @@ import java.util.List;
 
 public class ExhibitActionsAdapter extends BaseAdapter {
     private Context context;
-    private List<String> actionsList;
+    private List<Action> actionsList;
     private Boolean[] actionsClicked;
 
-    public ExhibitActionsAdapter(Context context, List<String> actionsList) {
+    public ExhibitActionsAdapter(Context context, List<Action> actionsList) {
         this.context = context;
         this.actionsList = actionsList;
         this.actionsClicked = new Boolean[actionsList.size()];
@@ -56,7 +57,7 @@ public class ExhibitActionsAdapter extends BaseAdapter {
         actionLabel.setGravity(Gravity.CENTER);
         actionLabel.setBackgroundColor(Color.LTGRAY);
 
-        actionLabel.setText(actionsList.get(i));
+        actionLabel.setText(actionsList.get(i).getText());
 
         actionLabel.setOnClickListener(new ExhibitActionClickListener(this, i));
 
@@ -72,8 +73,8 @@ public class ExhibitActionsAdapter extends BaseAdapter {
         actionsClicked[id] = !actionsClicked[id];
     }
 
-    public ArrayList<String> getSelectedActions() {
-        ArrayList<String> resultActions = new ArrayList<>();
+    public ArrayList<Action> getSelectedActions() {
+        ArrayList<Action> resultActions = new ArrayList<>();
         for (int i = 0; i < actionsList.size(); i++) {
             if (actionsClicked[i]) {
                 resultActions.add(actionsList.get(i));
