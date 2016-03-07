@@ -127,7 +127,7 @@ cur.execute('''
 	INSERT INTO counters VALUES
 		('last_map_version', 0),
 		('last_exhibit_version', 5),
-		('last_report_version', 3)
+		('last_report_id', 3)
 ''')
 
 # exhibits
