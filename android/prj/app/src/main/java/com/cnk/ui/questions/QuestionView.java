@@ -18,7 +18,8 @@ public abstract class QuestionView extends RelativeLayout {
     public QuestionView(Context context, String name) {
         super(context, null);
         setUpNameLabel(name, context);
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
+                                               LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         params.addRule(ABOVE, R.id.counterLabel);
@@ -29,7 +30,8 @@ public abstract class QuestionView extends RelativeLayout {
 
     private void setUpNameLabel(String name, Context context) {
         TextView nameLabel = new TextView(context);
-        LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        LayoutParams params = new LayoutParams(LayoutParams.WRAP_CONTENT,
+                                               LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL);
         nameLabel.setText(name);
         nameLabel.setTextSize(NAME_SIZE);

@@ -8,7 +8,10 @@ public class DetailLevelRes {
     private Resolution originalRes;
     private Resolution scaledRes;
 
-    public DetailLevelRes(Integer floor, Integer detailLevel, Resolution originalRes, Resolution scaledRes) {
+    public DetailLevelRes(Integer floor,
+                          Integer detailLevel,
+                          Resolution originalRes,
+                          Resolution scaledRes) {
         this.floor = floor;
         this.detailLevel = detailLevel;
         this.originalRes = originalRes;

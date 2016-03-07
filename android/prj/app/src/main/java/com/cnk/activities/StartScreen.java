@@ -33,6 +33,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
+        NetworkHandler.getInstance().uploadRaport();
         try {
             if (!dataLoaded) {
                 DataHandler.getInstance().loadDbData();

@@ -51,7 +51,8 @@ public class MapDownloadTask extends ServerTask {
         return response;
     }
 
-    private void downloadTilesUpdate(Server.Client client, Integer version) throws TException, IOException {
+    private void downloadTilesUpdate(Server.Client client,
+                                     Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
 
         MapImageTilesResponse floor1Response = null;
@@ -77,8 +78,10 @@ public class MapDownloadTask extends ServerTask {
         ArrayList<MapTiles> mapTiles = new ArrayList<>();
 
         for (ImageTiles tile : imageTilesThrift) {
-            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(), tile.getScaledSize().getHeight());
-            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
+            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(),
+                                                   tile.getScaledSize().getHeight());
+            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(),
+                                                 tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
             MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(toCopy));
             mapTiles.add(toAdd);

@@ -52,8 +52,10 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {
         Integer id = thriftData.getExperiment().getExperimentId();
         String name = thriftData.getExperiment().getName();
-        List<Action> exhibitActions = translateActionsFromThrift(thriftData.getExperiment().getExhibitActions());
-        List<Action> breakActions = translateActionsFromThrift(thriftData.getExperiment().getBreakActions());
+        List<Action> exhibitActions = translateActionsFromThrift(thriftData.getExperiment()
+                                                                           .getExhibitActions());
+        List<Action> breakActions = translateActionsFromThrift(thriftData.getExperiment()
+                                                                         .getBreakActions());
         Survey preSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyBefore());
         Survey postSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyAfter());
         return new Experiment(id, name, exhibitActions, breakActions, preSurvey, postSurvey);
@@ -106,9 +108,7 @@ public class ExperimentDataDownloadTask extends ServerTask {
                     type = SimpleQuestion.AnswerType.NUMBER;
                     break;
             }
-            questions.add(new SimpleQuestion(question.questionId,
-                    question.getQuestion(),
-                    type));
+            questions.add(new SimpleQuestion(question.questionId, question.getQuestion(), type));
         }
         return questions;
     }
@@ -120,7 +120,10 @@ public class ExperimentDataDownloadTask extends ServerTask {
             for (com.cnk.communication.thrift.MultipleChoiceQuestionOption option : quesiton.getOptions()) {
                 options.add(new MultipleChoiceQuestionOption(option.optionId, option.getText()));
             }
-            questions.add(new MultipleChoiceQuestion(quesiton.questionId, quesiton.getQuestion(), quesiton.isSingleAnswer(), options));
+            questions.add(new MultipleChoiceQuestion(quesiton.questionId,
+                                                     quesiton.getQuestion(),
+                                                     quesiton.isSingleAnswer(),
+                                                     options));
         }
         return questions;
     }

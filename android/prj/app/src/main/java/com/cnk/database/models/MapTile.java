@@ -11,7 +11,11 @@ public class MapTile {
     public MapTile() {
     }
 
-    public MapTile(Integer floor, Integer detailLevel, Integer rowNumber, Integer columnNumber, String mapTileLocation) {
+    public MapTile(Integer floor,
+                   Integer detailLevel,
+                   Integer rowNumber,
+                   Integer columnNumber,
+                   String mapTileLocation) {
         this.floor = floor;
         this.detailLevel = detailLevel;
         this.rowNumber = rowNumber;

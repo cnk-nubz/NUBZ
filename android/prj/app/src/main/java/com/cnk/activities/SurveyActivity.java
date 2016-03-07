@@ -55,7 +55,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        answers = new SurveyAnswers();
         DataHandler.getInstance().addObserver(this);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
@@ -105,6 +104,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void init() {
+        if (type == Survey.SurveyType.BEFORE) {
+            DataHandler.getInstance().startNewRaport();
+        }
         initViews();
         setUpCounterLabel();
         showView(0);
@@ -124,11 +126,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void updateCounterLabel() {
-        counterLabel.setText(
-                Integer.toString(currentQuestionNo + 1) +
-                        "/" +
-                        Integer.toString(allQuestionsCount)
-        );
+        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
+                             "/" +
+                             Integer.toString(allQuestionsCount));
     }
 
     private void showView(Integer no) {
@@ -141,6 +141,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void initViews() {
         Survey currentSurvey = DataHandler.getInstance().getSurvey(type);
+        answers = currentSurvey.getSurveyAnswers();
         allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
         while (currentSurvey.getRemainingQuestionsCount() > 0) {
             Survey.QuestionType type = currentSurvey.popNextQuestionType();
@@ -148,25 +149,25 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                 case SIMPLE:
                     SimpleQuestionAnswer simpleAnswer = new SimpleQuestionAnswer();
                     answers.addSimpleAnswer(simpleAnswer);
-                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, simpleAnswer));
+                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(),
+                                                                             this,
+                                                                             simpleAnswer));
                     break;
                 case MULTIPLE_CHOICE:
                     MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
                     MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
-                                    this,
-                                    multipleChoiceAnswer)
-                    );
+                                                                             this,
+                                                                             multipleChoiceAnswer));
                     break;
                 case SORT:
                     SortQuestionAnswer sortAnswer = new SortQuestionAnswer();
                     answers.addSortQuestionAnswer(sortAnswer);
                     SortQuestion nextSortQuestion = currentSurvey.popNextSortQuestions();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextSortQuestion,
-                                    this,
-                                    sortAnswer)
-                    );
+                                                                             this,
+                                                                             sortAnswer));
                     break;
             }
         }
@@ -206,6 +207,8 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                 Class next = (Class) getIntent().getSerializableExtra("nextActivity");
                 if (next == null) {
                     finish();
+                    DataHandler.getInstance().markRaportAsReady();
+                    NetworkHandler.getInstance().uploadRaport();
                 } else {
                     Intent i = new Intent(getApplicationContext(), next);
                     finish();

@@ -30,7 +30,10 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
         this(options, context, layout, new SortViewItemIds());
     }
 
-    public SortListAdapter(List<T> options, Context context, Integer layout, SortViewItemIds viewIds) {
+    public SortListAdapter(List<T> options,
+                           Context context,
+                           Integer layout,
+                           SortViewItemIds viewIds) {
         this.options = options;
         this.context = context;
         this.layout = layout;

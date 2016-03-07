@@ -5,8 +5,7 @@ import io.realm.annotations.PrimaryKey;
 
 public class FloorDetailLevelsRealm extends RealmObject {
 
-    @PrimaryKey
-    private Integer floorNo;
+    @PrimaryKey private Integer floorNo;
     private Integer detailLevels;
 
     public Integer getFloorNo() {

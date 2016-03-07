@@ -44,8 +44,13 @@ public class ModelTranslation {
     public static Exhibit exhibitFromRealm(ExhibitRealm er) {
         Exhibit e = null;
         if (er != null) {
-            e = new Exhibit(er.getId(), er.getX(), er.getY(), er.getWidth(),
-                    er.getHeight(), er.getFloor(), er.getName());
+            e = new Exhibit(er.getId(),
+                            er.getX(),
+                            er.getY(),
+                            er.getWidth(),
+                            er.getHeight(),
+                            er.getFloor(),
+                            er.getName());
         }
 
         return e;
@@ -89,8 +94,10 @@ public class ModelTranslation {
     public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
         RaportFile file = null;
         if (realmFile != null) {
-            file = new RaportFile(realmFile.getId(), realmFile.getServerId(),
-                    realmFile.getFileName(), realmFile.getState());
+            file = new RaportFile(realmFile.getId(),
+                                  realmFile.getServerId(),
+                                  realmFile.getFileName(),
+                                  realmFile.getState());
         }
 
         return file;
@@ -153,8 +160,11 @@ public class ModelTranslation {
             return null;
         }
 
-        return new MapTile(mtr.getFloor(), mtr.getDetailLevel(), mtr.getRowNumber(),
-                mtr.getColumnNumber(), mtr.getMapTileLocation());
+        return new MapTile(mtr.getFloor(),
+                           mtr.getDetailLevel(),
+                           mtr.getRowNumber(),
+                           mtr.getColumnNumber(),
+                           mtr.getMapTileLocation());
     }
 
     public static List<MapTileRealm> realmListFromMapTileList(List<MapTile> mtl) {
@@ -202,9 +212,10 @@ public class ModelTranslation {
             return null;
         }
 
-        return new DetailLevelRes(dlrr.getFloor(), dlrr.getDetailLevel(),
-                new Resolution(dlrr.getOriginalWidth(), dlrr.getOriginalHeight()),
-                new Resolution(dlrr.getScaledWidth(), dlrr.getScaledHeight()));
+        return new DetailLevelRes(dlrr.getFloor(),
+                                  dlrr.getDetailLevel(),
+                                  new Resolution(dlrr.getOriginalWidth(), dlrr.getOriginalHeight()),
+                                  new Resolution(dlrr.getScaledWidth(), dlrr.getScaledHeight()));
     }
 
     public static List<DetailLevelResRealm> realmListFromDetailLevelResList(List<DetailLevelRes> dlrl) {
@@ -267,8 +278,9 @@ public class ModelTranslation {
         if (realm == null) {
             return null;
         }
-        return new MapTileInfo(realm.getFloor(), realm.getDetailLevel(),
-                new Resolution(realm.getWidth(), realm.getLength()));
+        return new MapTileInfo(realm.getFloor(),
+                               realm.getDetailLevel(),
+                               new Resolution(realm.getWidth(), realm.getLength()));
     }
 
 }

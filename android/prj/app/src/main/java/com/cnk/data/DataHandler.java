@@ -78,7 +78,9 @@ public class DataHandler extends Observable {
             currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
             ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
             ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
-            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount(); detailLevel++) {
+            for (int detailLevel = 0;
+                 detailLevel < currentFloor.getDetailLevelsCount();
+                 detailLevel++) {
                 detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
                 mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));
             }
@@ -117,7 +119,11 @@ public class DataHandler extends Observable {
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
-        currentRaport = new Raport(newId);
+        currentRaport = new Raport(newId,
+                                   experiment.getSurvey(Survey.SurveyType.BEFORE)
+                                             .getSurveyAnswers(),
+                                   experiment.getSurvey(Survey.SurveyType.AFTER)
+                                             .getSurveyAnswers());
         String path = "";
         try {
             path = saveRaport(currentRaport);
@@ -130,8 +136,12 @@ public class DataHandler extends Observable {
         dbHelper.setRaportFile(newId, path);
     }
 
+    public void addEventToRaport(RaportEvent event) {
+        addEventToRaport(event, 0);
+    }
+
     // only modifies file of raport in progress, which is not used anywhere else at the time
-    public void addEventToRaport(RaportEvent event, int tryNo) {
+    private void addEventToRaport(RaportEvent event, int tryNo) {
         if (tryNo == 0) {
             currentRaport.addEvent(event);
         }
@@ -149,6 +159,10 @@ public class DataHandler extends Observable {
 
     }
 
+    public void markRaportAsReady() {
+        markRaportAsReady(0);
+    }
+
     // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
     public void markRaportAsReady(int tryNo) {
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
@@ -162,7 +176,8 @@ public class DataHandler extends Observable {
         for (RaportFile file : toLoad) {
             Raport loaded = null;
             try {
-                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance().getFile(file.getFileName()));
+                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance()
+                                                                       .getFile(file.getFileName()));
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(LOG_TAG, "Unable to get raport");
@@ -184,7 +199,10 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) throws IOException {
+    public void setMaps(Integer version,
+                        FloorMap floor0,
+                        FloorMap floor1,
+                        int tryNo) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -292,13 +310,17 @@ public class DataHandler extends Observable {
         return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
-    public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
+    public String getTemporaryPathForTile(Integer floorNo,
+                                          Integer detailLevel,
+                                          Integer x,
+                                          Integer y) {
         String dir = DATA_PATH + MAP_DIRECTORY + TMP + "/";
         return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
     private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
-        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" + x.toString() + "_" + y.toString();
+        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" +
+               x.toString() + "_" + y.toString();
     }
 
     private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {

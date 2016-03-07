@@ -12,7 +12,12 @@ public class Experiment {
     private Survey preSurvey;
     private Survey postSurvey;
 
-    public Experiment(Integer id, String name, List<Action> exhibitActions, List<Action> breakActions, Survey preSurvey, Survey postSurvey) {
+    public Experiment(Integer id,
+                      String name,
+                      List<Action> exhibitActions,
+                      List<Action> breakActions,
+                      Survey preSurvey,
+                      Survey postSurvey) {
         this.id = id;
         this.name = name;
         this.exhibitActions = exhibitActions;

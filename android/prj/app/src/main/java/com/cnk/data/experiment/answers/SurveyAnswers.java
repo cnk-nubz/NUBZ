@@ -25,4 +25,16 @@ public class SurveyAnswers {
     public void addSortQuestionAnswer(SortQuestionAnswer answer) {
         sortQuestionAnswers.add(answer);
     }
+
+    public List<SimpleQuestionAnswer> getSimpleAnswers() {
+        return simpleAnswers;
+    }
+
+    public List<MultipleChoiceQuestionAnswer> getMultipleChoiceAnswers() {
+        return multipleChoiceAnswers;
+    }
+
+    public List<SortQuestionAnswer> getSortQuestionAnswers() {
+        return sortQuestionAnswers;
+    }
 }
