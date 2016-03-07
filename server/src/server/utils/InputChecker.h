@@ -11,7 +11,6 @@
 #include <repository/Exhibits.h>
 
 #include <db/DatabaseSession.h>
-#include <db/struct/Experiment.h>
 
 #include <server/command/commons.h>
 

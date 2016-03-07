@@ -11,7 +11,6 @@ cur.execute('DROP TABLE IF EXISTS counters')
 cur.execute('DROP TABLE IF EXISTS exhibits')
 cur.execute('DROP TABLE IF EXISTS reports')
 cur.execute('DROP TABLE IF EXISTS actions')
-cur.execute('DROP TABLE IF EXISTS active_experiment')
 cur.execute('DROP TABLE IF EXISTS experiments')
 cur.execute('DROP TABLE IF EXISTS simple_questions')
 cur.execute('DROP TABLE IF EXISTS multiple_choice_question_options')
@@ -106,7 +105,10 @@ cur.execute('''
 	CREATE TABLE experiments (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
-		doc JSONB NOT NULL
+		state INTEGER NOT NULL,
+		start_date VARCHAR NULL,
+		finish_date VARCHAR NULL,
+		content JSONB NOT NULL
 	)
 ''')
 
@@ -116,18 +118,6 @@ cur.execute('''
 		experiment_id INT NOT NULL REFERENCES experiments(id),
 		doc JSONB NOT NULL
 	)
-''')
-
-cur.execute('''
-	CREATE TABLE active_experiment (
-		id INT NULL REFERENCES experiments(id)
-	);
-
-	INSERT INTO active_experiment VALUES
-		(NULL);
-
-	CREATE RULE no_insert AS ON INSERT TO active_experiment DO INSTEAD NOTHING; 
-	CREATE RULE no_delete AS ON DELETE TO active_experiment DO INSTEAD NOTHING;
 ''')
 
 ######### sample data
@@ -153,8 +143,8 @@ cur.execute('''
 
 # experiments
 cur.execute('''
-	INSERT INTO experiments (name, doc) VALUES
-		('badanie testowe', '
+	INSERT INTO experiments (name, state, content) VALUES
+		('badanie testowe', 1, '
 			{
 				"actions": [5, 1, 4, 3, 7, 8],
 				"breakActions": [12, 9, 11],

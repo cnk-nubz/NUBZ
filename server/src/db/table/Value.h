@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <unordered_set>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 
@@ -50,6 +51,17 @@ struct value_cast<std::int32_t> {
             assert(false && "unable to convert to int32_t");
         }
         return val;
+    }
+};
+
+template <>
+struct value_cast<boost::gregorian::date> {
+    static boost::gregorian::date from(const std::string &raw) {
+        try {
+            return boost::gregorian::from_simple_string(raw);
+        } catch (...) {
+            assert(false && "unable to convert to date");
+        }
     }
 };
 

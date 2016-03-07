@@ -8,6 +8,15 @@ namespace server {
 namespace io {
 namespace output {
 
+Experiment::Experiment(const repository::Experiment &repo)
+    : ID(repo.ID),
+      name(repo.name),
+      exhibitActions(repoToIO<Action>(repo.actions)),
+      breakActions(repoToIO<Action>(repo.breakActions)),
+      surveyBefore(repo.surveyBefore),
+      surveyAfter(repo.surveyAfter) {
+}
+
 communication::Experiment Experiment::toThrift() const {
     auto res = communication::Experiment{};
     res.experimentId = ID;

@@ -7,6 +7,8 @@
 
 #include <communication/structs_types.h>
 
+#include <repository/Experiments.h>
+
 #include <server/io/QuestionsList.h>
 #include <server/io/output/Action.h>
 #include <server/io/output/MultipleChoiceQuestion.h>
@@ -18,9 +20,12 @@ namespace output {
 
 struct Experiment {
     using thrift_t = communication::Experiment;
+    using repo_t = repository::Experiment;
 
     Experiment() = default;
     thrift_t toThrift() const;
+
+    Experiment(const repo_t &repo);
 
     std::int32_t ID;
     std::string name;

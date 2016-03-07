@@ -2,7 +2,6 @@
 #define SERVER_COMMAND__GET_CURRENT_EXPERIMENT_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/Experiment.h>
 
 #include <server/io/output/CurrentExperimentResponse.h>
 
@@ -19,14 +18,7 @@ public:
     io::output::CurrentExperimentResponse operator()();
 
 private:
-    void fillExperimentData(const db::Experiment &experiment, db::DatabaseSession &session);
-    void fillSurvey(const db::Experiment::Survey &survey, io::QuestionsList &qList,
-                    db::DatabaseSession &session);
-
     db::Database &db;
-
-    // temporary data, correct only inside operator()
-    io::output::Experiment currentExperiment;
 };
 }
 }

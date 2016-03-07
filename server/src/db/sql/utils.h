@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
 namespace db {
@@ -49,6 +50,10 @@ inline std::string sqlVal(const bool &raw) {
     return raw ? "TRUE" : "FALSE";
 }
 
+inline std::string sqlVal(const boost::gregorian::date &raw) {
+    return boost::gregorian::to_simple_string(raw);
+}
+
 inline std::string sqlVal(const std::string &raw) {
     return "'" + raw + "'";
 }
@@ -64,7 +69,7 @@ inline std::string sqlVal(const boost::optional<std::string> &raw) {
 template <class T>
 std::string sqlVal(const boost::optional<T> &raw) {
     if (raw) {
-        return std::to_string(raw.value());
+        return sqlVal(raw.value());
     } else {
         return "NULL";
     }

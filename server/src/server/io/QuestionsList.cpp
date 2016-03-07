@@ -6,6 +6,26 @@
 namespace server {
 namespace io {
 
+QuestionsList::QuestionsList(const repository::Experiment::Survey &repo)
+    : simpleQuestions(repoToIO<output::SimpleQuestion>(repo.simpleQuestions)),
+      multipleChoiceQuestions(
+          repoToIO<output::MultipleChoiceQuestion>(repo.multipleChoiceQuestions)),
+      sortQuestions(repoToIO<output::SortQuestion>(repo.sortQuestions)) {
+    for (auto &type : repo.typesOrder) {
+        switch (type) {
+            case repository::Experiment::Survey::QuestionType::Simple:
+                questionsOrder.push_back(QuestionType::Simple);
+                break;
+            case repository::Experiment::Survey::QuestionType::Sort:
+                questionsOrder.push_back(QuestionType::Sort);
+                break;
+            case repository::Experiment::Survey::QuestionType::MultipleChoice:
+                questionsOrder.push_back(QuestionType::MultipleChoice);
+                break;
+        }
+    }
+}
+
 QuestionsList::QuestionType QuestionsList::QuestionTypeFromThrift(
     const communication::QuestionType::type &thrift) {
     switch (thrift) {

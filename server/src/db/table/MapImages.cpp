@@ -57,7 +57,7 @@ MapImages::Row::ZoomLevel parseZoomLevel(const rapidjson::Value &json);
 }
 
 MapImages::Row MapImages::RowFactory::fromDB(const DBOut &dbOut) {
-    MapImages::Row res;
+    auto res = MapImages::Row{};
     res.floor = std::get<ValueFloor>(dbOut).value;
     res.filename = std::get<ValueFilename>(dbOut).value;
     res.width = std::get<ValueWidth>(dbOut).value;
@@ -81,11 +81,6 @@ MapImages::Row::ZoomLevel parseZoomLevel(const rapidjson::Value &json) {
     res.imageHeight = parseInt(getNode(json, Keys::height));
     res.tileSize = parseInt(getNode(json, Keys::tileSize));
     res.tilesFilenames = parseArray(getNode(json, Keys::tiles), parseStringArray);
-    for (const auto &row : res.tilesFilenames) {
-        if (row.size() != res.tilesFilenames.back().size()) {
-            assert(false && "all rows should have the same length");
-        }
-    }
     return res;
 }
 }
