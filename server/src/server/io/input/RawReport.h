@@ -9,6 +9,8 @@
 
 #include <communication/structs_types.h>
 
+#include <repository/Reports.h>
+
 namespace server {
 namespace io {
 namespace input {
@@ -16,6 +18,7 @@ namespace input {
 struct RawReport {
     struct Event {
         Event(const communication::RawReportEvent &thrift);
+        repository::Report::Event toRepo() const;
 
         boost::optional<std::int32_t> exhibitId;
         std::int32_t durationInSecs;
@@ -42,6 +45,7 @@ struct RawReport {
         };
 
         SurveyAnswers(const communication::SurveyAnswers &thrift);
+        repository::Report::SurveyAns toRepo() const;
 
         std::vector<SimpleQuestionAnswer> simpleQuestionsAnswers;
         std::vector<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers;
@@ -49,6 +53,7 @@ struct RawReport {
     };
 
     RawReport(const communication::RawReport &thrift);
+    repository::Report toRepo() const;
 
     std::int32_t experimentId;
     std::int32_t ID;

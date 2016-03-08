@@ -9,10 +9,13 @@ void DatabaseSession::execute(const std::string &sqlStmt) {
     work.exec(sqlStmt);
 }
 
-DatabaseSession::Row DatabaseSession::getResult(const std::string &sqlQuery) {
+boost::optional<DatabaseSession::Row> DatabaseSession::getResult(const std::string &sqlQuery) {
     pqxx::result res = work.exec(sqlQuery);
-    assert(res.size());
-    return translate(res[0]);
+    if (res.empty()) {
+        return {};
+    } else {
+        return translate(res[0]);
+    }
 }
 
 std::vector<DatabaseSession::Row> DatabaseSession::getResults(const std::string &sqlQuery) {

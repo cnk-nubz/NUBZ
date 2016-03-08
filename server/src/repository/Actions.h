@@ -19,6 +19,8 @@ public:
 
     Actions(db::DatabaseSession &session);
 
+    std::vector<std::int32_t> getAllIDs();
+
     boost::optional<Action> get(std::int32_t ID);
     std::vector<Action> getAll();
 

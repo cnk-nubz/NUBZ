@@ -116,9 +116,9 @@ rapidjson::Value createZoomLevel(rapidjson::Document::AllocatorType &allocator,
     auto tiles = createArray(allocator, zoomLevel.tilesFilenames, createStringArray);
 
     return createDictionary(allocator,
-                            std::make_pair(Keys::width, rapidjson::Value{zoomLevel.imageWidth}),
-                            std::make_pair(Keys::height, rapidjson::Value{zoomLevel.imageHeight}),
-                            std::make_pair(Keys::tileSize, rapidjson::Value{zoomLevel.tileSize}),
+                            std::make_pair(Keys::width, createInt(zoomLevel.imageWidth)),
+                            std::make_pair(Keys::height, createInt(zoomLevel.imageHeight)),
+                            std::make_pair(Keys::tileSize, createInt(zoomLevel.tileSize)),
                             std::make_pair(Keys::tiles, std::move(tiles)));
 }
 }

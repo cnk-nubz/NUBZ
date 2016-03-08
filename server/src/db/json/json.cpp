@@ -48,11 +48,24 @@ std::string jsonToString(const rapidjson::Value &json) {
     return std::string(buffer.GetString());
 }
 
+rapidjson::Value createIntArray(rapidjson::Document::AllocatorType &allocator,
+                                const std::vector<std::int32_t> &rawData) {
+    return createArray(
+        allocator, rawData, [](auto &, const std::int32_t &raw) { return createInt(raw); });
+}
+
 rapidjson::Value createStringArray(rapidjson::Document::AllocatorType &allocator,
                                    const std::vector<std::string> &rawData) {
-    return createArray(allocator, rawData, [](auto &, const std::string &raw) {
-        return rapidjson::Value{toStrAdapter(raw)};
-    });
+    return createArray(
+        allocator, rawData, [](auto &, const std::string &raw) { return createString(raw); });
+}
+
+rapidjson::Value createInt(std::int32_t raw) {
+    return rapidjson::Value{raw};
+}
+
+rapidjson::Value createString(const std::string &raw) {
+    return rapidjson::Value{toStrAdapter(raw)};
 }
 }
 }

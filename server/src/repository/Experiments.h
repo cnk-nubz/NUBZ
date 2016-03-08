@@ -31,7 +31,9 @@ public:
         struct Survey {
             using QuestionType = _Experiment::QuestionType;
 
+            // defines questions order
             std::vector<QuestionType> typesOrder;
+
             std::vector<SimpleQuestion> simpleQuestions;
             std::vector<MultipleChoiceQuestion> multipleChoiceQuestions;
             std::vector<SortQuestion> sortQuestions;
@@ -49,13 +51,23 @@ public:
         struct Survey {
             using QuestionType = _Experiment::QuestionType;
 
+            // defines questions order
             std::vector<QuestionType> typesOrder;
+
+            // unique, foreign keys
             std::vector<std::int32_t> simpleQuestions;
+
+            // unique, foreign keys
             std::vector<std::int32_t> multipleChoiceQuestions;
+
+            // unique, foreign keys
             std::vector<std::int32_t> sortQuestions;
         };
 
+        // unique, foreign keys
         std::vector<std::int32_t> actions;
+
+        // unique, foreign keys
         std::vector<std::int32_t> breakActions;
 
         Survey surveyBefore;
@@ -78,12 +90,24 @@ public:
     std::vector<Experiment> getAllFinished();
 
     // ID, startDate and finishDate will be saved in the given struct
+    // may throw InvalidData
     void insert(LazyExperiment *experiment);
 
 private:
     enum State : std::int32_t { Ready = 0, Active = 1, Finished = 2 };
 
     std::vector<Experiment> getAllWithState(State state);
+
+    void checkActions(const Experiments::LazyExperiment &experiment);
+
+    // throws InvalidData in case of duplicated questions, incorrect id or invalid types order
+    void checkSurvey(const LazyExperiment::Survey &survey);
+
+    // throws InvalidData in case of not existing or duplicated id
+    void checkIds(const std::unordered_set<std::int32_t> &existing,
+                  const std::vector<std::int32_t> &choosen) const;
+
+    void checkForDuplicates(std::vector<std::int32_t> ids) const;
 
     db::DatabaseSession &session;
 };

@@ -18,6 +18,10 @@ Actions::Action fromDB(const Table::Row &action);
 Actions::Actions(db::DatabaseSession &session) : session(session) {
 }
 
+std::vector<std::int32_t> Actions::getAllIDs() {
+    return Impl::getAllIDs(session);
+}
+
 boost::optional<Actions::Action> Actions::get(std::int32_t ID) {
     if (auto res = Impl::get(session, ID)) {
         return fromDB(res.value());

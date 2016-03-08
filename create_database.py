@@ -116,7 +116,7 @@ cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
 		experiment_id INT NOT NULL REFERENCES experiments(id),
-		doc JSONB NOT NULL
+		content JSONB NOT NULL
 	)
 ''')
 
@@ -172,64 +172,64 @@ cur.execute('''
 				"history": [
 					{
 						"exhibitId": 2,
-						"durationInSecs": 15,
+						"secs": 15,
 						"actions": [1, 4, 7]
 					}, {
 						"exhibitId": 1,
-						"durationInSecs": 30,
+						"secs": 30,
 						"actions": [1]
 					}, {
 						"exhibitID": 2,
-						"durationInSecs": 140,
+						"secs": 140,
 						"actions": []
 					}, {
-						"durationInSecs": 17,
+						"secs": 17,
 						"actions": [12, 9]
 					}, {
 						"exhibitId": 1,
-						"durationInSecs": 20,
+						"secs": 20,
 						"actions": [1, 3]
 					}, {
-						"durationInSecs": 14,
+						"secs": 14,
 						"actions": [11]
 					}
 				],
 				"surveyBefore": {
-					"simpleQuestions": [
+					"simple": [
 						{
-							"answer": "12345"
+							"ans": "12345"
 						}, {
 						}
 					],
-					"multipleChoiceQuestions": [
+					"multi": [
 						{
-							"answer": [5, 6, 9, 12]
+							"ans": [5, 6, 9, 12]
 						}
 					],
-					"sortQuestions": [
+					"sort": [
 						{
 
 						}, {
-							"answer": [7, 6, 5, 12, 8, 9, 10, 11]
+							"ans": [7, 6, 5, 12, 8, 9, 10, 11]
 						}
 					]
 				},
 				"surveyAfter": {
-					"simpleQuestions": [
+					"simple": [
 						{
-							"answer": "test answer for simple question 1"
+							"ans": "test answer for simple question 1"
 						}
 					],
-					"multipleChoiceQuestions": [
+					"multi": [
 						{
-							"answer": [2]
+							"ans": [2]
 						}, {
 						}
 					],
-					"sortQuestions": [
+					"sort": [
 						{
 						}, {
-							"answer": [3, 1, 4, 2]
+							"ans": [3, 1, 4, 2]
 						}
 					]
 				}

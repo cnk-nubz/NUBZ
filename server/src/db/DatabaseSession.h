@@ -25,24 +25,9 @@ public:
     // raw commands
     void execute(const std::string &sqlStmt);
 
-    Row getResult(const std::string &sqlQuery);
+    boost::optional<Row> getResult(const std::string &sqlQuery);
 
     std::vector<Row> getResults(const std::string &sqlQuery);
-
-    // commands parametrized with factory
-    template <class T>
-    typename T::Product getResult(const std::string &sqlQuery) {
-        return T::create(getResult(sqlQuery));
-    }
-
-    template <class T>
-    std::vector<typename T::Product> getResults(const std::string &sqlQuery) {
-        std::vector<typename T::Product> res;
-        for (const auto &row : getResults(sqlQuery)) {
-            res.emplace_back(T::create(row));
-        }
-        return res;
-    }
 
     // commands using db::sql
     template <class Sql>
@@ -50,7 +35,6 @@ public:
         execute(sql.str());
     }
 
-    // returns optional instead of raising error in case of no result (as previous versions do)
     template <class Sql>
     boost::optional<typename Sql::return_type> getResult(const Sql &sql) {
         auto res = getResults(sql);

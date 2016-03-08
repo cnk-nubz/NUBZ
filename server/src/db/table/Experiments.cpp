@@ -132,8 +132,8 @@ std::string createContent(const Experiments::Row &row) {
 
     auto json = createDictionary(
         allocator,
-        std::make_pair(Keys::actions, createTrivialArray(allocator, row.actions)),
-        std::make_pair(Keys::breakActions, createTrivialArray(allocator, row.breakActions)),
+        std::make_pair(Keys::actions, createIntArray(allocator, row.actions)),
+        std::make_pair(Keys::breakActions, createIntArray(allocator, row.breakActions)),
         std::make_pair(Keys::surveyBefore, createSurvey(allocator, row.surveyBefore)),
         std::make_pair(Keys::surveyAfter, createSurvey(allocator, row.surveyAfter)));
     return jsonToString(json);
@@ -143,10 +143,10 @@ rapidjson::Value createSurvey(rapidjson::Document::AllocatorType &allocator,
                               const Experiments::Row::Survey &survey) {
     using Keys = RootKeys::SurveyKeys;
 
-    auto typesOrder = createTrivialArray(allocator, survey.typesOrder);
-    auto simpleQuestions = createTrivialArray(allocator, survey.simpleQuestions);
-    auto multipleChoiceQuestions = createTrivialArray(allocator, survey.multipleChoiceQuestions);
-    auto sortQuestions = createTrivialArray(allocator, survey.sortQuestions);
+    auto typesOrder = createIntArray(allocator, survey.typesOrder);
+    auto simpleQuestions = createIntArray(allocator, survey.simpleQuestions);
+    auto multipleChoiceQuestions = createIntArray(allocator, survey.multipleChoiceQuestions);
+    auto sortQuestions = createIntArray(allocator, survey.sortQuestions);
 
     return createDictionary(
         allocator,

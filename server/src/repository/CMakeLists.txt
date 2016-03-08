@@ -7,6 +7,7 @@ set(SOURCES
     Counters.cpp
     MapImages.cpp
     Experiments.cpp
+    Reports.cpp
 )
 
 add_library(repository ${SOURCES})

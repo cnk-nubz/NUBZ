@@ -1,8 +1,6 @@
 #ifndef SERVER_COMMAND__SAVE_RAW_REPORT_COMMAND__H
 #define SERVER_COMMAND__SAVE_RAW_REPORT_COMMAND__H
 
-#include <server/utils/ReportChecker.h>
-
 #include <db/Database.h>
 
 #include <server/io/input/RawReport.h>
@@ -20,12 +18,6 @@ public:
     void operator()(const io::input::RawReport &input);
 
 private:
-    io::input::RawReport removeDuplicatedIds(io::input::RawReport input) const;
-    void validateReport(db::DatabaseSession &session, const io::input::RawReport &input) const;
-    //    void validateAnswers(const utils::ReportChecker &reportChecker,
-    //                         const io::input::RawReport::SurveyAnswers &answers,
-    //                         const db::Experiment::Survey &survey) const;
-
     db::Database &db;
 };
 }

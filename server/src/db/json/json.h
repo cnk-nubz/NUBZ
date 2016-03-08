@@ -58,6 +58,11 @@ auto bindAllocator(rapidjson::Document::AllocatorType &allocator, F &&f) {
     return std::bind(std::forward<F>(f), std::ref(allocator), std::placeholders::_1);
 }
 
+rapidjson::Value createInt(std::int32_t raw);
+rapidjson::Value createString(const std::string &raw);
+
+rapidjson::Value createIntArray(rapidjson::Document::AllocatorType &allocator,
+                                const std::vector<std::int32_t> &rawData);
 rapidjson::Value createStringArray(rapidjson::Document::AllocatorType &allocator,
                                    const std::vector<std::string> &rawData);
 
@@ -70,13 +75,6 @@ rapidjson::Value createArray(rapidjson::Document::AllocatorType &allocator,
         json.PushBack(translator(allocator, raw), allocator);
     }
     return json;
-}
-
-template <class T>
-rapidjson::Value createTrivialArray(rapidjson::Document::AllocatorType &allocator,
-                                    const std::vector<T> &rawData) {
-    return createArray(
-        allocator, rawData, [](auto &, const T &raw) { return rapidjson::Value{raw}; });
 }
 
 namespace detail {

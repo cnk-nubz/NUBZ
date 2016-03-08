@@ -4,7 +4,6 @@
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
-#include <server/utils/io_translation.h>
 
 #include "CreateSortQuestionCommand.h"
 

@@ -6,6 +6,7 @@
 
 #include "DefaultRepo.h"
 #include "Experiments.h"
+#include "InvalidData.h"
 
 namespace repository {
 
@@ -42,10 +43,7 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
 }
 
 boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
-    if (getActive()) {
-        assert(false && "you can have only one active experiment");
-    }
-
+    assert(!getActive() && "you can only have one active experiment");
     auto sql = Table::update()
                    .where(Table::colId == ID && Table::colState == State::Ready)
                    .set(Table::colState, State::Active)
@@ -92,9 +90,57 @@ std::vector<Experiments::Experiment> Experiments::getAllWithState(State state) {
 }
 
 void Experiments::insert(Experiments::LazyExperiment *experiment) {
+    checkActions(*experiment);
+    checkActions(*experiment);
+    checkSurvey(experiment->surveyBefore);
+    checkSurvey(experiment->surveyAfter);
+
     experiment->startDate = boost::none;
     experiment->finishDate = boost::none;
     experiment->ID = Impl::insert(session, toDB(*experiment));
+}
+
+void Experiments::checkActions(const Experiments::LazyExperiment &experiment) {
+    auto existing =
+        std::unordered_set<std::int32_t>{experiment.actions.begin(), experiment.actions.end()};
+
+    checkIds(existing, experiment.actions);
+    checkIds(existing, experiment.breakActions);
+}
+
+void Experiments::checkSurvey(const LazyExperiment::Survey &survey) {
+    using QuestionType = Experiment::Survey::QuestionType;
+
+    if (utils::count(survey.typesOrder, QuestionType::Simple) != survey.simpleQuestions.size() ||
+        utils::count(survey.typesOrder, QuestionType::Sort) != survey.sortQuestions.size() ||
+        utils::count(survey.typesOrder, QuestionType::MultipleChoice) !=
+            survey.multipleChoiceQuestions.size()) {
+        throw InvalidData("types order doesn't match questions");
+    }
+
+    using set = std::unordered_set<std::int32_t>;
+    auto allSimple = set{survey.simpleQuestions.begin(), survey.simpleQuestions.end()};
+    auto allMul = set{survey.multipleChoiceQuestions.begin(), survey.multipleChoiceQuestions.end()};
+    auto allSort = set{survey.sortQuestions.begin(), survey.sortQuestions.end()};
+    checkIds(allSimple, survey.simpleQuestions);
+    checkIds(allMul, survey.multipleChoiceQuestions);
+    checkIds(allSort, survey.sortQuestions);
+}
+
+void Experiments::checkIds(const std::unordered_set<std::int32_t> &existing,
+                           const std::vector<std::int32_t> &choosen) const {
+    checkForDuplicates(choosen);
+    if (!utils::all_of(choosen,
+                       std::bind(&std::unordered_set<std::int32_t>::count, &existing, _1))) {
+        throw InvalidData("given id doesn't exist");
+    }
+}
+
+void Experiments::checkForDuplicates(std::vector<std::int32_t> ids) const {
+    std::sort(ids.begin(), ids.end());
+    if (std::unique(ids.begin(), ids.end()) != ids.end()) {
+        throw InvalidData("duplicated ids");
+    }
 }
 
 namespace {

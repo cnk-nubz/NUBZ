@@ -24,8 +24,6 @@ public:
 
     static bool checkText(const std::string &text);
 
-    bool checkReportId(std::int32_t reportId);
-
     template <class Container,
               class = typename std::is_same<typename Container::value_type, std::int32_t>::type>
     bool checkExhibitsIds(const Container &exhibitsIds);

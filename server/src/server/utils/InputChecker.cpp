@@ -13,11 +13,6 @@ namespace utils {
 InputChecker::InputChecker(db::DatabaseSession &session) : session(session) {
 }
 
-bool InputChecker::checkReportId(std::int32_t reportId) {
-    auto repo = repository::Counters{session};
-    return reportId >= 0 && reportId <= repo.get(repository::CounterType::LastReportID);
-}
-
 bool InputChecker::checkFrame(std::int32_t floor, std::int32_t x, std::int32_t y,
                               std::int32_t width, std::int32_t height) {
     if (x < 0 || y < 0 || width <= 0 || height <= 0) {

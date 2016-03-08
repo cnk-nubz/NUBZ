@@ -50,6 +50,15 @@ struct DefaultRepoWithID : _DefaultRepo<DBTable> {
     using id_col_type = typename DBTable::ColumnId;
     using id_type = typename id_col_type::value_type::type;
 
+    static std::vector<id_type> getAllIDs(db::DatabaseSession &session) {
+        auto sql = db::sql::Select<id_col_type>{};
+        auto result = std::vector<id_type>{};
+        utils::transform(session.getResults(sql), result, [](auto &dbTuple) {
+            return std::get<typename id_col_type::value_type>(dbTuple).value;
+        });
+        return result;
+    }
+
     static boost::optional<val_type> get(db::DatabaseSession &session, id_type ID) {
         auto sql = DBTable::select();
         sql.where(DBTable::colId == ID);

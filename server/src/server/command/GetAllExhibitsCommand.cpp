@@ -3,7 +3,6 @@
 #include <repository/Exhibits.h>
 
 #include <server/io/utils.h>
-#include <server/utils/io_translation.h>
 
 #include "GetAllExhibitsCommand.h"
 
@@ -22,7 +21,7 @@ std::vector<io::output::Exhibit> GetAllExhibitsCommand::operator()() {
     std::sort(repoExhibits.begin(), repoExhibits.end(), [](const auto &lhs, const auto &rhs) {
         return lhs.name < rhs.name;
     });
-    return ::server::io::repoToIO<io::output::Exhibit>(repoExhibits);
+    return io::repoToIO<io::output::Exhibit>(repoExhibits);
 }
 }
 }

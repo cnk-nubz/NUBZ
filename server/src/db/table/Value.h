@@ -61,6 +61,7 @@ struct value_cast<boost::gregorian::date> {
             return boost::gregorian::from_simple_string(raw);
         } catch (...) {
             assert(false && "unable to convert to date");
+            return {};
         }
     }
 };

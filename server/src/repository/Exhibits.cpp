@@ -18,6 +18,10 @@ Exhibits::Exhibit fromDB(const Table::Row &exhibit);
 Exhibits::Exhibits(db::DatabaseSession &session) : session(session) {
 }
 
+std::vector<std::int32_t> Exhibits::getAllIDs() {
+    return Impl::getAllIDs(session);
+}
+
 boost::optional<Exhibits::Exhibit> Exhibits::get(std::int32_t ID) {
     if (auto res = Impl::get(session, ID)) {
         return fromDB(res.value());

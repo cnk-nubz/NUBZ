@@ -29,6 +29,8 @@ public:
 
     Exhibits(db::DatabaseSession &session);
 
+    std::vector<std::int32_t> getAllIDs();
+
     boost::optional<Exhibit> get(std::int32_t ID);
     std::vector<Exhibit> getAll();
     std::vector<Exhibit> getAllNewerThan(std::int32_t version);
