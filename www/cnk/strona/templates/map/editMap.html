@@ -11,6 +11,9 @@
 {% endblock %}
 {% block script %}
   {{ block.super }}
+  {% compress js %}
+  <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
   <!-- LEAFLET -->
   <script src="{% static "include/js/leaflet-src.js" %}"></script>
   <!-- Leaflet label -->
