@@ -29,11 +29,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.uiHandler = new UiHandler(Looper.getMainLooper(), this);
+        uiHandler = new UiHandler(Looper.getMainLooper(), this);
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
-        NetworkHandler.getInstance().uploadRaport();
+        DataHandler.getInstance().getAllReadyRaports();
+        //NetworkHandler.getInstance().uploadRaport();
         try {
             if (!dataLoaded) {
                 DataHandler.getInstance().loadDbData();

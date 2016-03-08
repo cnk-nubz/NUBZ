@@ -42,17 +42,18 @@ public class DataHandler extends Observable {
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
-    private static final Integer MAX_TRIES = 3;
     private static DataHandler instance;
     Integer exhibitsVersion;
     Integer mapVersion;
     private DatabaseHelper dbHelper;
     private List<FloorInfo> floorInfos;
     private Raport currentRaport;
+    private Map<Raport, Integer> readyRaports;
     private Experiment experiment;
 
     private DataHandler() {
         floorInfos = new ArrayList<>();
+        readyRaports = new HashMap<>();
         mapVersion = null;
         exhibitsVersion = null;
     }
@@ -71,6 +72,11 @@ public class DataHandler extends Observable {
     public void loadDbData() {
         exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
         mapVersion = dbHelper.getVersion(Version.Item.MAP);
+        loadMapFromDb();
+        loadReadyRaportsFromDb();
+    }
+
+    private void loadMapFromDb() {
         floorInfos.clear();
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
             FloorInfo currentFloor = new FloorInfo();
@@ -87,6 +93,24 @@ public class DataHandler extends Observable {
             currentFloor.setDetailLevelRes(detailLevelRes);
             currentFloor.setMapTilesSizes(mapTileInfos);
             floorInfos.add(currentFloor);
+        }
+    }
+
+    private void loadReadyRaportsFromDb() {
+        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
+        for (RaportFile file : toLoad) {
+            Raport loaded = null;
+            try {
+                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance()
+                                                                       .getFile(file.getFileName()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "Unable to get raport");
+            }
+            if (loaded != null) {
+                Log.i(LOG_TAG, loaded.toString());
+                readyRaports.put(loaded, file.getServerId());
+            }
         }
     }
 
@@ -124,69 +148,29 @@ public class DataHandler extends Observable {
                                              .getSurveyAnswers(),
                                    experiment.getSurvey(Survey.SurveyType.AFTER)
                                              .getSurveyAnswers());
-        String path = "";
-        try {
-            path = saveRaport(currentRaport);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in startNewRaport");
-            throw new RuntimeException("Cannot start new raport");
-        }
+        String path;
+        path = saveCurrentRaport();
 
         dbHelper.setRaportFile(newId, path);
     }
 
-    public void addEventToRaport(RaportEvent event) {
-        addEventToRaport(event, 0);
-    }
-
     // only modifies file of raport in progress, which is not used anywhere else at the time
-    private void addEventToRaport(RaportEvent event, int tryNo) {
-        if (tryNo == 0) {
-            currentRaport.addEvent(event);
-        }
-        try {
-            saveRaport(currentRaport);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in addEventToRaport");
-            if (tryNo > MAX_TRIES) {
-                throw new RuntimeException("Cannot add event to raport");
-            } else {
-                addEventToRaport(event, tryNo + 1);
-            }
-        }
-
-    }
-
-    public void markRaportAsReady() {
-        markRaportAsReady(0);
+    public void addEventToCurrentRaport(RaportEvent event) {
+        currentRaport.addEvent(event);
+        saveCurrentRaport();
     }
 
     // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
-    public void markRaportAsReady(int tryNo) {
+    public void markRaportAsReady() {
+        saveCurrentRaport();
+        readyRaports.put(currentRaport, null);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
     }
 
     // only uses files ready to send which are used by one thread - uploading raports
     public Map<Raport, Integer> getAllReadyRaports() {
-        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
-        Map<Raport, Integer> raportsToSend = new HashMap<>();
-        for (RaportFile file : toLoad) {
-            Raport loaded = null;
-            try {
-                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance()
-                                                                       .getFile(file.getFileName()));
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(LOG_TAG, "Unable to get raport");
-            }
-            if (loaded != null) {
-                raportsToSend.put(loaded, file.getServerId());
-            }
-        }
-        return raportsToSend;
+        return readyRaports;
     }
 
     // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
@@ -199,10 +183,7 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version,
-                        FloorMap floor0,
-                        FloorMap floor1,
-                        int tryNo) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -344,15 +325,20 @@ public class DataHandler extends Observable {
         return true;
     }
 
-    private String saveRaport(Raport raport) throws IOException {
+    public String saveCurrentRaport() {
+        Log.i(LOG_TAG, currentRaport.toString());
         String dir = DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
         String tmpFile = dir + TMP;
         String realFile = "";
-        FileHandler.getInstance().saveSerializable(raport, tmpFile);
-        realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
-        FileHandler.getInstance().renameFile(tmpFile, realFile);
-
+        try {
+            FileHandler.getInstance().saveSerializable(currentRaport, tmpFile);
+            realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
+            FileHandler.getInstance().renameFile(tmpFile, realFile);
+        } catch (IOException e) {
+            Log.i(LOG_TAG, "Saving raport failed");
+            saveCurrentRaport();
+        }
         return dir + realFile;
     }
 

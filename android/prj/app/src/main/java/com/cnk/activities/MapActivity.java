@@ -479,9 +479,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 mapState.exhibitsOverlay.invalidate();
 
                 ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
-                Integer duration = (int) data.getLongExtra("TIME", 0);
+                Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
 
                 RaportEvent event = new RaportEvent(requestCode, duration, selectedActions);
+                DataHandler.getInstance().addEventToCurrentRaport(event);
             } else {
                 // TODO: after break
             }

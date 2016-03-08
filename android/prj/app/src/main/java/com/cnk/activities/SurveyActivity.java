@@ -43,7 +43,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private RelativeLayout mainView;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
-    private SurveyAnswers answers;
     private MenuItem nextItem;
     private MenuItem prevItem;
     private ProgressDialog spinner;
@@ -70,8 +69,10 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
+        item.setEnabled(false);
         hideKeyboard();
         currentQuestionView.saveAnswer();
+        DataHandler.getInstance().saveCurrentRaport();
         if (item.getItemId() == R.id.action_prev_question) {
             nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {
@@ -90,6 +91,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             }
 
         }
+        item.setEnabled(true);
         return super.onOptionsItemSelected(item);
     }
 
@@ -141,11 +143,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void initViews() {
         Survey currentSurvey = DataHandler.getInstance().getSurvey(type);
-        answers = currentSurvey.getSurveyAnswers();
+        SurveyAnswers answers = currentSurvey.getSurveyAnswers();
         allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
         while (currentSurvey.getRemainingQuestionsCount() > 0) {
-            Survey.QuestionType type = currentSurvey.popNextQuestionType();
-            switch (type) {
+            Survey.QuestionType questionType = currentSurvey.popNextQuestionType();
+            switch (questionType) {
                 case SIMPLE:
                     SimpleQuestionAnswer simpleAnswer = new SimpleQuestionAnswer();
                     answers.addSimpleAnswer(simpleAnswer);

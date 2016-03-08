@@ -44,6 +44,7 @@ public class RaportUploadTask extends ServerTask {
             client.saveReport(thriftRaport);
             Log.i(LOG_TAG, "Raport sent");
             DataHandler.getInstance().markRaportAsSent(raport);
+            toSend.remove(entry.getKey());
         }
     }
 
@@ -79,45 +80,59 @@ public class RaportUploadTask extends ServerTask {
     }
 
     private List<SimpleQuestionAnswer> translateSimpleAnswers(List<com.cnk.data.experiment.answers.SimpleQuestionAnswer> answers) {
+        Log.i(LOG_TAG, "-------SIMPLE QUESTIONS-------");
         List<SimpleQuestionAnswer> thriftAnswers = new ArrayList<>();
         for (com.cnk.data.experiment.answers.SimpleQuestionAnswer answer : answers) {
+            Log.i(LOG_TAG, "SIMPLE QUESTION");
             SimpleQuestionAnswer thriftAnswer = new SimpleQuestionAnswer();
+            Log.i(LOG_TAG, answer.getAnswer());
             thriftAnswer.setAnswer(answer.getAnswer());
             thriftAnswers.add(thriftAnswer);
+            Log.i(LOG_TAG, " ");
         }
         return thriftAnswers;
     }
 
     private List<MultipleChoiceQuestionAnswer> translateMultiQuestions(List<com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer> answers) {
+        Log.i(LOG_TAG, "-------MULTIPLE CHOICE QUESTIONS-------");
         List<MultipleChoiceQuestionAnswer> thriftAnswers = new ArrayList<>();
         for (com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer answer : answers) {
+            Log.i(LOG_TAG, "MULTIPLE CHOICE QUESTION");
             MultipleChoiceQuestionAnswer thriftAnswer = new MultipleChoiceQuestionAnswer();
             List<Integer> thriftOptions = new ArrayList<>();
             if (answer.getAnswer() == null) {
                 thriftOptions = null;
             } else {
                 for (Integer option : answer.getAnswer()) {
+                    Log.i(LOG_TAG, option.toString());
                     thriftOptions.add(option);
                 }
             }
             thriftAnswer.setChoosenOptions(thriftOptions);
+            thriftAnswers.add(thriftAnswer);
+            Log.i(LOG_TAG, " ");
         }
         return thriftAnswers;
     }
 
     private List<SortQuestionAnswer> trasnlateSortQuestions(List<com.cnk.data.experiment.answers.SortQuestionAnswer> answers) {
+        Log.i(LOG_TAG, "-------SORT QUESTIONS-------");
         List<SortQuestionAnswer> thriftAnswers = new ArrayList<>();
         for (com.cnk.data.experiment.answers.SortQuestionAnswer answer : answers) {
+            Log.i(LOG_TAG, "SORT QUESTION");
             SortQuestionAnswer thriftAnswer = new SortQuestionAnswer();
             List<Integer> thriftOptions = new ArrayList<>();
             if (answer.getAnswer() == null) {
                 thriftOptions = null;
             } else {
                 for (Integer option : answer.getAnswer()) {
+                    Log.i(LOG_TAG, option.toString());
                     thriftOptions.add(option);
                 }
             }
             thriftAnswer.setChoosenOrder(thriftOptions);
+            thriftAnswers.add(thriftAnswer);
+            Log.i(LOG_TAG, " ");
         }
         return thriftAnswers;
     }

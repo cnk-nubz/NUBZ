@@ -3,6 +3,7 @@ package com.cnk.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -36,6 +37,7 @@ public class ExhibitDialog extends Activity {
         super.onCreate(savedInstanceState);
 
         startTime = System.currentTimeMillis() / Consts.SECOND;
+        Log.i("Start time", Long.toString(startTime));
         setFinishOnTouchOutside(false);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -95,6 +97,8 @@ public class ExhibitDialog extends Activity {
         @Override
         public void onClick(View view) {
             long endTime = System.currentTimeMillis() / Consts.SECOND;
+            Log.i("End time", Long.toString(endTime));
+            Log.i("Total time", Long.toString(startTime - endTime));
             Intent intent = new Intent();
             intent.putExtra(TIME, endTime - startTime);
             intent.putIntegerArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedOptions());

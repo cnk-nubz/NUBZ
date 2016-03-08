@@ -42,4 +42,13 @@ public class Raport implements Serializable {
     public SurveyAnswers getPostSurveyAnswers() {
         return postSurveyAnswers;
     }
+
+    @Override
+    public String toString() {
+        return "Raport{" +
+               "postSurveyAnswers=" + postSurveyAnswers +
+               ", preSurveyAnswers=" + preSurveyAnswers +
+               ", history=" + history +
+               '}';
+    }
 }
