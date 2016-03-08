@@ -459,15 +459,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                openedDialogs--;
-            }
-        });
-
         if (resultCode == RESULT_OK) {
+            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
+            RaportEvent event;
             if (requestCode != BREAK_ID) {
+                openedDialogs--;
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
                 if (mapState.lastExhibitTextView != null) {
                     mapState.lastExhibitTextView.setBackground(getResources().getDrawable(R.drawable.exhibit_back));
@@ -477,14 +474,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
                   .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
                 mapState.exhibitsOverlay.invalidate();
+                event = new RaportEvent(es.getExhibitId(), duration, selectedActions);
+            } else {
+                event = new RaportEvent(null, duration, selectedActions);
             }
-
-            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
-            Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
-
-            RaportEvent event = new RaportEvent(requestCode > 0 ? requestCode : null,
-                                                duration,
-                                                selectedActions);
             DataHandler.getInstance().addEventToCurrentRaport(event);
         }
     }
@@ -705,6 +698,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
             Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
                            Integer.toString(y));
+            Log.i(LOG_TAG, "open dialogs: " + openedDialogs.toString());
             if (openedDialogs == 0) {
                 openedDialogs++;
                 // only if exhibit is clicked first time
