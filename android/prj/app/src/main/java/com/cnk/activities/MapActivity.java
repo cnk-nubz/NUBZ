@@ -477,15 +477,15 @@ public class MapActivity extends AppCompatActivity implements Observer {
                   .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
                 mapState.exhibitsOverlay.invalidate();
-
-                ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
-                Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
-
-                RaportEvent event = new RaportEvent(requestCode, duration, selectedActions);
-                DataHandler.getInstance().addEventToCurrentRaport(event);
-            } else {
-                // TODO: after break
             }
+
+            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
+
+            RaportEvent event = new RaportEvent(requestCode > 0 ? requestCode : null,
+                                                duration,
+                                                selectedActions);
+            DataHandler.getInstance().addEventToCurrentRaport(event);
         }
     }
 
