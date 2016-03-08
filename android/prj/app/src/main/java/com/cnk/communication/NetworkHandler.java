@@ -134,20 +134,20 @@ public class NetworkHandler implements Observer {
     }
 
     private synchronized void addWaitTask() {
-        Task task = new WaitTask(SECONDS_DELAY * Consts.SECOND);
+        Task task = new WaitTask(SECONDS_DELAY * Consts.MILLIS_IN_SEC);
         tasks.add(task);
     }
 
     private synchronized void addBgUploadTask() {
         Task task = new RaportUploadTask(bgRaportUpload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
+        Task wait = new WaitTask(bgDelaySeconds * Consts.MILLIS_IN_SEC);
         bgTasks.add(task);
         bgTasks.add(wait);
     }
 
     private synchronized void addBgDownloadTask() {
         Task task = new BackgroundDownloadTask(bgDownload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
+        Task wait = new WaitTask(bgDelaySeconds * Consts.MILLIS_IN_SEC);
         bgTasks.add(task);
         bgTasks.add(wait);
     }

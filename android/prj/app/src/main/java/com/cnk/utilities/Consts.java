@@ -3,7 +3,7 @@ package com.cnk.utilities;
 public class Consts {
     public static final Integer FLOOR1 = 0;
     public static final Integer FLOOR2 = 1;
-    public static final long SECOND = 1000;
+    public static final Long MILLIS_IN_SEC = 1000L;
 
     //MapActivity:
     public static final Integer BREAK_DIALOG_ID = 0;

@@ -55,7 +55,6 @@ import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "MapActivity";
-    private static final Integer MILLIS_IN_SEC = 1000;
 
     private TileView tileView;
     private Semaphore changeAndUpdateMutex;
@@ -127,9 +126,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void dialogReturn(Integer requestCode, boolean canceled, List<Action> result, Integer timeSpentInDialog) {
         if (!canceled) {
+            Integer eventToSaveCode = null;
             if (!requestCode.equals(Consts.BREAK_DIALOG_ID)) {
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
-                requestCode = es.getExhibitId();
+                eventToSaveCode = es.getExhibitId();
 
                 if (mapState.lastExhibitTextView != null) {
                     mapState.lastExhibitTextView
@@ -149,7 +149,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 actionsIds.add(result.get(i).getId());
             }
 
-            final RaportEvent eventToSave = new RaportEvent(requestCode, timeSpentInDialog / MILLIS_IN_SEC, actionsIds);
+            final RaportEvent eventToSave = new RaportEvent(eventToSaveCode, timeSpentInDialog / Consts.MILLIS_IN_SEC.intValue(), actionsIds);
 
             new Thread(new Runnable() {
                 @Override
@@ -449,7 +449,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
-        Util.waitDelay(Consts.SECOND);
+        Util.waitDelay(Consts.MILLIS_IN_SEC);
         spinner.dismiss();
         mapState = new MapState(this);
         new StartUpTask().execute();
