@@ -90,6 +90,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
+        openedDialogs++;
         showExhibitDialog(true, BREAK_NAME, BREAK_ID);
     }
 
@@ -459,12 +460,18 @@ public class MapActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                openedDialogs--;
+            }
+        });
+
         if (resultCode == RESULT_OK) {
             ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
             Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
             RaportEvent event;
             if (requestCode != BREAK_ID) {
-                openedDialogs--;
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
                 if (mapState.lastExhibitTextView != null) {
                     mapState.lastExhibitTextView.setBackground(getResources().getDrawable(R.drawable.exhibit_back));
