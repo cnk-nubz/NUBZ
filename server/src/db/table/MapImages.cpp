@@ -32,16 +32,16 @@ const std::string MapImages::ColumnZoomLevels::name = "zoom_levels";
 
 namespace {
 struct Keys {
-    static const std::string width;
-    static const std::string height;
-    static const std::string tileSize;
-    static const std::string tiles;
+    static const char *width;
+    static const char *height;
+    static const char *tileSize;
+    static const char *tiles;
 };
 
-const std::string Keys::width = "width";
-const std::string Keys::height = "height";
-const std::string Keys::tileSize = "tile_size";
-const std::string Keys::tiles = "tiles";
+const char *Keys::width = "width";
+const char *Keys::height = "height";
+const char *Keys::tileSize = "tile_size";
+const char *Keys::tiles = "tiles";
 }
 
 const MapImages::ColumnFloor MapImages::colFloor{};

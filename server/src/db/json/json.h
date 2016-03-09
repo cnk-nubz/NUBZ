@@ -1,6 +1,7 @@
 #ifndef DB_JSON__JSON__H
 #define DB_JSON__JSON__H
 
+#include <iostream>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -18,7 +19,9 @@ namespace json {
 
 const rapidjson::Value &getNode(const rapidjson::Document &root, const std::string &path);
 const rapidjson::Value &getNode(const rapidjson::Value &root, const std::string &path);
-rapidjson::GenericStringRef<char> toStrAdapter(const std::string &str);
+
+// `str` must exist at least as long as allocator
+rapidjson::GenericStringRef<char> toStrAdapter(const char *str);
 
 rapidjson::Document parseJson(const std::string &str);
 
@@ -59,6 +62,8 @@ auto bindAllocator(rapidjson::Document::AllocatorType &allocator, F &&f) {
 }
 
 rapidjson::Value createInt(std::int32_t raw);
+
+// `raw` must exist at least as long as allocator
 rapidjson::Value createString(const std::string &raw);
 
 rapidjson::Value createIntArray(rapidjson::Document::AllocatorType &allocator,
@@ -86,12 +91,12 @@ struct ValueAdapter {
 
 template <class... Args>
 rapidjson::Value createDictionary(rapidjson::Document::AllocatorType &allocator,
-                                  std::pair<std::string, Args>... entries) {
+                                  std::pair<const char *, Args>... entries) {
     // boxing rapidjson::Value into detail::ValueAdapter to prevent copying
-    auto values = std::vector<std::pair<std::string, detail::ValueAdapter>>{entries...};
+    auto values = std::vector<std::pair<const char *, detail::ValueAdapter>>{entries...};
     auto json = rapidjson::Value{rapidjson::kObjectType};
     for (auto &val : values) {
-        json.AddMember(toStrAdapter(val.first), *val.second.ptr, allocator);
+        json.AddMember(toStrAdapter(val.first), std::move(*val.second.ptr), allocator);
     }
     return json;
 }

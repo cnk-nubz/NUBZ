@@ -32,27 +32,27 @@ const std::string Experiments::ColumnContent::name = "content";
 
 namespace {
 struct RootKeys {
-    static const std::string actions;
-    static const std::string breakActions;
-    static const std::string surveyBefore;
-    static const std::string surveyAfter;
+    static const char *actions;
+    static const char *breakActions;
+    static const char *surveyBefore;
+    static const char *surveyAfter;
     struct SurveyKeys {
-        static const std::string typesOrder;
-        static const std::string simpleQuestions;
-        static const std::string multipleChoiceQuestions;
-        static const std::string sortQuestions;
+        static const char *typesOrder;
+        static const char *simpleQuestions;
+        static const char *multipleChoiceQuestions;
+        static const char *sortQuestions;
     };
 };
 
-const std::string RootKeys::actions = "actions";
-const std::string RootKeys::breakActions = "breakActions";
-const std::string RootKeys::surveyBefore = "surveyBefore";
-const std::string RootKeys::surveyAfter = "surveyAfter";
+const char *RootKeys::actions = "actions";
+const char *RootKeys::breakActions = "breakActions";
+const char *RootKeys::surveyBefore = "surveyBefore";
+const char *RootKeys::surveyAfter = "surveyAfter";
 
-const std::string RootKeys::SurveyKeys::typesOrder = "typesOrder";
-const std::string RootKeys::SurveyKeys::simpleQuestions = "simpleQuestions";
-const std::string RootKeys::SurveyKeys::multipleChoiceQuestions = "multipleChoiceQuestions";
-const std::string RootKeys::SurveyKeys::sortQuestions = "sortQuestions";
+const char *RootKeys::SurveyKeys::typesOrder = "typesOrder";
+const char *RootKeys::SurveyKeys::simpleQuestions = "simpleQuestions";
+const char *RootKeys::SurveyKeys::multipleChoiceQuestions = "multipleChoiceQuestions";
+const char *RootKeys::SurveyKeys::sortQuestions = "sortQuestions";
 }
 
 const Experiments::ColumnId Experiments::colId{};

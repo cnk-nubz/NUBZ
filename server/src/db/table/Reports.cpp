@@ -34,37 +34,37 @@ const std::string Reports::ColumnContent::name = "content";
 
 namespace {
 struct RootKeys {
-    static const std::string history;
-    static const std::string surveyBefore;
-    static const std::string surveyAfter;
+    static const char *history;
+    static const char *surveyBefore;
+    static const char *surveyAfter;
     struct EventKeys {
-        static const std::string exhibitId;
-        static const std::string duration;
-        static const std::string actions;
+        static const char *exhibitId;
+        static const char *duration;
+        static const char *actions;
     };
     struct SurveyAnsKeys {
-        static const std::string simpleQ;
-        static const std::string multiQ;
-        static const std::string sortQ;
+        static const char *simpleQ;
+        static const char *multiQ;
+        static const char *sortQ;
         struct AnsKeys {
-            static const std::string answer;
+            static const char *answer;
         };
     };
 };
 
-const std::string RootKeys::history = "history";
-const std::string RootKeys::surveyBefore = "surveyBefore";
-const std::string RootKeys::surveyAfter = "surveyAfter";
+const char *RootKeys::history = "history";
+const char *RootKeys::surveyBefore = "surveyBefore";
+const char *RootKeys::surveyAfter = "surveyAfter";
 
-const std::string RootKeys::EventKeys::exhibitId = "exhibitId";
-const std::string RootKeys::EventKeys::duration = "secs";
-const std::string RootKeys::EventKeys::actions = "actions";
+const char *RootKeys::EventKeys::exhibitId = "exhibitId";
+const char *RootKeys::EventKeys::duration = "secs";
+const char *RootKeys::EventKeys::actions = "actions";
 
-const std::string RootKeys::SurveyAnsKeys::simpleQ = "simple";
-const std::string RootKeys::SurveyAnsKeys::multiQ = "multi";
-const std::string RootKeys::SurveyAnsKeys::sortQ = "sort";
+const char *RootKeys::SurveyAnsKeys::simpleQ = "simple";
+const char *RootKeys::SurveyAnsKeys::multiQ = "multi";
+const char *RootKeys::SurveyAnsKeys::sortQ = "sort";
 
-const std::string RootKeys::SurveyAnsKeys::AnsKeys::answer = "ans";
+const char *RootKeys::SurveyAnsKeys::AnsKeys::answer = "ans";
 }
 
 const Reports::ColumnId Reports::colId{};
@@ -184,12 +184,12 @@ rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
             allocator,
             std::make_pair(Keys::exhibitId, createInt(event.exhibitID.value())),
             std::make_pair(Keys::duration, createInt(event.durationInSecs)),
-            std::make_pair(Keys::duration, createIntArray(allocator, event.actions)));
+            std::make_pair(Keys::actions, createIntArray(allocator, event.actions)));
     } else {
         return createDictionary(
             allocator,
             std::make_pair(Keys::duration, createInt(event.durationInSecs)),
-            std::make_pair(Keys::duration, createIntArray(allocator, event.actions)));
+            std::make_pair(Keys::actions, createIntArray(allocator, event.actions)));
     }
 }
 

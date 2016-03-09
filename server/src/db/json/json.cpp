@@ -13,8 +13,8 @@ const rapidjson::Value &getNode(const rapidjson::Value &root, const std::string 
     return root[path.c_str()];
 }
 
-rapidjson::GenericStringRef<char> toStrAdapter(const std::string &str) {
-    return rapidjson::GenericStringRef<char>(str.c_str());
+rapidjson::GenericStringRef<char> toStrAdapter(const char *str) {
+    return rapidjson::GenericStringRef<char>(str);
 }
 
 rapidjson::Document parseJson(const std::string &str) {
@@ -65,7 +65,7 @@ rapidjson::Value createInt(std::int32_t raw) {
 }
 
 rapidjson::Value createString(const std::string &raw) {
-    return rapidjson::Value{toStrAdapter(raw)};
+    return rapidjson::Value{toStrAdapter(raw.c_str())};
 }
 }
 }
