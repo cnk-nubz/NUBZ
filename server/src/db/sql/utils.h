@@ -46,6 +46,17 @@ inline std::string asSqlList(const std::vector<std::string> &list,
     return res;
 }
 
+inline std::string sqlVal(const boost::gregorian::date &raw);
+inline std::string sqlVal(const std::string &raw);
+inline std::string sqlVal(const boost::optional<std::string> &raw);
+inline std::string sqlVal(const bool &raw);
+
+template <class T>
+std::string sqlVal(const boost::optional<T> &raw);
+
+template <class T>
+std::string sqlVal(const T &raw);
+
 inline std::string sqlVal(const bool &raw) {
     return raw ? "TRUE" : "FALSE";
 }

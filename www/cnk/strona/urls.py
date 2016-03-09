@@ -3,23 +3,30 @@ from django.conf.urls import url
 from . import views
 
 urlpatterns = [
-	url(r'^$', views.index, name='index'),
+    # main pages
+    url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
-    url(r'badania/$', views.surveys, name='surveys'),
+    url(r'nowe-badanie/$', views.newExperimentPage, name='newExperimentPage'),
+    url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
 
 	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 
 	url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
-
+    # get all the html you need
     url(r'getExhibitPanel/$', views.getExhibitPanel, name='getExhibitPanel'),
     url(r'getExhibitListElement/$', views.getExhibitListElement, name='getExhibitListElement'),
     url(r'getSimpleQuestionDialog/$', views.getSimpleQuestionDialog, name='getSimpleQuestionDialog'),
     url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
     url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
-    url(r'getNewActionDialog/$', views.getNewActionDialog, name='getNewActionDialog'),
+    url(r'getActionDialog/$', views.getActionDialog, name='getActionDialog'),
     url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
-
-    url(r'getQuestionsList/$', views.getQuestionsList, name='getQuestionsList'),
-    url(r'getQuestionsListElement/$', views.getQuestionsListElement, name='getQuestionsListElement')
+    url(r'getChooseQuestionTypeDialog/$', views.getChooseQuestionTypeDialog, name='getChooseQuestionTypeDialog'),
+    # dialogs
+    url(r'createSimpleQuestion/$', views.createSimpleQuestion, name='createSimpleQuestion'),
+    url(r'createMultipleChoiceQuestion/$', views.createMultipleChoiceQuestion, name='createMultipleChoiceQuestion'),
+    url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
+    url(r'createAction/$', views.createAction, name='createAction'),
+    #experiment
+    url(r'createExperiment/$', views.createExperiment, name='createExperiment')
 ]

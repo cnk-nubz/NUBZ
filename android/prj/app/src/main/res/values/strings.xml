@@ -18,4 +18,7 @@
     <string name="confirmation">Czy na pewno chcesz przejśc dalej? Danych nie będzie się dało zmienić</string>
     <string name="next">Następne</string>
     <string name="prev">Poprzednie</string>
+    <string name="chooseOne">Zaznacz jedną odpowiedź</string>
+    <string name="chooseMultiple">Zaznacz dowolną liczbę odpowiedzi</string>
+    <string name="sort">Posortuj poniższe opcje</string>
 </resources>

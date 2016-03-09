@@ -2,6 +2,10 @@ root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
   _dialogCreated: =>
     super
+    #add dialog info, if any
+    if @_dialogInfo?
+      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
+      jQuery("#dialog .form-group:eq(1) input").val(@_dialogInfo.question)
     inputOffset = @_data.utils.default.labelSize
     instance = this
 
@@ -17,6 +21,12 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     lastInput.parent().addClass("input-group")
     regex = new RegExp(instance._data.utils.regex.dynamicInput)
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp(regex), instance)
+
+    #add all answers
+    if @_dialogInfo
+      for answer, index in @_dialogInfo.options
+        jQuery("#dialog .form-group:last-child > div input:last").val(answer).keyup()
+    jQuery("#dialog input").prop("readonly", @readonly)
     return
 
   _inputKeyUp: (regex) =>
@@ -54,3 +64,16 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
+
+  extractData: =>
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    options = []
+    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
+      options.push jQuery(this).val()
+    )
+    data =
+      name: name
+      question: question
+      options: options
+    data

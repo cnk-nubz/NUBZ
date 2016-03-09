@@ -1,6 +1,9 @@
 package com.cnk.data.experiment;
 
-public class Action {
+import com.cnk.data.ListObject;
+
+public class Action implements ListObject {
+
     private Integer id;
     private String text;
 
@@ -9,10 +12,12 @@ public class Action {
         this.text = text;
     }
 
+    @Override
     public Integer getId() {
         return id;
     }
 
+    @Override
     public String getText() {
         return text;
     }
