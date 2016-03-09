@@ -144,6 +144,7 @@ public class DataHandler extends Observable {
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId,
+                                   experiment.getId(),
                                    experiment.getSurvey(Survey.SurveyType.BEFORE)
                                              .getSurveyAnswers(),
                                    experiment.getSurvey(Survey.SurveyType.AFTER)
@@ -175,6 +176,7 @@ public class DataHandler extends Observable {
 
     // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
     public void setServerId(Raport raport, Integer serverId) {
+        readyRaports.put(raport, serverId);
         dbHelper.changeRaportServerId(raport.getId(), serverId);
     }
 
