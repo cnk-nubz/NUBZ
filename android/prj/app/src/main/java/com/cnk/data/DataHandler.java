@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
     private static final String LOG_TAG = "DataHandler";
@@ -45,6 +47,7 @@ public class DataHandler extends Observable {
     private static DataHandler instance;
     Integer exhibitsVersion;
     Integer mapVersion;
+    private Lock raportLock;
     private DatabaseHelper dbHelper;
     private List<FloorInfo> floorInfos;
     private Raport currentRaport;
@@ -56,6 +59,7 @@ public class DataHandler extends Observable {
         readyRaports = new HashMap<>();
         mapVersion = null;
         exhibitsVersion = null;
+        raportLock = new ReentrantLock(true);
     }
 
     public static DataHandler getInstance() {
@@ -155,18 +159,21 @@ public class DataHandler extends Observable {
         dbHelper.setRaportFile(newId, path);
     }
 
-    // only modifies file of raport in progress, which is not used anywhere else at the time
     public void addEventToCurrentRaport(RaportEvent event) {
+        raportLock.lock();
         currentRaport.addEvent(event);
         saveCurrentRaport();
+        raportLock.unlock();
     }
 
-    // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
+    // after raport is marked as ready it is only used in one thread so no synchronization is needed
     public void markRaportAsReady() {
+        raportLock.lock();
         saveCurrentRaport();
         readyRaports.put(currentRaport, null);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
+        raportLock.unlock();
     }
 
     // only uses files ready to send which are used by one thread - uploading raports
