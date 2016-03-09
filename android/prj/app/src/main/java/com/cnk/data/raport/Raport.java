@@ -36,12 +36,12 @@ public class Raport implements Serializable {
         return id;
     }
 
-    public Integer getExperimentId() {
-        return experimentId;
-    }
-
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Integer getExperimentId() {
+        return experimentId;
     }
 
     public SurveyAnswers getPreSurveyAnswers() {

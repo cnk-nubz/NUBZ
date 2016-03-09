@@ -460,17 +460,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                openedDialogs--;
-            }
-        });
-
+        openedDialogs--;
         if (resultCode == RESULT_OK) {
             ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
             Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
-            RaportEvent event;
+
+            Integer id = null;
             if (requestCode != BREAK_ID) {
                 ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
                 if (mapState.lastExhibitTextView != null) {
@@ -481,11 +476,16 @@ public class MapActivity extends AppCompatActivity implements Observer {
                   .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
 
                 mapState.exhibitsOverlay.invalidate();
-                event = new RaportEvent(es.getExhibitId(), duration, selectedActions);
-            } else {
-                event = new RaportEvent(null, duration, selectedActions);
+                id = es.getExhibitId();
             }
-            DataHandler.getInstance().addEventToCurrentRaport(event);
+
+            final RaportEvent event = new RaportEvent(id, duration, selectedActions);
+            new Runnable() {
+                @Override
+                public void run() {
+                    DataHandler.getInstance().addEventToCurrentRaport(event);
+                }
+            }.run();
         }
     }
 

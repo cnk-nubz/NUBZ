@@ -105,6 +105,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         return true;
     }
 
+    @Override
+    public void onBackPressed() {
+        // overriden to stop back button from working
+    }
+
     private void init() {
         if (type == Survey.SurveyType.BEFORE) {
             DataHandler.getInstance().startNewRaport();

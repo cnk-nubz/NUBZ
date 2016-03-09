@@ -155,6 +155,7 @@ public class NetworkHandler implements Observer {
             downloadMap();
         } else if (o == raportUpload) {
             Log.e(LOG_TAG, "Raport upload task failure");
+            addWaitTask();
             uploadRaport();
         } else if (o == exhibitsDownload) {
             Log.e(LOG_TAG, "Exhibits download task failed");
