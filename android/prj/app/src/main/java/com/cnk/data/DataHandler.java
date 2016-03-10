@@ -22,6 +22,7 @@ import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.utilities.Consts;
 
 import java.io.File;
@@ -29,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +58,7 @@ public class DataHandler extends Observable {
 
     private DataHandler() {
         floorInfos = new ArrayList<>();
-        readyRaports = new HashMap<>();
+        readyRaports = Collections.synchronizedMap(new HashMap<Raport, Integer>());
         mapVersion = null;
         exhibitsVersion = null;
         raportLock = new ReentrantLock(true);
@@ -73,11 +75,16 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    public void loadDbData() {
+    public void loadDbData() throws DatabaseLoadException {
         exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
         mapVersion = dbHelper.getVersion(Version.Item.MAP);
-        loadMapFromDb();
-        loadReadyRaportsFromDb();
+        try {
+            loadMapFromDb();
+            loadReadyRaportsFromDb();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseLoadException();
+        }
     }
 
     private void loadMapFromDb() {
@@ -192,7 +199,9 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
+    public void setMaps(Integer version,
+                        FloorMap floor0,
+                        FloorMap floor1) throws IOException, DatabaseLoadException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);

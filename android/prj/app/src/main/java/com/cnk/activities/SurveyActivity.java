@@ -110,6 +110,26 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         // overriden to stop back button from working
     }
 
+    // Data updating:
+    @Override
+    public void update(Observable observable, Object o) {
+        DataHandler.Item notification = (DataHandler.Item) o;
+        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
+            DataHandler.getInstance().deleteObserver(this);
+            experimentDataDownloaded();
+        }
+    }
+
+    private void experimentDataDownloaded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
+        spinner.dismiss();
+    }
+
     private void init() {
         if (type == Survey.SurveyType.BEFORE) {
             DataHandler.getInstance().startNewRaport();
@@ -129,20 +149,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void setUpCounterLabel() {
         counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
-        updateCounterLabel();
-    }
-
-    private void updateCounterLabel() {
-        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
-                             "/" +
-                             Integer.toString(allQuestionsCount));
-    }
-
-    private void showView(Integer no) {
-        currentQuestionNo = no;
-        mainView.removeView(currentQuestionView);
-        currentQuestionView = questionViews.get(no);
-        mainView.addView(currentQuestionView);
         updateCounterLabel();
     }
 
@@ -180,29 +186,23 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         }
     }
 
+    private void updateCounterLabel() {
+        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
+                             "/" +
+                             Integer.toString(allQuestionsCount));
+    }
+
+    private void showView(Integer no) {
+        currentQuestionNo = no;
+        mainView.removeView(currentQuestionView);
+        currentQuestionView = questionViews.get(no);
+        mainView.addView(currentQuestionView);
+        updateCounterLabel();
+    }
+
     private void hideKeyboard() {
         InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
-    }
-
-    // Data updating:
-    @Override
-    public void update(Observable observable, Object o) {
-        DataHandler.Item notification = (DataHandler.Item) o;
-        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
-            DataHandler.getInstance().deleteObserver(this);
-            experimentDataDownloaded();
-        }
-    }
-
-    private void experimentDataDownloaded() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        });
-        spinner.dismiss();
     }
 
     private void showDialog() {

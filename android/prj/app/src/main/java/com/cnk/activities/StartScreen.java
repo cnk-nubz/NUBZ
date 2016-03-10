@@ -15,6 +15,7 @@ import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
+import com.cnk.exceptions.DatabaseLoadException;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -33,14 +34,13 @@ public class StartScreen extends AppCompatActivity implements Observer {
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
-        DataHandler.getInstance().getAllReadyRaports();
-        //NetworkHandler.getInstance().uploadRaport();
         try {
             if (!dataLoaded) {
                 DataHandler.getInstance().loadDbData();
+                NetworkHandler.getInstance().uploadRaport();
                 dataLoaded = true;
             }
-        } catch (Exception e) {
+        } catch (DatabaseLoadException e) {
             e.printStackTrace();
             downloadMap();
         }
@@ -67,8 +67,9 @@ public class StartScreen extends AppCompatActivity implements Observer {
             if (!dataLoaded) {
                 try {
                     DataHandler.getInstance().loadDbData();
+                    NetworkHandler.getInstance().uploadRaport();
                     dataLoaded = true;
-                } catch (Exception e) {
+                } catch (DatabaseLoadException e) {
                     Looper.prepare();
                     spinner.dismiss();
                     DataHandler.getInstance().deleteObserver(this);
