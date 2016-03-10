@@ -11,7 +11,11 @@ public class MapTile {
     public MapTile() {
     }
 
-    public MapTile(Integer floor, Integer detailLevel, Integer rowNumber, Integer columnNumber, String mapTileLocation) {
+    public MapTile(Integer floor,
+                   Integer detailLevel,
+                   Integer rowNumber,
+                   Integer columnNumber,
+                   String mapTileLocation) {
         this.floor = floor;
         this.detailLevel = detailLevel;
         this.rowNumber = rowNumber;
@@ -22,6 +26,7 @@ public class MapTile {
     public Integer getFloor() {
         return floor;
     }
+
     public void setFloor(Integer floor) {
         this.floor = floor;
     }
@@ -29,6 +34,7 @@ public class MapTile {
     public Integer getDetailLevel() {
         return detailLevel;
     }
+
     public void setDetailLevel(Integer detailLevel) {
         this.detailLevel = detailLevel;
     }
@@ -36,6 +42,7 @@ public class MapTile {
     public Integer getRowNumber() {
         return rowNumber;
     }
+
     public void setRowNumber(Integer rowNumber) {
         this.rowNumber = rowNumber;
     }
@@ -43,6 +50,7 @@ public class MapTile {
     public Integer getColumnNumber() {
         return columnNumber;
     }
+
     public void setColumnNumber(Integer columnNumber) {
         this.columnNumber = columnNumber;
     }
@@ -50,6 +58,7 @@ public class MapTile {
     public String getMapTileLocation() {
         return mapTileLocation;
     }
+
     public void setMapTileLocation(String mapTileLocation) {
         this.mapTileLocation = mapTileLocation;
     }

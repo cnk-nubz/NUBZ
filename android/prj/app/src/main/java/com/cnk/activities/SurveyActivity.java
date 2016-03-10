@@ -1,11 +1,13 @@
 package com.cnk.activities;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -14,6 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Survey;
 import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
@@ -27,8 +30,12 @@ import com.cnk.ui.questions.QuestionViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
-public class SurveyActivity extends AppCompatActivity {
+public class SurveyActivity extends AppCompatActivity implements Observer {
+
+    private static final String LOG_TAG = "SurveyActivity";
 
     private int allQuestionsCount;
     private int currentQuestionNo;
@@ -36,9 +43,10 @@ public class SurveyActivity extends AppCompatActivity {
     private RelativeLayout mainView;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
-    private SurveyAnswers answers;
     private MenuItem nextItem;
     private MenuItem prevItem;
+    private ProgressDialog spinner;
+    private Survey.SurveyType type;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,16 +54,108 @@ public class SurveyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        answers = new SurveyAnswers();
+        DataHandler.getInstance().addObserver(this);
+        type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
+        if (type == Survey.SurveyType.BEFORE) {
+            Log.i(LOG_TAG, "Survey before");
+            setSpinner();
+            NetworkHandler.getInstance().downloadExperimentData();
+        } else {
+            Log.i(LOG_TAG, "Survey after");
+            init();
+        }
+    }
+
+    private void setSpinner() {
+        spinner = new ProgressDialog(this);
+        spinner.setTitle("Ładowanie");
+        spinner.setMessage("Oczekiwanie na pobranie danych");
+        spinner.setCancelable(false);
+        spinner.show();
+    }
+
+    private void experimentDataDownloaded() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                init();
+            }
+        });
+        spinner.dismiss();
+    }
+
+    private void init() {
+        if (type == Survey.SurveyType.BEFORE) {
+            DataHandler.getInstance().startNewRaport();
+        }
         initViews();
         setUpCounterLabel();
         showView(0);
     }
-    
+
+    private void initViews() {
+        Survey currentSurvey = DataHandler.getInstance().getSurvey(type);
+        SurveyAnswers answers = currentSurvey.getSurveyAnswers();
+        allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
+        while (currentSurvey.getRemainingQuestionsCount() > 0) {
+            Survey.QuestionType questionType = currentSurvey.popNextQuestionType();
+            switch (questionType) {
+                case SIMPLE:
+                    SimpleQuestionAnswer simpleAnswer = new SimpleQuestionAnswer();
+                    answers.addSimpleAnswer(simpleAnswer);
+                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(),
+                                                                             this,
+                                                                             simpleAnswer));
+                    break;
+                case MULTIPLE_CHOICE:
+                    MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
+                    answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
+                    MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
+                                                                             this,
+                                                                             multipleChoiceAnswer));
+                    break;
+                case SORT:
+                    SortQuestionAnswer sortAnswer = new SortQuestionAnswer();
+                    answers.addSortQuestionAnswer(sortAnswer);
+                    SortQuestion nextSortQuestion = currentSurvey.popNextSortQuestions();
+                    questionViews.add(QuestionViewFactory.createQuestionView(nextSortQuestion,
+                                                                             this,
+                                                                             sortAnswer));
+                    break;
+            }
+        }
+    }
+
+    private void setUpCounterLabel() {
+        counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
+        updateCounterLabel();
+    }
+
+    private void showView(Integer no) {
+        currentQuestionNo = no;
+        mainView.removeView(currentQuestionView);
+        currentQuestionView = questionViews.get(no);
+        mainView.addView(currentQuestionView);
+        updateCounterLabel();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.survey_activity_menu, menu);
+        prevItem = menu.getItem(0);
+        nextItem = menu.getItem(1);
+        prevItem.setEnabled(false);
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
+        item.setEnabled(false);
         hideKeyboard();
         currentQuestionView.saveAnswer();
+        DataHandler.getInstance().saveCurrentRaport();
         if (item.getItemId() == R.id.action_prev_question) {
             nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {
@@ -74,77 +174,8 @@ public class SurveyActivity extends AppCompatActivity {
             }
 
         }
+        item.setEnabled(true);
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.survey_activity_menu, menu);
-        prevItem = menu.getItem(0);
-        nextItem = menu.getItem(1);
-        prevItem.setEnabled(false);
-        return true;
-    }
-
-    private void setUpCounterLabel() {
-        counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
-        updateCounterLabel();
-    }
-
-    private void updateCounterLabel() {
-        counterLabel.setText(
-                        Integer.toString(currentQuestionNo + 1) +
-                        "/" +
-                        Integer.toString(allQuestionsCount)
-        );
-    }
-
-    private void showView(Integer no) {
-        currentQuestionNo = no;
-        mainView.removeView(currentQuestionView);
-        currentQuestionView = questionViews.get(no);
-        mainView.addView(currentQuestionView);
-        updateCounterLabel();
-    }
-
-    private void initViews() {
-        Survey.SurveyType surveyType = (Survey.SurveyType) getIntent().getSerializableExtra("type");
-        Survey currentSurvey = DataHandler.getInstance().getSurvey(surveyType);
-        allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
-        while (currentSurvey.getRemainingQuestionsCount() > 0) {
-            Survey.QuestionType type = currentSurvey.popNextQuestionType();
-            switch (type) {
-                case SIMPLE:
-                    SimpleQuestionAnswer simpleAnswer = new SimpleQuestionAnswer();
-                    answers.addSimpleAnswer(simpleAnswer);
-                    questionViews.add(QuestionViewFactory.createQuestionView(currentSurvey.popNextSimpleQuestion(), this, simpleAnswer));
-                    break;
-                case MULTIPLE_CHOICE:
-                    MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
-                    answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
-                    questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
-                                                                             this,
-                                                                             multipleChoiceAnswer)
-                    );
-                    break;
-                case SORT:
-                    SortQuestionAnswer sortAnswer = new SortQuestionAnswer();
-                    answers.addSortQuestionAnswer(sortAnswer);
-                    SortQuestion nextSortQuestion = currentSurvey.popNextSortQuestions();
-                    questionViews.add(QuestionViewFactory.createQuestionView(nextSortQuestion,
-                                                                             this,
-                                                                             sortAnswer)
-                    );
-                    break;
-            }
-        }
-    }
-
-    private void hideKeyboard() {
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 
     private void showDialog() {
@@ -153,9 +184,16 @@ public class SurveyActivity extends AppCompatActivity {
         alert.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent(getApplicationContext(), (Class) getIntent().getSerializableExtra("nextActivity"));
-                finish();
-                startActivity(i);
+                Class next = (Class) getIntent().getSerializableExtra("nextActivity");
+                if (next == null) {
+                    finish();
+                    DataHandler.getInstance().markRaportAsReady();
+                    NetworkHandler.getInstance().uploadRaports();
+                } else {
+                    Intent i = new Intent(getApplicationContext(), next);
+                    finish();
+                    startActivity(i);
+                }
             }
         });
         alert.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
@@ -166,5 +204,30 @@ public class SurveyActivity extends AppCompatActivity {
         });
         alert.setCancelable(false);
         alert.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // overriden to stop back button from working
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        DataHandler.Item notification = (DataHandler.Item) o;
+        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
+            DataHandler.getInstance().deleteObserver(this);
+            experimentDataDownloaded();
+        }
+    }
+
+    private void updateCounterLabel() {
+        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
+                             "/" +
+                             Integer.toString(allQuestionsCount));
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 }

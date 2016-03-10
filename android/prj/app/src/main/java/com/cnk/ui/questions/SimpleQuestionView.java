@@ -32,7 +32,8 @@ public class SimpleQuestionView extends QuestionView {
         answerBox = new EditText(context);
         answerBox.setHint("Wpisz odpowiedź");
         answerBox.setTextSize(TEXT_SIZE);
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
+                                               LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
         answerBox.setLayoutParams(params);
         if (type == SimpleQuestion.AnswerType.NUMBER) {

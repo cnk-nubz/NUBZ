@@ -20,14 +20,15 @@ public class FileHandler {
 
     private static FileHandler instance;
 
+    private FileHandler() {
+    }
+
     public static FileHandler getInstance() {
         if (instance == null) {
             instance = new FileHandler();
         }
         return instance;
     }
-
-    private FileHandler() {}
 
     public void saveInputStream(InputStream in, String filename) throws IOException {
         File file = new File(filename);
