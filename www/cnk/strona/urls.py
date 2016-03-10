@@ -22,6 +22,4 @@ urlpatterns = [
     url(r'createAction/$', views.createAction, name='createAction'),
     #experiment
     url(r'createExperiment/$', views.createExperiment, name='createExperiment'),
-
-    url(r'getDialogTmp/$', views.getDialogTmp, name='getDialogTmp')
 ]

@@ -239,17 +239,6 @@ def createNewExhibit(request):
 	}
 	return JsonResponse(data)
 
-def getDialogTmp(request):
-    jsonData = request.GET.get("jsonData")
-    data = json.loads(jsonData)
-    dialogNameRequest = data.keys()[0]
-    if dialogNameRequest == 'simpleQuestionDialog':
-        return getSimpleQuestionDialog(request)
-    elif dialogNameRequest == 'multipleChoiceQuestionDialog':
-        return getMultipleChoiceQuestionDialog(request)
-    else:
-        return getSortQuestionDialog(request)
-
 def getDialog(request, dialogName):
 	contextDict = {
 		'data': get_const(dialogName)['data']
