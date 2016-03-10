@@ -71,8 +71,6 @@ class Handlers
       jQuery(floorButtons[1 - floor]).removeClass "active"
       jQuery(floorButtons[floor]).addClass "active"
       instance.canvas.setFloorLayer(floor)
-      jQuery(instance.button.plusZoom).prop "disabled", false
-      jQuery(instance.button.minusZoom).prop "disabled", true
 
   showLabelsHandler: =>
     instance = this
