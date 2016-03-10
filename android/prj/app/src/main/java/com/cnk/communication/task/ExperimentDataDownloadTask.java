@@ -6,15 +6,15 @@ import com.cnk.communication.thrift.CurrentExperimentResponse;
 import com.cnk.communication.thrift.QuestionType;
 import com.cnk.communication.thrift.QuestionsList;
 import com.cnk.communication.thrift.Server;
-import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
-import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestionOption;
+import com.cnk.data.experiment.survey.questions.SimpleQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestionOption;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -46,7 +46,7 @@ public class ExperimentDataDownloadTask extends ServerTask {
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {
         Experiment experiment = translateDataFromThrift(thriftData);
-        DataHandler.getInstance().setNewExperimentData(experiment);
+        ExperimentData.getInstance().setNewExperimentData(experiment);
     }
 
     private Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {

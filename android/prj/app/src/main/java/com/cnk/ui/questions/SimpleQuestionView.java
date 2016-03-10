@@ -5,8 +5,8 @@ import android.text.InputType;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
-import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
-import com.cnk.data.experiment.questions.SimpleQuestion;
+import com.cnk.data.experiment.survey.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.survey.questions.SimpleQuestion;
 
 public class SimpleQuestionView extends QuestionView {
 

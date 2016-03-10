@@ -11,8 +11,8 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 
 import com.cnk.R;
-import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
+import com.cnk.data.experiment.ExperimentData;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.ui.adapters.SelectListAdapter;
 import com.cnk.utilities.Consts;
@@ -51,9 +51,9 @@ public class ExhibitDialog extends Activity {
 
         List<Action> actions;
         if (isBreak) {
-            actions = DataHandler.getInstance().getAllBreakActions();
+            actions = ExperimentData.getInstance().getAllBreakActions();
         } else {
-            actions = DataHandler.getInstance().getAllExhibitActions();
+            actions = ExperimentData.getInstance().getAllExhibitActions();
         }
         for (Action a : actions) {
             actionsStrings.add(a.getText());

@@ -2,12 +2,12 @@ package com.cnk.ui.questions;
 
 import android.content.Context;
 
-import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
-import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
-import com.cnk.data.experiment.answers.SortQuestionAnswer;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
+import com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer;
+import com.cnk.data.experiment.survey.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.survey.answers.SortQuestionAnswer;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.survey.questions.SimpleQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
 
 public class QuestionViewFactory {
 

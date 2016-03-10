@@ -9,8 +9,8 @@ import com.cnk.communication.thrift.NewMapImagesRequest;
 import com.cnk.communication.thrift.NewMapImagesResponse;
 import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.Size;
-import com.cnk.data.DataHandler;
 import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapData;
 import com.cnk.data.map.MapTiles;
 import com.cnk.data.map.Resolution;
 import com.cnk.notificators.Notificator;
@@ -35,14 +35,14 @@ public class MapDownloadTask extends ServerTask {
         NewMapImagesResponse response = downloadUpdateStatus(client);
         Integer version = response.getVersion();
         downloadTilesUpdate(client, version);
-        DataHandler.getInstance().notifyMapUpdated();
+        MapData.getInstance().notifyMapUpdated();
         Log.i(LOG_TAG, "Map update complete");
     }
 
     private NewMapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading maps to update");
         NewMapImagesRequest request = new NewMapImagesRequest();
-        Integer version = DataHandler.getInstance().getMapVersion();
+        Integer version = MapData.getInstance().getMapVersion();
         if (version != null) {
             request.setAcquiredVersion(version);
         }
@@ -63,7 +63,7 @@ public class MapDownloadTask extends ServerTask {
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2);
+        MapData.getInstance().setMaps(version, floor1, floor2);
     }
 
     private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {

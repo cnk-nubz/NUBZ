@@ -6,9 +6,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
-import com.cnk.data.experiment.answers.SortQuestionAnswer;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
+import com.cnk.data.experiment.survey.answers.SortQuestionAnswer;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestionOption;
 import com.cnk.ui.adapters.SortListAdapter;
 
 public class SortQuestionView extends QuestionView {
