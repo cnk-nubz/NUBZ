@@ -2,7 +2,7 @@ root = exports ? this
 root.Actions = class Actions extends root.ExperimentData
   constructor: (_list = []) ->
     super _list
-    @_actionDialog = new root.ActionDialog('getActionDialog/')
+    @_actionDialog = new root.ActionDialog('getHTML?name=actionDialog')
 
   _elementListFormat: (viewId) =>
     text: @_elementsDict[viewId].text

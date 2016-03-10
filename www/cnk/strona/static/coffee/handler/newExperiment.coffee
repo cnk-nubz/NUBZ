@@ -166,7 +166,7 @@ class Handlers
       instance._questionsList.hide()
       instance._actionsList.show()
       actionSave = instance._newEntryRequest("/createAction/", instance._createNewAction)
-      actionDialog = new root.ActionDialog("getActionDialog/", actionSave)
+      actionDialog = new root.ActionDialog("getHTML?name=actionDialog", actionSave)
       jQuery(instance._DOM.addElementToList).off("click").click( ->
         actionDialog.show()
       )
@@ -224,15 +224,8 @@ class Handlers
     return
 
   _addNewQuestion: =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      context: this
-      url: '/getChooseQuestionTypeDialog/'
-      success: (data) => @_showChooseQuestionTypeDialog(data.html)
+    jQuery.getJSON('getHTML?name=chooseQuestionTypeDialog', null, (data) =>
+      @_showChooseQuestionTypeDialog(data.html)
     )
     return
 
@@ -252,11 +245,11 @@ class Handlers
   _setChooseQuestionTypeHandlers: (dialog) =>
     # Long names are long. Are you gazing into the abyss? Because it's gazing back at us.
     simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
-    simpleQuestionDialog = new root.SimpleQuestionDialog('getSimpleQuestionDialog/', simpleQuestionSave)
+    simpleQuestionDialog = new root.SimpleQuestionDialog('getHTML?name=simpleQuestionDialog', simpleQuestionSave)
     sortQuestionSave = @_newEntryRequest("/createSortQuestion/", @_createNewQuestion)
-    sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/', sortQuestionSave)
+    sortQuestionDialog = new root.SortQuestionDialog('getHTML?name=sortQuestionDialog', sortQuestionSave)
     multipleChoiceSave = @_newEntryRequest("/createMultipleChoiceQuestion/", @_createNewQuestion)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', multipleChoiceSave)
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getHTML?name=multipleChoiceQuestionDialog', multipleChoiceSave)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
     jQuery("#sortQuestion").click( -> sortQuestionDialog.show())
