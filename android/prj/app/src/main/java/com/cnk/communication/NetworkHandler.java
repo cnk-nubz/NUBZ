@@ -69,7 +69,7 @@ public class NetworkHandler implements Observer {
         tasks.add(task);
     }
 
-    public synchronized void uploadRaport() {
+    public synchronized void uploadRaports() {
         Task task = new RaportUploadTask(raportUpload);
         tasks.add(task);
     }
@@ -156,7 +156,7 @@ public class NetworkHandler implements Observer {
         } else if (o == raportUpload) {
             Log.e(LOG_TAG, "Raport upload task failure");
             addWaitTask();
-            uploadRaport();
+            uploadRaports();
         } else if (o == exhibitsDownload) {
             Log.e(LOG_TAG, "Exhibits download task failed");
             downloadExhibits();

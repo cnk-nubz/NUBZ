@@ -64,60 +64,14 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             Log.i(LOG_TAG, "Survey after");
             init();
         }
-
     }
 
-    @Override
-    public boolean onOptionsItemSelected(final MenuItem item) {
-        item.setEnabled(false);
-        hideKeyboard();
-        currentQuestionView.saveAnswer();
-        DataHandler.getInstance().saveCurrentRaport();
-        if (item.getItemId() == R.id.action_prev_question) {
-            nextItem.setTitle(R.string.next);
-            if (currentQuestionNo - 1 <= 0) {
-                prevItem.setEnabled(false);
-            }
-            showView(currentQuestionNo - 1);
-        } else if (item.getItemId() == R.id.action_next_question) {
-            prevItem.setEnabled(true);
-            if (currentQuestionNo >= allQuestionsCount - 1) {
-                showDialog();
-            } else {
-                if (currentQuestionNo == allQuestionsCount - 2) {
-                    nextItem.setTitle(R.string.finish);
-                }
-                showView(currentQuestionNo + 1);
-            }
-
-        }
-        item.setEnabled(true);
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.survey_activity_menu, menu);
-        prevItem = menu.getItem(0);
-        nextItem = menu.getItem(1);
-        prevItem.setEnabled(false);
-        return true;
-    }
-
-    @Override
-    public void onBackPressed() {
-        // overriden to stop back button from working
-    }
-
-    // Data updating:
-    @Override
-    public void update(Observable observable, Object o) {
-        DataHandler.Item notification = (DataHandler.Item) o;
-        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
-            DataHandler.getInstance().deleteObserver(this);
-            experimentDataDownloaded();
-        }
+    private void setSpinner() {
+        spinner = new ProgressDialog(this);
+        spinner.setTitle("Ładowanie");
+        spinner.setMessage("Oczekiwanie na pobranie danych");
+        spinner.setCancelable(false);
+        spinner.show();
     }
 
     private void experimentDataDownloaded() {
@@ -137,19 +91,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         initViews();
         setUpCounterLabel();
         showView(0);
-    }
-
-    private void setSpinner() {
-        spinner = new ProgressDialog(this);
-        spinner.setTitle("Ładowanie");
-        spinner.setMessage("Oczekiwanie na pobranie danych");
-        spinner.setCancelable(false);
-        spinner.show();
-    }
-
-    private void setUpCounterLabel() {
-        counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
-        updateCounterLabel();
     }
 
     private void initViews() {
@@ -186,10 +127,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    private void updateCounterLabel() {
-        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
-                             "/" +
-                             Integer.toString(allQuestionsCount));
+    private void setUpCounterLabel() {
+        counterLabel = (TextView) mainView.findViewById(R.id.counterLabel);
+        updateCounterLabel();
     }
 
     private void showView(Integer no) {
@@ -200,9 +140,42 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    private void hideKeyboard() {
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.survey_activity_menu, menu);
+        prevItem = menu.getItem(0);
+        nextItem = menu.getItem(1);
+        prevItem.setEnabled(false);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        item.setEnabled(false);
+        hideKeyboard();
+        currentQuestionView.saveAnswer();
+        DataHandler.getInstance().saveCurrentRaport();
+        if (item.getItemId() == R.id.action_prev_question) {
+            nextItem.setTitle(R.string.next);
+            if (currentQuestionNo - 1 <= 0) {
+                prevItem.setEnabled(false);
+            }
+            showView(currentQuestionNo - 1);
+        } else if (item.getItemId() == R.id.action_next_question) {
+            prevItem.setEnabled(true);
+            if (currentQuestionNo >= allQuestionsCount - 1) {
+                showDialog();
+            } else {
+                if (currentQuestionNo == allQuestionsCount - 2) {
+                    nextItem.setTitle(R.string.finish);
+                }
+                showView(currentQuestionNo + 1);
+            }
+
+        }
+        item.setEnabled(true);
+        return super.onOptionsItemSelected(item);
     }
 
     private void showDialog() {
@@ -215,7 +188,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                 if (next == null) {
                     finish();
                     DataHandler.getInstance().markRaportAsReady();
-                    NetworkHandler.getInstance().uploadRaport();
+                    NetworkHandler.getInstance().uploadRaports();
                 } else {
                     Intent i = new Intent(getApplicationContext(), next);
                     finish();
@@ -231,5 +204,30 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         });
         alert.setCancelable(false);
         alert.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // overriden to stop back button from working
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        DataHandler.Item notification = (DataHandler.Item) o;
+        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
+            DataHandler.getInstance().deleteObserver(this);
+            experimentDataDownloaded();
+        }
+    }
+
+    private void updateCounterLabel() {
+        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
+                             "/" +
+                             Integer.toString(allQuestionsCount));
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 }

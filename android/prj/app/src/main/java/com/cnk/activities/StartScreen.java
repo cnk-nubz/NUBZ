@@ -37,7 +37,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
         try {
             if (!dataLoaded) {
                 DataHandler.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaport();
+                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             }
         } catch (DatabaseLoadException e) {
@@ -67,7 +67,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
             if (!dataLoaded) {
                 try {
                     DataHandler.getInstance().loadDbData();
-                    NetworkHandler.getInstance().uploadRaport();
+                    NetworkHandler.getInstance().uploadRaports();
                     dataLoaded = true;
                 } catch (DatabaseLoadException e) {
                     Looper.prepare();
