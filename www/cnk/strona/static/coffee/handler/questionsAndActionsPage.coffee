@@ -41,24 +41,15 @@ class Handlers
   _setHandlers: =>
     jQuery("#questionList .addElement").on('click', @_addNewQuestion)
     actionSave = @_newEntryRequest("/createAction/", @_createNewAction)
-    actionDialog = new root.ActionDialog("getActionDialog/", actionSave)
+    actionDialog = new root.ActionDialog('getHTML?name=actionDialog', actionSave)
     jQuery("#actionList .addElement").click( ->
       actionDialog.show()
     )
-    new root.ActionDialog("getActionDialog/", "#actionList .addElement", @_actionCreatedHandler)
     return
 
   _addNewQuestion: =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      context: this
-      url: '/getChooseQuestionTypeDialog/'
-      success: (data) =>
-        @_showChooseQuestionType(data.html)
+    jQuery.getJSON('getHTML?name=chooseQuestionTypeDialog', null, (data) =>
+      @_showChooseQuestionType(data.html)
     )
     return
 
@@ -79,11 +70,11 @@ class Handlers
 
   _setQuestionsHandlers: (dialog) =>
     simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
-    simpleQuestionDialog = new root.SimpleQuestionDialog('getSimpleQuestionDialog/', simpleQuestionSave)
+    simpleQuestionDialog = new root.SimpleQuestionDialog('getHTML?name=simpleQuestionDialog', simpleQuestionSave)
     sortQuestionSave = @_newEntryRequest("/createSortQuestion/", @_createNewQuestion)
-    sortQuestionDialog = new root.SortQuestionDialog('getSortQuestionDialog/', sortQuestionSave)
+    sortQuestionDialog = new root.SortQuestionDialog('getHTML?name=sortQuestionDialog', sortQuestionSave)
     multipleChoiceSave = @_newEntryRequest("/createMultipleChoiceQuestion/", @_createNewQuestion)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getMultipleChoiceQuestionDialog/', multipleChoiceSave)
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getHTML?name=multipleChoiceQuestionDialog', multipleChoiceSave)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
     jQuery("#sortQuestion").click( -> sortQuestionDialog.show())

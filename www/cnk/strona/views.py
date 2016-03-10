@@ -258,11 +258,11 @@ def getMultipleChoiceQuestionDialog(request):
 
 def getExhibitPanel(request):
     html = render_to_string('exhibitPanel/exhibitPanel.html')
-    return HttpResponse(html)
+    return JsonResponse({'html': html})
 
 def getExhibitListElement(request):
     html = render_to_string('exhibitPanel/exhibitListElement.html')
-    return HttpResponse(html)
+    return JsonResponse({'html': html})
 
 def getSortQuestionDialog(request):
     return getDialog(request, "SORT_QUESTION_DIALOG")
@@ -274,6 +274,25 @@ def getChangeMapDialog(request):
     floor = request.POST.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
+
+def getChooseQuestionTypeDialog(request):
+    html = render_to_string('dialog/chooseQuestionType.html')
+    return JsonResponse({'html': html.replace("\n", "")})
+
+HTMLRequests = {
+    'simpleQuestionDialog': getSimpleQuestionDialog,
+    'sortQuestionDialog': getSortQuestionDialog,
+    'multipleChoiceQuestionDialog': getMultipleChoiceQuestionDialog,
+    'actionDialog': getActionDialog,
+    'chooseQuestionTypeDialog': getChooseQuestionTypeDialog,
+    'changeMapDialog': getChangeMapDialog,
+    'exhibitPanel': getExhibitPanel,
+    'exhibitListElement': getExhibitListElement
+}
+
+def getHTML(request):
+    name = request.GET.get("name")
+    return HTMLRequests[name](request)
 
 def _getAllQuestions(newId = None, newType = None):
     allQuestions = thriftCommunicator.getAllQuestions()
@@ -350,10 +369,6 @@ def newExperimentPage(request):
         }
     template = loader.get_template('newExperimentPage.html')
     return HttpResponse(template.render(RequestContext(request, result)))
-
-def getChooseQuestionTypeDialog(request):
-    html = render_to_string('dialog/chooseQuestionType.html')
-    return JsonResponse({'html': html.replace("\n", "")})
 
 def questionsAndActionsPage(request):
     try:

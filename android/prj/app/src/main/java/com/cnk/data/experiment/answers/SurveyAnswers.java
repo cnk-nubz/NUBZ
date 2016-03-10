@@ -1,9 +1,10 @@
 package com.cnk.data.experiment.answers;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SurveyAnswers {
+public class SurveyAnswers implements Serializable {
     private List<SimpleQuestionAnswer> simpleAnswers;
     private List<MultipleChoiceQuestionAnswer> multipleChoiceAnswers;
     private List<SortQuestionAnswer> sortQuestionAnswers;
@@ -24,5 +25,26 @@ public class SurveyAnswers {
 
     public void addSortQuestionAnswer(SortQuestionAnswer answer) {
         sortQuestionAnswers.add(answer);
+    }
+
+    public List<SimpleQuestionAnswer> getSimpleAnswers() {
+        return simpleAnswers;
+    }
+
+    public List<MultipleChoiceQuestionAnswer> getMultipleChoiceAnswers() {
+        return multipleChoiceAnswers;
+    }
+
+    public List<SortQuestionAnswer> getSortQuestionAnswers() {
+        return sortQuestionAnswers;
+    }
+
+    @Override
+    public String toString() {
+        return "SurveyAnswers{" +
+               "simpleAnswers=" + simpleAnswers +
+               ", multipleChoiceAnswers=" + multipleChoiceAnswers +
+               ", sortQuestionAnswers=" + sortQuestionAnswers +
+               '}';
     }
 }

@@ -11,15 +11,21 @@ import com.cnk.data.experiment.questions.SortQuestion;
 
 public class QuestionViewFactory {
 
-    public static QuestionView createQuestionView(SimpleQuestion question, Context c, SimpleQuestionAnswer answer) {
+    public static QuestionView createQuestionView(SimpleQuestion question,
+                                                  Context c,
+                                                  SimpleQuestionAnswer answer) {
         return new SimpleQuestionView(c, question, answer);
     }
 
-    public static QuestionView createQuestionView(MultipleChoiceQuestion question, Context c, MultipleChoiceQuestionAnswer answer) {
+    public static QuestionView createQuestionView(MultipleChoiceQuestion question,
+                                                  Context c,
+                                                  MultipleChoiceQuestionAnswer answer) {
         return new MultipleChoiceQuestionView(c, question, answer);
     }
 
-    public static QuestionView createQuestionView(SortQuestion question, Context c, SortQuestionAnswer answer) {
+    public static QuestionView createQuestionView(SortQuestion question,
+                                                  Context c,
+                                                  SortQuestionAnswer answer) {
         return new SortQuestionView(c, question, answer);
     }
 }

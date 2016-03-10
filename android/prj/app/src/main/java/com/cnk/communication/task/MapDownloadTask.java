@@ -51,25 +51,24 @@ public class MapDownloadTask extends ServerTask {
         return response;
     }
 
-    private void downloadTilesUpdate(Server.Client client, Integer version) throws TException, IOException {
+    private void downloadTilesUpdate(Server.Client client,
+                                     Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
 
-        MapImageTilesResponse floor1Response = null;
-        MapImageTilesResponse floor2Response = null;
         MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
-        floor1Response = client.getMapImageTiles(requestFloor1);
+        MapImageTilesResponse floor1Response = client.getMapImageTiles(requestFloor1);
         MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
-        floor2Response = client.getMapImageTiles(requestFloor2);
+        MapImageTilesResponse floor2Response = client.getMapImageTiles(requestFloor2);
 
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2, 0);
+        DataHandler.getInstance().setMaps(version, floor1, floor2);
     }
 
     private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {
         if (thriftResponse == null) {
-            return  null;
+            return null;
         }
         Size thriftSize = thriftResponse.getOriginalSize();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
@@ -77,8 +76,10 @@ public class MapDownloadTask extends ServerTask {
         ArrayList<MapTiles> mapTiles = new ArrayList<>();
 
         for (ImageTiles tile : imageTilesThrift) {
-            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(), tile.getScaledSize().getHeight());
-            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
+            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(),
+                                                   tile.getScaledSize().getHeight());
+            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(),
+                                                 tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
             MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(toCopy));
             mapTiles.add(toAdd);

@@ -48,4 +48,12 @@ public class RaportEvent implements Serializable {
         actions.add(action);
     }
 
+    @Override
+    public String toString() {
+        return "RaportEvent{" +
+               "exhibitId=" + exhibitId +
+               ", durationSeconds=" + durationSeconds +
+               ", actions=" + actions +
+               '}';
+    }
 }

@@ -17,6 +17,10 @@ public class MapBitmapProvider implements BitmapProvider {
 
     @Override
     public Bitmap getBitmap(Tile tile, Context context) {
-        return DataHandler.getInstance().getTile(floor, (Integer) tile.getData(), tile.getColumn(), tile.getRow());
+        return DataHandler.getInstance()
+                          .getTile(floor,
+                                   (Integer) tile.getData(),
+                                   tile.getColumn(),
+                                   tile.getRow());
     }
 }

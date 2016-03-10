@@ -1,16 +1,13 @@
 root = exports ? this
 root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
-  _dialogCreated: =>
+  _prepareDialog: (dialog) =>
     super
-    if @_dialogInfo?
-      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
-      jQuery("#dialog .form-group:eq(1) input").val(@_dialogInfo.question)
-      jQuery("#dialog .form-group:eq(2) .btn-group label:eq(#{@_dialogInfo.answerType})").addClass("active")
     radioGroup = @_data.data[2][1].radioGroup
     instance = this
-    jQuery("#dialog label.#{radioGroup}").filter(":first").addClass("active") unless @_dialogInfo?.type?
+    if not @_dialogInfo?.type?
+      jQuery("label.#{radioGroup}", dialog).filter(":first").addClass("active")
 
-    jQuery "#dialog input[type=text]"
+    jQuery("input[type=text]", dialog)
       .each( ->
         jQuery(this).parent().next().css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup( (e) ->
@@ -26,12 +23,17 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
             obj.parent().next().html("")
         )
       )
-
-    if @readonly
-      jQuery("#dialog input").prop("readonly", true)
-      jQuery("#dialog .btn:not(.active)").remove()
-
     return
+
+  _prepareFilledDialog: (dialog) =>
+    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
+    jQuery(".form-group:eq(1) input", dialog).val(@_dialogInfo.question)
+    jQuery(".form-group:eq(2) .btn-group label:eq(#{@_dialogInfo.answerType})", dialog).addClass("active")
+    if @readonly
+      jQuery("#dialog input", dialog).prop("readonly", true)
+      jQuery("#dialog .btn:not(.active)", dialog).remove()
+      @_dialog.getButton('saveButtonDialog').hide()
+    @
 
   extractData: =>
     answerAsNumberInput = jQuery("#dialog input[type=radio]").first()

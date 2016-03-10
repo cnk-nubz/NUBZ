@@ -3,16 +3,12 @@ package com.cnk.data;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
 import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
 import com.cnk.data.map.FloorInfo;
 import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapTiles;
@@ -26,6 +22,7 @@ import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.utilities.Consts;
 
 import java.io.File;
@@ -33,43 +30,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Queue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DataHandler extends Observable {
-    public enum Item {
-        MAP_UPDATE_COMPLETED("Map update completed"),
-        EXPERIMENT_DATA("Experiment data"),
-        EXHIBITS("Exhibits"),
-        UNKNOWN("Unknown");
-
-        private String code;
-
-        private Item(String code) {
-            this.code = code;
-        }
-
-        @Override
-        public String toString() {
-            return code;
-        }
-
-        public static Item fromString(String code) {
-            if (code != null) {
-                for (Item i : Item.values()) {
-                    if (code.equals(i.code)) {
-                        return i;
-                    }
-                }
-            }
-            return Item.UNKNOWN;
-        }
-    }
-
     private static final String LOG_TAG = "DataHandler";
     private static final String DATA_PATH = Environment.getExternalStorageDirectory() + "/nubz/";
     private static final String RAPORT_DIRECTORY = "raports/";
@@ -77,16 +46,23 @@ public class DataHandler extends Observable {
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
-    private static final Integer MAX_TRIES = 3;
-
     private static DataHandler instance;
-    private DatabaseHelper dbHelper;
-
-    private List<FloorInfo> floorInfos;
     Integer exhibitsVersion;
     Integer mapVersion;
+    private Lock raportLock;
+    private DatabaseHelper dbHelper;
+    private List<FloorInfo> floorInfos;
     private Raport currentRaport;
+    private Map<Raport, Integer> readyRaports;
     private Experiment experiment;
+
+    private DataHandler() {
+        floorInfos = new ArrayList<>();
+        readyRaports = Collections.synchronizedMap(new HashMap<Raport, Integer>());
+        mapVersion = null;
+        exhibitsVersion = null;
+        raportLock = new ReentrantLock(true);
+    }
 
     public static DataHandler getInstance() {
         if (instance == null) {
@@ -99,15 +75,19 @@ public class DataHandler extends Observable {
         this.dbHelper = dbHelper;
     }
 
-    private DataHandler() {
-        floorInfos = new ArrayList<>();
-        mapVersion = null;
-        exhibitsVersion = null;
-    }
-
-    public void loadDbData() {
+    public void loadDbData() throws DatabaseLoadException {
         exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
         mapVersion = dbHelper.getVersion(Version.Item.MAP);
+        try {
+            loadMapFromDb();
+            loadReadyRaportsFromDb();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DatabaseLoadException();
+        }
+    }
+
+    private void loadMapFromDb() {
         floorInfos.clear();
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
             FloorInfo currentFloor = new FloorInfo();
@@ -115,13 +95,33 @@ public class DataHandler extends Observable {
             currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
             ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
             ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
-            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount(); detailLevel++) {
+            for (int detailLevel = 0;
+                 detailLevel < currentFloor.getDetailLevelsCount();
+                 detailLevel++) {
                 detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
                 mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));
             }
             currentFloor.setDetailLevelRes(detailLevelRes);
             currentFloor.setMapTilesSizes(mapTileInfos);
             floorInfos.add(currentFloor);
+        }
+    }
+
+    private void loadReadyRaportsFromDb() {
+        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
+        for (RaportFile file : toLoad) {
+            Raport loaded = null;
+            try {
+                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance()
+                                                                       .getFile(file.getFileName()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(LOG_TAG, "Unable to get raport");
+            }
+            if (loaded != null) {
+                Log.i(LOG_TAG, loaded.toString());
+                readyRaports.put(loaded, file.getServerId());
+            }
         }
     }
 
@@ -139,46 +139,14 @@ public class DataHandler extends Observable {
         notifyObservers(Item.EXPERIMENT_DATA);
     }
 
-    public Survey getSurvey(Survey.SurveyType type) {
-        Queue<Survey.QuestionType> types = new LinkedList<>();
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.SIMPLE);
-        }
-
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.MULTIPLE_CHOICE);
-        }
-
-        for (int i = 0; i < 3; i++) {
-            types.add(Survey.QuestionType.SORT);
-        }
-
-        Queue<SimpleQuestion> simpleQuestions = new LinkedList<>();
-        Queue<MultipleChoiceQuestion> multipleChoiceQuestions = new LinkedList<>();
-        Queue<SortQuestion> sortQuestions = new LinkedList<>();
-        for (int i = 0; i < 3; i++) {
-            simpleQuestions.add(new SimpleQuestion(1, "test" + Integer.toString(i),
-                    i % 2 == 0 ? SimpleQuestion.AnswerType.NUMBER : SimpleQuestion.AnswerType.TEXT));
-        }
-
-        List<MultipleChoiceQuestionOption> options = new ArrayList<>();
-        List<SortQuestionOption> sortOptions = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            options.add(new MultipleChoiceQuestionOption(i, "TEST" + Integer.toString(i)));
-            sortOptions.add(new SortQuestionOption(i, "TEST" + Integer.toString(i)));
-        }
-
-        for (int i = 0; i < 3; i++) {
-            multipleChoiceQuestions.add(new MultipleChoiceQuestion(i, "TEST" + Integer.toString(i), i % 2 == 0, options));
-            sortQuestions.add(new SortQuestion(i, "TEST" + Integer.toString(i), sortOptions));
-        }
-
-        return new Survey(types, simpleQuestions, multipleChoiceQuestions, sortQuestions);
+    public Survey getSurvey(@NonNull Survey.SurveyType type) {
+        return experiment.getSurvey(type);
     }
 
     public List<Action> getAllExhibitActions() {
         return experiment.getExhibitActions();
     }
+
     public List<Action> getAllBreakActions() {
         return experiment.getBreakActions();
     }
@@ -186,65 +154,43 @@ public class DataHandler extends Observable {
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
-        currentRaport = new Raport(newId);
-        String path = "";
-        try {
-            path = saveRaport(currentRaport);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in startNewRaport");
-            throw new RuntimeException("Cannot start new raport");
-        }
+        currentRaport = new Raport(newId,
+                                   experiment.getId(),
+                                   experiment.getSurvey(Survey.SurveyType.BEFORE)
+                                             .getSurveyAnswers(),
+                                   experiment.getSurvey(Survey.SurveyType.AFTER)
+                                             .getSurveyAnswers());
+        String path;
+        path = saveCurrentRaport();
 
         dbHelper.setRaportFile(newId, path);
     }
 
-    // only modifies file of raport in progress, which is not used anywhere else at the time
-    public void addEventToRaport(RaportEvent event, int tryNo) {
-        if (tryNo == 0) {
-            currentRaport.addEvent(event);
-        }
-        try {
-            saveRaport(currentRaport);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e(LOG_TAG, "IOException in addEventToRaport");
-            if (tryNo > MAX_TRIES) {
-                throw new RuntimeException("Cannot add event to raport");
-            } else {
-                addEventToRaport(event, tryNo + 1);
-            }
-        }
-
+    public void addEventToCurrentRaport(RaportEvent event) {
+        raportLock.lock();
+        currentRaport.addEvent(event);
+        saveCurrentRaport();
+        raportLock.unlock();
     }
 
-    // only modifies database entry for raport in progress, marking it as ready, the raport cannot be used anywhere else
-    public void markRaportAsReady(int tryNo) {
+    // after raport is marked as ready it is only used in one thread so no synchronization is needed
+    public void markRaportAsReady() {
+        raportLock.lock();
+        saveCurrentRaport();
+        readyRaports.put(currentRaport, null);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
+        raportLock.unlock();
     }
 
     // only uses files ready to send which are used by one thread - uploading raports
     public Map<Raport, Integer> getAllReadyRaports() {
-        List<RaportFile> toLoad = dbHelper.getAllReadyRaports();
-        Map<Raport, Integer> raportsToSend = new HashMap<>();
-        for (RaportFile file : toLoad) {
-            Raport loaded = null;
-            try {
-                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance().getFile(file.getFileName()));
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(LOG_TAG, "Unable to get raport");
-            }
-            if (loaded != null) {
-                raportsToSend.put(loaded, file.getServerId());
-            }
-        }
-        return raportsToSend;
+        return readyRaports;
     }
 
     // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
     public void setServerId(Raport raport, Integer serverId) {
+        readyRaports.put(raport, serverId);
         dbHelper.changeRaportServerId(raport.getId(), serverId);
     }
 
@@ -253,7 +199,9 @@ public class DataHandler extends Observable {
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1, int tryNo) throws IOException {
+    public void setMaps(Integer version,
+                        FloorMap floor0,
+                        FloorMap floor1) throws IOException, DatabaseLoadException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -361,13 +309,17 @@ public class DataHandler extends Observable {
         return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
-    public String getTemporaryPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
+    public String getTemporaryPathForTile(Integer floorNo,
+                                          Integer detailLevel,
+                                          Integer x,
+                                          Integer y) {
         String dir = DATA_PATH + MAP_DIRECTORY + TMP + "/";
         return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 
     private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
-        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" + x.toString() + "_" + y.toString();
+        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" +
+               x.toString() + "_" + y.toString();
     }
 
     private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
@@ -391,15 +343,49 @@ public class DataHandler extends Observable {
         return true;
     }
 
-    private String saveRaport(Raport raport) throws IOException {
+    public String saveCurrentRaport() {
+        Log.i(LOG_TAG, currentRaport.toString());
         String dir = DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
         String tmpFile = dir + TMP;
         String realFile = "";
-        FileHandler.getInstance().saveSerializable(raport, tmpFile);
-        realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
-        FileHandler.getInstance().renameFile(tmpFile, realFile);
-
+        try {
+            FileHandler.getInstance().saveSerializable(currentRaport, tmpFile);
+            realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
+            FileHandler.getInstance().renameFile(tmpFile, realFile);
+        } catch (IOException e) {
+            Log.i(LOG_TAG, "Saving raport failed");
+            saveCurrentRaport();
+        }
         return dir + realFile;
+    }
+
+    public enum Item {
+        MAP_UPDATE_COMPLETED("Map update completed"),
+        EXPERIMENT_DATA("Experiment data"),
+        EXHIBITS("Exhibits"),
+        UNKNOWN("Unknown");
+
+        private String code;
+
+        private Item(String code) {
+            this.code = code;
+        }
+
+        public static Item fromString(String code) {
+            if (code != null) {
+                for (Item i : Item.values()) {
+                    if (code.equals(i.code)) {
+                        return i;
+                    }
+                }
+            }
+            return Item.UNKNOWN;
+        }
+
+        @Override
+        public String toString() {
+            return code;
+        }
     }
 }
