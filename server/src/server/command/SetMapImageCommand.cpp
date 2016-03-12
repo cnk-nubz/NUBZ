@@ -18,13 +18,17 @@ namespace command {
 
 const std::vector<SetMapImageCommand::ZoomLevelInfo> SetMapImageCommand::zoomLevels = {
     {1, 1024, 64}, {2, 2048, 128}, {3, 4096, 256}, {4, 8192, 512}};
-std::mutex SetMapImageCommand::setMapLock{};
+volatile std::atomic_flag SetMapImageCommand::inProgress = ATOMIC_FLAG_INIT;
 
 SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
+    inProgress.clear();
 }
 
 io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
-    std::lock_guard<std::mutex> lock(setMapLock);
+    if (inProgress.test_and_set()) {
+        throw io::InvalidInput{"cannot change two maps at the same time"};
+    }
+
     LOG(INFO) << "Removing current images";
     removeOldData(input.floor);
 
@@ -44,7 +48,7 @@ io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImage
         createZoomLevels(imageDirHandler.getPath(), std::to_string(mapImage.floor) + "/");
 
     LOG(INFO) << "Removing tmp data";
-    boost::filesystem::remove(utils::PathHelper::getInstance().pathForTmpFile(input.filename));
+    boost::filesystem::remove(utils::PathHelper::tmpDir.pathForFile(input.filename));
     imgProc.reset();
 
     LOG(INFO) << "Saving data into database";
@@ -58,13 +62,17 @@ io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImage
 
     fullImageHandler.release();
     imageDirHandler.release();
+
+    inProgress.clear();
+
     return io::output::MapImage{mapImage};
 }
 
 void SetMapImageCommand::removeOldData(std::int32_t floor) {
     boost::optional<repository::MapImage> mapImage = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::MapImages{session};
-        if (auto mapImage = repo.get(floor)) {
+        auto mapImage = repo.get(floor);
+        if (mapImage) {
             repo.remove(floor);
         }
         return mapImage;
@@ -72,28 +80,27 @@ void SetMapImageCommand::removeOldData(std::int32_t floor) {
 
     if (mapImage) {
         boost::filesystem::remove(
-            utils::PathHelper::getInstance().pathForPublicFile(mapImage.value().filename));
+            utils::PathHelper::publicDir.pathForFile(mapImage.value().filename));
     }
-    boost::filesystem::remove_all(
-        utils::PathHelper::getInstance().pathForFloorTilesDirectory(floor));
+    boost::filesystem::remove_all(utils::PathHelper::pathForFloorTilesDirectory(floor));
 }
 
 ::utils::FileHandler SetMapImageCommand::createFloorDirectory(std::int32_t floor) {
-    auto path = utils::PathHelper::getInstance().pathForFloorTilesDirectory(floor);
+    auto path = utils::PathHelper::pathForFloorTilesDirectory(floor);
     auto handler = ::utils::FileHandler{path};
     boost::filesystem::create_directory(path);
     return handler;
 }
 
 void SetMapImageCommand::createImageProc(const std::string &tmpMapFilename) {
-    auto path = utils::PathHelper::getInstance().pathForTmpFile(tmpMapFilename);
+    auto path = utils::PathHelper::tmpDir.pathForFile(tmpMapFilename);
     imgProc.reset(new ::utils::ImageProcessor{path});
 }
 
 ::utils::FileHandler SetMapImageCommand::createFullSizeImage(const std::string &filename,
                                                              std::int32_t *widthOut,
                                                              std::int32_t *heightOut) {
-    auto dst = utils::PathHelper::getInstance().pathForPublicFile(filename);
+    auto dst = utils::PathHelper::publicDir.pathForFile(filename);
     prepareImageProcessor(zoomLevels.back());
     auto handler = ::utils::FileHandler{dst};
     LOG(INFO) << "Saving file into " << dst;

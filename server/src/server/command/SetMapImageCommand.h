@@ -1,6 +1,7 @@
 #ifndef SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
 #define SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
 
+#include <atomic>
 #include <memory>
 
 #include <boost/filesystem.hpp>
@@ -15,15 +16,14 @@
 #include <server/io/input/SetMapImageRequest.h>
 #include <server/io/output/MapImage.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class SetMapImageCommand {
+class SetMapImageCommand : public Command {
 public:
     SetMapImageCommand(db::Database &db);
-    SRV_CMD_CP_MV(SetMapImageCommand);
 
     io::output::MapImage operator()(const io::input::SetMapImageRequest &input);
 
@@ -34,7 +34,7 @@ private:
         std::size_t tileSize;
     };
     static const std::vector<ZoomLevelInfo> zoomLevels;
-    static std::mutex setMapLock;
+    static volatile std::atomic_flag inProgress;
 
     void removeOldData(std::int32_t floor);
     void createImageProc(const std::string &tmpMapFilename);

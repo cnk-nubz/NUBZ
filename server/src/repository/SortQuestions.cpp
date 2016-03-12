@@ -4,6 +4,7 @@
 #include <db/table/SortQuestions.h>
 
 #include "DefaultRepo.h"
+#include "InvalidData.h"
 #include "SortQuestions.h"
 
 namespace repository {
@@ -15,12 +16,12 @@ using MainImpl = repository::detail::DefaultRepoWithID<MainTable>;
 using OptionsImpl = repository::detail::DefaultRepoWithID<OptionsTable>;
 
 namespace {
-MainTable::Row toDB(const SortQuestions::Question &question);
-SortQuestions::Question fromDB(const MainTable::Row &question);
+MainTable::Sql::in_t toDB(const SortQuestions::Question &question);
+SortQuestions::Question fromDB(const MainTable::Sql::out_t &question);
 
-OptionsTable::Row optionToDB(const SortQuestions::Question::Option &option,
-                             std::int32_t questionID);
-SortQuestions::Question::Option optionFromDB(const OptionsTable::Row &option);
+OptionsTable::Sql::in_t optionToDB(const SortQuestions::Question::Option &option,
+                                   std::int32_t questionID);
+SortQuestions::Question::Option optionFromDB(const OptionsTable::Sql::out_t &option);
 }
 
 SortQuestions::SortQuestions(db::DatabaseSession &session) : session(session) {
@@ -46,13 +47,9 @@ std::vector<SortQuestions::Question> SortQuestions::getAll() {
 }
 
 std::vector<SortQuestions::Question::Option> SortQuestions::getOptions(std::int32_t questionID) {
-    auto dbOptions = std::vector<OptionsTable::Row>{};
-    auto getOptionsSql = OptionsTable::select().where(OptionsTable::colQuestionId == questionID);
-    ::utils::transform(
-        session.getResults(getOptionsSql), dbOptions, OptionsTable::RowFactory::fromDB);
-
+    auto getOptionsSql = OptionsTable::Sql::select().where(OptionsTable::QuestionID == questionID);
     auto result = std::vector<Question::Option>{};
-    ::utils::transform(dbOptions, result, optionFromDB);
+    utils::transform(session.getResults(getOptionsSql), result, optionFromDB);
     return result;
 }
 
@@ -73,6 +70,10 @@ void SortQuestions::insert(std::vector<SortQuestions::Question> *questions) {
 
 void SortQuestions::insert(SortQuestions::Question *question) {
     assert(question);
+    if (question->options.size() < 2) {
+        throw InvalidData{"question should have at least 2 options"};
+    }
+
     question->ID = MainImpl::insert(session, toDB(*question));
     for (auto &option : question->options) {
         insert(&option, question->ID);
@@ -85,33 +86,29 @@ void SortQuestions::insert(Question::Option *option, std::int32_t qID) {
 }
 
 namespace {
-MainTable::Row toDB(const SortQuestions::Question &question) {
-    auto res = MainTable::Row{};
-    res.name = question.name;
-    res.question = question.question;
-    return res;
+MainTable::Sql::in_t toDB(const SortQuestions::Question &question) {
+    return std::make_tuple(MainTable::FieldName{question.name},
+                           MainTable::FieldQuestion{question.question});
 }
 
-SortQuestions::Question fromDB(const MainTable::Row &question) {
+SortQuestions::Question fromDB(const MainTable::Sql::out_t &question) {
     auto res = SortQuestions::Question{};
-    res.ID = question.ID;
-    res.name = question.name;
-    res.question = question.question;
+    res.ID = std::get<MainTable::FieldID>(question).value;
+    res.name = std::get<MainTable::FieldName>(question).value;
+    res.question = std::get<MainTable::FieldQuestion>(question).value;
     return res;
 }
 
-OptionsTable::Row optionToDB(const SortQuestions::Question::Option &option,
-                             std::int32_t questionID) {
-    OptionsTable::Row res;
-    res.questionID = questionID;
-    res.text = option.text;
-    return res;
+OptionsTable::Sql::in_t optionToDB(const SortQuestions::Question::Option &option,
+                                   std::int32_t questionID) {
+    return std::make_tuple(OptionsTable::FieldQuestionID{questionID},
+                           OptionsTable::FieldText{option.text});
 }
 
-SortQuestions::Question::Option optionFromDB(const OptionsTable::Row &option) {
-    SortQuestions::Question::Option res;
-    res.ID = option.ID;
-    res.text = option.text;
+SortQuestions::Question::Option optionFromDB(const OptionsTable::Sql::out_t &option) {
+    auto res = SortQuestions::Question::Option{};
+    res.ID = std::get<OptionsTable::FieldID>(option).value;
+    res.text = std::get<OptionsTable::FieldText>(option).value;
     return res;
 }
 }

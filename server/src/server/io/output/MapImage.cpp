@@ -28,7 +28,7 @@ MapImage::ZoomLevel::ZoomLevel(const repository::MapImage::ZoomLevel &repo) {
     tilesUrls = repo.tilesFilenames;
     for (auto &row : tilesUrls) {
         for (auto &entry : row) {
-            auto url = server::utils::PathHelper::getInstance().tileUrlPrefix() + entry;
+            auto url = server::utils::PathHelper::tilesUrl.urlFor(entry);
             entry = url;
         }
     }

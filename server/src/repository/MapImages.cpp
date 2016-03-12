@@ -10,36 +10,36 @@ using Table = db::table::MapImages;
 using Impl = detail::DefaultRepo<Table>;
 
 namespace {
-Table::Row toDB(const MapImages::MapImage &mapImage);
-MapImages::MapImage fromDB(const Table::Row &mapImage);
+Table::Sql::in_t toDB(const MapImages::MapImage &mapImage);
+Table::ZoomLevelsData::ZoomLevel zoomLevelToDB(const MapImages::MapImage::ZoomLevel &zoomLevel);
+
+MapImages::MapImage fromDB(const Table::Sql::out_t &mapImage);
+MapImages::MapImage::ZoomLevel zoomLevelFromDB(const Table::ZoomLevelsData::ZoomLevel &zoomLevel);
 }
 
 MapImages::MapImages(db::DatabaseSession &session) : session(session) {
 }
 
 boost::optional<MapImages::MapImage> MapImages::get(std::int32_t floor) {
-    auto select = Table::select().where(Table::colFloor == floor);
-    if (auto row = session.getResult(select)) {
-        return fromDB(Table::RowFactory::fromDB(row.value()));
+    auto sql = Table::Sql::select().where(Table::Floor == floor);
+    if (auto row = session.getResult(sql)) {
+        return fromDB(row.value());
     } else {
         return {};
     }
 }
 
 std::vector<MapImage> MapImages::getAllNewerThan(std::int32_t version) {
-    auto sql = Table::select().where(Table::colVersion > version);
-    auto dbTuples = session.getResults(sql);
-
+    auto sql = Table::Sql::select().where(Table::Version > version);
     auto result = std::vector<MapImage>{};
-    ::utils::transform(
-        dbTuples, result, [](auto &dbTuple) { return fromDB(Table::RowFactory::fromDB(dbTuple)); });
+    utils::transform(session.getResults(sql), result, fromDB);
     return result;
 }
 
 std::vector<MapImages::MapImage> MapImages::getAll() {
     auto dbRows = Impl::getAll(session);
     auto result = std::vector<MapImages::MapImage>{};
-    ::utils::transform(dbRows, result, fromDB);
+    utils::transform(dbRows, result, fromDB);
     return result;
 }
 
@@ -48,7 +48,7 @@ void MapImages::removeAll() {
 }
 
 void MapImages::set(const MapImage &mapImage) {
-    auto select = Table::select().where(Table::colFloor == mapImage.floor);
+    auto select = Table::Sql::select().where(Table::Floor == mapImage.floor);
     if (session.getResult(select)) {
         remove(mapImage.floor);
     }
@@ -57,44 +57,50 @@ void MapImages::set(const MapImage &mapImage) {
 }
 
 void MapImages::remove(std::int32_t floor) {
-    auto sql = Table::del().where(Table::colFloor == floor);
+    auto sql = Table::Sql::del().where(Table::Floor == floor);
     session.execute(sql);
 }
 
 namespace {
-Table::Row toDB(const MapImages::MapImage &mapImage) {
-    auto res = Table::Row{};
-    res.floor = mapImage.floor;
-    res.width = mapImage.width;
-    res.height = mapImage.height;
-    res.version = mapImage.version;
-    res.filename = mapImage.filename;
-    for (auto &zoomLevel : mapImage.zoomLevels) {
-        auto resZoomLevel = Table::Row::ZoomLevel{};
-        resZoomLevel.imageWidth = zoomLevel.imageWidth;
-        resZoomLevel.imageHeight = zoomLevel.imageHeight;
-        resZoomLevel.tileSize = zoomLevel.tileSize;
-        resZoomLevel.tilesFilenames = zoomLevel.tilesFilenames;
-        res.zoomLevels.push_back(resZoomLevel);
-    }
+Table::Sql::in_t toDB(const MapImages::MapImage &mapImage) {
+    auto zoomLevelsData = Table::ZoomLevelsData{};
+    utils::transform(mapImage.zoomLevels, zoomLevelsData.zoomLevels, zoomLevelToDB);
+
+    return std::make_tuple(Table::FieldFloor{mapImage.floor},
+                           Table::FieldFilename{mapImage.filename},
+                           Table::FieldWidth{mapImage.width},
+                           Table::FieldHeight{mapImage.height},
+                           Table::FieldVersion{mapImage.version},
+                           Table::FieldZoomLevels{zoomLevelsData});
+}
+
+Table::ZoomLevelsData::ZoomLevel zoomLevelToDB(const MapImages::MapImage::ZoomLevel &zoomLevel) {
+    auto res = Table::ZoomLevelsData::ZoomLevel{};
+    res.imageWidth = zoomLevel.imageWidth;
+    res.imageHeight = zoomLevel.imageHeight;
+    res.tileSize = zoomLevel.tileSize;
+    res.tilesFilenames = zoomLevel.tilesFilenames;
     return res;
 }
 
-MapImages::MapImage fromDB(const Table::Row &mapImage) {
-    auto res = MapImage{};
-    res.floor = mapImage.floor;
-    res.width = mapImage.width;
-    res.height = mapImage.height;
-    res.version = mapImage.version;
-    res.filename = mapImage.filename;
-    for (auto &zoomLevel : mapImage.zoomLevels) {
-        auto resZoomLevel = MapImage::ZoomLevel{};
-        resZoomLevel.imageWidth = zoomLevel.imageWidth;
-        resZoomLevel.imageHeight = zoomLevel.imageHeight;
-        resZoomLevel.tileSize = zoomLevel.tileSize;
-        resZoomLevel.tilesFilenames = zoomLevel.tilesFilenames;
-        res.zoomLevels.push_back(resZoomLevel);
-    }
+MapImages::MapImage fromDB(const Table::Sql::out_t &mapImage) {
+    auto res = MapImages::MapImage{};
+    auto dbZoomLevels = std::get<Table::FieldZoomLevels>(mapImage).value.zoomLevels;
+    utils::transform(dbZoomLevels, res.zoomLevels, zoomLevelFromDB);
+    res.floor = std::get<Table::FieldFloor>(mapImage).value;
+    res.filename = std::get<Table::FieldFilename>(mapImage).value;
+    res.width = std::get<Table::FieldWidth>(mapImage).value;
+    res.height = std::get<Table::FieldHeight>(mapImage).value;
+    res.version = std::get<Table::FieldVersion>(mapImage).value;
+    return res;
+}
+
+MapImages::MapImage::ZoomLevel zoomLevelFromDB(const Table::ZoomLevelsData::ZoomLevel &zoomLevel) {
+    auto res = MapImages::MapImage::ZoomLevel{};
+    res.imageWidth = zoomLevel.imageWidth;
+    res.imageHeight = zoomLevel.imageHeight;
+    res.tileSize = zoomLevel.tileSize;
+    res.tilesFilenames = zoomLevel.tilesFilenames;
     return res;
 }
 }

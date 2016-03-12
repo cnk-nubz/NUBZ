@@ -6,21 +6,19 @@
 #include <server/io/input/CreateActionRequest.h>
 #include <server/io/output/Action.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class CreateActionCommand {
+class CreateActionCommand : public Command {
 public:
     CreateActionCommand(db::Database &db);
-    SRV_CMD_CP_MV(CreateActionCommand);
 
     io::output::Action operator()(const io::input::CreateActionRequest &input);
 
 private:
-    void validateInput(db::DatabaseSession &session,
-                       const io::input::CreateActionRequest &input) const;
+    void validateInput(const io::input::CreateActionRequest &input) const;
 
     db::Database &db;
 };

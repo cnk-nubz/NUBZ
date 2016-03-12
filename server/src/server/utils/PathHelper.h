@@ -10,38 +10,36 @@
 namespace server {
 namespace utils {
 
-class PathHelper {
-public:
-    static PathHelper &getInstance();
+struct PathHelper {
+    class Dir {
+    public:
+        void setPath(const std::string &path);
+        boost::filesystem::path pathForFile(const std::string &filename) const;
 
-    void setTmpDir(const std::string &tmpDirPath);
-    boost::filesystem::path pathForTmpFile(const std::string &filename) const;
+    private:
+        boost::optional<boost::filesystem::path> path;
+    };
 
-    void setPublicDir(const std::string &publicDirPath);
-    boost::filesystem::path pathForPublicFile(const std::string &filename) const;
+    class Url {
+    public:
+        void setPrefix(const std::string url);
+        std::string urlFor(const std::string &filename) const;
 
-    void setMapTilesDir(const std::string &mapTilesDirPath);
-    boost::filesystem::path pathForMapTilesDirectory() const;
+    private:
+        static constexpr char prefixEnd = '/';
+        boost::optional<std::string> urlPrefix;
+    };
 
-    boost::filesystem::path pathForFloorTilesDirectory(std::int32_t floor) const;
+    PathHelper() = delete;
 
-    void setMapImgUrlPrefix(const std::string &mapsImgUrlPrefix);
-    std::string mapImgUrlPrefix() const;
+    static Dir tmpDir;
+    static Dir publicDir;
+    static Dir mapTilesDir;
 
-    void setTileUrlPrefix(const std::string &tilesUrlPrefix);
-    std::string tileUrlPrefix() const;
+    static Url mapsImgUrl;
+    static Url tilesUrl;
 
-private:
-    PathHelper() = default;
-
-    static std::unique_ptr<PathHelper> instance;
-    static constexpr char prefixEnd = '/';
-
-    boost::optional<boost::filesystem::path> tmpDirPath;
-    boost::optional<boost::filesystem::path> publicDirPath;
-    boost::optional<boost::filesystem::path> mapTilesDirPath;
-    boost::optional<std::string> mapsImgUrlPrefix;
-    boost::optional<std::string> tilesUrlPrefix;
+    static boost::filesystem::path pathForFloorTilesDirectory(std::int32_t floor);
 };
 }
 }

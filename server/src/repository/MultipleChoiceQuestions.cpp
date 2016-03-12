@@ -4,6 +4,7 @@
 #include <db/table/MultipleChoiceQuestions.h>
 
 #include "DefaultRepo.h"
+#include "InvalidData.h"
 #include "MultipleChoiceQuestions.h"
 
 namespace repository {
@@ -15,12 +16,12 @@ using MainImpl = repository::detail::DefaultRepoWithID<MainTable>;
 using OptionsImpl = repository::detail::DefaultRepoWithID<OptionsTable>;
 
 namespace {
-MainTable::Row toDB(const MultipleChoiceQuestions::Question &question);
-MultipleChoiceQuestions::Question fromDB(const MainTable::Row &question);
+MainTable::Sql::in_t toDB(const MultipleChoiceQuestions::Question &question);
+MultipleChoiceQuestions::Question fromDB(const MainTable::Sql::out_t &question);
 
-OptionsTable::Row optionToDB(const MultipleChoiceQuestions::Question::Option &option,
-                             std::int32_t questionID);
-MultipleChoiceQuestions::Question::Option optionFromDB(const OptionsTable::Row &option);
+OptionsTable::Sql::in_t optionToDB(const MultipleChoiceQuestions::Question::Option &option,
+                                   std::int32_t questionID);
+MultipleChoiceQuestions::Question::Option optionFromDB(const OptionsTable::Sql::out_t &option);
 }
 
 MultipleChoiceQuestions::MultipleChoiceQuestions(db::DatabaseSession &session) : session(session) {
@@ -47,13 +48,10 @@ std::vector<MultipleChoiceQuestions::Question> MultipleChoiceQuestions::getAll()
 
 std::vector<MultipleChoiceQuestions::Question::Option> MultipleChoiceQuestions::getOptions(
     std::int32_t questionID) {
-    auto dbOptions = std::vector<OptionsTable::Row>{};
-    auto getOptionsSql = OptionsTable::select().where(OptionsTable::colQuestionId == questionID);
-    ::utils::transform(
-        session.getResults(getOptionsSql), dbOptions, OptionsTable::RowFactory::fromDB);
+    auto getOptionsSql = OptionsTable::Sql::select().where(OptionsTable::QuestionID == questionID);
 
     auto result = std::vector<Question::Option>{};
-    ::utils::transform(dbOptions, result, optionFromDB);
+    ::utils::transform(session.getResults(getOptionsSql), result, optionFromDB);
     return result;
 }
 
@@ -74,7 +72,12 @@ void MultipleChoiceQuestions::insert(std::vector<MultipleChoiceQuestions::Questi
 
 void MultipleChoiceQuestions::insert(MultipleChoiceQuestions::Question *question) {
     assert(question);
+    if (question->options.size() < 2) {
+        throw InvalidData{"question should have at least 2 options"};
+    }
+
     question->ID = MainImpl::insert(session, toDB(*question));
+
     for (auto &option : question->options) {
         insert(&option, question->ID);
     }
@@ -86,35 +89,31 @@ void MultipleChoiceQuestions::insert(Question::Option *option, std::int32_t qID)
 }
 
 namespace {
-MainTable::Row toDB(const MultipleChoiceQuestions::Question &question) {
-    auto res = MainTable::Row{};
-    res.name = question.name;
-    res.question = question.question;
-    res.singleAnswer = question.singleAnswer;
-    return res;
+MainTable::Sql::in_t toDB(const MultipleChoiceQuestions::Question &question) {
+    return std::make_tuple(MainTable::FieldName{question.name},
+                           MainTable::FieldQuestion{question.question},
+                           MainTable::FieldSingleAnswer{question.singleAnswer});
 }
 
-MultipleChoiceQuestions::Question fromDB(const MainTable::Row &question) {
+MultipleChoiceQuestions::Question fromDB(const MainTable::Sql::out_t &question) {
     auto res = MultipleChoiceQuestions::Question{};
-    res.ID = question.ID;
-    res.name = question.name;
-    res.question = question.question;
-    res.singleAnswer = question.singleAnswer;
+    res.ID = std::get<MainTable::FieldID>(question).value;
+    res.name = std::get<MainTable::FieldName>(question).value;
+    res.question = std::get<MainTable::FieldQuestion>(question).value;
+    res.singleAnswer = std::get<MainTable::FieldSingleAnswer>(question).value;
     return res;
 }
 
-OptionsTable::Row optionToDB(const MultipleChoiceQuestions::Question::Option &option,
-                             std::int32_t questionID) {
-    auto res = OptionsTable::Row();
-    res.questionID = questionID;
-    res.text = option.text;
-    return res;
+OptionsTable::Sql::in_t optionToDB(const MultipleChoiceQuestions::Question::Option &option,
+                                   std::int32_t questionID) {
+    return std::make_tuple(OptionsTable::FieldQuestionID{questionID},
+                           OptionsTable::FieldText{option.text});
 }
 
-MultipleChoiceQuestions::Question::Option optionFromDB(const OptionsTable::Row &option) {
+MultipleChoiceQuestions::Question::Option optionFromDB(const OptionsTable::Sql::out_t &option) {
     auto res = MultipleChoiceQuestions::Question::Option{};
-    res.ID = option.ID;
-    res.text = option.text;
+    res.ID = std::get<OptionsTable::FieldID>(option).value;
+    res.text = std::get<OptionsTable::FieldText>(option).value;
     return res;
 }
 }

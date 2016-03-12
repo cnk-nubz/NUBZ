@@ -82,22 +82,13 @@ rapidjson::Value createArray(rapidjson::Document::AllocatorType &allocator,
     return json;
 }
 
-namespace detail {
-struct ValueAdapter {
-    ValueAdapter(rapidjson::Value &val) : ptr(&val){};
-    rapidjson::Value *ptr;
-};
-}
-
 template <class... Args>
 rapidjson::Value createDictionary(rapidjson::Document::AllocatorType &allocator,
                                   std::pair<const char *, Args>... entries) {
-    // boxing rapidjson::Value into detail::ValueAdapter to prevent copying
-    auto values = std::vector<std::pair<const char *, detail::ValueAdapter>>{entries...};
     auto json = rapidjson::Value{rapidjson::kObjectType};
-    for (auto &val : values) {
-        json.AddMember(toStrAdapter(val.first), std::move(*val.second.ptr), allocator);
-    }
+    int _[] = {
+        (json.AddMember(toStrAdapter(entries.first), std::move(entries.second), allocator), 0)...};
+    (void)_;
     return json;
 }
 }

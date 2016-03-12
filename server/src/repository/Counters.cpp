@@ -23,14 +23,14 @@ std::int32_t Counters::increment(Counters::Type type) {
 
 std::int32_t Counters::get(Counters::Type type) {
     auto dbType = toDbType(type);
-    auto sql = Table::select().where(Table::colName == dbType);
-    auto row = Table::RowFactory::fromDB(session.getResult(sql).value());
-    return row.counter;
+    auto sql = Table::Sql::select().where(Table::Name == dbType);
+    auto row = session.getResult(sql).value();
+    return std::get<Table::FieldCounter>(row).value;
 }
 
 void Counters::set(Counters::Type type, std::int32_t newVal) {
     auto dbType = toDbType(type);
-    auto sql = Table::update().set(Table::colCounter, newVal).where(Table::colName == dbType);
+    auto sql = Table::Sql::update().set(Table::Counter, newVal).where(Table::Name == dbType);
     session.execute(sql);
 }
 

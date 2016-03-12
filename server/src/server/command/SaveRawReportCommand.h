@@ -5,15 +5,14 @@
 
 #include <server/io/input/RawReport.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class SaveRawReportCommand {
+class SaveRawReportCommand : public Command {
 public:
     SaveRawReportCommand(db::Database &db);
-    SRV_CMD_CP_MV(SaveRawReportCommand);
 
     void operator()(const io::input::RawReport &input);
 

@@ -6,21 +6,19 @@
 #include <server/io/input/CreateSortQuestionRequest.h>
 #include <server/io/output/SortQuestion.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class CreateSortQuestionCommand {
+class CreateSortQuestionCommand : public Command {
 public:
     CreateSortQuestionCommand(db::Database &db);
-    SRV_CMD_CP_MV(CreateSortQuestionCommand);
 
     io::output::SortQuestion operator()(const io::input::CreateSortQuestionRequest &input);
 
 private:
-    void validateInput(db::DatabaseSession &session,
-                       const io::input::CreateSortQuestionRequest &input) const;
+    void validateInput(const io::input::CreateSortQuestionRequest &input) const;
 
     db::Database &db;
 };

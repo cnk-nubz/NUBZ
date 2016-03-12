@@ -16,7 +16,7 @@ std::vector<io::output::SortQuestion> GetAllSortQuestionsCommand::operator()() {
         return repo.getAll();
     });
 
-    auto result = io::repoToIO<io::output::SortQuestion>(repoQuestions);
+    auto result = std::vector<io::output::SortQuestion>(repoQuestions.begin(), repoQuestions.end());
     std::sort(result.begin(), result.end());
     return result;
 }

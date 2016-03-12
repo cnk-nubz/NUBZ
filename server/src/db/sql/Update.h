@@ -13,35 +13,37 @@
 namespace db {
 namespace sql {
 
-template <class... AvailableColumns>
-class Update : public Where<Update<AvailableColumns...>, AvailableColumns...> {
-    static_assert(utils::same_table<AvailableColumns...>::value,
-                  "all columns should be from the same table");
+template <class... AvailableField>
+class Update : public Where<Update<AvailableField...>, AvailableField...> {
+    static_assert(utils::same_table<AvailableField...>::value,
+                  "all fields should be from the same table");
 
 public:
     template <class Column>
-    Update &set(const Column &column, const typename Column::value_type::type &newValue) {
-        static_assert(::utils::types::find_type<Column, AvailableColumns...>::value,
-                      "selected column is not available in this sql query");
+    Update &set(Column, const typename Column::field_type::type &newValue) {
+        using Field = typename Column::field_type;
+        static_assert(::utils::types::find_type<Field, AvailableField...>::value,
+                      "selected field is not available in this sql query");
 
-        addSet(column, newValue);
+        addSet<Column>(newValue);
         return *this;
     }
 
-    // additional function for non optional value if Column's Value is optional
-    template <class Column, class = std::enable_if_t<Column::value_type::is_optional>>
-    Update &set(const Column &column, const typename Column::value_type::internal_type &newValue) {
-        static_assert(::utils::types::find_type<Column, AvailableColumns...>::value,
-                      "selected column is not available in this sql query");
+    // additional function for non optional value if Field is optional
+    template <class Column, class = std::enable_if_t<Column::field_type::is_optional>>
+    Update &set(Column, const typename Column::field_type::internal_type &newValue) {
+        using Field = typename Column::field_type;
+        static_assert(::utils::types::find_type<Field, AvailableField...>::value,
+                      "selected field is not available in this sql query");
 
-        addSet(column, newValue);
+        addSet<Column>(newValue);
         return *this;
     }
 
     std::string str() const {
         assert(sets.size() > 0 && "you should call .set() at least once");
         boost::format stmt("UPDATE %1%\nSET %2%\n%3%");
-        stmt % utils::getTableName<AvailableColumns...>();
+        stmt % utils::getTableName<AvailableField...>();
         stmt % utils::asSqlList(sets, ",\n");
         stmt % this->whereStmt();
         return stmt.str();
@@ -49,10 +51,10 @@ public:
 
 private:
     template <class Column, class Value>
-    void addSet(const Column &col, const Value &newVal) {
+    void addSet(const Value &newVal) {
         boost::format set("%1%=%2%");
-        set % col.name;
-        set % utils::sqlVal(newVal);
+        set % utils::getColumnName<typename Column::field_type>();
+        set % translation::sqlVal(newVal);
         sets.push_back(set.str());
     }
 

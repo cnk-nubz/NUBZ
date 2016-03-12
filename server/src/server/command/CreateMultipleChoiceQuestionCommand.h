@@ -6,22 +6,20 @@
 #include <server/io/input/CreateMultipleChoiceQuestionRequest.h>
 #include <server/io/output/MultipleChoiceQuestion.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class CreateMultipleChoiceQuestionCommand {
+class CreateMultipleChoiceQuestionCommand : public Command {
 public:
     CreateMultipleChoiceQuestionCommand(db::Database &db);
-    SRV_CMD_CP_MV(CreateMultipleChoiceQuestionCommand);
 
     io::output::MultipleChoiceQuestion operator()(
         const io::input::CreateMultipleChoiceQuestionRequest &input);
 
 private:
-    void validateInput(db::DatabaseSession &session,
-                       const io::input::CreateMultipleChoiceQuestionRequest &input) const;
+    void validateInput(const io::input::CreateMultipleChoiceQuestionRequest &input) const;
 
     db::Database &db;
 };

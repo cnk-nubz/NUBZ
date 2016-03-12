@@ -5,15 +5,14 @@
 
 #include <server/io/output/CurrentExperimentResponse.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetCurrentExperimentCommand {
+class GetCurrentExperimentCommand : public Command {
 public:
     GetCurrentExperimentCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetCurrentExperimentCommand);
 
     io::output::CurrentExperimentResponse operator()();
 

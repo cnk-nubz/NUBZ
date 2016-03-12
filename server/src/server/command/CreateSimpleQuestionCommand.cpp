@@ -14,16 +14,12 @@ CreateSimpleQuestionCommand::CreateSimpleQuestionCommand(db::Database &db) : db(
 io::output::SimpleQuestion CreateSimpleQuestionCommand::operator()(
     const io::input::CreateSimpleQuestionRequest &input) {
     auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+        validateInput(input);
 
         auto question = repository::SimpleQuestion{};
         question.question = input.question;
         question.numberAnswer = input.answerType == io::output::SimpleQuestion::AnswerType::Number;
-        if (input.name) {
-            question.name = input.name.value();
-        } else {
-            question.name = question.question;
-        }
+        question.name = input.name.value_or(question.question);
 
         auto repo = repository::SimpleQuestions{session};
         repo.insert(&question);
@@ -33,12 +29,11 @@ io::output::SimpleQuestion CreateSimpleQuestionCommand::operator()(
 }
 
 void CreateSimpleQuestionCommand::validateInput(
-    db::DatabaseSession &session, const io::input::CreateSimpleQuestionRequest &input) const {
-    auto checker = utils::InputChecker{session};
-    if (!checker.checkText(input.question)) {
+    const io::input::CreateSimpleQuestionRequest &input) const {
+    if (!utils::checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }
-    if (input.name && !checker.checkText(input.name.value())) {
+    if (input.name && !utils::checkText(input.name.value())) {
         throw io::InvalidInput("incorrect name");
     }
 }

@@ -10,7 +10,6 @@
 #include <db/DatabaseSession.h>
 
 #include "Experiments.h"
-#include "InvalidData.h"
 
 namespace repository {
 
@@ -79,11 +78,12 @@ private:
 
     void checkSurveyAns(const Experiment::Survey &survey, const Report::SurveyAns &surveyAns);
 
-    void checkSimpleAns(const SimpleQuestion &question,
-                        const Report::SurveyAns::SimpleQAnswer &answer);
-    void checkMultipleChoiceAns(const MultipleChoiceQuestion &question,
-                                const Report::SurveyAns::MultiChoiceQAnswer &answer);
-    void checkSortAns(const SortQuestion &question, const Report::SurveyAns::SortQAnswer &answer);
+    static void checkSimpleAns(const SimpleQuestion &question,
+                               const Report::SurveyAns::SimpleQAnswer &answer);
+    static void checkMultipleChoiceAns(const MultipleChoiceQuestion &question,
+                                       const Report::SurveyAns::MultiChoiceQAnswer &answer);
+    static void checkSortAns(const SortQuestion &question,
+                             const Report::SurveyAns::SortQAnswer &answer);
 
     db::DatabaseSession &session;
 };

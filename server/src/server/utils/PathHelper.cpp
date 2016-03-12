@@ -5,74 +5,37 @@
 namespace server {
 namespace utils {
 
-std::unique_ptr<PathHelper> PathHelper::instance{};
+PathHelper::Dir PathHelper::tmpDir{};
+PathHelper::Dir PathHelper::publicDir{};
+PathHelper::Dir PathHelper::mapTilesDir{};
 
-PathHelper &PathHelper::getInstance() {
-    if (!instance) {
-        PathHelper::instance.reset(new PathHelper);
-    }
-    return *instance;
+PathHelper::Url PathHelper::mapsImgUrl;
+PathHelper::Url PathHelper::tilesUrl;
+
+void PathHelper::Dir::setPath(const std::string &path) {
+    this->path = path;
 }
 
-void PathHelper::setTmpDir(const std::string &tmpDirPath) {
-    this->tmpDirPath = tmpDirPath;
-}
-
-boost::filesystem::path PathHelper::pathForTmpFile(const std::string &filename) const {
-    assert(tmpDirPath);
-    auto result = tmpDirPath.value();
-    result /= filename;
-    return result;
-}
-
-void PathHelper::setPublicDir(const std::string &publicDirPath) {
-    this->publicDirPath = publicDirPath;
-}
-
-boost::filesystem::path PathHelper::pathForPublicFile(const std::string &filename) const {
-    assert(publicDirPath);
-    auto result = publicDirPath.value();
-    result /= filename;
-    return result;
-}
-
-void PathHelper::setMapTilesDir(const std::string &mapTilesDirPath) {
-    this->mapTilesDirPath = mapTilesDirPath;
-}
-
-boost::filesystem::path PathHelper::pathForFloorTilesDirectory(std::int32_t floor) const {
-    auto res = pathForMapTilesDirectory();
-    res /= std::to_string(floor);
+boost::filesystem::path PathHelper::Dir::pathForFile(const std::string &filename) const {
+    assert(path);
+    auto res = path.value() / filename;
     return res;
 }
 
-boost::filesystem::path PathHelper::pathForMapTilesDirectory() const {
-    assert(mapTilesDirPath);
-    return mapTilesDirPath.value();
-}
-
-void PathHelper::setMapImgUrlPrefix(const std::string &mapsImgUrlPrefix) {
-    this->mapsImgUrlPrefix = mapsImgUrlPrefix;
-    if (this->mapsImgUrlPrefix.value().back() != prefixEnd) {
-        this->mapsImgUrlPrefix.value() += prefixEnd;
+void PathHelper::Url::setPrefix(const std::string url) {
+    urlPrefix = std::move(url);
+    if (urlPrefix.value().back() != prefixEnd) {
+        urlPrefix.value() += prefixEnd;
     }
 }
 
-std::string PathHelper::mapImgUrlPrefix() const {
-    assert(mapsImgUrlPrefix);
-    return mapsImgUrlPrefix.value();
+std::string PathHelper::Url::urlFor(const std::string &filename) const {
+    assert(urlPrefix);
+    return urlPrefix.value() + filename;
 }
 
-void PathHelper::setTileUrlPrefix(const std::string &tilesUrlPrefix) {
-    this->tilesUrlPrefix = tilesUrlPrefix;
-    if (this->tilesUrlPrefix.value().back() != prefixEnd) {
-        this->tilesUrlPrefix.value() += prefixEnd;
-    }
-}
-
-std::string PathHelper::tileUrlPrefix() const {
-    assert(tilesUrlPrefix);
-    return tilesUrlPrefix.value();
+boost::filesystem::path PathHelper::pathForFloorTilesDirectory(std::int32_t floor) {
+    return mapTilesDir.pathForFile(std::to_string(floor));
 }
 }
 }

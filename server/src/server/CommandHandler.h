@@ -7,6 +7,8 @@
 
 #include <db/Database.h>
 
+#include <repository/InvalidData.h>
+
 #include <communication/Server.h>
 
 #include "io/InvalidInput.h"
@@ -78,6 +80,9 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
     } catch (server::io::InvalidInput &e) {
         LOG(INFO) << "InvalidInput: " << e.what();
         throw e.toThrift();
+    } catch (repository::InvalidData &e) {
+        LOG(INFO) << "InvalidInput: " << e.what();
+        throw communication::InvalidData{};
     } catch (std::exception &e) {
         LOG(INFO) << "InternalError: " << e.what();
         throw communication::InternalError{};

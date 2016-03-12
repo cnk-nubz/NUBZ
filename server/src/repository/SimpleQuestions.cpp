@@ -11,8 +11,8 @@ using Table = db::table::SimpleQuestions;
 using Impl = repository::detail::DefaultRepoWithID<Table>;
 
 namespace {
-Table::Row toDB(const SimpleQuestions::Question &question);
-SimpleQuestions::Question fromDB(const Table::Row &question);
+Table::Sql::in_t toDB(const SimpleQuestions::Question &question);
+SimpleQuestions::Question fromDB(const Table::Sql::out_t &question);
 }
 
 SimpleQuestions::SimpleQuestions(db::DatabaseSession &session) : session(session) {
@@ -53,21 +53,18 @@ void SimpleQuestions::insert(SimpleQuestions::Question *question) {
 }
 
 namespace {
-Table::Row toDB(const SimpleQuestions::Question &question) {
-    auto res = Table::Row{};
-    res.ID = question.ID;
-    res.name = question.name;
-    res.question = question.question;
-    res.numberAnswer = question.numberAnswer;
-    return res;
+Table::Sql::in_t toDB(const SimpleQuestions::Question &question) {
+    return std::make_tuple(Table::FieldName{question.name},
+                           Table::FieldQuestion{question.question},
+                           Table::FieldNumberAnswer{question.numberAnswer});
 }
 
-SimpleQuestions::Question fromDB(const Table::Row &question) {
+SimpleQuestions::Question fromDB(const Table::Sql::out_t &question) {
     auto res = SimpleQuestions::Question{};
-    res.ID = question.ID;
-    res.name = question.name;
-    res.question = question.question;
-    res.numberAnswer = question.numberAnswer;
+    res.ID = std::get<Table::FieldID>(question).value;
+    res.name = std::get<Table::FieldName>(question).value;
+    res.question = std::get<Table::FieldQuestion>(question).value;
+    res.numberAnswer = std::get<Table::FieldNumberAnswer>(question).value;
     return res;
 }
 }

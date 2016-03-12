@@ -47,16 +47,6 @@ void SetExhibitFrameCommand::validateInput(db::DatabaseSession &session,
     if (!exhibit.frame) {
         throw io::InvalidInput("given exhibit doesn't belong to any floor");
     }
-    auto frame = exhibit.frame.value();
-
-    auto checker = utils::InputChecker(session);
-    if (!checker.checkFrame(frame.floor,
-                            input.frame.x,
-                            input.frame.y,
-                            input.frame.size.width,
-                            input.frame.size.height)) {
-        throw io::InvalidInput("incorrect frame");
-    }
 }
 }
 }

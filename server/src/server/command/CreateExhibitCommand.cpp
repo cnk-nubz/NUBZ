@@ -33,20 +33,8 @@ io::output::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhi
 
 void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
                                          const io::input::CreateExhibitRequest &input) const {
-    auto checker = utils::InputChecker(session);
-    if (!checker.checkText(input.name)) {
+    if (!utils::checkText(input.name)) {
         throw io::InvalidInput("incorrect name");
-    }
-
-    if (input.visibleFrame) {
-        auto visibleFrame = input.visibleFrame.value();
-        if (!checker.checkFrame(visibleFrame.floor,
-                                visibleFrame.frame.x,
-                                visibleFrame.frame.y,
-                                visibleFrame.frame.size.width,
-                                visibleFrame.frame.size.height)) {
-            throw io::InvalidInput("incorrect frame");
-        }
     }
 
     if (input.floor) {
@@ -65,7 +53,7 @@ repository::Exhibit::Frame CreateExhibitCommand::createExhibitFrame(
     frame.floor = dstFloor;
     if (!visibleFrame || visibleFrame.value().floor != dstFloor) {
         frame.x = frame.y = 0;
-        frame.width = frame.height = minSize + rand() % minSize;
+        frame.width = frame.height = minSize;
     } else {
         auto screenFrame = visibleFrame.value().frame;
         frame.width = std::max(screenFrame.size.width / screenProportion, minSize);

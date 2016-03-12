@@ -9,17 +9,12 @@ SaveRawReportCommand::SaveRawReportCommand(db::Database &db) : db(db) {
 }
 
 void SaveRawReportCommand::operator()(const io::input::RawReport &input) {
-    try {
-        db.execute([&](db::DatabaseSession &session) {
-            auto repo = repository::Reports{session};
-            if (!repo.exist(input.ID)) {
-                repo.insert(input.toRepo());
-            }
-        });
-    } catch (repository::InvalidData &e) {
-        LOG(DEBUG) << e.what();
-        throw io::InvalidInput(e.what());
-    }
+    db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::Reports{session};
+        if (!repo.exist(input.ID)) {
+            repo.insert(input.toRepo());
+        }
+    });
 }
 }
 }

@@ -11,15 +11,15 @@
 namespace db {
 namespace sql {
 
-template <class... AvailableColumns>
-class Delete : public Where<Delete<AvailableColumns...>, AvailableColumns...> {
-    static_assert(utils::same_table<AvailableColumns...>::value,
-                  "all columns should be from the same table");
+template <class... AvailableFields>
+class Delete : public Where<Delete<AvailableFields...>, AvailableFields...> {
+    static_assert(utils::same_table<AvailableFields...>::value,
+                  "all fields should be from the same table");
 
 public:
     std::string str() const {
         boost::format stmt("DELETE FROM %1%\n%2%");
-        stmt % utils::getTableName<AvailableColumns...>();
+        stmt % utils::getTableName<AvailableFields...>();
         stmt % this->whereStmt();
         return stmt.str();
     }

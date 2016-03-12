@@ -11,26 +11,25 @@ namespace db {
 namespace sql {
 namespace utils {
 
-template <class FCol, class... Cols>
+template <class FField, class... Fields>
 struct same_table : std::true_type {};
 
-template <class FCol, class SCol, class... Cols>
-struct same_table<FCol, SCol, Cols...> {
+template <class FField, class SField, class... Fields>
+struct same_table<FField, SField, Fields...> {
     static constexpr bool value =
-        std::is_same<typename FCol::table_type, typename SCol::table_type>::value &&
-        same_table<SCol, Cols...>::value;
+        std::is_same<typename FField::table_type, typename SField::table_type>::value &&
+        same_table<SField, Fields...>::value;
 };
 
-template <class Col>
+template <class Field>
 std::string getColumnName() {
-    return std::decay_t<Col>::name;
+    return std::decay_t<Field>::columnName;
 }
 
-template <class FirstCol, class... Cols>
+template <class Field, class... Tail>
 std::string getTableName() {
-    static_assert(same_table<FirstCol, Cols...>::value,
-                  "all columns should be from the same table");
-    return FirstCol::table_type::tableName;
+    static_assert(same_table<Field, Tail...>::value, "all columns should be from the same table");
+    return Field::table_type::tableName;
 }
 
 inline std::string asSqlList(const std::vector<std::string> &list,
@@ -44,51 +43,6 @@ inline std::string asSqlList(const std::vector<std::string> &list,
         }
     }
     return res;
-}
-
-inline std::string sqlVal(const boost::gregorian::date &raw);
-inline std::string sqlVal(const std::string &raw);
-inline std::string sqlVal(const boost::optional<std::string> &raw);
-inline std::string sqlVal(const bool &raw);
-
-template <class T>
-std::string sqlVal(const boost::optional<T> &raw);
-
-template <class T>
-std::string sqlVal(const T &raw);
-
-inline std::string sqlVal(const bool &raw) {
-    return raw ? "TRUE" : "FALSE";
-}
-
-inline std::string sqlVal(const boost::gregorian::date &raw) {
-    return boost::gregorian::to_simple_string(raw);
-}
-
-inline std::string sqlVal(const std::string &raw) {
-    return "'" + raw + "'";
-}
-
-inline std::string sqlVal(const boost::optional<std::string> &raw) {
-    if (raw) {
-        return sqlVal(raw.value());
-    } else {
-        return "NULL";
-    }
-}
-
-template <class T>
-std::string sqlVal(const boost::optional<T> &raw) {
-    if (raw) {
-        return sqlVal(raw.value());
-    } else {
-        return "NULL";
-    }
-}
-
-template <class T>
-std::string sqlVal(const T &raw) {
-    return std::to_string(raw);
 }
 }
 }

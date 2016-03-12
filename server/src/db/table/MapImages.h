@@ -1,67 +1,19 @@
 #ifndef DB_TABLE__MAP_IMAGES__H
 #define DB_TABLE__MAP_IMAGES__H
 
-#include <tuple>
+#include <cstdint>
+#include <string>
 #include <vector>
 
-#include <db/sql/sql.h>
-
 #include "Column.h"
-#include "Value.h"
+#include "Field.h"
+#include "SqlCore.h"
 
 namespace db {
 namespace table {
 
 struct MapImages {
-    struct ValueFloor : detail::Value<std::int32_t> {
-        using detail::Value<std::int32_t>::Value;
-    };
-
-    struct ValueFilename : detail::Value<std::string> {
-        using detail::Value<std::string>::Value;
-    };
-
-    struct ValueWidth : detail::Value<std::int32_t> {
-        using detail::Value<std::int32_t>::Value;
-    };
-
-    struct ValueHeight : detail::Value<std::int32_t> {
-        using detail::Value<std::int32_t>::Value;
-    };
-
-    struct ValueVersion : detail::Value<std::int32_t> {
-        using detail::Value<std::int32_t>::Value;
-    };
-
-    struct ValueZoomLevels : detail::Value<std::string> {
-        using detail::Value<std::string>::Value;
-    };
-
-    struct ColumnFloor : detail::Column<ColumnFloor, MapImages, ValueFloor> {
-        static const std::string name;
-    };
-
-    struct ColumnFilename : detail::Column<ColumnFilename, MapImages, ValueFilename> {
-        static const std::string name;
-    };
-
-    struct ColumnWidth : detail::Column<ColumnWidth, MapImages, ValueWidth> {
-        static const std::string name;
-    };
-
-    struct ColumnHeight : detail::Column<ColumnHeight, MapImages, ValueHeight> {
-        static const std::string name;
-    };
-
-    struct ColumnVersion : detail::Column<ColumnVersion, MapImages, ValueVersion> {
-        static const std::string name;
-    };
-
-    struct ColumnZoomLevels : detail::Column<ColumnZoomLevels, MapImages, ValueZoomLevels> {
-        static const std::string name;
-    };
-
-    struct Row {
+    struct ZoomLevelsData {
         struct ZoomLevel {
             std::int32_t imageWidth;
             std::int32_t imageHeight;
@@ -69,66 +21,53 @@ struct MapImages {
             std::vector<std::vector<std::string>> tilesFilenames;
         };
 
-        ValueFloor::type floor;
-        ValueFilename::type filename;
-        ValueWidth::type width;
-        ValueHeight::type height;
-        ValueVersion::type version;
+        ZoomLevelsData() = default;
+        ZoomLevelsData(const std::string &jsonStr);
+        operator std::string() const;
+
         std::vector<ZoomLevel> zoomLevels;
     };
 
-    struct RowFactory {
-        using DBOut = std::tuple<ValueFloor, ValueFilename, ValueWidth, ValueHeight, ValueVersion,
-                                 ValueZoomLevels>;
-        using DBIn = std::tuple<ValueFloor, ValueFilename, ValueWidth, ValueHeight, ValueVersion,
-                                ValueZoomLevels>;
-        static Row fromDB(const DBOut &dbOut);
-        static DBIn toDB(const Row &row);
+    struct FieldFloor : detail::Field<std::int32_t, MapImages> {
+        using detail::Field<std::int32_t, MapImages>::Field;
+        static const std::string columnName;
     };
+    static constexpr detail::Column2<FieldFloor> Floor{};
+
+    struct FieldFilename : detail::Field<std::string, MapImages> {
+        using detail::Field<std::string, MapImages>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column2<FieldFilename> Filename{};
+
+    struct FieldWidth : detail::Field<std::int32_t, MapImages> {
+        using detail::Field<std::int32_t, MapImages>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column2<FieldWidth> Width{};
+
+    struct FieldHeight : detail::Field<std::int32_t, MapImages> {
+        using detail::Field<std::int32_t, MapImages>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column2<FieldHeight> Height{};
+
+    struct FieldVersion : detail::Field<std::int32_t, MapImages> {
+        using detail::Field<std::int32_t, MapImages>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column2<FieldVersion> Version{};
+
+    struct FieldZoomLevels : detail::Field<ZoomLevelsData, MapImages> {
+        using detail::Field<ZoomLevelsData, MapImages>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column2<FieldZoomLevels> ZoomLevels{};
 
     static const std::string tableName;
-    static const ColumnFloor colFloor;
-    static const ColumnFilename colFilename;
-    static const ColumnWidth colWidth;
-    static const ColumnHeight colHeight;
-    static const ColumnVersion colVersion;
-    static const ColumnZoomLevels colZoomLevels;
 
-    static auto select() {
-        return ::db::sql::Select<ColumnFloor,
-                                 ColumnFilename,
-                                 ColumnWidth,
-                                 ColumnHeight,
-                                 ColumnVersion,
-                                 ColumnZoomLevels>();
-    }
-
-    static auto insert() {
-        return ::db::sql::Insert<ColumnFloor,
-                                 ColumnFilename,
-                                 ColumnWidth,
-                                 ColumnHeight,
-                                 ColumnVersion,
-                                 ColumnZoomLevels>();
-    }
-
-    static auto del() {
-        return ::db::sql::Delete<ColumnFloor,
-                                 ColumnFilename,
-                                 ColumnWidth,
-                                 ColumnHeight,
-                                 ColumnVersion,
-                                 ColumnZoomLevels>();
-    }
-
-    static auto update() {
-        return ::db::sql::Update<ColumnFloor,
-                                 ColumnFilename,
-                                 ColumnWidth,
-                                 ColumnHeight,
-                                 ColumnVersion,
-                                 ColumnZoomLevels>();
-    }
+    using Sql = detail::SqlCore<FieldFloor, FieldFilename, FieldWidth, FieldHeight, FieldVersion,
+                                FieldZoomLevels>;
 };
 }
 }

@@ -5,15 +5,14 @@
 
 #include <server/io/output/Action.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetAllActionsCommand {
+class GetAllActionsCommand : public Command {
 public:
     GetAllActionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllActionsCommand);
 
     std::vector<io::output::Action> operator()();
 

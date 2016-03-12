@@ -40,6 +40,9 @@ add_executable(main ${SOURCES})
 target_link_libraries(
     main
     server
+    communication
+    repository
+    db
     utils
     ssl
     thrift

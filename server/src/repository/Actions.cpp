@@ -11,8 +11,8 @@ using Table = db::table::Actions;
 using Impl = repository::detail::DefaultRepoWithID<Table>;
 
 namespace {
-Table::Row toDB(const Actions::Action &action);
-Actions::Action fromDB(const Table::Row &action);
+Table::Sql::in_t toDB(const Actions::Action &action);
+Actions::Action fromDB(const Table::Sql::out_t &actionTuple);
 }
 
 Actions::Actions(db::DatabaseSession &session) : session(session) {
@@ -57,17 +57,14 @@ void Actions::insert(Actions::Action *action) {
 }
 
 namespace {
-Table::Row toDB(const Actions::Action &action) {
-    auto res = Table::Row{};
-    res.ID = action.ID;
-    res.text = action.text;
-    return res;
+Table::Sql::in_t toDB(const Actions::Action &action) {
+    return std::make_tuple(Table::FieldText{action.text});
 }
 
-Actions::Action fromDB(const Table::Row &action) {
+Actions::Action fromDB(const Table::Sql::out_t &actionTuple) {
     auto res = Actions::Action{};
-    res.ID = action.ID;
-    res.text = action.text;
+    res.ID = std::get<Table::FieldID>(actionTuple).value;
+    res.text = std::get<Table::FieldText>(actionTuple).value;
     return res;
 }
 }

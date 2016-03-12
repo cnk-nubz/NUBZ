@@ -10,15 +10,14 @@
 
 #include <repository/Exhibits.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class CreateExhibitCommand {
+class CreateExhibitCommand : public Command {
 public:
     CreateExhibitCommand(db::Database &db);
-    SRV_CMD_CP_MV(CreateExhibitCommand);
 
     io::output::Exhibit operator()(const io::input::CreateExhibitRequest &input);
 

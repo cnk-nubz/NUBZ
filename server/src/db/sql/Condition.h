@@ -8,6 +8,7 @@
 
 #include <utils/type_traits.h>
 
+#include "translation.h"
 #include "utils.h"
 
 namespace db {
@@ -72,42 +73,43 @@ struct _LessEqual : Op {
     }
 } static constexpr LessEqual{};
 
-template <class... UsedColumns>
+template <class... UsedFields>
 class Condition {
 public:
     Condition(std::string stmt) : stmt(std::move(stmt)) {
     }
 
     template <class Column, class NullOperator>
-    Condition(Column&&, NullOperator&& op) {
+    Condition(Column, NullOperator op) {
         check_operator_type<NullOp, NullOperator>();
         check_column<Column>();
-        static_assert(std::decay_t<Column>::value_type::is_optional,
+        static_assert(Column::field_type::is_optional,
                       "not null column shouldn't be checked for null");
 
         stmt = createStmt(utils::getColumnName<Column>(), op.str());
     }
 
-    template <class Column, class Operator, class Value>
-    Condition(Column&&, Operator&& op, Value&& value) {
+    template <class Column, class Operator,
+              class Value = typename Column::field_type::internal_type>
+    Condition(Column, Operator op, const Value& value) {
         check_operator_type<Op, Operator>();
         check_column<Column>();
-        check_value_type<Column, Value>();
 
-        stmt = createStmt(
-            utils::getColumnName<Column>(), op.str(), utils::sqlVal(std::forward<Value>(value)));
+        stmt = createStmt(utils::getColumnName<typename Column::field_type>(),
+                          op.str(),
+                          translation::sqlVal(value));
     }
 
-    template <class... UsedColumns2>
-    auto operator&&(const Condition<UsedColumns2...>& cond) const {
-        return Condition<UsedColumns..., UsedColumns2...>(
-            "(" + createStmt(str(), "AND", cond.str()) + ")");
+    template <class... UsedFields2>
+    auto operator&&(const Condition<UsedFields2...>& cond) const {
+        return Condition<UsedFields..., UsedFields2...>("(" + createStmt(str(), "AND", cond.str()) +
+                                                        ")");
     }
 
-    template <class... UsedColumns2>
-    auto operator||(const Condition<UsedColumns2...>& cond) const {
-        return Condition<UsedColumns..., UsedColumns2...>(
-            "(" + createStmt(str(), "OR", cond.str()) + ")");
+    template <class... UsedFields2>
+    auto operator||(const Condition<UsedFields2...>& cond) const {
+        return Condition<UsedFields..., UsedFields2...>("(" + createStmt(str(), "OR", cond.str()) +
+                                                        ")");
     }
 
     std::string str() const {
@@ -117,20 +119,13 @@ public:
 private:
     template <class Column>
     static constexpr void check_column() noexcept {
-        static_assert(::utils::types::find_type<std::decay_t<Column>, UsedColumns...>::value,
+        static_assert(::utils::types::find_type<typename Column::field_type, UsedFields...>::value,
                       "invalid column");
-    }
-
-    template <class Column, class Value>
-    static constexpr void check_value_type() noexcept {
-        static_assert(std::is_same<typename std::decay_t<Column>::value_type::internal_type,
-                                   std::decay_t<Value>>::value,
-                      "invalid value type");
     }
 
     template <class Base, class Operator>
     static constexpr void check_operator_type() noexcept {
-        static_assert(std::is_base_of<Base, std::decay_t<Operator>>::value, "wrong operator type");
+        static_assert(std::is_base_of<Base, Operator>::value, "wrong operator type");
     }
 
     template <class V>

@@ -39,13 +39,18 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
+    // throws InvalidData in case of incorrect frame
     void insert(Exhibit *exhibit);
     void insert(std::vector<Exhibit> *exhibits);
 
+    // throws InvalidData in case of incorrect frame
     void setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame);
+
     void setVersion(std::int32_t ID, std::int32_t newVersion);
 
 private:
+    void checkFrame(const Exhibit::Frame &frame);
+
     db::DatabaseSession &session;
 };
 

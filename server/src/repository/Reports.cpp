@@ -8,6 +8,7 @@
 #include "Counters.h"
 #include "DefaultRepo.h"
 #include "Exhibits.h"
+#include "InvalidData.h"
 #include "MultipleChoiceQuestions.h"
 #include "Reports.h"
 #include "SimpleQuestions.h"
@@ -19,39 +20,36 @@ using Table = db::table::Reports;
 using Impl = repository::detail::DefaultRepo<Table>;
 
 namespace {
-Table::Row toDB(const Reports::Report &report);
-Table::Row::Event eventToDB(const Reports::Report::Event &event);
-Table::Row::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &surveyAns);
+Table::Sql::in_t toDB(const Reports::Report &report);
+Table::ContentData::Event eventToDB(const Reports::Report::Event &event);
+Table::ContentData::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &surveyAns);
 
-Reports::Report fromDB(const Table::Row &report);
-Reports::Report::Event eventFromDB(const Table::Row::Event &event);
-Reports::Report::SurveyAns surveyAnsFromDB(const Table::Row::SurveyAns &surveyAns);
+Reports::Report fromDB(const Table::Sql::out_t &report);
+Reports::Report::Event eventFromDB(const Table::ContentData::Event &event);
+Reports::Report::SurveyAns surveyAnsFromDB(const Table::ContentData::SurveyAns &surveyAns);
 }
 
 Reports::Reports(db::DatabaseSession &session) : session(session) {
 }
 
 bool Reports::exist(std::int32_t ID) {
-    auto sql = db::sql::Select<Table::ColumnId>{}.where(Table::colId == ID);
+    auto sql = db::sql::Select<Table::FieldID>{}.where(Table::ID == ID);
     return (bool)session.getResult(sql);
 }
 
 boost::optional<Reports::Report> Reports::get(std::int32_t ID) {
-    auto sql = Table::select().where(Table::colId == ID);
+    auto sql = Table::Sql::select().where(Table::ID == ID);
     if (auto dbTuple = session.getResult(sql)) {
-        return fromDB(Table::RowFactory::fromDB(dbTuple.value()));
+        return fromDB(dbTuple.value());
     } else {
         return {};
     }
 }
 
 std::vector<Reports::Report> Reports::getAllForExperiment(std::int32_t experimentID) {
-    auto sql = Table::select().where(Table::colExperimentId == experimentID);
-    auto dbTuples = session.getResults(sql);
-
+    auto sql = Table::Sql::select().where(Table::ExperimentID == experimentID);
     auto result = std::vector<Reports::Report>{};
-    utils::transform(
-        dbTuples, result, [](auto &dbTuple) { return fromDB(Table::RowFactory::fromDB(dbTuple)); });
+    utils::transform(session.getResults(sql), result, fromDB);
     return result;
 }
 
@@ -146,41 +144,10 @@ void Reports::checkSurveyAns(const Experiment::Survey &survey, const Report::Sur
         throw InvalidData("incorrect number of answers");
     }
 
-    // simple
-    {
-        auto qIt = survey.simpleQuestions.begin();
-        auto qEnd = survey.simpleQuestions.end();
-        auto aIt = surveyAns.simpleQAnswers.begin();
-        while (qIt != qEnd) {
-            checkSimpleAns(*qIt, *aIt);
-            ++qIt;
-            ++aIt;
-        }
-    }
-
-    // multiple choice
-    {
-        auto qIt = survey.multipleChoiceQuestions.begin();
-        auto qEnd = survey.multipleChoiceQuestions.end();
-        auto aIt = surveyAns.multiChoiceQAnswers.begin();
-        while (qIt != qEnd) {
-            checkMultipleChoiceAns(*qIt, *aIt);
-            ++qIt;
-            ++aIt;
-        }
-    }
-
-    // sort
-    {
-        auto qIt = survey.sortQuestions.begin();
-        auto qEnd = survey.sortQuestions.end();
-        auto aIt = surveyAns.sortQAnswers.begin();
-        while (qIt != qEnd) {
-            checkSortAns(*qIt, *aIt);
-            ++qIt;
-            ++aIt;
-        }
-    }
+    utils::for_each2(survey.simpleQuestions, surveyAns.simpleQAnswers, checkSimpleAns);
+    utils::for_each2(
+        survey.multipleChoiceQuestions, surveyAns.multiChoiceQAnswers, checkMultipleChoiceAns);
+    utils::for_each2(survey.sortQuestions, surveyAns.sortQAnswers, checkSortAns);
 }
 
 void Reports::checkSimpleAns(const SimpleQuestion &question,
@@ -227,43 +194,46 @@ void Reports::checkSortAns(const SortQuestion &question,
 }
 
 namespace {
-Table::Row toDB(const Reports::Report &report) {
-    auto res = Table::Row{};
-    res.ID = report.ID;
-    res.experimentID = report.experimentID;
-    utils::transform(report.history, res.history, eventToDB);
-    res.surveyBefore = surveyAnsToDB(report.surveyBefore);
-    res.surveyAfter = surveyAnsToDB(report.surveyAfter);
-    return res;
+Table::Sql::in_t toDB(const Reports::Report &report) {
+    auto content = Table::ContentData{};
+    utils::transform(report.history, content.history, eventToDB);
+    content.surveyBefore = surveyAnsToDB(report.surveyBefore);
+    content.surveyAfter = surveyAnsToDB(report.surveyAfter);
+
+    return std::make_tuple(Table::FieldID{report.ID},
+                           Table::FieldExperimentID{report.experimentID},
+                           Table::FieldContent{content});
 }
 
-Table::Row::Event eventToDB(const Reports::Report::Event &event) {
-    auto res = Table::Row::Event{};
+Table::ContentData::Event eventToDB(const Reports::Report::Event &event) {
+    auto res = Table::ContentData::Event{};
     res.actions = event.actions;
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
     return res;
 }
 
-Table::Row::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &surveyAns) {
-    auto res = Table::Row::SurveyAns{};
+Table::ContentData::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &surveyAns) {
+    auto res = Table::ContentData::SurveyAns{};
     res.simpleQAnswers = surveyAns.simpleQAnswers;
     res.multiChoiceQAnswers = surveyAns.multiChoiceQAnswers;
     res.sortQAnswers = surveyAns.sortQAnswers;
     return res;
 }
 
-Reports::Report fromDB(const Table::Row &report) {
+Reports::Report fromDB(const Table::Sql::out_t &report) {
     auto res = Reports::Report{};
-    res.ID = report.ID;
-    res.experimentID = report.experimentID;
-    utils::transform(report.history, res.history, eventFromDB);
-    res.surveyBefore = surveyAnsFromDB(report.surveyBefore);
-    res.surveyAfter = surveyAnsFromDB(report.surveyAfter);
+    res.ID = std::get<Table::FieldID>(report).value;
+    res.experimentID = std::get<Table::FieldExperimentID>(report).value;
+
+    auto content = std::get<Table::FieldContent>(report).value;
+    utils::transform(content.history, res.history, eventFromDB);
+    res.surveyBefore = surveyAnsFromDB(content.surveyBefore);
+    res.surveyAfter = surveyAnsFromDB(content.surveyAfter);
     return res;
 }
 
-Reports::Report::Event eventFromDB(const Table::Row::Event &event) {
+Reports::Report::Event eventFromDB(const Table::ContentData::Event &event) {
     auto res = Reports::Report::Event{};
     res.actions = event.actions;
     res.durationInSecs = event.durationInSecs;
@@ -271,7 +241,7 @@ Reports::Report::Event eventFromDB(const Table::Row::Event &event) {
     return res;
 }
 
-Reports::Report::SurveyAns surveyAnsFromDB(const Table::Row::SurveyAns &surveyAns) {
+Reports::Report::SurveyAns surveyAnsFromDB(const Table::ContentData::SurveyAns &surveyAns) {
     auto res = Reports::Report::SurveyAns{};
     res.simpleQAnswers = surveyAns.simpleQAnswers;
     res.multiChoiceQAnswers = surveyAns.multiChoiceQAnswers;

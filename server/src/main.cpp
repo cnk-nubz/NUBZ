@@ -23,15 +23,14 @@ boost::optional<utils::Config> parseArguments(int argc, char *argv[]);
 void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
-    srand((unsigned)time(NULL));
     if (auto cfg = parseArguments(argc, argv)) {
         auto config = cfg.value();
 
-        server::utils::PathHelper::getInstance().setMapImgUrlPrefix(config.urlPrefixForMapImage);
-        server::utils::PathHelper::getInstance().setTileUrlPrefix(config.urlPrefixForMapImage);
-        server::utils::PathHelper::getInstance().setTmpDir(config.tmpFolderPath);
-        server::utils::PathHelper::getInstance().setPublicDir(config.publicFolderPath);
-        server::utils::PathHelper::getInstance().setMapTilesDir(config.mapTilesFolderPath);
+        server::utils::PathHelper::mapsImgUrl.setPrefix(config.urlPrefixForMapImage);
+        server::utils::PathHelper::tilesUrl.setPrefix(config.urlPrefixForMapImageTiles);
+        server::utils::PathHelper::tmpDir.setPath(config.tmpFolderPath);
+        server::utils::PathHelper::publicDir.setPath(config.publicFolderPath);
+        server::utils::PathHelper::mapTilesDir.setPath(config.mapTilesFolderPath);
 
         db::Database db(
             config.databaseUser, config.databaseName, config.databaseHost, config.databasePort);

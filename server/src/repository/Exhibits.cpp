@@ -4,6 +4,8 @@
 
 #include "DefaultRepo.h"
 #include "Exhibits.h"
+#include "InvalidData.h"
+#include "MapImages.h"
 
 namespace repository {
 
@@ -11,8 +13,18 @@ using Table = db::table::Exhibits;
 using Impl = repository::detail::DefaultRepoWithID<Table>;
 
 namespace {
-Table::Row toDB(const Exhibits::Exhibit &exhibit);
-Exhibits::Exhibit fromDB(const Table::Row &exhibit);
+struct OptFrame {
+    OptFrame(const boost::optional<Exhibits::Exhibit::Frame> &frame);
+
+    boost::optional<std::int32_t> x;
+    boost::optional<std::int32_t> y;
+    boost::optional<std::int32_t> width;
+    boost::optional<std::int32_t> height;
+    boost::optional<std::int32_t> floor;
+};
+
+Table::Sql::in_t toDB(const Exhibits::Exhibit &exhibit);
+Exhibits::Exhibit fromDB(const Table::Sql::out_t &exhibit);
 }
 
 Exhibits::Exhibits(db::DatabaseSession &session) : session(session) {
@@ -37,12 +49,11 @@ std::vector<Exhibits::Exhibit> Exhibits::getAll() {
 }
 
 std::vector<Exhibit> Exhibits::getAllNewerThan(std::int32_t version) {
-    auto sql = Table::select().where(Table::colVersion > version);
+    auto sql = Table::Sql::select().where(Table::Version > version);
     auto dbTuples = session.getResults(sql);
 
     auto result = std::vector<Exhibit>{};
-    utils::transform(
-        dbTuples, result, [](auto &tuple) { return fromDB(Table::RowFactory::fromDB(tuple)); });
+    utils::transform(dbTuples, result, fromDB);
     return result;
 }
 
@@ -63,72 +74,92 @@ void Exhibits::insert(std::vector<Exhibits::Exhibit> *exhibits) {
 
 void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     assert(exhibit);
+    if (exhibit->frame) {
+        checkFrame(exhibit->frame.value());
+    }
+
     exhibit->ID = Impl::insert(session, toDB(*exhibit));
 }
 
 void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
-    auto sql = Table::update().set(Table::colVersion, newVersion).where(Table::colId == ID);
+    auto sql = Table::Sql::update().set(Table::Version, newVersion).where(Table::ID == ID);
     session.execute(sql);
 }
 
 void Exhibits::setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame) {
-    auto x = boost::optional<std::int32_t>{};
-    auto y = boost::optional<std::int32_t>{};
-    auto width = boost::optional<std::int32_t>{};
-    auto height = boost::optional<std::int32_t>{};
-    auto floor = boost::optional<std::int32_t>{};
     if (newFrame) {
-        auto frame = newFrame.value();
+        checkFrame(newFrame.value());
+    }
+
+    auto frame = OptFrame{newFrame};
+
+    auto sql = Table::Sql::update()
+                   .where(Table::ID == ID)
+                   .set(Table::FrameX, frame.x)
+                   .set(Table::FrameY, frame.y)
+                   .set(Table::FrameWidth, frame.width)
+                   .set(Table::FrameHeight, frame.height)
+                   .set(Table::FrameFloor, frame.floor);
+    session.execute(sql);
+}
+
+void Exhibits::checkFrame(const Exhibit::Frame &frame) {
+    if (auto mapImage = MapImages{session}.get(frame.floor)) {
+        if (frame.x + frame.width > mapImage.value().width ||
+            frame.y + frame.height > mapImage.value().height || frame.x < 0 || frame.y < 0) {
+            throw InvalidData{"incorrect frame - out of bounds"};
+        }
+    } else {
+        throw InvalidData{"incorrect frame - given floor doesn't exist"};
+    }
+}
+
+namespace {
+OptFrame::OptFrame(const boost::optional<Exhibits::Exhibit::Frame> &optFrame) {
+    if (optFrame) {
+        auto frame = optFrame.value();
         x = frame.x;
         y = frame.y;
         width = frame.width;
         height = frame.height;
         floor = frame.floor;
     }
-
-    auto sql = Table::update()
-                   .where(Table::colId == ID)
-                   .set(Table::colFrameX, x)
-                   .set(Table::colFrameY, y)
-                   .set(Table::colFrameWidth, width)
-                   .set(Table::colFrameHeight, height)
-                   .set(Table::colFrameFloor, floor);
-    session.execute(sql);
 }
 
-namespace {
-Table::Row toDB(const Exhibits::Exhibit &exhibit) {
-    auto row = Table::Row{};
-    row.name = exhibit.name;
-    row.version = exhibit.version;
-    if (auto frame = exhibit.frame) {
-        row.frameX = frame.value().x;
-        row.frameY = frame.value().y;
-        row.frameWidth = frame.value().width;
-        row.frameHeight = frame.value().height;
-        row.frameFloor = frame.value().floor;
-    }
-    return row;
+Table::Sql::in_t toDB(const Exhibits::Exhibit &exhibit) {
+    auto frame = OptFrame{exhibit.frame};
+
+    return std::make_tuple(Table::FieldName{exhibit.name},
+                           Table::FieldVersion{exhibit.version},
+                           Table::FieldFrameX{frame.x},
+                           Table::FieldFrameY{frame.y},
+                           Table::FieldFrameWidth{frame.width},
+                           Table::FieldFrameHeight{frame.height},
+                           Table::FieldFrameFloor{frame.floor});
 }
 
-Exhibits::Exhibit fromDB(const Table::Row &row) {
-    auto exhibit = Exhibits::Exhibit{};
-    exhibit.ID = row.ID;
-    exhibit.name = row.name;
-    exhibit.version = row.version;
+Exhibits::Exhibit fromDB(const Table::Sql::out_t &exhibit) {
+    auto result = Exhibits::Exhibit{};
+    result.ID = std::get<Table::FieldID>(exhibit).value;
+    result.name = std::get<Table::FieldName>(exhibit).value;
+    result.version = std::get<Table::FieldVersion>(exhibit).value;
 
-    auto frameData = std::vector<boost::optional<std::int32_t>>{
-        row.frameX, row.frameY, row.frameWidth, row.frameHeight, row.frameFloor};
-    if (::utils::all_of(frameData, [](auto &opt) { return (bool)opt; })) {
-        auto frame = Exhibit::Frame{};
-        frame.x = row.frameX.value();
-        frame.y = row.frameY.value();
-        frame.width = row.frameWidth.value();
-        frame.height = row.frameHeight.value();
-        frame.floor = row.frameFloor.value();
-        exhibit.frame = frame;
+    auto x = std::get<Table::FieldFrameX>(exhibit).value;
+    auto y = std::get<Table::FieldFrameY>(exhibit).value;
+    auto width = std::get<Table::FieldFrameWidth>(exhibit).value;
+    auto height = std::get<Table::FieldFrameHeight>(exhibit).value;
+    auto floor = std::get<Table::FieldFrameFloor>(exhibit).value;
+    if (x && y && width && height && floor) {
+        auto frame = Exhibits::Exhibit::Frame{};
+        frame.x = x.value();
+        frame.y = y.value();
+        frame.width = width.value();
+        frame.height = height.value();
+        frame.floor = floor.value();
+        result.frame = frame;
     }
-    return exhibit;
+
+    return result;
 }
 }
 }

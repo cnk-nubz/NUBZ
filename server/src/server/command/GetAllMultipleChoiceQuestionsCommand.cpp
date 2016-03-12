@@ -1,4 +1,4 @@
-#include <repository/MultiplechoiceQuestions.h>
+#include <repository/MultipleChoiceQuestions.h>
 
 #include <server/io/utils.h>
 
@@ -18,7 +18,8 @@ std::vector<io::output::MultipleChoiceQuestion> GetAllMultipleChoiceQuestionsCom
         return repo.getAll();
     });
 
-    auto result = io::repoToIO<io::output::MultipleChoiceQuestion>(repoQuestions);
+    auto result =
+        std::vector<io::output::MultipleChoiceQuestion>(repoQuestions.begin(), repoQuestions.end());
     std::sort(result.begin(), result.end());
     return result;
 }

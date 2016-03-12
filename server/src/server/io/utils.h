@@ -23,13 +23,6 @@ std::vector<IOType> repoToIO(const std::vector<typename IOType::repo_t> &repo) {
     }
     return res;
 }
-
-template <class T>
-void removeDuplicatedIds(std::vector<T> &vec) {
-    std::sort(vec.begin(), vec.end());
-    auto newEnd = std::unique(vec.begin(), vec.end());
-    vec.resize(newEnd - vec.begin());
-}
 }
 }
 

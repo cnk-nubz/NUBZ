@@ -12,33 +12,32 @@ namespace detail {
 
 template <class DBTable>
 struct _DefaultRepo {
-    using val_type = typename DBTable::Row;
+    using in_t = typename DBTable::Sql::in_t;
+    using out_t = typename DBTable::Sql::out_t;
 
-    static std::vector<val_type> getAll(db::DatabaseSession &session) {
-        auto sql = DBTable::select();
-        auto result = std::vector<val_type>{};
-        utils::transform(session.getResults(sql), result, DBTable::RowFactory::fromDB);
-        return result;
+    static std::vector<out_t> getAll(db::DatabaseSession &session) {
+        auto sql = DBTable::Sql::select();
+        return session.getResults(sql);
     }
 
     static void removeAll(db::DatabaseSession &session) {
-        auto sql = DBTable::del();
+        auto sql = DBTable::Sql::del();
         session.execute(sql);
     }
 };
 
 template <class DBTable>
 struct DefaultRepo : _DefaultRepo<DBTable> {
-    using typename _DefaultRepo<DBTable>::val_type;
+    using typename _DefaultRepo<DBTable>::in_t;
 
-    static void insert(db::DatabaseSession &session, const val_type &val) {
+    static void insert(db::DatabaseSession &session, const in_t &val) {
         insertAll(session, {val});
     }
 
-    static void insertAll(db::DatabaseSession &session, const std::vector<val_type> &vals) {
-        auto sql = DBTable::insert();
+    static void insertAll(db::DatabaseSession &session, const std::vector<in_t> &vals) {
+        auto sql = DBTable::Sql::insert();
         for (const auto &v : vals) {
-            sql.values(DBTable::RowFactory::toDB(v));
+            sql.values(v);
         }
         session.execute(sql);
     }
@@ -46,52 +45,48 @@ struct DefaultRepo : _DefaultRepo<DBTable> {
 
 template <class DBTable>
 struct DefaultRepoWithID : _DefaultRepo<DBTable> {
-    using typename _DefaultRepo<DBTable>::val_type;
-    using id_col_type = typename DBTable::ColumnId;
-    using id_type = typename id_col_type::value_type::type;
+    using typename _DefaultRepo<DBTable>::in_t;
+    using typename _DefaultRepo<DBTable>::out_t;
+    using field_id_t = typename DBTable::FieldID;
+    using id_t = typename field_id_t::type;
 
-    static std::vector<id_type> getAllIDs(db::DatabaseSession &session) {
-        auto sql = db::sql::Select<id_col_type>{};
-        auto result = std::vector<id_type>{};
+    static std::vector<id_t> getAllIDs(db::DatabaseSession &session) {
+        auto sql = db::sql::Select<field_id_t>{};
+        auto result = std::vector<id_t>{};
         utils::transform(session.getResults(sql), result, [](auto &dbTuple) {
-            return std::get<typename id_col_type::value_type>(dbTuple).value;
+            return std::get<field_id_t>(dbTuple).value;
         });
         return result;
     }
 
-    static boost::optional<val_type> get(db::DatabaseSession &session, id_type ID) {
-        auto sql = DBTable::select();
-        sql.where(DBTable::colId == ID);
-
-        if (auto row = session.getResult(sql)) {
-            return DBTable::RowFactory::fromDB(row.value());
-        } else {
-            return {};
-        }
+    static boost::optional<out_t> get(db::DatabaseSession &session, id_t ID) {
+        auto sql = DBTable::Sql::select();
+        sql.where(DBTable::ID == ID);
+        return session.getResult(sql);
     }
 
-    static void remove(db::DatabaseSession &session, id_type ID) {
-        auto sql = DBTable::del().where(DBTable::colId == ID);
+    static void remove(db::DatabaseSession &session, id_t ID) {
+        auto sql = DBTable::Sql::del().where(DBTable::ID == ID);
         session.execute(sql);
     }
 
     // returns id of inserted row
-    static id_type insert(db::DatabaseSession &session, const val_type &val) {
+    static id_t insert(db::DatabaseSession &session, const in_t &val) {
         return insertAll(session, {val}).front();
     }
 
     // returns ids of inserted rows
-    static std::vector<id_type> insertAll(db::DatabaseSession &session,
-                                          const std::vector<val_type> &vals) {
-        auto sql = DBTable::insert().returning(DBTable::colId);
+    static std::vector<id_t> insertAll(db::DatabaseSession &session,
+                                       const std::vector<in_t> &vals) {
+        auto sql = DBTable::Sql::insert().returning(DBTable::ID);
         for (const auto &val : vals) {
-            sql.values(DBTable::RowFactory::toDB(val));
+            sql.values(val);
         }
 
+        auto result = std::vector<id_t>{};
         auto ids = session.getResults(sql);
-        auto result = std::vector<id_type>{};
         for (const auto insertedId : ids) {
-            result.push_back(std::get<typename id_col_type::value_type>(insertedId).value);
+            result.push_back(std::get<field_id_t>(insertedId).value);
         }
         return result;
     }

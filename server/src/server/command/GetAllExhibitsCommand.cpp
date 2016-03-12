@@ -21,7 +21,7 @@ std::vector<io::output::Exhibit> GetAllExhibitsCommand::operator()() {
     std::sort(repoExhibits.begin(), repoExhibits.end(), [](const auto &lhs, const auto &rhs) {
         return lhs.name < rhs.name;
     });
-    return io::repoToIO<io::output::Exhibit>(repoExhibits);
+    return std::vector<io::output::Exhibit>(repoExhibits.begin(), repoExhibits.end());
 }
 }
 }

@@ -31,7 +31,7 @@ io::output::NewExhibitsResponse GetNewExhibitsCommand::operator()(
         return std::make_tuple(curVersion, exhibits);
     });
 
-    auto exhibits = io::repoToIO<io::output::Exhibit>(repoExhibits);
+    auto exhibits = std::vector<io::output::Exhibit>(repoExhibits.begin(), repoExhibits.end());
 
     auto response = io::output::NewExhibitsResponse{};
     response.version = currentVersion;

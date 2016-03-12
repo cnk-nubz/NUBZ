@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "json.h"
 
 namespace db {
@@ -48,16 +50,15 @@ std::string jsonToString(const rapidjson::Value &json) {
     return std::string(buffer.GetString());
 }
 
+using namespace std::placeholders;
 rapidjson::Value createIntArray(rapidjson::Document::AllocatorType &allocator,
                                 const std::vector<std::int32_t> &rawData) {
-    return createArray(
-        allocator, rawData, [](auto &, const std::int32_t &raw) { return createInt(raw); });
+    return createArray(allocator, rawData, std::bind(createInt, _2));
 }
 
 rapidjson::Value createStringArray(rapidjson::Document::AllocatorType &allocator,
                                    const std::vector<std::string> &rawData) {
-    return createArray(
-        allocator, rawData, [](auto &, const std::string &raw) { return createString(raw); });
+    return createArray(allocator, rawData, std::bind(createString, _2));
 }
 
 rapidjson::Value createInt(std::int32_t raw) {

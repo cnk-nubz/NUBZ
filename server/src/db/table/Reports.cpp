@@ -28,9 +28,10 @@ namespace db {
 namespace table {
 
 const std::string Reports::tableName = "reports";
-const std::string Reports::ColumnId::name = "id";
-const std::string Reports::ColumnExperimentId::name = "experiment_id";
-const std::string Reports::ColumnContent::name = "content";
+
+const std::string Reports::FieldID::columnName = "id";
+const std::string Reports::FieldExperimentID::columnName = "experiment_id";
+const std::string Reports::FieldContent::columnName = "content";
 
 namespace {
 struct RootKeys {
@@ -67,117 +68,89 @@ const char *RootKeys::SurveyAnsKeys::sortQ = "sort";
 const char *RootKeys::SurveyAnsKeys::AnsKeys::answer = "ans";
 }
 
-const Reports::ColumnId Reports::colId{};
-const Reports::ColumnExperimentId Reports::colExperimentId{};
-const Reports::ColumnContent Reports::colContent{};
-
-namespace {
-// returns {history, surveyBefore, surveyAfter>
-std::tuple<std::vector<Reports::Row::Event>, Reports::Row::SurveyAns, Reports::Row::SurveyAns>
-parseContent(const std::string &jsonStr);
-
-Reports::Row::Event parseEvent(const rapidjson::Value &json);
-
-Reports::Row::SurveyAns parseSurveyAns(const rapidjson::Value &json);
-Reports::Row::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json);
-Reports::Row::SurveyAns::MultiChoiceQAnswer parseMultiAns(const rapidjson::Value &json);
-Reports::Row::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value &json);
-}
-
-Reports::Row Reports::RowFactory::fromDB(const DBOut &dbOut) {
-    auto res = Reports::Row{};
-    res.ID = std::get<ValueId>(dbOut).value;
-    res.experimentID = std::get<ValueExperimentId>(dbOut).value;
-    std::tie(res.history, res.surveyBefore, res.surveyAfter) =
-        parseContent(std::get<ValueContent>(dbOut).value);
-    return res;
-}
-
-namespace {
 using namespace db::json;
 
-std::tuple<std::vector<Reports::Row::Event>, Reports::Row::SurveyAns, Reports::Row::SurveyAns>
-parseContent(const std::string &jsonStr) {
-    using Keys = RootKeys;
-    auto json = parseJson(jsonStr);
-    return std::make_tuple(parseArray(getNode(json, Keys::history), parseEvent),
-                           parseSurveyAns(getNode(json, Keys::surveyBefore)),
-                           parseSurveyAns(getNode(json, Keys::surveyAfter)));
+namespace {
+Reports::ContentData::Event parseEvent(const rapidjson::Value &json);
+Reports::ContentData::SurveyAns parseSurveyAns(const rapidjson::Value &json);
+Reports::ContentData::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json);
+Reports::ContentData::SurveyAns::MultiChoiceQAnswer parseMultiAns(const rapidjson::Value &json);
+Reports::ContentData::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value &json);
 }
 
-Reports::Row::Event parseEvent(const rapidjson::Value &json) {
+Reports::ContentData::ContentData(const std::string &jsonStr) {
+    using Keys = RootKeys;
+    auto json = parseJson(jsonStr);
+    history = parseArray(getNode(json, Keys::history), parseEvent);
+    surveyBefore = parseSurveyAns(getNode(json, Keys::surveyBefore));
+    surveyAfter = parseSurveyAns(getNode(json, Keys::surveyAfter));
+}
+
+namespace {
+Reports::ContentData::Event parseEvent(const rapidjson::Value &json) {
     using Keys = RootKeys::EventKeys;
-    auto event = Reports::Row::Event{};
+    auto event = Reports::ContentData::Event{};
     event.exhibitID = parseOpt(json, Keys::exhibitId, parseInt);
     event.durationInSecs = parseInt(getNode(json, Keys::duration));
     event.actions = parseIntArray(getNode(json, Keys::actions));
     return event;
 }
 
-Reports::Row::SurveyAns parseSurveyAns(const rapidjson::Value &json) {
+Reports::ContentData::SurveyAns parseSurveyAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys;
-    auto surveyAns = Reports::Row::SurveyAns{};
+    auto surveyAns = Reports::ContentData::SurveyAns{};
     surveyAns.simpleQAnswers = parseArray(getNode(json, Keys::simpleQ), parseSimpleAns);
     surveyAns.multiChoiceQAnswers = parseArray(getNode(json, Keys::multiQ), parseMultiAns);
     surveyAns.sortQAnswers = parseArray(getNode(json, Keys::sortQ), parseSortAns);
     return surveyAns;
 }
 
-Reports::Row::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json) {
+Reports::ContentData::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     return parseOpt(json, Keys::answer, parseString);
 }
 
-Reports::Row::SurveyAns::MultiChoiceQAnswer parseMultiAns(const rapidjson::Value &json) {
+Reports::ContentData::SurveyAns::MultiChoiceQAnswer parseMultiAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     return parseOpt(json, Keys::answer, parseIntArray);
 }
 
-Reports::Row::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value &json) {
+Reports::ContentData::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     return parseOpt(json, Keys::answer, parseIntArray);
 }
 }
 
 namespace {
-std::string createContent(const Reports::Row &row);
-
 rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
-                             const Reports::Row::Event &event);
-
+                             const Reports::ContentData::Event &event);
 rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,
-                                 const Reports::Row::SurveyAns &sAns);
+                                 const Reports::ContentData::SurveyAns &sAns);
 rapidjson::Value createSimpleAns(rapidjson::Document::AllocatorType &allocator,
-                                 const Reports::Row::SurveyAns::SimpleQAnswer &ans);
+                                 const Reports::ContentData::SurveyAns::SimpleQAnswer &ans);
 rapidjson::Value createMultiAns(rapidjson::Document::AllocatorType &allocator,
-                                const Reports::Row::SurveyAns::MultiChoiceQAnswer &ans);
+                                const Reports::ContentData::SurveyAns::MultiChoiceQAnswer &ans);
 rapidjson::Value createSortAns(rapidjson::Document::AllocatorType &allocator,
-                               const Reports::Row::SurveyAns::SortQAnswer &ans);
+                               const Reports::ContentData::SurveyAns::SortQAnswer &ans);
 }
 
-Reports::RowFactory::DBIn Reports::RowFactory::toDB(const db::table::Reports::Row &row) {
-    return std::make_tuple(
-        ValueId{row.ID}, ValueExperimentId{row.experimentID}, ValueContent{createContent(row)});
-}
-
-namespace {
-using namespace db::json;
-
-std::string createContent(const Reports::Row &row) {
+Reports::ContentData::operator std::string() const {
     using Keys = RootKeys;
+
     auto document = rapidjson::Document{};
     auto &allocator = document.GetAllocator();
 
     auto json = createDictionary(
         allocator,
-        std::make_pair(Keys::history, createArray(allocator, row.history, createEvent)),
-        std::make_pair(Keys::surveyBefore, createSurveyAns(allocator, row.surveyBefore)),
-        std::make_pair(Keys::surveyAfter, createSurveyAns(allocator, row.surveyAfter)));
+        std::make_pair(Keys::history, createArray(allocator, history, createEvent)),
+        std::make_pair(Keys::surveyBefore, createSurveyAns(allocator, surveyBefore)),
+        std::make_pair(Keys::surveyAfter, createSurveyAns(allocator, surveyAfter)));
     return jsonToString(json);
 }
 
+namespace {
 rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
-                             const Reports::Row::Event &event) {
+                             const Reports::ContentData::Event &event) {
     using Keys = RootKeys::EventKeys;
     if (event.exhibitID) {
         return createDictionary(
@@ -194,7 +167,7 @@ rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
 }
 
 rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,
-                                 const Reports::Row::SurveyAns &sAns) {
+                                 const Reports::ContentData::SurveyAns &sAns) {
     using Keys = RootKeys::SurveyAnsKeys;
 
     auto simple = createArray(allocator, sAns.simpleQAnswers, createSimpleAns);
@@ -208,7 +181,7 @@ rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,
 }
 
 rapidjson::Value createSimpleAns(rapidjson::Document::AllocatorType &allocator,
-                                 const Reports::Row::SurveyAns::SimpleQAnswer &ans) {
+                                 const Reports::ContentData::SurveyAns::SimpleQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     if (ans) {
         return createDictionary(allocator, std::make_pair(Keys::answer, createString(ans.value())));
@@ -218,7 +191,7 @@ rapidjson::Value createSimpleAns(rapidjson::Document::AllocatorType &allocator,
 }
 
 rapidjson::Value createMultiAns(rapidjson::Document::AllocatorType &allocator,
-                                const Reports::Row::SurveyAns::MultiChoiceQAnswer &ans) {
+                                const Reports::ContentData::SurveyAns::MultiChoiceQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     if (ans) {
         return createDictionary(
@@ -229,7 +202,7 @@ rapidjson::Value createMultiAns(rapidjson::Document::AllocatorType &allocator,
 }
 
 rapidjson::Value createSortAns(rapidjson::Document::AllocatorType &allocator,
-                               const Reports::Row::SurveyAns::SortQAnswer &ans) {
+                               const Reports::ContentData::SurveyAns::SortQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
     if (ans) {
         return createDictionary(

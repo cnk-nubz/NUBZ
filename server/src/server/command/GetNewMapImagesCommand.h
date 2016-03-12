@@ -6,15 +6,14 @@
 #include <server/io/input/NewMapImagesRequest.h>
 #include <server/io/output/NewMapImagesResponse.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetNewMapImagesCommand {
+class GetNewMapImagesCommand : public Command {
 public:
     GetNewMapImagesCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetNewMapImagesCommand);
 
     io::output::NewMapImagesResponse operator()(const io::input::NewMapImagesRequest &input);
 

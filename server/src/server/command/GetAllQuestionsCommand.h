@@ -5,18 +5,17 @@
 
 #include <server/io/QuestionsList.h>
 
+#include "Command.h"
 #include "GetAllMultipleChoiceQuestionsCommand.h"
 #include "GetAllSimpleQuestionsCommand.h"
 #include "GetAllSortQuestionsCommand.h"
-#include "commons.h"
 
 namespace server {
 namespace command {
 
-class GetAllQuestionsCommand {
+class GetAllQuestionsCommand : public Command {
 public:
     GetAllQuestionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllQuestionsCommand);
 
     io::QuestionsList operator()();
 

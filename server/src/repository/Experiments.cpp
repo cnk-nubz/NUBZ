@@ -14,13 +14,13 @@ using Table = db::table::Experiments;
 using Impl = repository::detail::DefaultRepoWithID<Table>;
 
 namespace {
-Table::Row toDB(const Experiments::LazyExperiment &experiment);
-Table::Row::Survey surveyToDB(const Experiments::LazyExperiment::Survey &experiment);
+Table::Sql::in_t toDB(const Experiments::LazyExperiment &experiment, std::int32_t state);
+Table::ContentData::Survey surveyToDB(const Experiments::LazyExperiment::Survey &survey);
 
-Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Row &row);
+Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::out_t &experiment);
 
-Experiments::LazyExperiment lazyFromDB(const Table::Row &row);
-Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::Row::Survey &survey);
+Experiments::LazyExperiment lazyFromDB(const Table::Sql::out_t &experiment);
+Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::ContentData::Survey &survey);
 }
 
 Experiments::Experiments(db::DatabaseSession &session) : session(session) {
@@ -44,27 +44,27 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
 
 boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
     assert(!getActive() && "you can only have one active experiment");
-    auto sql = Table::update()
-                   .where(Table::colId == ID && Table::colState == State::Ready)
-                   .set(Table::colState, State::Active)
-                   .set(Table::colStartDate, boost::gregorian::day_clock::local_day());
+    auto sql = Table::Sql::update()
+                   .where(Table::ID == ID && Table::State == State::Ready)
+                   .set(Table::State, State::Active)
+                   .set(Table::StartDate, boost::gregorian::day_clock::local_day());
     session.execute(sql);
     return getActive();
 }
 
 void Experiments::finishActive() {
     assert(getActive());
-    auto sql = Table::update()
-                   .where(Table::colState == State::Active)
-                   .set(Table::colState, State::Finished)
-                   .set(Table::colFinishDate, boost::gregorian::day_clock::local_day());
+    auto sql = Table::Sql::update()
+                   .where(Table::State == State::Active)
+                   .set(Table::State, State::Finished)
+                   .set(Table::FinishDate, boost::gregorian::day_clock::local_day());
     session.execute(sql);
 }
 
 boost::optional<Experiments::Experiment> Experiments::getActive() {
-    auto sql = Table::select().where(Table::colState == State::Active);
+    auto sql = Table::Sql::select().where(Table::State == State::Active);
     if (auto dbTuple = session.getResult(sql)) {
-        return fromDB(session, Table::RowFactory::fromDB(dbTuple.value()));
+        return fromDB(session, dbTuple.value());
     } else {
         return {};
     }
@@ -79,13 +79,10 @@ std::vector<Experiments::Experiment> Experiments::getAllFinished() {
 }
 
 std::vector<Experiments::Experiment> Experiments::getAllWithState(State state) {
-    auto sql = Table::select().where(Table::colState == state);
-    auto dbTuples = session.getResults(sql);
+    auto sql = Table::Sql::select().where(Table::State == state);
 
     auto result = std::vector<Experiment>{};
-    ::utils::transform(dbTuples, result, [&](auto &dbTuple) {
-        return fromDB(session, Table::RowFactory::fromDB(dbTuple));
-    });
+    utils::transform(session.getResults(sql), result, std::bind(fromDB, session, _1));
     return result;
 }
 
@@ -97,7 +94,7 @@ void Experiments::insert(Experiments::LazyExperiment *experiment) {
 
     experiment->startDate = boost::none;
     experiment->finishDate = boost::none;
-    experiment->ID = Impl::insert(session, toDB(*experiment));
+    experiment->ID = Impl::insert(session, toDB(*experiment, State::Ready));
 }
 
 void Experiments::checkActions(const Experiments::LazyExperiment &experiment) {
@@ -144,37 +141,41 @@ void Experiments::checkForDuplicates(std::vector<std::int32_t> ids) const {
 }
 
 namespace {
-Table::Row toDB(const Experiments::LazyExperiment &experiment) {
-    auto row = Table::Row{};
-    row.name = experiment.name;
-    row.actions = experiment.actions;
-    row.breakActions = experiment.breakActions;
-    row.surveyBefore = surveyToDB(experiment.surveyBefore);
-    row.surveyAfter = surveyToDB(experiment.surveyAfter);
-    return row;
+Table::Sql::in_t toDB(const Experiments::LazyExperiment &experiment, std::int32_t state) {
+    auto content = Table::ContentData{};
+    content.actions = experiment.actions;
+    content.breakActions = experiment.breakActions;
+    content.surveyBefore = surveyToDB(experiment.surveyBefore);
+    content.surveyAfter = surveyToDB(experiment.surveyAfter);
+
+    return std::make_tuple(Table::FieldName{experiment.name},
+                           Table::FieldState{state},
+                           Table::FieldStartDate{},
+                           Table::FieldFinishDate{},
+                           Table::FieldContent{content});
 }
 
-Table::Row::Survey surveyToDB(const Experiments::LazyExperiment::Survey &survey) {
-    auto rowSurvey = Table::Row::Survey{};
-    rowSurvey.simpleQuestions = survey.simpleQuestions;
-    rowSurvey.multipleChoiceQuestions = survey.multipleChoiceQuestions;
-    rowSurvey.sortQuestions = survey.sortQuestions;
-    ::utils::transform(survey.typesOrder, rowSurvey.typesOrder, [](auto type) { return type; });
-    return rowSurvey;
+Table::ContentData::Survey surveyToDB(const Experiments::LazyExperiment::Survey &survey) {
+    auto dbSurvey = Table::ContentData::Survey{};
+    dbSurvey.typesOrder = {survey.typesOrder.begin(), survey.typesOrder.end()};
+    dbSurvey.simpleQuestions = survey.simpleQuestions;
+    dbSurvey.multipleChoiceQuestions = survey.multipleChoiceQuestions;
+    dbSurvey.sortQuestions = survey.sortQuestions;
+    return dbSurvey;
 }
 
-Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Row &row) {
-    auto lazy = lazyFromDB(row);
-    auto experiment = Experiment{};
-    experiment.ID = lazy.ID;
-    experiment.name = lazy.name;
+Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::out_t &experiment) {
+    auto lazy = lazyFromDB(experiment);
+    auto res = Experiment{};
+    res.ID = lazy.ID;
+    res.name = lazy.name;
 
     // actions
     {
         auto actionsRepo = Actions{session};
         auto getAction = [&](auto actionId) { return actionsRepo.get(actionId).value(); };
-        ::utils::transform(lazy.actions, experiment.actions, getAction);
-        ::utils::transform(lazy.breakActions, experiment.breakActions, getAction);
+        utils::transform(lazy.actions, res.actions, getAction);
+        utils::transform(lazy.breakActions, res.breakActions, getAction);
     }
 
     // surveys
@@ -186,39 +187,41 @@ Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Row &r
         auto getSurvey = [&](auto &survey) {
             auto res = Experiment::Survey{};
             res.typesOrder = survey.typesOrder;
-            ::utils::transform(survey.simpleQuestions, res.simpleQuestions, [&](auto qId) {
+            utils::transform(survey.simpleQuestions, res.simpleQuestions, [&](auto qId) {
                 return simpleQRepo.get(qId).value();
             });
-            ::utils::transform(survey.sortQuestions, res.sortQuestions, [&](auto qId) {
+            utils::transform(survey.sortQuestions, res.sortQuestions, [&](auto qId) {
                 return sortQRepo.get(qId).value();
             });
-            ::utils::transform(survey.multipleChoiceQuestions,
-                               res.multipleChoiceQuestions,
-                               [&](auto qId) { return multiChoiceQRepo.get(qId).value(); });
+            utils::transform(survey.multipleChoiceQuestions,
+                             res.multipleChoiceQuestions,
+                             [&](auto qId) { return multiChoiceQRepo.get(qId).value(); });
             return res;
         };
 
-        experiment.surveyBefore = getSurvey(lazy.surveyBefore);
-        experiment.surveyAfter = getSurvey(lazy.surveyAfter);
+        res.surveyBefore = getSurvey(lazy.surveyBefore);
+        res.surveyAfter = getSurvey(lazy.surveyAfter);
     }
 
-    return experiment;
-}
-
-Experiments::LazyExperiment lazyFromDB(const Table::Row &row) {
-    auto res = Experiments::LazyExperiment{};
-    res.ID = row.ID;
-    res.name = row.name;
-    res.actions = row.actions;
-    res.breakActions = row.breakActions;
-    res.surveyBefore = lazySurveyFromDB(row.surveyBefore);
-    res.surveyAfter = lazySurveyFromDB(row.surveyAfter);
     return res;
 }
 
-Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::Row::Survey &survey) {
+Experiments::LazyExperiment lazyFromDB(const Table::Sql::out_t &experiment) {
+    auto res = Experiments::LazyExperiment{};
+    res.ID = std::get<Table::FieldID>(experiment).value;
+    res.name = std::get<Table::FieldName>(experiment).value;
+
+    auto content = std::get<Table::FieldContent>(experiment).value;
+    res.actions = content.actions;
+    res.breakActions = content.breakActions;
+    res.surveyBefore = lazySurveyFromDB(content.surveyBefore);
+    res.surveyAfter = lazySurveyFromDB(content.surveyAfter);
+    return res;
+}
+
+Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::ContentData::Survey &survey) {
     auto res = Experiments::LazyExperiment::Survey{};
-    ::utils::transform(survey.typesOrder, res.typesOrder, [](auto type) {
+    utils::transform(survey.typesOrder, res.typesOrder, [](auto type) {
         return static_cast<Experiments::LazyExperiment::QuestionType>(type);
     });
     res.simpleQuestions = survey.simpleQuestions;

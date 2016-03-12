@@ -13,6 +13,59 @@ struct _Null {
 
 namespace detail {
 
+template <class Field>
+struct Column2 {
+    using field_type = Field;
+};
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator<(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, Less, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator<=(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, LessEqual, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator>(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, Greater, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator>=(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, GreaterEqual, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator==(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, Equal, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator!=(Column2<Field> col, const Value &val) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, NotEqual, val);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator==(Column2<Field> col, _Null) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, IsNull);
+}
+
+template <class Field, class Value = typename Field::internal_type>
+auto operator!=(Column2<Field> col, _Null) {
+    using namespace db::sql::detail;
+    return Condition<Field>(col, IsNotNull);
+}
+
 template <class Subclass, class Table, class ValueType>
 struct Column {
     using table_type = Table;
@@ -21,42 +74,42 @@ struct Column {
 
     auto operator<(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), Less, val);
+        return Condition<self_type>(*this, Less, val);
     }
 
     auto operator<=(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), LessEqual, val);
+        return Condition<self_type>(*this, LessEqual, val);
     }
 
     auto operator>(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), Greater, val);
+        return Condition<self_type>(*this, Greater, val);
     }
 
     auto operator>=(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), GreaterEqual, val);
+        return Condition<self_type>(*this, GreaterEqual, val);
     }
 
     auto operator==(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), Equal, val);
+        return Condition<self_type>(*this, Equal, val);
     }
 
     auto operator!=(const typename value_type::internal_type &val) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), NotEqual, val);
+        return Condition<self_type>(*this, NotEqual, val);
     }
 
     auto operator==(const _Null &) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), IsNull);
+        return Condition<self_type>(*this, IsNull);
     }
 
     auto operator!=(const _Null &) const {
         using namespace db::sql::detail;
-        return Condition<self_type>(*self(), IsNotNull);
+        return Condition<self_type>(*this, IsNotNull);
     }
 
     const self_type *self() const {

@@ -5,15 +5,14 @@
 
 #include <server/io/output/MultipleChoiceQuestion.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetAllMultipleChoiceQuestionsCommand {
+class GetAllMultipleChoiceQuestionsCommand : public Command {
 public:
     GetAllMultipleChoiceQuestionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllMultipleChoiceQuestionsCommand);
 
     std::vector<io::output::MultipleChoiceQuestion> operator()();
 

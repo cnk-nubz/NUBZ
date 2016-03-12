@@ -21,7 +21,7 @@ std::vector<io::output::Action> GetAllActionsCommand::operator()() {
     std::sort(repoActions.begin(), repoActions.end(), [](auto &lhs, auto &rhs) {
         return std::make_pair(lhs.text, lhs.ID) < std::make_pair(rhs.text, rhs.ID);
     });
-    return ::server::io::repoToIO<io::output::Action>(repoActions);
+    return std::vector<io::output::Action>(repoActions.begin(), repoActions.end());
 }
 }
 }

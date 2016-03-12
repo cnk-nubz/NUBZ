@@ -18,7 +18,8 @@ std::vector<io::output::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()
         return repo.getAll();
     });
 
-    auto questions = ::server::io::repoToIO<io::output::SimpleQuestion>(repoQuestions);
+    auto questions =
+        std::vector<io::output::SimpleQuestion>(repoQuestions.begin(), repoQuestions.end());
     std::sort(questions.begin(), questions.end());
     return questions;
 }

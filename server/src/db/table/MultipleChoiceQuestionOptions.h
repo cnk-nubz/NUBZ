@@ -1,81 +1,41 @@
 #ifndef DB_TABLE__MULTIPLE_CHOICE_QUESTION_OPTIONS__H
 #define DB_TABLE__MULTIPLE_CHOICE_QUESTION_OPTIONS__H
 
-#include <tuple>
-
-#include <db/sql/sql.h>
+#include <cstdint>
+#include <string>
 
 #include "Column.h"
-#include "Value.h"
-
-#include "MultipleChoiceQuestions.h"
-
-/*
- * ColumnQuestionId references MultipleChoiceQuestions::ColumnId (on delete cascade)
- */
+#include "Field.h"
+#include "SqlCore.h"
 
 namespace db {
 namespace table {
 
+/*
+ * QuestionID references MultipleChoiceQuestions::ID (on delete cascade)
+ */
 struct MultipleChoiceQuestionOptions {
-    struct ValueId : detail::Value<std::int32_t> {
-        using detail::Value<std::int32_t>::Value;
+    struct FieldID : detail::Field<std::int32_t, MultipleChoiceQuestionOptions> {
+        using detail::Field<std::int32_t, MultipleChoiceQuestionOptions>::Field;
+        static const std::string columnName;
     };
+    static constexpr detail::Column2<FieldID> ID{};
 
-    struct ValueQuestionId : detail::Value<MultipleChoiceQuestions::ValueId::internal_type> {
-        using detail::Value<MultipleChoiceQuestions::ValueId::internal_type>::Value;
+    struct FieldQuestionID : detail::Field<std::int32_t, MultipleChoiceQuestionOptions> {
+        using detail::Field<std::int32_t, MultipleChoiceQuestionOptions>::Field;
+        static const std::string columnName;
     };
+    static constexpr detail::Column2<FieldQuestionID> QuestionID{};
 
-    struct ValueText : detail::Value<std::string> {
-        using detail::Value<std::string>::Value;
+    struct FieldText : detail::Field<std::string, MultipleChoiceQuestionOptions> {
+        using detail::Field<std::string, MultipleChoiceQuestionOptions>::Field;
+        static const std::string columnName;
     };
-
-    struct ColumnId : detail::Column<ColumnId, MultipleChoiceQuestionOptions, ValueId> {
-        static const std::string name;
-    };
-
-    struct ColumnQuestionId
-        : detail::Column<ColumnQuestionId, MultipleChoiceQuestionOptions, ValueQuestionId> {
-        static const std::string name;
-    };
-
-    struct ColumnText : detail::Column<ColumnText, MultipleChoiceQuestionOptions, ValueText> {
-        static const std::string name;
-    };
-
-    struct Row {
-        ValueId::type ID;
-        ValueQuestionId::type questionID;
-        ValueText::type text;
-    };
-
-    struct RowFactory {
-        using DBOut = std::tuple<ValueId, ValueQuestionId, ValueText>;
-        using DBIn = std::tuple<ValueQuestionId, ValueText>;
-        static Row fromDB(const DBOut &dbOut);
-        static DBIn toDB(const Row &row);
-    };
+    static constexpr detail::Column2<FieldText> Text{};
 
     static const std::string tableName;
-    static const ColumnId colId;
-    static const ColumnQuestionId colQuestionId;
-    static const ColumnText colText;
 
-    static auto select() {
-        return ::db::sql::Select<ColumnId, ColumnQuestionId, ColumnText>();
-    }
-
-    static auto insert() {
-        return ::db::sql::Insert<ColumnQuestionId, ColumnText>();
-    }
-
-    static auto del() {
-        return ::db::sql::Delete<ColumnId, ColumnQuestionId, ColumnText>();
-    }
-
-    static auto update() {
-        return ::db::sql::Update<ColumnId, ColumnQuestionId, ColumnText>();
-    }
+    using Sql = detail::SqlCoreWithID<FieldID, FieldQuestionID, FieldText>;
 };
 }
 }

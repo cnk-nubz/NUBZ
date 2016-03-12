@@ -5,15 +5,14 @@
 
 #include <server/io/output/SortQuestion.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetAllSortQuestionsCommand {
+class GetAllSortQuestionsCommand : public Command {
 public:
     GetAllSortQuestionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllSortQuestionsCommand);
 
     std::vector<io::output::SortQuestion> operator()();
 

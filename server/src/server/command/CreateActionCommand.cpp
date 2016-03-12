@@ -13,7 +13,7 @@ CreateActionCommand::CreateActionCommand(db::Database &db) : db(db) {
 
 io::output::Action CreateActionCommand::operator()(const io::input::CreateActionRequest &input) {
     auto dbAction = db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+        validateInput(input);
 
         auto action = repository::Action{};
         action.text = input.text;
@@ -26,10 +26,8 @@ io::output::Action CreateActionCommand::operator()(const io::input::CreateAction
     return io::output::Action{dbAction};
 }
 
-void CreateActionCommand::validateInput(db::DatabaseSession &session,
-                                        const io::input::CreateActionRequest &input) const {
-    auto checker = utils::InputChecker{session};
-    if (!checker.checkText(input.text)) {
+void CreateActionCommand::validateInput(const io::input::CreateActionRequest &input) const {
+    if (!utils::checkText(input.text)) {
         throw io::InvalidInput("incorrect name");
     }
 }

@@ -11,7 +11,7 @@
 
 #include <utils/fp_algorithm.h>
 
-#include <db/table/Value.h>
+#include <db/table/Field.h>
 
 namespace db {
 
@@ -64,7 +64,7 @@ private:
     template <class Tuple, std::size_t... Idxs>
     static Tuple translateImpl(const std::vector<Field> &vec, std::index_sequence<Idxs...>) {
         return std::make_tuple(
-            db::table::ValueFactory<std::tuple_element_t<Idxs, Tuple>>::create(vec[Idxs])...);
+            table::detail::FieldFactory<std::tuple_element_t<Idxs, Tuple>>::create(vec[Idxs])...);
     }
 
     static DatabaseSession::Row translate(const pqxx::tuple &row);
