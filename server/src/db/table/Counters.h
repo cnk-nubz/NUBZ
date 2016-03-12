@@ -16,13 +16,13 @@ struct Counters {
         using detail::Field<std::string, Counters>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldName> Name{};
+    static constexpr detail::Column<FieldName> Name{};
 
     struct FieldCounter : detail::Field<std::int32_t, Counters> {
         using detail::Field<std::int32_t, Counters>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldCounter> Counter{};
+    static constexpr detail::Column<FieldCounter> Counter{};
 
     static const std::string tableName;
 

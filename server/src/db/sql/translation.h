@@ -34,7 +34,7 @@ struct sql_val_cast<std::int32_t> {
         return val;
     }
 
-    static std::string to(const std::int32_t &raw) {
+    static std::string to(std::int32_t raw) {
         return std::to_string(raw);
     }
 };
@@ -84,12 +84,12 @@ struct sql_val_cast<bool> {
         assert(false);
     }
 
-    static std::string to(const bool &raw) {
+    static std::string to(bool raw) {
         return raw ? "TRUE" : "FALSE";
     }
 };
 
-inline std::string sqlVal(const std::int32_t &raw) {
+inline std::string sqlVal(std::int32_t raw) {
     return sql_val_cast<std::int32_t>::to(raw);
 }
 
@@ -101,7 +101,7 @@ inline std::string sqlVal(const std::string &raw) {
     return sql_val_cast<std::string>::to(raw);
 }
 
-inline std::string sqlVal(const bool &raw) {
+inline std::string sqlVal(bool raw) {
     return sql_val_cast<bool>::to(raw);
 }
 

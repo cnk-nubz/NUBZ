@@ -19,19 +19,19 @@ struct SortQuestionOptions {
         using detail::Field<std::int32_t, SortQuestionOptions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldID> ID{};
+    static constexpr detail::Column<FieldID> ID{};
 
     struct FieldQuestionID : detail::Field<std::int32_t, SortQuestionOptions> {
         using detail::Field<std::int32_t, SortQuestionOptions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldQuestionID> QuestionID{};
+    static constexpr detail::Column<FieldQuestionID> QuestionID{};
 
     struct FieldText : detail::Field<std::string, SortQuestionOptions> {
         using detail::Field<std::string, SortQuestionOptions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldText> Text{};
+    static constexpr detail::Column<FieldText> Text{};
 
     static const std::string tableName;
 

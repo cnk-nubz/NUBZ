@@ -32,37 +32,37 @@ struct MapImages {
         using detail::Field<std::int32_t, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldFloor> Floor{};
+    static constexpr detail::Column<FieldFloor> Floor{};
 
     struct FieldFilename : detail::Field<std::string, MapImages> {
         using detail::Field<std::string, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldFilename> Filename{};
+    static constexpr detail::Column<FieldFilename> Filename{};
 
     struct FieldWidth : detail::Field<std::int32_t, MapImages> {
         using detail::Field<std::int32_t, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldWidth> Width{};
+    static constexpr detail::Column<FieldWidth> Width{};
 
     struct FieldHeight : detail::Field<std::int32_t, MapImages> {
         using detail::Field<std::int32_t, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldHeight> Height{};
+    static constexpr detail::Column<FieldHeight> Height{};
 
     struct FieldVersion : detail::Field<std::int32_t, MapImages> {
         using detail::Field<std::int32_t, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldVersion> Version{};
+    static constexpr detail::Column<FieldVersion> Version{};
 
     struct FieldZoomLevels : detail::Field<ZoomLevelsData, MapImages> {
         using detail::Field<ZoomLevelsData, MapImages>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldZoomLevels> ZoomLevels{};
+    static constexpr detail::Column<FieldZoomLevels> ZoomLevels{};
 
     static const std::string tableName;
 

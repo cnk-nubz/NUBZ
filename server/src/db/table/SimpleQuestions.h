@@ -16,25 +16,25 @@ struct SimpleQuestions {
         using detail::Field<std::int32_t, SimpleQuestions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldID> ID{};
+    static constexpr detail::Column<FieldID> ID{};
 
     struct FieldName : detail::Field<std::string, SimpleQuestions> {
         using detail::Field<std::string, SimpleQuestions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldName> Name{};
+    static constexpr detail::Column<FieldName> Name{};
 
     struct FieldQuestion : detail::Field<std::string, SimpleQuestions> {
         using detail::Field<std::string, SimpleQuestions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldQuestion> Question{};
+    static constexpr detail::Column<FieldQuestion> Question{};
 
     struct FieldNumberAnswer : detail::Field<bool, SimpleQuestions> {
         using detail::Field<bool, SimpleQuestions>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldNumberAnswer> NumberAnswer{};
+    static constexpr detail::Column<FieldNumberAnswer> NumberAnswer{};
 
     static const std::string tableName;
 

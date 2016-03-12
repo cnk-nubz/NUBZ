@@ -49,19 +49,19 @@ struct Reports {
         using detail::Field<std::int32_t, Reports>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldID> ID{};
+    static constexpr detail::Column<FieldID> ID{};
 
     struct FieldExperimentID : detail::Field<std::int32_t, Reports> {
         using detail::Field<std::int32_t, Reports>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldExperimentID> ExperimentID{};
+    static constexpr detail::Column<FieldExperimentID> ExperimentID{};
 
     struct FieldContent : detail::Field<ContentData, Reports> {
         using detail::Field<ContentData, Reports>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldContent> Content{};
+    static constexpr detail::Column<FieldContent> Content{};
 
     static const std::string tableName;
 

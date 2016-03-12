@@ -36,12 +36,6 @@ void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
     if (!utils::checkText(input.name)) {
         throw io::InvalidInput("incorrect name");
     }
-
-    if (input.floor) {
-        if (!repository::MapImages{session}.get(input.floor.value())) {
-            throw io::InvalidInput("floor without image and therefore without frame");
-        }
-    }
 }
 
 repository::Exhibit::Frame CreateExhibitCommand::createExhibitFrame(

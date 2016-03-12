@@ -27,10 +27,10 @@ public:
 
     _Insert() = default;
 
-    template <class... Values>
     Subclass &values(const std::tuple<Fields...> &vals) {
-        auto strVals = tupleToStrings(vals, std::index_sequence_for<Values...>());
+        auto strVals = tupleToStrings(vals, std::index_sequence_for<Fields...>());
         this->vals.push_back("(" + utils::asSqlList(strVals) + ")");
+
         return *static_cast<Subclass *>(this);
     }
 

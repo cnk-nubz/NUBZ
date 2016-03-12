@@ -13,16 +13,16 @@
 namespace db {
 namespace sql {
 
-template <class... AvailableField>
-class Update : public Where<Update<AvailableField...>, AvailableField...> {
-    static_assert(utils::same_table<AvailableField...>::value,
+template <class... AvailableFields>
+class Update : public Where<Update<AvailableFields...>, AvailableFields...> {
+    static_assert(utils::same_table<AvailableFields...>::value,
                   "all fields should be from the same table");
 
 public:
     template <class Column>
     Update &set(Column, const typename Column::field_type::type &newValue) {
         using Field = typename Column::field_type;
-        static_assert(::utils::types::find_type<Field, AvailableField...>::value,
+        static_assert(::utils::types::find_type<Field, AvailableFields...>::value,
                       "selected field is not available in this sql query");
 
         addSet<Column>(newValue);
@@ -33,7 +33,7 @@ public:
     template <class Column, class = std::enable_if_t<Column::field_type::is_optional>>
     Update &set(Column, const typename Column::field_type::internal_type &newValue) {
         using Field = typename Column::field_type;
-        static_assert(::utils::types::find_type<Field, AvailableField...>::value,
+        static_assert(::utils::types::find_type<Field, AvailableFields...>::value,
                       "selected field is not available in this sql query");
 
         addSet<Column>(newValue);
@@ -43,7 +43,7 @@ public:
     std::string str() const {
         assert(sets.size() > 0 && "you should call .set() at least once");
         boost::format stmt("UPDATE %1%\nSET %2%\n%3%");
-        stmt % utils::getTableName<AvailableField...>();
+        stmt % utils::getTableName<AvailableFields...>();
         stmt % utils::asSqlList(sets, ",\n");
         stmt % this->whereStmt();
         return stmt.str();

@@ -48,7 +48,6 @@ public:
     template <class Sql>
     std::vector<typename Sql::return_type> getResults(const Sql &sql) {
         using return_t = typename Sql::return_type;
-
         auto rows = getResults(sql.str());
         std::vector<return_t> result;
         utils::transform(rows, result, translate<return_t>);

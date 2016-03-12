@@ -37,37 +37,37 @@ struct Experiments {
         using detail::Field<std::int32_t, Experiments>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldID> ID{};
+    static constexpr detail::Column<FieldID> ID{};
 
     struct FieldName : detail::Field<std::string, Experiments> {
         using detail::Field<std::string, Experiments>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldName> Name{};
+    static constexpr detail::Column<FieldName> Name{};
 
     struct FieldState : detail::Field<std::int32_t, Experiments> {
         using detail::Field<std::int32_t, Experiments>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldState> State{};
+    static constexpr detail::Column<FieldState> State{};
 
     struct FieldStartDate : detail::OptField<boost::gregorian::date, Experiments> {
         using detail::OptField<boost::gregorian::date, Experiments>::OptField;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldStartDate> StartDate{};
+    static constexpr detail::Column<FieldStartDate> StartDate{};
 
     struct FieldFinishDate : detail::OptField<boost::gregorian::date, Experiments> {
         using detail::OptField<boost::gregorian::date, Experiments>::OptField;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldFinishDate> FinishDate{};
+    static constexpr detail::Column<FieldFinishDate> FinishDate{};
 
     struct FieldContent : detail::Field<ContentData, Experiments> {
         using detail::Field<ContentData, Experiments>::Field;
         static const std::string columnName;
     };
-    static constexpr detail::Column2<FieldContent> Content{};
+    static constexpr detail::Column<FieldContent> Content{};
 
     static const std::string tableName;
 
