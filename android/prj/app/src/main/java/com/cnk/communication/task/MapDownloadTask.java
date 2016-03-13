@@ -33,7 +33,7 @@ public class MapDownloadTask extends ServerTask {
     public void performInSession(Server.Client client) throws TException, IOException {
         Integer version = MapData.getInstance().getMapVersion();
         downloadTilesUpdate(client, version);
-        MapData.getInstance().notifyMapUpdated();
+        MapData.getInstance().notifyObservers();
         Log.i(LOG_TAG, "Map update complete");
     }
 

@@ -1,5 +1,6 @@
 package com.cnk.data.experiment;
 
+import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -10,18 +11,20 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.notificators.Observable;
 import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
+import com.cnk.utilities.Util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ExperimentData {
+public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAction> {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
@@ -31,28 +34,43 @@ public class ExperimentData {
     private DatabaseHelper dbHelper;
     private Raport currentRaport;
     private Experiment experiment;
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
-    }
 
-    private Map<Observer, ExperimentUpdateAction> observers;
+    private class BgRaportSaver implements Runnable {
+        private volatile Raport raport;
 
-    public void addObserver(Observer o, ExperimentUpdateAction action) {
-        observers.put(o, action);
-    }
+        public BgRaportSaver(Raport raport) {
+            this.raport = raport;
+        }
 
-    public void deleteObserver(Observer o) {
-        observers.remove(o);
-    }
-
-    public void notifyObservers() {
-        for (Map.Entry<Observer, ExperimentUpdateAction> entry : observers.entrySet()) {
-            entry.getValue().doOnUpdate();
+        @Override
+        public void run() {
+            while(raport.getState() != Raport.State.SENT) {
+                raportLock.lock();
+                String dir = Consts.DATA_PATH + RAPORT_DIRECTORY;
+                new File(dir).mkdirs();
+                String tmpFile = dir + TMP + raport.getId().toString();
+                try {
+                    FileHandler.getInstance().saveSerializable(raport, tmpFile);
+                    String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
+                    Log.i(LOG_TAG, "Saving raport to file " + realFile);
+                    FileHandler.getInstance().renameFile(tmpFile, realFile);
+                } catch (IOException e) {
+                    Log.i(LOG_TAG, "Saving raport failed");
+                    raportLock.unlock();
+                    Util.waitDelay(15 * Consts.SECOND);
+                    continue;
+                }
+                raportLock.unlock();
+                Util.waitDelay(15 * Consts.SECOND);
+                if (raport.getState() == Raport.State.READY_TO_SEND) {
+                    break;
+                }
+            }
+            Log.i(LOG_TAG, "Saving raport stopped");
         }
     }
 
     private ExperimentData() {
-        observers = new HashMap<>();
         raportLock = new ReentrantLock(true);
     }
 
@@ -61,6 +79,18 @@ public class ExperimentData {
             instance = new ExperimentData();
         }
         return instance;
+    }
+
+    public void notifyObservers() {
+        for (ExperimentUpdateAction action : observers.values()) {
+            action.doOnUpdate();
+        }
+
+        for (Map.Entry<Activity, ExperimentUpdateAction> entry : uiObservers.entrySet()) {
+            Activity activity = entry.getKey();
+            ExperimentUpdateAction action = entry.getValue();
+            activity.runOnUiThread(action::doOnUpdate);
+        }
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -92,8 +122,9 @@ public class ExperimentData {
                            experiment.getId(),
                            experiment.getSurvey(Survey.SurveyType.BEFORE).getSurveyAnswers(),
                            experiment.getSurvey(Survey.SurveyType.AFTER).getSurveyAnswers());
-        String path;
-        path = saveCurrentRaport();
+
+        String path = getCurrentRaportPath();
+        new Thread(new BgRaportSaver(currentRaport)).start();
 
         dbHelper.setRaportFile(newId, path);
     }
@@ -101,14 +132,12 @@ public class ExperimentData {
     public void addEventToCurrentRaport(RaportEvent event) {
         raportLock.lock();
         currentRaport.addEvent(event);
-        saveCurrentRaport();
         raportLock.unlock();
     }
 
-    // after raport is marked as ready it is only used in one thread so no synchronization is needed
     public void markRaportAsReady() {
         raportLock.lock();
-        saveCurrentRaport();
+        currentRaport.markAsReady();
         ReadyRaports.getInstance().addNewReadyRaport(currentRaport);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
@@ -119,20 +148,14 @@ public class ExperimentData {
         experiment = null;
     }
 
-    public String saveCurrentRaport() {
-        Log.i(LOG_TAG, currentRaport.toString());
+    private String getCurrentRaportPath() {
         String dir = Consts.DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
-        String tmpFile = dir + TMP;
-        String realFile = "";
-        try {
-            FileHandler.getInstance().saveSerializable(currentRaport, tmpFile);
-            realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
-            FileHandler.getInstance().renameFile(tmpFile, realFile);
-        } catch (IOException e) {
-            Log.i(LOG_TAG, "Saving raport failed");
-            saveCurrentRaport();
-        }
+        String realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
         return dir + realFile;
+    }
+
+    public interface ExperimentUpdateAction {
+        void doOnUpdate();
     }
 }

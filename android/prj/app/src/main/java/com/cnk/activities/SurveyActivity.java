@@ -52,7 +52,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        ExperimentData.getInstance().addObserver(this, this::experimentDataDownloaded);
+        ExperimentData.getInstance().addUIObserver(this, this::experimentDataDownloaded);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
@@ -74,7 +74,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void experimentDataDownloaded() {
         ExperimentData.getInstance().deleteObserver(this);
-        runOnUiThread(this::init);
+        init();
         spinner.dismiss();
     }
 
@@ -153,7 +153,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         item.setEnabled(false);
         hideKeyboard();
         currentQuestionView.saveAnswer();
-        ExperimentData.getInstance().saveCurrentRaport();
         if (item.getItemId() == R.id.action_prev_question) {
             nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {

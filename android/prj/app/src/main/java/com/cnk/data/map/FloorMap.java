@@ -16,15 +16,8 @@ public class FloorMap {
         return originalSize;
     }
 
-    public void setOriginalSize(Resolution originalSize) {
-        this.originalSize = originalSize;
-    }
-
     public ArrayList<MapTiles> getLevels() {
         return zoomLevels;
     }
 
-    public void setLevels(ArrayList<MapTiles> levels) {
-        this.zoomLevels = levels;
-    }
 }

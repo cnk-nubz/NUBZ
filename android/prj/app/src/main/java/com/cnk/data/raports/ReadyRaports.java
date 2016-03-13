@@ -77,6 +77,7 @@ public class ReadyRaports {
 
     // only modifies database entries which are used by one thread - uploading raports
     public void markRaportAsSent(Raport raport) {
+        raport.markAsSent();
         readyRaports.remove(raport);
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
     }

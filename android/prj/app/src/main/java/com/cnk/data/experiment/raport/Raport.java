@@ -12,6 +12,13 @@ public class Raport implements Serializable {
     private List<RaportEvent> history;
     private SurveyAnswers preSurveyAnswers;
     private SurveyAnswers postSurveyAnswers;
+    private State state;
+
+    public enum State {
+        IN_PROGRESS,
+        READY_TO_SEND,
+        SENT;
+    }
 
     public Raport(Integer id,
                   Integer experimentId,
@@ -22,6 +29,7 @@ public class Raport implements Serializable {
         this.preSurveyAnswers = preSurveyAnswers;
         this.postSurveyAnswers = postSurveyAnswers;
         this.history = new ArrayList<>();
+        this.state = State.IN_PROGRESS;
     }
 
     public void addEvent(RaportEvent event) {
@@ -50,6 +58,18 @@ public class Raport implements Serializable {
 
     public SurveyAnswers getPostSurveyAnswers() {
         return postSurveyAnswers;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void markAsReady() {
+        state = State.READY_TO_SEND;
+    }
+
+    public void markAsSent() {
+        state = State.SENT;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.cnk.data.map;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -11,6 +12,7 @@ import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.Observable;
 import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
@@ -18,11 +20,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
-public class MapData {
+public class MapData extends Observable<MapData.MapUpdateAction> {
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
@@ -33,27 +35,9 @@ public class MapData {
     private List<FloorMapInfo> floorInfos;
     private Map<Observer, MapUpdateAction> observers;
 
-    public interface MapUpdateAction {
-        void doOnUpdate();
-    }
-
-    public void addObserver(Observer o, MapUpdateAction action) {
-        observers.put(o, action);
-    }
-
-    public void deleteObserver(Observer o) {
-        observers.remove(o);
-    }
-
-    public void notifyObservers() {
-        for (Map.Entry<Observer, MapUpdateAction> entry : observers.entrySet()) {
-            entry.getValue().doOnUpdate();
-        }
-    }
-
     private MapData() {
         floorInfos = new ArrayList<>();
-        observers = new HashMap<>();
+        observers = new WeakHashMap<>();
         mapVersion = null;
     }
 
@@ -62,6 +46,18 @@ public class MapData {
             instance = new MapData();
         }
         return instance;
+    }
+
+    public void notifyObservers() {
+        for (MapUpdateAction action : observers.values()) {
+            action.doOnUpdate();
+        }
+
+        for (Map.Entry<Activity, MapUpdateAction> entry : uiObservers.entrySet()) {
+            Activity activity = entry.getKey();
+            MapUpdateAction action = entry.getValue();
+            activity.runOnUiThread(action::doOnUpdate);
+        }
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -98,7 +94,7 @@ public class MapData {
 
     public void setMaps(Integer version,
                         FloorMap floor0,
-                        FloorMap floor1) throws IOException, DatabaseLoadException {
+                        FloorMap floor1) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -109,13 +105,9 @@ public class MapData {
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor0, floor1);
         loadDbData();
-        notifyMapUpdated();
+        notifyObservers();
 
         Log.i(LOG_TAG, "New maps set");
-    }
-
-    public void notifyMapUpdated() {
-        notifyObservers();
     }
 
     public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
@@ -203,5 +195,9 @@ public class MapData {
             }
         }
         return true;
+    }
+
+    public interface MapUpdateAction {
+        void doOnUpdate();
     }
 }

@@ -4,9 +4,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -23,16 +20,12 @@ import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.notificators.Observer;
 
 public class StartScreen extends AppCompatActivity implements Observer {
-    private static final int SHOW_ALERT = 1;
-
-    private static Handler uiHandler;
     private static boolean dataLoaded;
     private ProgressDialog spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        uiHandler = new UiHandler(Looper.getMainLooper(), this);
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         ExperimentData.getInstance().setDbHelper(dbHelper);
@@ -95,7 +88,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        MapData.getInstance().addObserver(this, this::mapDownloaded);
+        MapData.getInstance().addUIObserver(this, this::mapDownloaded);
         setSpinner();
         NetworkHandler.getInstance().downloadMap();
     }
@@ -109,12 +102,10 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
-                Looper.prepare();
                 spinner.dismiss();
                 MapData.getInstance().deleteObserver(this);
                 e.printStackTrace();
-                Message msg = uiHandler.obtainMessage(SHOW_ALERT);
-                msg.sendToTarget();
+                showAlert();
             }
         }
         spinner.dismiss();
@@ -127,22 +118,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
         spinner.setTitle("Synchronizacja");
         spinner.setMessage("Trwa synchronizacja danych z serwerem");
         spinner.show();
-    }
-
-    private static class UiHandler extends Handler {
-        private StartScreen activity;
-
-        public UiHandler(Looper looper, StartScreen activity) {
-            super(looper);
-            this.activity = activity;
-        }
-
-        @Override
-        public void handleMessage(Message message) {
-            if (message.what == SHOW_ALERT) {
-                activity.showAlert();
-            }
-        }
     }
 }
 

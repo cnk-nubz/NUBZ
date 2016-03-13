@@ -1,9 +1,12 @@
 package com.cnk.data.exhibits;
 
+import android.app.Activity;
+
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.Observable;
 import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
@@ -12,34 +15,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExhibitsData {
+public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> {
     private static ExhibitsData instance;
     private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
     private List<FloorExhibitsInfo> floorInfos;
-    private Map<Observer, ExhibitsUpdateAction> observers;
-
-    public interface ExhibitsUpdateAction {
-        void doOnUpdate(List<Exhibit> changedExhibits);
-    }
-
-    public void addObserver(Observer o, ExhibitsUpdateAction action) {
-        observers.put(o, action);
-    }
-
-    public void deleteObserver(Observer o) {
-        observers.remove(o);
-    }
-
-    public void notifyObservers(List<Exhibit> changedExhibits) {
-        for (Map.Entry<Observer, ExhibitsUpdateAction> entry : observers.entrySet()) {
-            entry.getValue().doOnUpdate(changedExhibits);
-        }
-    }
 
     private ExhibitsData() {
         floorInfos = new ArrayList<>();
-        observers = new HashMap<>();
         exhibitsVersion = null;
     }
 
@@ -48,6 +31,18 @@ public class ExhibitsData {
             instance = new ExhibitsData();
         }
         return instance;
+    }
+
+    public void notifyObservers(List<Exhibit> changedExhibits) {
+        for (ExhibitsUpdateAction action : observers.values()) {
+            action.doOnUpdate(changedExhibits);
+        }
+
+        for (Map.Entry<Activity, ExhibitsUpdateAction> entry : uiObservers.entrySet()) {
+            Activity activity = entry.getKey();
+            ExhibitsUpdateAction action = entry.getValue();
+            activity.runOnUiThread(() -> action.doOnUpdate(changedExhibits));
+        }
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -94,8 +89,8 @@ public class ExhibitsData {
     }
 
     private void findAndChangeExhibit(Exhibit e) {
-        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            floorInfos.get(floor).removeExhibit(e.getId());
+        for (FloorExhibitsInfo currentFloor : floorInfos) {
+            currentFloor.removeExhibit(e.getId());
         }
         if (e.getFloor() != null) {
             floorInfos.get(e.getFloor()).addExhibit(e);
@@ -108,6 +103,10 @@ public class ExhibitsData {
 
     public Integer getExhibitsVersion() {
         return exhibitsVersion;
+    }
+
+    public interface ExhibitsUpdateAction {
+        void doOnUpdate(List<Exhibit> changedExhibits);
     }
 
 }
