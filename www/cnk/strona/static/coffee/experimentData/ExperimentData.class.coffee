@@ -2,7 +2,7 @@ root = exports ? this
 root.ExperimentData = class ExperimentData
   # functions to implement by subclasses:
   # _getViewId(index)
-  # _elementListFormat(id)
+  # _elementListFormat(viewId)
   constructor: (_list) ->
     @setElements(_list)
     @_newElements = {}

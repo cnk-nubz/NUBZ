@@ -28,4 +28,8 @@ root.Questions = class Questions extends root.ExperimentData
     dialog.readonly = readonly
     @_questionType[@_elementsDict[viewId].type].dialog.bindData(@_elementsDict[viewId]).show()
 
-  _getViewId: (index) => "#{@_orderedList[index].type}$#{@_orderedList[index].questionId}"
+  _getViewId: (index) =>
+    JSON.stringify(
+      type: @_orderedList[index].type
+      id: @_orderedList[index].questionId
+    )

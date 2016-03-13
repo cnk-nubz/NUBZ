@@ -2,14 +2,12 @@ root = exports ? this
 root.ListView = class ListView extends root.View
   constructor: (@_containerId, @_listType, DOMElements = document.createDocumentFragment()) ->
     # DOMElements are initially in detached state
-    # need to implement in subclasses:
-    # generateId(id)
     super()
-    @_elementsOnList = {}
+    @_elementsOnList = []
     @_listElementsDOM = @_wrapElements(DOMElements)
 
   addElement: (element) =>
-    @_elementsOnList[element.querySelector("tr").data] = true
+    @_elementsOnList.push(element.querySelector("tr").data)
     @_listElementsDOM.querySelector("tbody").appendChild(element)
     @
 
@@ -21,7 +19,7 @@ root.ListView = class ListView extends root.View
 
   _wrapElements: (DOMElements) =>
     [].forEach.call(DOMElements.querySelectorAll("tr"), (element) =>
-      @_elementsOnList[element.data] = true
+      @_elementsOnList.push(element.data)
     )
     container = jQuery(root.HTML.tableList).addClass(@_listType)
     container = container[0]
@@ -43,10 +41,8 @@ root.ListView = class ListView extends root.View
     TRElement = jQuery(DOMElement).parents("tr")
     viewId = TRElement[0].data
     TRElement.remove()
-    @_elementsOnList[viewId] = false
+    @_elementsOnList.splice(index, 1) for el, index in @_elementsOnList when el is viewId
+    @
 
   isElementOnList: (viewId) =>
-    @_elementsOnList[viewId] is true
-
-  getAllElements: =>
-    @_getOriginalId(el) for el, status of @_elementsOnList when status is true
+    viewId in @_elementsOnList
