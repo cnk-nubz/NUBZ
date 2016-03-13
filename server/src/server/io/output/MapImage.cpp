@@ -10,7 +10,7 @@ namespace output {
 MapImage::MapImage(const repository::MapImage &repo) : floor(repo.floor) {
     resolution.width = repo.width;
     resolution.height = repo.height;
-    zoomLevels = repoToIO<MapImage::ZoomLevel>(repo.zoomLevels);
+    zoomLevels = std::vector<MapImage::ZoomLevel>(repo.zoomLevels.begin(), repo.zoomLevels.end());
 }
 
 communication::MapImage MapImage::toThrift() const {

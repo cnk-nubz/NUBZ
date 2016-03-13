@@ -9,10 +9,10 @@
 
 #include <repository/Experiments.h>
 
-#include <server/io/QuestionsList.h>
-#include <server/io/output/Action.h>
-#include <server/io/output/MultipleChoiceQuestion.h>
-#include <server/io/output/SimpleQuestion.h>
+#include "Action.h"
+#include "MultipleChoiceQuestion.h"
+#include "QuestionsList.h"
+#include "SimpleQuestion.h"
 
 namespace server {
 namespace io {

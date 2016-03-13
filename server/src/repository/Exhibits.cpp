@@ -82,6 +82,9 @@ void Exhibits::insert(Exhibits::Exhibit *exhibit) {
 }
 
 void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
+    if (!get(ID)) {
+        throw InvalidData{"incorrect exhibit ID"};
+    }
     auto sql = Table::Sql::update().set(Table::Version, newVersion).where(Table::ID == ID);
     session.execute(sql);
 }
@@ -89,6 +92,9 @@ void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
 void Exhibits::setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame) {
     if (newFrame) {
         checkFrame(newFrame.value());
+    }
+    if (!get(ID)) {
+        throw InvalidData{"incorrect exhibit ID"};
     }
 
     auto frame = OptFrame{newFrame};
@@ -107,10 +113,10 @@ void Exhibits::checkFrame(const Exhibit::Frame &frame) {
     if (auto mapImage = MapImages{session}.get(frame.floor)) {
         if (frame.x + frame.width > mapImage.value().width ||
             frame.y + frame.height > mapImage.value().height || frame.x < 0 || frame.y < 0) {
-            throw InvalidData{"incorrect frame - out of bounds"};
+            throw InvalidData{"incorrect exhibit frame - out of bounds"};
         }
     } else {
-        throw InvalidData{"incorrect frame - given floor doesn't exist"};
+        throw InvalidData{"incorrect exhibit frame - given floor doesn't exist"};
     }
 }
 

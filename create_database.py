@@ -307,12 +307,6 @@ cur.execute('''
 		(2, 'hhh')
 ''')
 
-# current experiment
-cur.execute('''
-	UPDATE active_experiment
-	SET id=1
-''')
-
 con.commit()
 
 print "Done"

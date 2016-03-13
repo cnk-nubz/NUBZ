@@ -1,6 +1,5 @@
 file(GLOB SOURCES
     *.cpp
-    command/*.cpp
     table/*.cpp
     json/*.cpp
 )

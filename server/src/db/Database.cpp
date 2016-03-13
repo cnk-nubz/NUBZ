@@ -15,10 +15,7 @@ Database::Database(const std::string &user, const std::string &db, const std::st
     connection.reset(new pqxx::lazyconnection(initMsg.str()));
 }
 
-DatabaseException::DatabaseException(const pqxx::broken_connection &e)
-    : std::runtime_error(e.what()) {
-}
-DatabaseException::DatabaseException(const pqxx::sql_error &e) : std::runtime_error(e.what()) {
+DatabaseException::DatabaseException(const pqxx::failure &e) : std::runtime_error(e.what()) {
 }
 
 Database::WorkGuard::WorkGuard(pqxx::lazyconnection &lc) : canceled(false), work(lc) {

@@ -22,8 +22,7 @@ public:
     io::output::Exhibit operator()(const io::input::CreateExhibitRequest &input);
 
 private:
-    void validateInput(db::DatabaseSession &session,
-                       const io::input::CreateExhibitRequest &input) const;
+    void validateInput(const io::input::CreateExhibitRequest &input) const;
     repository::Exhibit::Frame createExhibitFrame(
         std::int32_t dstFloor, const boost::optional<io::MapFrame> &visibleFrame) const;
 

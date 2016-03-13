@@ -19,7 +19,7 @@ SortQuestion::SortQuestion(const repository::SortQuestions::Question &repo) {
     ID = repo.ID;
     name = repo.name;
     question = repo.question;
-    options = repoToIO<Option>(repo.options);
+    options = std::vector<Option>(repo.options.begin(), repo.options.end());
 }
 
 communication::SortQuestionOption SortQuestion::Option::toThrift() const {

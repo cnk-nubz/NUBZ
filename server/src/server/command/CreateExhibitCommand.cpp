@@ -14,7 +14,7 @@ CreateExhibitCommand::CreateExhibitCommand(db::Database &db) : db(db) {
 
 io::output::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
     auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+        validateInput(input);
 
         auto exhibit = repository::Exhibit{};
         exhibit.name = input.name;
@@ -31,8 +31,7 @@ io::output::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhi
     return io::output::Exhibit{repoExhibit};
 }
 
-void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
-                                         const io::input::CreateExhibitRequest &input) const {
+void CreateExhibitCommand::validateInput(const io::input::CreateExhibitRequest &input) const {
     if (!utils::checkText(input.name)) {
         throw io::InvalidInput("incorrect name");
     }

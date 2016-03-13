@@ -16,8 +16,6 @@ SetExhibitFrameCommand::SetExhibitFrameCommand(db::Database &db) : db(db) {
 // if exhibit has no floor InvalidData will be thrown
 void SetExhibitFrameCommand::operator()(const io::input::SetExhibitFrameRequest &input) {
     db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
-
         auto countersRepo = repository::Counters{session};
         auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
 
@@ -32,21 +30,6 @@ void SetExhibitFrameCommand::operator()(const io::input::SetExhibitFrameRequest 
         exhibitsRepo.setVersion(exhibit.ID, version);
         exhibitsRepo.setFrame(exhibit.ID, repoFrame);
     });
-}
-
-void SetExhibitFrameCommand::validateInput(db::DatabaseSession &session,
-                                           const io::input::SetExhibitFrameRequest &input) const {
-    auto repo = repository::Exhibits{session};
-
-    auto exhibitOpt = repo.get(input.exhibitId);
-    if (!exhibitOpt) {
-        throw io::InvalidInput("incorrect exhibit id");
-    }
-    auto exhibit = exhibitOpt.value();
-
-    if (!exhibit.frame) {
-        throw io::InvalidInput("given exhibit doesn't belong to any floor");
-    }
 }
 }
 }

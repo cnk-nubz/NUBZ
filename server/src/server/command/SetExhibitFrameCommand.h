@@ -17,9 +17,6 @@ public:
     void operator()(const io::input::SetExhibitFrameRequest &input);
 
 private:
-    void validateInput(db::DatabaseSession &session,
-                       const io::input::SetExhibitFrameRequest &input) const;
-
     db::Database &db;
 };
 }

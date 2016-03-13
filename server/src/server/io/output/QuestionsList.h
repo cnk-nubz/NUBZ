@@ -1,5 +1,5 @@
-#ifndef SERVER_IO__QUESTIONS_LIST__H
-#define SERVER_IO__QUESTIONS_LIST__H
+#ifndef SERVER_IO_OUTPUT__QUESTIONS_LIST__H
+#define SERVER_IO_OUTPUT__QUESTIONS_LIST__H
 
 #include <vector>
 
@@ -7,22 +7,17 @@
 
 #include <repository/Experiments.h>
 
-#include "output/MultipleChoiceQuestion.h"
-#include "output/SimpleQuestion.h"
-#include "output/SortQuestion.h"
+#include <server/io/QuestionType.h>
+
+#include "MultipleChoiceQuestion.h"
+#include "SimpleQuestion.h"
+#include "SortQuestion.h"
 
 namespace server {
 namespace io {
+namespace output {
 
 struct QuestionsList {
-    enum class QuestionType {
-        Simple,
-        MultipleChoice,
-        Sort,
-    };
-    static QuestionType QuestionTypeFromThrift(const communication::QuestionType::type &thrift);
-    static communication::QuestionType::type QuestionTypeToThrift(const QuestionType &type);
-
     using thrift_t = communication::QuestionsList;
     using repo_t = repository::Experiment::Survey;
 
@@ -36,6 +31,7 @@ struct QuestionsList {
     std::vector<output::MultipleChoiceQuestion> multipleChoiceQuestions;
     std::vector<output::SortQuestion> sortQuestions;
 };
+}
 }
 }
 

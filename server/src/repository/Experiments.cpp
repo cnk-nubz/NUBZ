@@ -43,7 +43,9 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
 }
 
 boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
-    assert(!getActive() && "you can only have one active experiment");
+    if (!getActive()) {
+        throw InvalidData{"you can only have one active experiment"};
+    }
     auto sql = Table::Sql::update()
                    .where(Table::ID == ID && Table::State == State::Ready)
                    .set(Table::State, State::Active)
@@ -53,7 +55,9 @@ boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
 }
 
 void Experiments::finishActive() {
-    assert(getActive());
+    if (!getActive()) {
+        throw InvalidData{"there is no active experiment to finish"};
+    }
     auto sql = Table::Sql::update()
                    .where(Table::State == State::Active)
                    .set(Table::State, State::Finished)
@@ -88,7 +92,6 @@ std::vector<Experiments::Experiment> Experiments::getAllWithState(State state) {
 
 void Experiments::insert(Experiments::LazyExperiment *experiment) {
     checkActions(*experiment);
-    checkActions(*experiment);
     checkSurvey(experiment->surveyBefore);
     checkSurvey(experiment->surveyAfter);
 
@@ -112,7 +115,7 @@ void Experiments::checkSurvey(const LazyExperiment::Survey &survey) {
         utils::count(survey.typesOrder, QuestionType::Sort) != survey.sortQuestions.size() ||
         utils::count(survey.typesOrder, QuestionType::MultipleChoice) !=
             survey.multipleChoiceQuestions.size()) {
-        throw InvalidData("types order doesn't match questions");
+        throw InvalidData("survey's types order doesn't match questions");
     }
 
     using set = std::unordered_set<std::int32_t>;

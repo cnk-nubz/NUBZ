@@ -3,7 +3,7 @@
 
 #include <db/Database.h>
 
-#include <server/io/QuestionsList.h>
+#include <server/io/output/QuestionsList.h>
 
 #include "Command.h"
 #include "GetAllMultipleChoiceQuestionsCommand.h"
@@ -17,10 +17,10 @@ class GetAllQuestionsCommand : public Command {
 public:
     GetAllQuestionsCommand(db::Database &db);
 
-    io::QuestionsList operator()();
+    io::output::QuestionsList operator()();
 
 private:
-    void generateOrder(io::QuestionsList &list) const;
+    void generateOrder(io::output::QuestionsList &list) const;
 
     GetAllSimpleQuestionsCommand getSimple;
     GetAllMultipleChoiceQuestionsCommand getMultiple;

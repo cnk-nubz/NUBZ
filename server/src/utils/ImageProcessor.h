@@ -25,6 +25,7 @@ public:
     void saveImageTo(const std::string &path);
 
     void setTileSize(std::size_t size);
+    void setMinTileSize(std::size_t minSize);
 
     // generates tiles, saves them, returns list of filenames
     // in case of crash removes created files and throws std::runtime_error
@@ -38,6 +39,7 @@ private:
     const std::string srcImagePath;
     Magick::Image img;
     std::size_t tileSize;
+    std::size_t minTileSize;
 };
 }
 

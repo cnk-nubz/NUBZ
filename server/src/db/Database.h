@@ -17,13 +17,13 @@ class Database {
 public:
     Database(const std::string &user, const std::string &db, const std::string &host,
              std::uint16_t port);
-    ~Database() = default;
     Database(const Database &) = delete;
     Database(Database &&) = delete;
     Database &operator=(const Database &) = delete;
     Database &operator=(Database &&) = delete;
 
     // thread-safe
+    // no more than one transaction at a time
     template <class Cmd>
     std::result_of_t<Cmd(DatabaseSession &)> execute(Cmd &&cmd);
 
@@ -46,8 +46,7 @@ private:
 };
 
 struct DatabaseException : public std::runtime_error {
-    DatabaseException(const pqxx::broken_connection &e);
-    DatabaseException(const pqxx::sql_error &e);
+    DatabaseException(const pqxx::failure &e);
 };
 
 template <class Cmd>
@@ -58,14 +57,13 @@ std::result_of_t<Cmd(DatabaseSession &)> Database::execute(Cmd &&cmd) {
 
     try {
         return cmd(session);
-    } catch (pqxx::broken_connection &e) {
+    } catch (pqxx::failure &e) {
         transaction.cancel();
         LOG(DEBUG) << e.what();
         throw DatabaseException(e);
-    } catch (pqxx::sql_error &e) {
+    } catch (...) {
         transaction.cancel();
-        LOG(DEBUG) << e.what();
-        throw DatabaseException(e);
+        throw;
     }
 }
 }

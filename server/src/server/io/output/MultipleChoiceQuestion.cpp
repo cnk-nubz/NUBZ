@@ -22,7 +22,7 @@ MultipleChoiceQuestion::MultipleChoiceQuestion(
     name = repo.name;
     question = repo.question;
     singleAnswer = repo.singleAnswer;
-    options = repoToIO<Option>(repo.options);
+    options = std::vector<Option>(repo.options.begin(), repo.options.end());
 }
 
 communication::MultipleChoiceQuestionOption MultipleChoiceQuestion::Option::toThrift() const {
