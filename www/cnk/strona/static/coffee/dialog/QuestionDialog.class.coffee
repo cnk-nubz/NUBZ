@@ -2,35 +2,33 @@ root = exports ? this
 root.QuestionDialog = class QuestionDialog
   readonly: false
   constructor: (@_url, @_saveHandler = (->)) ->
-    @_getDialogMessage()
-
-  _getDialogMessage: =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      url: @_url
-      context: this
-      success: (data) ->
-        @_data = data.data
-        @_dialog = new BootstrapDialog(
-          message: data.html
-          title: data.data.utils.text.title
-          onshown: @_dialogCreated
-          closable: false
-          buttons: [@_closeButton(), @_saveButton()]
-        )
+    jQuery.getJSON(@_url, null, (data) =>
+      @_data = data.data
+      @_dialogHTML = data.html
+      @_dialog = new BootstrapDialog(
+        message: data.html
+        title: data.data.utils.text.title
+        closable: false
+        buttons: [@_closeButton(), @_saveButton()]
+      )
+      @_dialog.realize()
+      @_prepareDialog(@_dialog.getModalBody())
     )
 
-  bindData: (@_dialogInfo) => @
+  bindData: (@_dialogInfo) =>
+    @_dialog.setMessage(@_dialogHTML)
+    @_dialog.realize()
+    dialogBody = @_dialog.getModalBody()
+    @_prepareDialog(dialogBody)
+    @_prepareFilledDialog(dialogBody)
+    @
 
   show: =>
     @_dialog.open()
 
-  _dialogCreated: =>
+  _prepareDialog: (dialog) =>
     instance = this
-    jQuery("#dialog input[type=text]").blur( ->
+    jQuery("input[type=text]", dialog).blur( ->
         obj = jQuery(this)
         error = obj.parent().next()
         obj.val(jQuery.trim(obj.val()))
@@ -50,11 +48,13 @@ root.QuestionDialog = class QuestionDialog
     @_data.utils.text.inputError
 
   _closeButton: =>
+    id: 'closeButtonDialog'
     label: @_data.utils.text.cancelButton
     action: (dialog) ->
       dialog.close()
 
   _saveButton: =>
+    id: 'saveButtonDialog'
     label: @_data.utils.text.saveButton
     action: (dialog) =>
       if @_validateForm()

@@ -8,7 +8,10 @@ public class MultipleChoiceQuestion {
     private boolean singleAnswer;
     private List<MultipleChoiceQuestionOption> options;
 
-    public MultipleChoiceQuestion(Integer id, String question, boolean singleAnswer, List<MultipleChoiceQuestionOption> options) {
+    public MultipleChoiceQuestion(Integer id,
+                                  String question,
+                                  boolean singleAnswer,
+                                  List<MultipleChoiceQuestionOption> options) {
         this.id = id;
         this.question = question;
         this.singleAnswer = singleAnswer;

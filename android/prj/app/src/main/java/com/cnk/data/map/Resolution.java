@@ -29,6 +29,6 @@ public class Resolution {
     @Override
     public String toString() {
         return "width=" + width +
-                ", height=" + height;
+               ", height=" + height;
     }
 }

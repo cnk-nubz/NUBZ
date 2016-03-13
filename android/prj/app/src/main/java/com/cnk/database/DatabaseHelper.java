@@ -62,7 +62,9 @@ public class DatabaseHelper {
     private Integer getVersionImpl(Realm realm, Enum<Version.Item> item) {
         Integer versionNumber = null;
 
-        VersionRealm result = realm.where(VersionRealm.class).equalTo("item", item.toString()).findFirst();
+        VersionRealm result = realm.where(VersionRealm.class)
+                                   .equalTo("item", item.toString())
+                                   .findFirst();
         if (result != null) {
             versionNumber = result.getCurrentVersion();
         }
@@ -115,16 +117,20 @@ public class DatabaseHelper {
         } catch (RuntimeException re) {
             cancelTransaction(r);
             re.printStackTrace();
-            throw new InternalDatabaseError("Exception setting version of " + item.toString()
-                    + " to " + versionNumber.toString());
+            throw new InternalDatabaseError("Exception setting version of " + item.toString() +
+                                            " to " + versionNumber.toString());
         } finally {
             close(r);
         }
     }
 
-    public DetailLevelResRealm getDetailLevelResRealmImpl(Realm realm, Integer floor, Integer detailLevel) {
-        DetailLevelResRealm result = realm.where(DetailLevelResRealm.class).equalTo("floor", floor)
-                .equalTo("detailLevel", detailLevel).findFirst();
+    public DetailLevelResRealm getDetailLevelResRealmImpl(Realm realm,
+                                                          Integer floor,
+                                                          Integer detailLevel) {
+        DetailLevelResRealm result = realm.where(DetailLevelResRealm.class)
+                                          .equalTo("floor", floor)
+                                          .equalTo("detailLevel", detailLevel)
+                                          .findFirst();
 
         return result;
     }
@@ -135,7 +141,9 @@ public class DatabaseHelper {
         Realm r = open();
         try {
             beginTransaction(r);
-            result = ModelTranslation.detailLevelResFromRealm(getDetailLevelResRealmImpl(r, floor, detailLevel));
+            result = ModelTranslation.detailLevelResFromRealm(getDetailLevelResRealmImpl(r,
+                                                                                         floor,
+                                                                                         detailLevel));
             commitTransaction(r);
         } catch (RuntimeException re) {
             cancelTransaction(r);
@@ -152,22 +160,34 @@ public class DatabaseHelper {
                                        List<DetailLevelResRealm> floor0Resolutions,
                                        List<DetailLevelResRealm> floor1Resolutions) {
         if (floor0Resolutions != null) {
-            realm.where(DetailLevelResRealm.class).equalTo("floor", Consts.FLOOR1).findAll().clear();
+            realm.where(DetailLevelResRealm.class)
+                 .equalTo("floor", Consts.FLOOR1)
+                 .findAll()
+                 .clear();
             realm.copyToRealm(floor0Resolutions);
         }
         if (floor1Resolutions != null) {
-            realm.where(DetailLevelResRealm.class).equalTo("floor", Consts.FLOOR2).findAll().clear();
+            realm.where(DetailLevelResRealm.class)
+                 .equalTo("floor", Consts.FLOOR2)
+                 .findAll()
+                 .clear();
             realm.copyToRealm(floor1Resolutions);
         }
     }
 
-    private String getMapTileFileLocationImpl(Realm realm, Integer floor, Integer detailLevel,
-                                              Integer rowNumber, Integer colunNumber) {
+    private String getMapTileFileLocationImpl(Realm realm,
+                                              Integer floor,
+                                              Integer detailLevel,
+                                              Integer rowNumber,
+                                              Integer colunNumber) {
         String result = null;
 
-        MapTileRealm mtr = realm.where(MapTileRealm.class).equalTo("floor", floor)
-                .equalTo("detailLevel", detailLevel).equalTo("rowNumber", rowNumber)
-                .equalTo("columnNumber", colunNumber).findFirst();
+        MapTileRealm mtr = realm.where(MapTileRealm.class)
+                                .equalTo("floor", floor)
+                                .equalTo("detailLevel", detailLevel)
+                                .equalTo("rowNumber", rowNumber)
+                                .equalTo("columnNumber", colunNumber)
+                                .findFirst();
 
         if (mtr != null) {
             result = mtr.getMapTileLocation();
@@ -176,8 +196,10 @@ public class DatabaseHelper {
         return result;
     }
 
-    public String getMapTileFileLocation(Integer floor, Integer detailLevel,
-                                         Integer rowNumber, Integer columnNumber) {
+    public String getMapTileFileLocation(Integer floor,
+                                         Integer detailLevel,
+                                         Integer rowNumber,
+                                         Integer columnNumber) {
         String result = null;
 
         Realm r = open();
@@ -196,13 +218,21 @@ public class DatabaseHelper {
         return result;
     }
 
-    private void setDetailLevelsImpl(Realm realm, FloorDetailLevelsRealm floor0, FloorDetailLevelsRealm floor1) {
+    private void setDetailLevelsImpl(Realm realm,
+                                     FloorDetailLevelsRealm floor0,
+                                     FloorDetailLevelsRealm floor1) {
         if (floor0 != null) {
-            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor0.getFloorNo()).findAll().clear();
+            realm.where(FloorDetailLevelsRealm.class)
+                 .equalTo("floorNo", floor0.getFloorNo())
+                 .findAll()
+                 .clear();
             realm.copyToRealm(floor0);
         }
         if (floor1 != null) {
-            realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floor1.getFloorNo()).findAll().clear();
+            realm.where(FloorDetailLevelsRealm.class)
+                 .equalTo("floorNo", floor1.getFloorNo())
+                 .findAll()
+                 .clear();
             realm.copyToRealm(floor1);
         }
 
@@ -212,8 +242,10 @@ public class DatabaseHelper {
         if (floorInfo != null) {
             for (MapTileInfoRealm tileInfo : floorInfo) {
                 realm.where(MapTileInfoRealm.class)
-                        .equalTo("floor", tileInfo.getFloor())
-                        .equalTo("detailLevel", tileInfo.getDetailLevel()).findAll().clear();
+                     .equalTo("floor", tileInfo.getFloor())
+                     .equalTo("detailLevel", tileInfo.getDetailLevel())
+                     .findAll()
+                     .clear();
                 realm.copyToRealm(tileInfo);
             }
         }
@@ -228,17 +260,21 @@ public class DatabaseHelper {
         List<MapTileInfoRealm> floor1TileInfo = null;
 
         if (floor0Map != null) {
-            floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(
-                    ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1, floor0Map));
-            floor0DetailLevels = ModelTranslation.realmFromDetailLevels(
-                    new FloorDetailLevels(Consts.FLOOR1, floor0Map.getLevels().size()));
+            floor0Resolutions = ModelTranslation.realmListFromDetailLevelResList(ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR1,
+                                                                                                                                floor0Map));
+            floor0DetailLevels = ModelTranslation.realmFromDetailLevels(new FloorDetailLevels(Consts.FLOOR1,
+                                                                                              floor0Map
+                                                                                                      .getLevels()
+                                                                                                      .size()));
             floor0TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR1);
         }
         if (floor1Map != null) {
-            floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(
-                    ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2, floor1Map));
-            floor1DetailLevels = ModelTranslation.realmFromDetailLevels(
-                    new FloorDetailLevels(Consts.FLOOR2, floor1Map.getLevels().size()));
+            floor1Resolutions = ModelTranslation.realmListFromDetailLevelResList(ModelTranslation.getDetailLevelResFromFloorMap(Consts.FLOOR2,
+                                                                                                                                floor1Map));
+            floor1DetailLevels = ModelTranslation.realmFromDetailLevels(new FloorDetailLevels(Consts.FLOOR2,
+                                                                                              floor1Map
+                                                                                                      .getLevels()
+                                                                                                      .size()));
             floor1TileInfo = ModelTranslation.getMapTileInfo(floor0Map, Consts.FLOOR2);
         }
         setVersion(Version.Item.MAP, versionNum);
@@ -262,7 +298,9 @@ public class DatabaseHelper {
     }
 
     private Integer getDetailLevelsForFloorImpl(Realm realm, Integer floorNo) {
-        FloorDetailLevelsRealm res = realm.where(FloorDetailLevelsRealm.class).equalTo("floorNo", floorNo).findFirst();
+        FloorDetailLevelsRealm res = realm.where(FloorDetailLevelsRealm.class)
+                                          .equalTo("floorNo", floorNo)
+                                          .findFirst();
         return res == null ? null : res.getDetailLevels();
     }
 
@@ -286,8 +324,9 @@ public class DatabaseHelper {
 
     private MapTileInfoRealm getMapTileInfoImpl(Realm r, Integer floorNo, Integer detailLevel) {
         MapTileInfoRealm res = r.where(MapTileInfoRealm.class)
-                .equalTo("floor", floorNo)
-                .equalTo("detailLevel", detailLevel).findFirst();
+                                .equalTo("floor", floorNo)
+                                .equalTo("detailLevel", detailLevel)
+                                .findFirst();
         return res;
     }
 
@@ -297,7 +336,9 @@ public class DatabaseHelper {
 
         try {
             beginTransaction(r);
-            res = ModelTranslation.mapTileInfoFromRealm(getMapTileInfoImpl(r, floorNo, detailLevel));
+            res = ModelTranslation.mapTileInfoFromRealm(getMapTileInfoImpl(r,
+                                                                           floorNo,
+                                                                           detailLevel));
             commitTransaction(r);
         } catch (RuntimeException re) {
             cancelTransaction(r);
@@ -444,8 +485,9 @@ public class DatabaseHelper {
      */
     private List<Exhibit> getAllExhibitsForFloorImpl(Realm realm, Integer floor) {
         List<Exhibit> exhibits = new ArrayList<>();
-        RealmResults<ExhibitRealm> results =
-                realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
+        RealmResults<ExhibitRealm> results = realm.where(ExhibitRealm.class)
+                                                  .equalTo("floor", floor)
+                                                  .findAll();
 
         for (ExhibitRealm er : results) {
             exhibits.add(ModelTranslation.exhibitFromRealm(er));
@@ -468,7 +510,8 @@ public class DatabaseHelper {
         } catch (RuntimeException re) {
             cancelTransaction(r);
             re.printStackTrace();
-            throw new InternalDatabaseError("Exception getting all exhibits for floor. " + re.toString());
+            throw new InternalDatabaseError("Exception getting all exhibits for floor. " +
+                                            re.toString());
         } finally {
             close(r);
         }
@@ -479,9 +522,12 @@ public class DatabaseHelper {
     /*
      * clears exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
-    private void setExhibitsForFloorImpl(Realm realm, Iterable<Exhibit> exhibitsForFloor, Integer floor) {
-        RealmResults<ExhibitRealm> exhibitsToDelete =
-                realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
+    private void setExhibitsForFloorImpl(Realm realm,
+                                         Iterable<Exhibit> exhibitsForFloor,
+                                         Integer floor) {
+        RealmResults<ExhibitRealm> exhibitsToDelete = realm.where(ExhibitRealm.class)
+                                                           .equalTo("floor", floor)
+                                                           .findAll();
         exhibitsToDelete.clear();
 
         for (Exhibit e : exhibitsForFloor) {
@@ -492,7 +538,9 @@ public class DatabaseHelper {
     /*
      * clears exhbits on certain floor and sets passed exhbits as exhibits for that floor
      */
-    public void setExhibitsForFloor(Integer versionNum, Iterable<Exhibit> exhibitsForFloor, Integer floor) {
+    public void setExhibitsForFloor(Integer versionNum,
+                                    Iterable<Exhibit> exhibitsForFloor,
+                                    Integer floor) {
         Realm r = open();
 
         try {
@@ -503,7 +551,8 @@ public class DatabaseHelper {
         } catch (RuntimeException re) {
             cancelTransaction(r);
             re.printStackTrace();
-            throw new InternalDatabaseError("Exception saving exhibits for floor: " + floor.toString());
+            throw new InternalDatabaseError("Exception saving exhibits for floor: " +
+                                            floor.toString());
         } finally {
             close(r);
         }
@@ -604,8 +653,8 @@ public class DatabaseHelper {
         } catch (Exception e) {
             cancelTransaction(r);
             e.printStackTrace();
-            throw new InternalDatabaseError("Exception setting map of floor "
-                    + id.toString() + " to " + raportFilename);
+            throw new InternalDatabaseError("Exception setting map of floor " + id.toString() +
+                                            " to " + raportFilename);
         } finally {
             close(r);
         }
@@ -613,7 +662,10 @@ public class DatabaseHelper {
 
     private List<RaportFile> getAllReadyRaportsImpl(Realm realm) {
         List<RaportFile> raports = new ArrayList<>();
-        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class).equalTo("state", RaportFileRealm.READY_TO_SEND).findAll();
+        RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class)
+                                                     .equalTo("state",
+                                                              RaportFileRealm.READY_TO_SEND)
+                                                     .findAll();
         for (RaportFileRealm r : results) {
             raports.add(ModelTranslation.raportFileFromRealm(r));
         }

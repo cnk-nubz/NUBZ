@@ -1,7 +1,6 @@
 package com.cnk.activities;
 
 import android.app.ActivityOptions;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -32,7 +31,9 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
+import com.cnk.data.experiment.Survey;
 import com.cnk.data.map.Resolution;
+import com.cnk.data.raport.RaportEvent;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.ui.AutoResizeTextView;
@@ -66,7 +67,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private RelativeLayout rlRootLayout;
     private RelativeLayout voidLayout;
     private Point lastClick;
-    private ProgressDialog spinner;
     private ActionBarDrawerToggle drawerToggle;
     private Integer openedDialogs;
 
@@ -78,24 +78,28 @@ public class MapActivity extends AppCompatActivity implements Observer {
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
-
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
         setViews();
         setActionBar();
-        setSpinner();
-        NetworkHandler.getInstance().downloadExperimentData();
+        mapState = new MapState(this);
+        new StartUpTask().execute();
+        Log.i(LOG_TAG, "starting background download");
+        NetworkHandler.getInstance().startBgDownload();
     }
 
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
+        openedDialogs++;
         showExhibitDialog(true, BREAK_NAME, BREAK_ID);
     }
 
     public void endClick(View view) {
         Log.i(LOG_TAG, "Clicked end button");
-        Intent startScreenIntent = new Intent(getApplicationContext(), StartScreen.class);
-        startActivity(startScreenIntent);
+        Intent postSurvey = new Intent(getApplicationContext(), SurveyActivity.class);
+        postSurvey.putExtra("type", Survey.SurveyType.AFTER);
+        startActivity(postSurvey);
+        finish();
     }
 
     @Override
@@ -141,12 +145,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void setActionBar() {
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                R.string.drawer_open,
-                R.string.drawer_close
-        ) {
+        drawerToggle = new ActionBarDrawerToggle(this,
+                                                 drawerLayout,
+                                                 R.string.drawer_open,
+                                                 R.string.drawer_close) {
 
             public void onDrawerClosed(View view) {
                 super.onDrawerClosed(view);
@@ -163,34 +165,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         drawerLayout.setDrawerListener(drawerToggle);
     }
 
-    private void setSpinner() {
-        spinner = new ProgressDialog(this);
-        spinner.setTitle("Ładowanie");
-        spinner.setMessage("Oczekiwanie na pobranie akcji");
-        spinner.setCancelable(false);
-        spinner.show();
-    }
-
-    private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
-                return true;
-            } else {
-                setLayout(false);
-                return false;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Boolean b) {
-            super.onPostExecute(b);
-            if (b) {
-                new MapChangeFloor().execute();
-            }
-        }
-    }
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         lastClick = new Point((int) ev.getX(), (int) ev.getY());
@@ -200,13 +174,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         Log.i(LOG_TAG, "onDestroy execution");
         if (tileView != null) {
             tileView.setBitmapProvider(null);
             tileView.destroy();
         }
-
         NetworkHandler.getInstance().stopBgDownload();
 
         Log.i(LOG_TAG, "deleting from DataHandler observers list");
@@ -234,9 +206,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-
     // Layout setting:
-    private void prepareTileView(final Integer floor, final List<ScaleData> scalesList, final List<Resolution> tileSizes) {
+    private void prepareTileView(final Integer floor,
+                                 final List<ScaleData> scalesList,
+                                 final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
         runOnUiThread(new Runnable() {
@@ -255,14 +228,20 @@ public class MapActivity extends AppCompatActivity implements Observer {
                     Log.i(LOG_TAG, tileSizes.get(i).toString() + " " + Integer.toString(i));
                     ScaleData scale = scalesList.get(i);
                     Resolution res = tileSizes.get(i);
-                    tileView.addDetailLevel(scale.getScaleValue(), scale.getScaleCode(),
-                                            res.getWidth(), res.getHeight());
+                    tileView.addDetailLevel(scale.getScaleValue(),
+                                            scale.getScaleCode(),
+                                            res.getWidth(),
+                                            res.getHeight());
                 }
 
                 tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
 
-                tileView.setSize(mapState.currentMapSize.getWidth(), mapState.currentMapSize.getHeight());
-                tileView.defineBounds(0, 0, mapState.originalMapSize.getWidth(), mapState.originalMapSize.getHeight());
+                tileView.setSize(mapState.currentMapSize.getWidth(),
+                                 mapState.currentMapSize.getHeight());
+                tileView.defineBounds(0,
+                                      0,
+                                      mapState.originalMapSize.getWidth(),
+                                      mapState.originalMapSize.getHeight());
 
                 tileView.setTransitionsEnabled(false);
                 tileView.setShouldRecycleBitmaps(false);
@@ -285,7 +264,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void setLayout(final boolean isMapReady) {
         final Semaphore localUISynchronization = new Semaphore(0, true);
 
-        final Boolean currentFloorExists = DataHandler.getInstance().mapForFloorExists(currentFloorNum);
+        final Boolean currentFloorExists = DataHandler.getInstance()
+                                                      .mapForFloorExists(currentFloorNum);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -294,7 +274,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
                 if (isMapReady) {
                     RelativeLayout.LayoutParams lpTileView = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.MATCH_PARENT);
+                                                                                             RelativeLayout.LayoutParams.MATCH_PARENT);
                     rlRootLayout.addView(tileView, lpTileView);
                     tileView.setVisibility(View.INVISIBLE);
                 }
@@ -319,7 +299,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private RelativeLayout addVoidLayout(RelativeLayout parent, Context c) {
         RelativeLayout rl = new RelativeLayout(c);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                                         ViewGroup.LayoutParams.MATCH_PARENT);
 
         parent.addView(rl, lp);
 
@@ -330,15 +311,18 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoading = new TextView(c);
         tvLoading.setText(getResources().getString(R.string.loading_map));
         tvLoading.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
 
         ProgressBar pb = new ProgressBar(c, null, android.R.attr.progressBarStyleLarge);
-        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoading, tvLp);
@@ -353,12 +337,14 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoadingFailed = new TextView(c);
         tvLoadingFailed.setText(getResources().getString(R.string.map_missing));
         tvLoadingFailed.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoadingFailed, tvLp);
@@ -368,7 +354,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ll;
     }
 
-
     // Data updating:
     @Override
     public void update(Observable observable, Object o) {
@@ -376,17 +361,180 @@ public class MapActivity extends AppCompatActivity implements Observer {
         if (notification.equals(DataHandler.Item.EXHIBITS)) {
             Log.i(LOG_TAG, "Received exhibits update notification");
             new MapRefreshExhibits().execute();
-        } else if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
-            experimentDataDownloaded();
         }
     }
 
-    private void experimentDataDownloaded() {
-        mapState = new MapState(this);
-        new StartUpTask().execute();
-        Log.i(LOG_TAG, "starting background download");
-        NetworkHandler.getInstance().startBgDownload();
-        spinner.dismiss();
+    private void clearAllExhibitsOnMap() {
+        final Semaphore localUISynchronization = new Semaphore(0, true);
+
+        Log.i(LOG_TAG, "clearing all exhibits on map");
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for (HotSpot hs : mapState.hotSpotsForFloor) {
+                    tileView.removeHotSpot(hs);
+                }
+                mapState.hotSpotsForFloor.clear();
+
+                mapState.exhibitsOverlay.removeAllViews();
+
+                localUISynchronization.release();
+            }
+        });
+
+        localUISynchronization.acquireUninterruptibly();
+    }
+
+    private void addAllExhibitsToMap(List<Exhibit> exhibits) {
+        Log.i(LOG_TAG, "adding all exhibits to map");
+        AutoResizeTextView artv;
+        RelativeLayout.LayoutParams tvLP;
+        ExhibitSpot es;
+        Integer posX, posY, width, height;
+        Drawable bcgDrawable;
+
+        HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
+
+        final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
+        Integer floorNum = 1;
+        for (Exhibit e : exhibits) {
+            posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
+                                                            mapState.originalMapSize.getWidth(),
+                                                            mapState.currentMapSize.getWidth());
+            posY = ImageHelper.getDimensionWhenScaleApplied(e.getY(),
+                                                            mapState.originalMapSize.getHeight(),
+                                                            mapState.currentMapSize.getHeight());
+            width = ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
+                                                             mapState.originalMapSize.getWidth(),
+                                                             mapState.currentMapSize.getWidth());
+            height = ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
+                                                              mapState.originalMapSize.getHeight(),
+                                                              mapState.currentMapSize.getHeight());
+
+            artv = new AutoResizeTextView(this);
+            artv.setText(e.getName());
+
+            //TODO - hardcoded background color and border color - to change later
+            bcgDrawable = getResources().getDrawable(R.drawable.exhibit_back);
+            artv.setBackground(bcgDrawable);
+
+            artv.setGravity(Gravity.CENTER);
+            artv.setMinTextSize(2f);
+            artv.setTextSize(100f);
+            artv.setSingleLine(false);
+
+            tvLP = new RelativeLayout.LayoutParams(width, height);
+            tvLP.setMargins(posX, posY, 0, 0);
+
+            viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
+
+            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
+            es.setTag(this);
+            es.set(new Rect(posX, posY, posX + width, posY + height));
+            es.setHotSpotTapListener(exhibitsListener);
+            mapState.hotSpotsForFloor.add(es);
+        }
+
+        final Semaphore waitOnUI = new Semaphore(0, true);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < viewArrayList.size(); i++) {
+                    mapState.exhibitsOverlay.addView(viewArrayList.get(i).first,
+                                                     viewArrayList.get(i).second);
+                    tileView.addHotSpot(mapState.hotSpotsForFloor.get(i));
+                }
+
+                layoutLoading.setVisibility(View.INVISIBLE);
+                tileView.setVisibility(View.VISIBLE);
+                waitOnUI.release();
+            }
+        });
+
+        waitOnUI.acquireUninterruptibly();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        openedDialogs--;
+        if (resultCode == RESULT_OK) {
+            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
+
+            Integer id = null;
+            if (requestCode != BREAK_ID) {
+                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
+                if (mapState.lastExhibitTextView != null) {
+                    mapState.lastExhibitTextView.setBackground(getResources().getDrawable(R.drawable.exhibit_back));
+                }
+                mapState.lastExhibitTextView = es.getExhibitTextView();
+                es.getExhibitTextView()
+                  .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
+
+                mapState.exhibitsOverlay.invalidate();
+                id = es.getExhibitId();
+            }
+
+            final RaportEvent event = new RaportEvent(id, duration, selectedActions);
+            new Runnable() {
+                @Override
+                public void run() {
+                    DataHandler.getInstance().addEventToCurrentRaport(event);
+                }
+            }.run();
+        }
+    }
+
+    // Exhibits handling:
+
+    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
+        Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
+        exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
+        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
+        ActivityOptions activityOptions = ActivityOptions.makeScaleUpAnimation(voidLayout,
+                                                                               lastClick.x,
+                                                                               lastClick.y,
+                                                                               1,
+                                                                               1);
+        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
+    }
+
+    private void showAlert() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle(R.string.error);
+        alert.setMessage(R.string.mapIncompleteMessage);
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+        alert.setCancelable(false);
+        alert.show();
+    }
+
+    private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
+                return true;
+            } else {
+                setLayout(false);
+                return false;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean b) {
+            super.onPostExecute(b);
+            if (b) {
+                new MapChangeFloor().execute();
+            }
+        }
     }
 
     // Map changing:
@@ -459,7 +607,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
             localUISynchronization.acquireUninterruptibly();
 
             Integer detailLevels = DataHandler.getInstance().getDetailLevelsCountForFloor(floor);
-            DetailLevelRes biggestResolution = DataHandler.getInstance().getDetailLevelResolution(floor, detailLevels - 1);
+            DetailLevelRes biggestResolution = DataHandler.getInstance()
+                                                          .getDetailLevelResolution(floor,
+                                                                                    detailLevels -
+                                                                                    1);
 
             mapState.currentMapSize = biggestResolution.getScaledRes();
             mapState.originalMapSize = DataHandler.getInstance().getOriginalResolution(floor);
@@ -471,11 +622,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             LinkedList<ScaleData> ll = new LinkedList<>();
             for (int i = 0; i < detailLevels; i++) {
-                DetailLevelRes current = DataHandler.getInstance().getDetailLevelResolution(floor, i);
+                DetailLevelRes current = DataHandler.getInstance()
+                                                    .getDetailLevelResolution(floor, i);
                 if (current == null) {
                     showAlert();
                 }
-                ll.add(new ScaleData((float) current.getScaledRes().getWidth() / biggestResolution.getScaledRes().getWidth(), i));
+                ll.add(new ScaleData((float) current.getScaledRes().getWidth() /
+                                     biggestResolution.getScaledRes().getWidth(), i));
             }
 
             ArrayList<Resolution> tileSizes = new ArrayList<>();
@@ -499,100 +652,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    // Exhibits handling:
-
-    private void clearAllExhibitsOnMap() {
-        final Semaphore localUISynchronization = new Semaphore(0, true);
-
-        Log.i(LOG_TAG, "clearing all exhibits on map");
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (HotSpot hs : mapState.hotSpotsForFloor) {
-                    tileView.removeHotSpot(hs);
-                }
-                mapState.hotSpotsForFloor.clear();
-
-                mapState.exhibitsOverlay.removeAllViews();
-
-                localUISynchronization.release();
-            }
-        });
-
-        localUISynchronization.acquireUninterruptibly();
-    }
-
-    private void addAllExhibitsToMap(List<Exhibit> exhibits) {
-        Log.i(LOG_TAG, "adding all exhibits to map");
-        AutoResizeTextView artv;
-        RelativeLayout.LayoutParams tvLP;
-        ExhibitSpot es;
-        Integer posX, posY, width, height;
-        Drawable bcgDrawable;
-
-        HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
-
-        final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
-        Integer floorNum = 1;
-        for (Exhibit e: exhibits) {
-            posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
-                    mapState.originalMapSize.getWidth(),
-                    mapState.currentMapSize.getWidth());
-            posY = ImageHelper.getDimensionWhenScaleApplied(e.getY(),
-                    mapState.originalMapSize.getHeight(),
-                    mapState.currentMapSize.getHeight());
-            width = ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
-                    mapState.originalMapSize.getWidth(),
-                    mapState.currentMapSize.getWidth());
-            height = ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
-                    mapState.originalMapSize.getHeight(),
-                    mapState.currentMapSize.getHeight());
-
-            artv = new AutoResizeTextView(this);
-            artv.setText(e.getName());
-
-            //TODO - hardcoded background color and border color - to change later
-            bcgDrawable = getResources().getDrawable(R.drawable.exhibit_back);
-            artv.setBackground(bcgDrawable);
-
-            artv.setGravity(Gravity.CENTER);
-            artv.setMinTextSize(2f);
-            artv.setTextSize(100f);
-            artv.setSingleLine(false);
-
-            tvLP = new RelativeLayout.LayoutParams(width, height);
-            tvLP.setMargins(posX, posY, 0, 0);
-
-            viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
-
-            es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
-            es.setTag(this);
-            es.set(new Rect(posX, posY, posX + width, posY + height));
-            es.setHotSpotTapListener(exhibitsListener);
-            mapState.hotSpotsForFloor.add(es);
-        }
-
-        final Semaphore waitOnUI = new Semaphore(0, true);
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < viewArrayList.size(); i++) {
-                    mapState.exhibitsOverlay.addView(viewArrayList.get(i).first, viewArrayList.get(i).second);
-                    tileView.addHotSpot(mapState.hotSpotsForFloor.get(i));
-                }
-
-                layoutLoading.setVisibility(View.INVISIBLE);
-                tileView.setVisibility(View.VISIBLE);
-                waitOnUI.release();
-            }
-        });
-
-        waitOnUI.acquireUninterruptibly();
-    }
-
-
     // Private classes declarations:
     private class ExhibitSpot extends HotSpot {
         private Integer exhibitId;
@@ -600,7 +659,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         private String name;
         private AutoResizeTextView exhibitTextView;
 
-        public ExhibitSpot(Integer exhibitId, Integer listId, String name, AutoResizeTextView exhibitTextView) {
+        public ExhibitSpot(Integer exhibitId,
+                           Integer listId,
+                           String name,
+                           AutoResizeTextView exhibitTextView) {
             super();
             this.listId = listId;
             this.exhibitId = exhibitId;
@@ -626,25 +688,24 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private class MapState {
+        Resolution currentMapSize, originalMapSize;
+        ArrayList<HotSpot> hotSpotsForFloor;
+        RelativeLayout exhibitsOverlay;
+        AutoResizeTextView lastExhibitTextView;
+
         public MapState(MapActivity activity) {
             hotSpotsForFloor = new ArrayList<>();
             exhibitsOverlay = new RelativeLayout(activity);
         }
-
-        Resolution currentMapSize, originalMapSize;
-
-        ArrayList<HotSpot> hotSpotsForFloor;
-        RelativeLayout exhibitsOverlay;
-
-        AutoResizeTextView lastExhibitTextView;
     }
-
 
     // Action listeners:
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
         public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
-            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" + Integer.toString(y));
+            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
+                           Integer.toString(y));
+            Log.i(LOG_TAG, "open dialogs: " + openedDialogs.toString());
             if (openedDialogs == 0) {
                 openedDialogs++;
                 // only if exhibit is clicked first time
@@ -653,59 +714,5 @@ public class MapActivity extends AppCompatActivity implements Observer {
                 showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
             }
         }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                openedDialogs--;
-            }
-        });
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode != BREAK_ID) {
-                ExhibitSpot es = (ExhibitSpot) mapState.hotSpotsForFloor.get(requestCode - 1);
-                if (mapState.lastExhibitTextView != null) {
-                    mapState.lastExhibitTextView
-                            .setBackground(getResources().getDrawable(R.drawable.exhibit_back));
-                }
-                mapState.lastExhibitTextView = es.getExhibitTextView();
-                es.getExhibitTextView()
-                        .setBackground(getResources().getDrawable(R.drawable.exhibit_last_clicked_back));
-
-                mapState.exhibitsOverlay.invalidate();
-
-                ArrayList<String> selectedActions = data.getStringArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
-            } else {
-                // TODO: after break
-            }
-        }
-    }
-
-    private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
-        Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
-        exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
-        exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
-        ActivityOptions activityOptions =
-            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
-        startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
-    }
-
-    private void showAlert() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle(R.string.error);
-        alert.setMessage(R.string.mapIncompleteMessage);
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-        alert.setCancelable(false);
-        alert.show();
     }
 }
