@@ -13,4 +13,7 @@ root.Actions = class Actions extends root.ExperimentData
     @_actionDialog.readonly = readonly
     @_actionDialog.bindData(@_elementsDict[viewId]).show()
 
-  _getViewId: (index) => @_orderedList[index].actionId
+  _getViewId: (index) =>
+    JSON.stringify(
+      id: @_orderedList[index].actionId
+    )
