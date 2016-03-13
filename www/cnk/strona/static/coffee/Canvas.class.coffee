@@ -100,6 +100,7 @@ root.Canvas = class Canvas extends root.View
 
   setFloorLayer: (floor) =>
       @mapData.activeFloor = floor
+      @_map.setView([0, 0], @_minZoom)
       @updateState()
       @
 
@@ -111,7 +112,6 @@ root.Canvas = class Canvas extends root.View
       @_map.addLayer(@_exhibits[floor])
       @changeLabelsVisibility(@_areLabelsVisible)
       @_map.setMaxBounds @_mapBounds[floor]
-      @_map.setView([0, 0], @_minZoom)
       @_map.invalidateSize()
       @
 
