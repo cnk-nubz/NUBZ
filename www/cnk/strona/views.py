@@ -271,7 +271,7 @@ def getActionDialog(request):
     return getDialog(request, "NEW_ACTION_DIALOG")
 
 def getChangeMapDialog(request):
-    floor = request.POST.get("floor")
+    floor = request.GET.get("floor")
     html = render_to_string('dialog/changeMap.html', {'floor': floor})
     return JsonResponse({'html': html.replace("\n", "")})
 
