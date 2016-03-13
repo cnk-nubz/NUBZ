@@ -21,7 +21,6 @@ const std::vector<SetMapImageCommand::ZoomLevelInfo> SetMapImageCommand::zoomLev
 volatile std::atomic_flag SetMapImageCommand::inProgress = ATOMIC_FLAG_INIT;
 
 SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
-    inProgress.clear();
 }
 
 io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
@@ -29,40 +28,44 @@ io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImage
         throw io::InvalidInput{"cannot change two maps at the same time"};
     }
 
-    LOG(INFO) << "Removing current images";
-    removeOldData(input.floor);
-
-    auto imageDirHandler = createFloorDirectory(input.floor);
-    createImageProc(input.filename);
-
     auto mapImage = repository::MapImage{};
-    mapImage.floor = input.floor;
+    try {
+        LOG(INFO) << "Removing current images";
+        removeOldData(input.floor);
 
-    LOG(INFO) << "Creating full size image";
-    mapImage.filename = (boost::format("map_f%1%.jpg") % mapImage.floor).str();
-    auto fullImageHandler =
-        createFullSizeImage(mapImage.filename, &mapImage.width, &mapImage.height);
+        auto imageDirHandler = createFloorDirectory(input.floor);
+        createImageProc(input.filename);
 
-    LOG(INFO) << "Creating zoom levels";
-    mapImage.zoomLevels =
-        createZoomLevels(imageDirHandler.getPath(), std::to_string(mapImage.floor) + "/");
+        mapImage.floor = input.floor;
 
-    LOG(INFO) << "Removing tmp data";
-    boost::filesystem::remove(utils::PathHelper::tmpDir.pathForFile(input.filename));
-    imgProc.reset();
+        LOG(INFO) << "Creating full size image";
+        mapImage.filename = (boost::format("map_f%1%.jpg") % mapImage.floor).str();
+        auto fullImageHandler =
+            createFullSizeImage(mapImage.filename, &mapImage.width, &mapImage.height);
 
-    LOG(INFO) << "Saving data into database";
-    db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto mapImagesRepo = repository::MapImages{session};
+        LOG(INFO) << "Creating zoom levels";
+        mapImage.zoomLevels =
+            createZoomLevels(imageDirHandler.getPath(), std::to_string(mapImage.floor) + "/");
 
-        mapImage.version = countersRepo.increment(repository::CounterType::LastMapVersion);
-        mapImagesRepo.set(mapImage);
-    });
+        LOG(INFO) << "Removing tmp data";
+        boost::filesystem::remove(utils::PathHelper::tmpDir.pathForFile(input.filename));
+        imgProc.reset();
 
-    fullImageHandler.release();
-    imageDirHandler.release();
+        LOG(INFO) << "Saving data into database";
+        db.execute([&](db::DatabaseSession &session) {
+            auto countersRepo = repository::Counters{session};
+            auto mapImagesRepo = repository::MapImages{session};
 
+            mapImage.version = countersRepo.increment(repository::CounterType::LastMapVersion);
+            mapImagesRepo.set(mapImage);
+        });
+
+        fullImageHandler.release();
+        imageDirHandler.release();
+    } catch (...) {
+        inProgress.clear();
+        throw;
+    }
     inProgress.clear();
 
     return io::output::MapImage{mapImage};

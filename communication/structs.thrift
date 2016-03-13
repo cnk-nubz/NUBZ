@@ -218,6 +218,13 @@ struct QuestionsList {
 	4: list<SortQuestion> sortQuestions,
 }
 
+struct QuestionsIdsList {
+	1: list<QuestionType> questionsOrder,
+	2: list<i32> simpleQuestions,
+	3: list<i32> multipleChoiceQuestions,
+	4: list<i32> sortQuestions,
+}
+
 
 /////////////////////////////////////////////////
 // Experiment
@@ -234,6 +241,14 @@ struct Experiment {
 
 struct CurrentExperimentResponse {
 	1: optional Experiment experiment,
+}
+
+struct CreateExperimentRequest {
+	1: string name,
+	2: QuestionsIdsList surveyBefore,
+	3: list<i32> exhibitActions,
+	4: list<i32> breakActions,
+	5: QuestionsIdsList surveyAfter,
 }
 
 

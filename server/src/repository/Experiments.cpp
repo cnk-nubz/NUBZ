@@ -101,8 +101,8 @@ void Experiments::insert(Experiments::LazyExperiment *experiment) {
 }
 
 void Experiments::checkActions(const Experiments::LazyExperiment &experiment) {
-    auto existing =
-        std::unordered_set<std::int32_t>{experiment.actions.begin(), experiment.actions.end()};
+    auto allActionsIds = Actions{session}.getAllIDs();
+    auto existing = std::unordered_set<std::int32_t>{allActionsIds.begin(), allActionsIds.end()};
 
     checkIds(existing, experiment.actions);
     checkIds(existing, experiment.breakActions);

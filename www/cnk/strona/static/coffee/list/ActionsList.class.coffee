@@ -2,4 +2,6 @@ root = exports ? this
 root.ActionsList = class ActionsList extends root.ListView
   constructor: ->
     super
-  generateId: (element) => "#{element.id}"
+
+  getAllElements: =>
+    (JSON.parse(el).id for el in @_elementsOnList)
