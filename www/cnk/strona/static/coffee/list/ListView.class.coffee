@@ -47,3 +47,6 @@ root.ListView = class ListView extends root.View
 
   isElementOnList: (viewId) =>
     @_elementsOnList[viewId] is true
+
+  getAllElements: =>
+    @_getOriginalId(el) for el, status of @_elementsOnList when status is true

@@ -126,3 +126,13 @@ class ThriftCommunicator:
 		def action(client):
 			return client.getAllActions()
 		return self._perform_in_single_connection([action])[0]
+
+	def createExperiment(self, request):
+		def action(client):
+			sb = request['surveyBefore']
+			sa = request['surveyAfter']
+			surveyBefore = QuestionsIdsList(sb['questionsOrder'], sb['simpleQuestions'], sb['multipleChoiceQuestions'], sb['sortQuestions'])
+			surveyAfter = QuestionsIdsList(sa['questionsOrder'], sa['simpleQuestions'], sa['multipleChoiceQuestions'], sa['sortQuestions'])
+			msg = CreateExperimentRequest(request['name'], surveyBefore, request['exhibitActions'], request['breakActions'], surveyAfter)
+			client.createExperiment(msg)
+		return self._perform_in_single_connection([action])[0]

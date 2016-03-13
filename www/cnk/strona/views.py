@@ -453,9 +453,15 @@ def createAction(request):
 
 def createExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
-    # TODO
-    result = {
-        'success': False,
-        'message': "TODO"
-    }
+    try:
+        thriftCommunicator.createExperiment(data)
+        result = {
+            'success': True,
+            'message': 'Zapisano'
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': "Wystapil nieoczekiwany blad. Sprobuj ponownie za chwile. ({})".format(str(ex))
+        }
     return JsonResponse(result)
