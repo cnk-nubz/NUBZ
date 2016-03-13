@@ -133,6 +133,11 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         return bmp;
     }
 
+    private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
+        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" +
+               x.toString() + "_" + y.toString();
+    }
+
     public Boolean mapForFloorExists(Integer floor) {
         return floorInfos.get(floor).getDetailLevelsCount() > 0;
     }
@@ -158,24 +163,6 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         return size != null ? size.getTileSize() : null;
     }
 
-    public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = Consts.DATA_PATH + MAP_DIRECTORY;
-        return dir + getTileFilename(x, y, floorNo, detailLevel);
-    }
-
-    public String getTemporaryPathForTile(Integer floorNo,
-                                          Integer detailLevel,
-                                          Integer x,
-                                          Integer y) {
-        String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
-        return dir + getTileFilename(x, y, floorNo, detailLevel);
-    }
-
-    private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
-        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" +
-               x.toString() + "_" + y.toString();
-    }
-
     private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
         if (floor == null) {
             return false;
@@ -196,6 +183,21 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         }
         return true;
     }
+
+    public String getTemporaryPathForTile(Integer floorNo,
+                                          Integer detailLevel,
+                                          Integer x,
+                                          Integer y) {
+        String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
+    }
+
+    public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
+        String dir = Consts.DATA_PATH + MAP_DIRECTORY;
+        return dir + getTileFilename(x, y, floorNo, detailLevel);
+    }
+
+
 
     public interface MapUpdateAction {
         void doOnUpdate();

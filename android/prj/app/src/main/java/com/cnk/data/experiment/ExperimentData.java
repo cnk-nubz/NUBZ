@@ -46,27 +46,36 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         public void run() {
             while(raport.getState() != Raport.State.SENT) {
                 raportLock.lock();
-                String dir = Consts.DATA_PATH + RAPORT_DIRECTORY;
-                new File(dir).mkdirs();
-                String tmpFile = dir + TMP + raport.getId().toString();
-                try {
-                    FileHandler.getInstance().saveSerializable(raport, tmpFile);
-                    String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
-                    Log.i(LOG_TAG, "Saving raport to file " + realFile);
-                    FileHandler.getInstance().renameFile(tmpFile, realFile);
-                } catch (IOException e) {
-                    Log.i(LOG_TAG, "Saving raport failed");
+                if (!saveRaport()) {
                     raportLock.unlock();
-                    Util.waitDelay(15 * Consts.SECOND);
                     continue;
+                }
+                if (raport.getState() == Raport.State.READY_TO_SEND) {
+                    raportLock.unlock();
+                    break;
                 }
                 raportLock.unlock();
                 Util.waitDelay(15 * Consts.SECOND);
-                if (raport.getState() == Raport.State.READY_TO_SEND) {
-                    break;
-                }
             }
             Log.i(LOG_TAG, "Saving raport stopped");
+        }
+
+        private boolean saveRaport() {
+            String dir = Consts.DATA_PATH + RAPORT_DIRECTORY;
+            new File(dir).mkdirs();
+            String tmpFile = dir + TMP + raport.getId().toString();
+            try {
+                FileHandler.getInstance().saveSerializable(raport, tmpFile);
+                String realFile = RAPORT_FILE_PREFIX + raport.getId().toString();
+                Log.i(LOG_TAG, "Saving raport to file " + realFile);
+                FileHandler.getInstance().renameFile(tmpFile, realFile);
+            } catch (IOException e) {
+                Log.i(LOG_TAG, "Saving raport failed");
+                raportLock.unlock();
+                Util.waitDelay(15 * Consts.SECOND);
+                return false;
+            }
+            return true;
         }
     }
 
@@ -81,6 +90,15 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         return instance;
     }
 
+    public void setDbHelper(DatabaseHelper dbHelper) {
+        this.dbHelper = dbHelper;
+    }
+
+    public void setNewExperimentData(Experiment newData) {
+        experiment = newData;
+        notifyObservers();
+    }
+
     public void notifyObservers() {
         for (ExperimentUpdateAction action : observers.values()) {
             action.doOnUpdate();
@@ -91,15 +109,6 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
             ExperimentUpdateAction action = entry.getValue();
             activity.runOnUiThread(action::doOnUpdate);
         }
-    }
-
-    public void setDbHelper(DatabaseHelper dbHelper) {
-        this.dbHelper = dbHelper;
-    }
-
-    public void setNewExperimentData(Experiment newData) {
-        experiment = newData;
-        notifyObservers();
     }
 
     public Survey getSurvey(@NonNull Survey.SurveyType type) {
