@@ -74,27 +74,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
         startActivity(i);
     }
 
-    public void mapDownloaded() {
-        if (!dataLoaded) {
-            try {
-                MapData.getInstance().loadDbData();
-                ExhibitsData.getInstance().loadDbData();
-                ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
-                dataLoaded = true;
-            } catch (DatabaseLoadException e) {
-                Looper.prepare();
-                spinner.dismiss();
-                MapData.getInstance().deleteObserver(this);
-                e.printStackTrace();
-                Message msg = uiHandler.obtainMessage(SHOW_ALERT);
-                msg.sendToTarget();
-            }
-        }
-        spinner.dismiss();
-        MapData.getInstance().deleteObserver(this);
-    }
-
     public void showAlert() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(R.string.error);
@@ -119,6 +98,27 @@ public class StartScreen extends AppCompatActivity implements Observer {
         MapData.getInstance().addObserver(this, this::mapDownloaded);
         setSpinner();
         NetworkHandler.getInstance().downloadMap();
+    }
+
+    private void mapDownloaded() {
+        if (!dataLoaded) {
+            try {
+                MapData.getInstance().loadDbData();
+                ExhibitsData.getInstance().loadDbData();
+                ReadyRaports.getInstance().loadDbData();
+                NetworkHandler.getInstance().uploadRaports();
+                dataLoaded = true;
+            } catch (DatabaseLoadException e) {
+                Looper.prepare();
+                spinner.dismiss();
+                MapData.getInstance().deleteObserver(this);
+                e.printStackTrace();
+                Message msg = uiHandler.obtainMessage(SHOW_ALERT);
+                msg.sendToTarget();
+            }
+        }
+        spinner.dismiss();
+        MapData.getInstance().deleteObserver(this);
     }
 
     private void setSpinner() {

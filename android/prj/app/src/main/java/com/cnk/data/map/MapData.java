@@ -11,27 +11,49 @@ import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
-import com.cnk.notificators.MapObservable;
+import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class MapData extends MapObservable {
+public class MapData {
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
     private static MapData instance;
-    Integer mapVersion;
+    private Integer mapVersion;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
+    private Map<Observer, MapUpdateAction> observers;
+
+    public interface MapUpdateAction {
+        void doOnUpdate();
+    }
+
+    public void addObserver(Observer o, MapUpdateAction action) {
+        observers.put(o, action);
+    }
+
+    public void deleteObserver(Observer o) {
+        observers.remove(o);
+    }
+
+    public void notifyObservers() {
+        for (Map.Entry<Observer, MapUpdateAction> entry : observers.entrySet()) {
+            entry.getValue().doOnUpdate();
+        }
+    }
 
     private MapData() {
         floorInfos = new ArrayList<>();
+        observers = new HashMap<>();
         mapVersion = null;
     }
 

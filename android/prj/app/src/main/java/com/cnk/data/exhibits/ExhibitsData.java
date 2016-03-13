@@ -4,7 +4,7 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
-import com.cnk.notificators.ExhibitObservable;
+import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
@@ -12,14 +12,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ExhibitsData extends ExhibitObservable {
+public class ExhibitsData {
     private static ExhibitsData instance;
-    Integer exhibitsVersion;
+    private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
     private List<FloorExhibitsInfo> floorInfos;
+    private Map<Observer, ExhibitsUpdateAction> observers;
+
+    public interface ExhibitsUpdateAction {
+        void doOnUpdate(List<Exhibit> changedExhibits);
+    }
+
+    public void addObserver(Observer o, ExhibitsUpdateAction action) {
+        observers.put(o, action);
+    }
+
+    public void deleteObserver(Observer o) {
+        observers.remove(o);
+    }
+
+    public void notifyObservers(List<Exhibit> changedExhibits) {
+        for (Map.Entry<Observer, ExhibitsUpdateAction> entry : observers.entrySet()) {
+            entry.getValue().doOnUpdate(changedExhibits);
+        }
+    }
 
     private ExhibitsData() {
         floorInfos = new ArrayList<>();
+        observers = new HashMap<>();
         exhibitsVersion = null;
     }
 

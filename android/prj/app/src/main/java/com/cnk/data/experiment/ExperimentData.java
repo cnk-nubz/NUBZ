@@ -10,16 +10,18 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
-import com.cnk.notificators.ExperimentObservable;
+import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ExperimentData extends ExperimentObservable {
+public class ExperimentData {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
@@ -29,8 +31,28 @@ public class ExperimentData extends ExperimentObservable {
     private DatabaseHelper dbHelper;
     private Raport currentRaport;
     private Experiment experiment;
+    public interface ExperimentUpdateAction {
+        void doOnUpdate();
+    }
+
+    private Map<Observer, ExperimentUpdateAction> observers;
+
+    public void addObserver(Observer o, ExperimentUpdateAction action) {
+        observers.put(o, action);
+    }
+
+    public void deleteObserver(Observer o) {
+        observers.remove(o);
+    }
+
+    public void notifyObservers() {
+        for (Map.Entry<Observer, ExperimentUpdateAction> entry : observers.entrySet()) {
+            entry.getValue().doOnUpdate();
+        }
+    }
 
     private ExperimentData() {
+        observers = new HashMap<>();
         raportLock = new ReentrantLock(true);
     }
 

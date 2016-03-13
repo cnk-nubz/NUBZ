@@ -88,6 +88,11 @@ public class MapActivity extends AppCompatActivity implements Observer {
         NetworkHandler.getInstance().startBgDownload();
     }
 
+    private void onExhibitsChange(List<Exhibit> changedExhibits) {
+        Log.i(LOG_TAG, "Received exhibits update notification");
+        new MapRefreshExhibits().execute();
+    }
+
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
         openedDialogs++;
@@ -360,11 +365,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         parent.addView(ll, lp);
 
         return ll;
-    }
-
-    private void onExhibitsChange(List<Exhibit> changedExhibits) {
-        Log.i(LOG_TAG, "Received exhibits update notification");
-        new MapRefreshExhibits().execute();
     }
 
     private void clearAllExhibitsOnMap() {
