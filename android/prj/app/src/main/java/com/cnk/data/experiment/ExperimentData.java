@@ -24,6 +24,8 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import io.realm.processor.Utils;
+
 public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAction> {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
@@ -48,6 +50,7 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
                 raportLock.lock();
                 if (!saveRaport()) {
                     raportLock.unlock();
+                    Util.waitDelay(15 * Consts.SECOND);
                     continue;
                 }
                 if (raport.getState() == Raport.State.READY_TO_SEND) {
@@ -71,8 +74,6 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
                 FileHandler.getInstance().renameFile(tmpFile, realFile);
             } catch (IOException e) {
                 Log.i(LOG_TAG, "Saving raport failed");
-                raportLock.unlock();
-                Util.waitDelay(15 * Consts.SECOND);
                 return false;
             }
             return true;
