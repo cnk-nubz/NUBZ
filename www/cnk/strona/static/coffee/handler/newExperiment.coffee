@@ -184,29 +184,32 @@ class Handlers
 
   _setSaveExperimentHandler: =>
     jQuery(@_DOM.saveExperiment).click( =>
-      experimentTitle = jQuery(@_DOM.experimentTitle)
-      titleText = experimentTitle.val()
-      experimentTitle.val(jQuery.trim(titleText))
-      if not titleText.match root.inputRegex
-        experimentTitle.tooltip('show')
-        experimentTitle.parent().addClass("has-error")
-        experimentTitle.one('focus', ->
-          jQuery(this).parent().removeClass("has-error")
-          jQuery(this).tooltip('destroy')
-        )
-        jQuery("#experiment").scrollTop(0)
-        return
-      @_saveExperimentRequest()
+      if @_isExperimentReady()
+        @_saveExperimentRequest()
     )
+
+  _isExperimentReady: =>
+    experimentTitle = jQuery(@_DOM.experimentTitle)
+    titleText = experimentTitle.val()
+    experimentTitle.val(jQuery.trim(titleText))
+    if not titleText.match root.inputRegex
+      experimentTitle.tooltip('show')
+      experimentTitle.parent().addClass("has-error")
+      experimentTitle.one('focus', ->
+        jQuery(this).parent().removeClass("has-error")
+        jQuery(this).tooltip('destroy')
+      )
+      jQuery("#experiment").scrollTop(0)
+      return false
+    true
 
   _saveExperimentRequest: =>
     dataToSend = {
-      ###
-      questionsBefore: questionsBefore
-      questionsAfter: questionsAfter
-      experimentActions: experimentActions
-      breakActions: breakActions
-      ###
+      name: jQuery(@_DOM.experimentTitle).val()
+      surveyBefore: @_questionsBeforeList.getAllElements()
+      exhibitActions: @_experimentActionsList.getAllElements()
+      breakActions: @_breakActionsList.getAllElements()
+      surveyAfter: @_questionsAfterList.getAllElements()
     }
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -220,6 +223,12 @@ class Handlers
       success: (data) ->
         if not data.success
           @_displayError(data.message)
+        else
+          BootstrapDialog.show(
+            message: data.message
+            title: 'TODO: przekierowanie na stronę z wszystkimi badaniami'
+            type: BootstrapDialog.TYPE_SUCCESS
+          )
     )
     return
 

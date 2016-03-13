@@ -7,6 +7,7 @@
 #include "command/ReserveIdForReportCommand.h"
 #include "command/SaveRawReportCommand.h"
 
+#include "command/CreateExperimentCommand.h"
 #include "command/GetCurrentExperimentCommand.h"
 
 #include "command/CreateExhibitCommand.h"

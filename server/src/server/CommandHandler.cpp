@@ -139,6 +139,18 @@ void CommandHandler::getCurrentExperiment(communication::CurrentExperimentRespon
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::createExperiment(const communication::CreateExperimentRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() {
+        auto input = io::input::CreateExperimentRequest{request};
+        command::CreateExperimentCommand{db}(input);
+    });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {

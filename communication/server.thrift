@@ -49,6 +49,9 @@ service Server {
 	structs.CurrentExperimentResponse getCurrentExperiment()
 		throws (1: structs.InternalError err),
 
+	void createExperiment(1: structs.CreateExperimentRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Reports

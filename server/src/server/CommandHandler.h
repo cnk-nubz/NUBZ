@@ -38,8 +38,9 @@ public:
     virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
 
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
-    virtual int32_t getIdForNewReport() override;
+    virtual void createExperiment(const communication::CreateExperimentRequest &request) override;
 
+    virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
 
     virtual void createAction(communication::Action &response,
