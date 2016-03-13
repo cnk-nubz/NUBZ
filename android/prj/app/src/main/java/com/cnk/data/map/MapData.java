@@ -11,6 +11,7 @@ import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.MapObservable;
 import com.cnk.utilities.Consts;
 
 import java.io.FileNotFoundException;
@@ -18,9 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
 
-public class MapData extends Observable {
+public class MapData extends MapObservable {
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
@@ -88,14 +88,12 @@ public class MapData extends Observable {
         Log.i(LOG_TAG, "Files saved, saving to db");
         dbHelper.setMaps(version, floor0, floor1);
         loadDbData();
-        setChanged();
         notifyMapUpdated();
 
         Log.i(LOG_TAG, "New maps set");
     }
 
     public void notifyMapUpdated() {
-        setChanged();
         notifyObservers();
     }
 

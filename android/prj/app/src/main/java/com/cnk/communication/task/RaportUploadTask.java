@@ -9,9 +9,9 @@ import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.SimpleQuestionAnswer;
 import com.cnk.communication.thrift.SortQuestionAnswer;
 import com.cnk.communication.thrift.SurveyAnswers;
-import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.raport.Raport;
 import com.cnk.data.experiment.raport.RaportEvent;
+import com.cnk.data.raports.ReadyRaports;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -31,20 +31,19 @@ public class RaportUploadTask extends ServerTask {
 
     @Override
     protected void performInSession(Server.Client client) throws TException {
-        Map<Raport, Integer> toSend = ExperimentData.getInstance().getAllReadyRaports();
+        Map<Raport, Integer> toSend = ReadyRaports.getInstance().getAllReadyRaports();
         for (Map.Entry<Raport, Integer> entry : toSend.entrySet()) {
             Raport raport = entry.getKey();
             Integer serverId = entry.getValue();
             if (serverId == null) {
                 serverId = client.getIdForNewReport();
-                ExperimentData.getInstance().setServerId(raport, serverId);
+                ReadyRaports.getInstance().setServerId(raport, serverId);
             }
             Log.i(LOG_TAG, "Sending raport with id " + raport.getId().toString());
             RawReport thriftRaport = translateToThrift(raport, serverId);
             client.saveReport(thriftRaport);
             Log.i(LOG_TAG, "Raport sent");
-            ExperimentData.getInstance().markRaportAsSent(raport);
-            toSend.remove(entry.getKey());
+            ReadyRaports.getInstance().markRaportAsSent(raport);
         }
     }
 

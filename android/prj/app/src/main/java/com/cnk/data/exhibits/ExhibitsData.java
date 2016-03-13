@@ -4,15 +4,15 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.ExhibitObservable;
 import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 
-public class ExhibitsData extends Observable {
+public class ExhibitsData extends ExhibitObservable {
     private static ExhibitsData instance;
     Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
@@ -64,8 +64,7 @@ public class ExhibitsData extends Observable {
         dbHelper.addOrUpdateExhibits(version, exhibits);
         exhibitsVersion = version;
         updateExhibits(exhibits);
-        setChanged();
-        notifyObservers();
+        notifyObservers(exhibits);
     }
 
     private void updateExhibits(List<Exhibit> newExhibits) {

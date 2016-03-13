@@ -17,11 +17,10 @@ import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.map.MapData;
+import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.exceptions.DatabaseLoadException;
-
-import java.util.Observable;
-import java.util.Observer;
+import com.cnk.notificators.Observer;
 
 public class StartScreen extends AppCompatActivity implements Observer {
     private static final int SHOW_ALERT = 1;
@@ -39,11 +38,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
         ExperimentData.getInstance().setDbHelper(dbHelper);
         MapData.getInstance().setDbHelper(dbHelper);
         ExhibitsData.getInstance().setDbHelper(dbHelper);
+        ReadyRaports.getInstance().setDbHelper(dbHelper);
         try {
             if (!dataLoaded) {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
-                ExperimentData.getInstance().loadDbData();
+                ReadyRaports.getInstance().loadDbData();
                 NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             }
@@ -51,6 +51,30 @@ public class StartScreen extends AppCompatActivity implements Observer {
             e.printStackTrace();
             downloadMap();
         }
+    }
+
+    private void tryMapDownload() {
+        if (!dataLoaded) {
+            try {
+                MapData.getInstance().loadDbData();
+                ExhibitsData.getInstance().loadDbData();
+                ReadyRaports.getInstance().loadDbData();
+                NetworkHandler.getInstance().uploadRaports();
+                dataLoaded = true;
+            } catch (DatabaseLoadException e) {
+                Looper.prepare();
+                spinner.dismiss();
+                MapData.getInstance().deleteObserver(this);
+                e.printStackTrace();
+                Message msg = uiHandler.obtainMessage(SHOW_ALERT);
+                msg.sendToTarget();
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+
     }
 
     public void mapClick(View view) {
@@ -69,12 +93,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
         startActivity(i);
     }
 
-    public void update(Observable obs, Object obj) {
+    public void mapDownloaded() {
         if (!dataLoaded) {
             try {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
-                ExperimentData.getInstance().loadDbData();
+                ReadyRaports.getInstance().loadDbData();
                 NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
@@ -111,7 +135,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        MapData.getInstance().addObserver(this);
+        MapData.getInstance().addObserver(this, this::mapDownloaded);
         setSpinner();
         NetworkHandler.getInstance().downloadMap();
     }

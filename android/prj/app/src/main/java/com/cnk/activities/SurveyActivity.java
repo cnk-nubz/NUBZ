@@ -180,6 +180,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             if (next == null) {
                 finish();
                 ExperimentData.getInstance().markRaportAsReady();
+                ExperimentData.getInstance().finishExperiment();
                 NetworkHandler.getInstance().uploadRaports();
             } else {
                 Intent i = new Intent(getApplicationContext(), next);

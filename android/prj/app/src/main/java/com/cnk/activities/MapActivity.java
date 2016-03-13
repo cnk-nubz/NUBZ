@@ -31,12 +31,13 @@ import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.experiment.raport.RaportEvent;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
-import com.cnk.data.experiment.raport.RaportEvent;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.notificators.Observer;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.ui.ImageHelper;
 import com.cnk.ui.MapBitmapProvider;
@@ -49,7 +50,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
@@ -80,7 +80,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
         Log.i(LOG_TAG, "adding to ExhibitsData observers list");
-        ExhibitsData.getInstance().addObserver(this);
+        ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
         setViews();
         setActionBar();
         mapState = new MapState(this);
@@ -348,9 +348,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ll;
     }
 
-    // Data updating:
-    @Override
-    public void update(Observable observable, Object o) {
+    private void onExhibitsChange(List<Exhibit> changedExhibits) {
         Log.i(LOG_TAG, "Received exhibits update notification");
         new MapRefreshExhibits().execute();
     }
