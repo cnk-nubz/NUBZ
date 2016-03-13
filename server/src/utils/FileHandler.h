@@ -9,15 +9,15 @@ namespace utils {
 
 class FileHandler {
 public:
-    FileHandler(const std::string &path);
-    FileHandler(const boost::filesystem::path &path);
+    explicit FileHandler(const std::string &path);
+    explicit FileHandler(const boost::filesystem::path &path);
     ~FileHandler();
     FileHandler(const FileHandler &) = delete;
     FileHandler(FileHandler &&);
     FileHandler &operator=(const FileHandler &) = delete;
     FileHandler &operator=(FileHandler &&) = delete;
 
-    const std::string &getPath() const noexcept;
+    const boost::filesystem::path &getPath() const noexcept;
     void release() noexcept;
 
 private:

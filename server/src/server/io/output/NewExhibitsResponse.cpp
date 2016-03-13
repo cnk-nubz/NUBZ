@@ -5,7 +5,7 @@ namespace io {
 namespace output {
 
 communication::NewExhibitsResponse NewExhibitsResponse::toThrift() const {
-    communication::NewExhibitsResponse res;
+    auto res = communication::NewExhibitsResponse{};
     res.version = version;
     for (auto &ex : exhibits) {
         res.exhibits[ex.first] = ex.second.toThrift();

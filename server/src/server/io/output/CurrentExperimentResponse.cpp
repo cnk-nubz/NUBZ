@@ -5,7 +5,7 @@ namespace io {
 namespace output {
 
 communication::CurrentExperimentResponse CurrentExperimentResponse::toThrift() const {
-    communication::CurrentExperimentResponse res;
+    auto res = communication::CurrentExperimentResponse{};
     if (experiment) {
         res.__set_experiment(experiment.value().toThrift());
     }

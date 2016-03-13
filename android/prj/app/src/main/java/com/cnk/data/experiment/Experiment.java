@@ -1,5 +1,7 @@
 package com.cnk.data.experiment;
 
+import android.support.annotation.NonNull;
+
 import java.util.List;
 
 public class Experiment {
@@ -7,12 +9,21 @@ public class Experiment {
     private String name;
     private List<Action> exhibitActions;
     private List<Action> breakActions;
+    private Survey preSurvey;
+    private Survey postSurvey;
 
-    public Experiment(Integer id, String name, List<Action> exhibitActions, List<Action> breakActions) {
+    public Experiment(Integer id,
+                      String name,
+                      List<Action> exhibitActions,
+                      List<Action> breakActions,
+                      Survey preSurvey,
+                      Survey postSurvey) {
         this.id = id;
         this.name = name;
         this.exhibitActions = exhibitActions;
         this.breakActions = breakActions;
+        this.preSurvey = preSurvey;
+        this.postSurvey = postSurvey;
     }
 
     public Integer getId() {
@@ -29,5 +40,16 @@ public class Experiment {
 
     public List<Action> getBreakActions() {
         return breakActions;
+    }
+
+    public Survey getSurvey(@NonNull Survey.SurveyType type) {
+        switch (type) {
+            case BEFORE:
+                return preSurvey;
+            case AFTER:
+                return postSurvey;
+            default:
+                throw new RuntimeException();
+        }
     }
 }

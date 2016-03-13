@@ -1,6 +1,8 @@
 #ifndef UTILS__LOG__H
 #define UTILS__LOG__H
 
+#include <iostream>
+
 namespace communication {
 template <class T>
 std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec) {

@@ -28,18 +28,14 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     private Integer layout;
     private SelectViewItemIds viewIds;
 
-    public SelectListAdapter(List<T> options,
-                             Boolean singleAnswer,
-                             Context context
-    ) {
+    public SelectListAdapter(List<T> options, Boolean singleAnswer, Context context) {
         this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectViewItemIds());
     }
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context,
-                             Integer layout
-    ) {
+                             Integer layout) {
         this(options, singleAnswer, context, layout, new SelectViewItemIds());
     }
 
@@ -47,8 +43,7 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
                              Boolean singleAnswer,
                              Context context,
                              Integer layout,
-                             SelectViewItemIds viewIds
-    ) {
+                             SelectViewItemIds viewIds) {
         this.options = options;
         this.context = context;
         this.optionChecked = new Boolean[options.size()];
@@ -59,7 +54,6 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
         activeView = null;
         Arrays.fill(optionChecked, false);
     }
-
 
 
     @Override

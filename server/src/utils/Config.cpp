@@ -1,26 +1,26 @@
-#include <fstream>
 #include <cstdint>
+#include <fstream>
 
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include "Config.h"
 
 namespace utils {
 
-const std::string Config::argServerPort = "serverPort";
+const char *Config::argServerPort = "serverPort";
 
-const std::string Config::argDatabaseHost = "databaseHost";
-const std::string Config::argDatabaseUser = "databaseUser";
-const std::string Config::argDatabaseName = "databaseName";
-const std::string Config::argDatabasePort = "databasePort";
+const char *Config::argDatabaseHost = "databaseHost";
+const char *Config::argDatabaseUser = "databaseUser";
+const char *Config::argDatabaseName = "databaseName";
+const char *Config::argDatabasePort = "databasePort";
 
-const std::string Config::argUrlPrefixForMapImage = "urlPrefixForMapImage";
-const std::string Config::argUrlPrefixForMapImageTiles = "urlPrefixForMapImageTiles";
+const char *Config::argUrlPrefixForMapImage = "urlPrefixForMapImage";
+const char *Config::argUrlPrefixForMapImageTiles = "urlPrefixForMapImageTiles";
 
-const std::string Config::argPublicFolderPath = "publicFolderPath";
-const std::string Config::argTmpFolderPath = "tmpFolderPath";
-const std::string Config::argMapTilesFolderPath = "mapTilesFolderPath";
+const char *Config::argPublicFolderPath = "publicFolderPath";
+const char *Config::argTmpFolderPath = "tmpFolderPath";
+const char *Config::argMapTilesFolderPath = "mapTilesFolderPath";
 
 Config::Config(const std::string &configPath) {
     loadFromFile(configPath);
@@ -30,22 +30,20 @@ void Config::loadFromFile(const std::string &path) {
     namespace po = boost::program_options;
 
     po::options_description opts("Config file");
-    opts.add_options()(argServerPort.c_str(), po::value(&serverPort)->default_value(9090));
+    opts.add_options()(argServerPort, po::value(&serverPort)->default_value(9090));
 
-    opts.add_options()(argDatabaseHost.c_str(),
-                       po::value(&databaseHost)->default_value("localhost"));
-    opts.add_options()(argDatabaseUser.c_str(), po::value(&databaseUser)->required());
-    opts.add_options()(argDatabaseName.c_str(), po::value(&databaseName)->required());
-    opts.add_options()(argDatabasePort.c_str(), po::value(&databasePort)->default_value(5432));
+    opts.add_options()(argDatabaseHost, po::value(&databaseHost)->default_value("localhost"));
+    opts.add_options()(argDatabaseUser, po::value(&databaseUser)->required());
+    opts.add_options()(argDatabaseName, po::value(&databaseName)->required());
+    opts.add_options()(argDatabasePort, po::value(&databasePort)->default_value(5432));
 
-    opts.add_options()(argUrlPrefixForMapImage.c_str(),
-                       po::value(&urlPrefixForMapImage)->required());
-    opts.add_options()(argUrlPrefixForMapImageTiles.c_str(),
+    opts.add_options()(argUrlPrefixForMapImage, po::value(&urlPrefixForMapImage)->required());
+    opts.add_options()(argUrlPrefixForMapImageTiles,
                        po::value(&urlPrefixForMapImageTiles)->required());
 
-    opts.add_options()(argPublicFolderPath.c_str(), po::value(&publicFolderPath)->required());
-    opts.add_options()(argTmpFolderPath.c_str(), po::value(&tmpFolderPath)->required());
-    opts.add_options()(argMapTilesFolderPath.c_str(), po::value(&mapTilesFolderPath)->required());
+    opts.add_options()(argPublicFolderPath, po::value(&publicFolderPath)->required());
+    opts.add_options()(argTmpFolderPath, po::value(&tmpFolderPath)->required());
+    opts.add_options()(argMapTilesFolderPath, po::value(&mapTilesFolderPath)->required());
 
     po::variables_map vm;
 

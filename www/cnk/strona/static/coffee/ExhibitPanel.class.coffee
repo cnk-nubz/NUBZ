@@ -15,18 +15,12 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @_init()
 
   _init: =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    jQuery.getJSON('getHTML?name=exhibitPanel', null, (data) =>
+      jQuery(data.html).appendTo(@_containerId)
+      @_setExhibitPanelHandlers()
+      @_getExhibitElementHTML()
     )
-    jQuery.ajax(
-      type: 'POST'
-      context: this
-      url: '/getExhibitPanel/'
-      success: (data) =>
-        jQuery(data).appendTo(@_containerId)
-        @_setExhibitPanelHandlers()
-        @_getExhibitElementHTML()
-    )
+    return
 
   _setExhibitPanelHandlers: =>
     instance = this
@@ -50,16 +44,9 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     )
 
   _getExhibitElementHTML: =>
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      context: this
-      url: '/getExhibitListElement/'
-      success: (data) ->
-        @_exhibitElementHTML = data
-        @addExhibits((id for id, _ of @mapData.exhibits))
+    jQuery.getJSON('getHTML?name=exhibitListElement', null, (data) =>
+      @_exhibitElementHTML = data.html
+      @addExhibits((id for id, _ of @mapData.exhibits))
     )
     return
 

@@ -12,7 +12,13 @@ public class Exhibit {
     public Exhibit() {
     }
 
-    public Exhibit(Integer id, Integer x, Integer y, Integer width, Integer height, Integer floor, String name) {
+    public Exhibit(Integer id,
+                   Integer x,
+                   Integer y,
+                   Integer width,
+                   Integer height,
+                   Integer floor,
+                   String name) {
         this.id = id;
         this.x = x;
         this.y = y;

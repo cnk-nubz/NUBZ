@@ -7,6 +7,8 @@
 
 #include <db/Database.h>
 
+#include <repository/InvalidData.h>
+
 #include <communication/Server.h>
 
 #include "io/InvalidInput.h"
@@ -25,9 +27,8 @@ public:
 
     virtual void getNewMapImages(communication::NewMapImagesResponse &response,
                                  const communication::NewMapImagesRequest &request) override;
-    virtual void getMapImageTiles(communication::MapImageTilesResponse &response,
-                                  const communication::MapImageTilesRequest &request) override;
-    virtual void setMapImage(const communication::SetMapImageRequest &request) override;
+    virtual void setMapImage(communication::MapImage &response,
+                             const communication::SetMapImageRequest &request) override;
 
     virtual void getNewExhibits(communication::NewExhibitsResponse &response,
                                 const communication::NewExhibitsRequest &request) override;
@@ -68,8 +69,6 @@ private:
     db::Database &db;
     apache::thrift::server::TServer *srv;
 
-    std::mutex setMapLock;
-
     template <class F>
     std::result_of_t<F()> withExceptionTranslation(F &&f);
 };
@@ -81,6 +80,9 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
     } catch (server::io::InvalidInput &e) {
         LOG(INFO) << "InvalidInput: " << e.what();
         throw e.toThrift();
+    } catch (repository::InvalidData &e) {
+        LOG(INFO) << "InvalidInput: " << e.what();
+        throw communication::InvalidData{};
     } catch (std::exception &e) {
         LOG(INFO) << "InternalError: " << e.what();
         throw communication::InternalError{};

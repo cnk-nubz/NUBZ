@@ -9,4 +9,4 @@ file(GLOB SOURCES
 
 add_library(server ${SOURCES})
 
-target_link_libraries(server db utils)
+target_link_libraries(server utils communication repository)

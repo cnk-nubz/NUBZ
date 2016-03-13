@@ -12,7 +12,10 @@ public class Downloader {
     private static final String LOG_TAG = "Downloader";
     private static Downloader instance;
 
-    private Downloader() {};
+    private Downloader() {
+    }
+
+    ;
 
     public static Downloader getInstance() {
         if (instance == null) {

@@ -9,10 +9,13 @@ void DatabaseSession::execute(const std::string &sqlStmt) {
     work.exec(sqlStmt);
 }
 
-DatabaseSession::Row DatabaseSession::getResult(const std::string &sqlQuery) {
+boost::optional<DatabaseSession::Row> DatabaseSession::getResult(const std::string &sqlQuery) {
     pqxx::result res = work.exec(sqlQuery);
-    assert(res.size());
-    return translate(res[0]);
+    if (res.empty()) {
+        return {};
+    } else {
+        return translate(res[0]);
+    }
 }
 
 std::vector<DatabaseSession::Row> DatabaseSession::getResults(const std::string &sqlQuery) {
@@ -24,7 +27,7 @@ std::vector<DatabaseSession::Row> DatabaseSession::getResults(const std::string 
     return translated;
 }
 
-DatabaseSession::Row DatabaseSession::translate(const pqxx::tuple &row) const {
+DatabaseSession::Row DatabaseSession::translate(const pqxx::tuple &row) {
     Row translated;
     for (const auto &field : row) {
         translated.push_back(translate(field));
@@ -32,7 +35,7 @@ DatabaseSession::Row DatabaseSession::translate(const pqxx::tuple &row) const {
     return translated;
 }
 
-DatabaseSession::Field DatabaseSession::translate(const pqxx::field &field) const {
+DatabaseSession::Field DatabaseSession::translate(const pqxx::field &field) {
     std::string str;
     if (field.to(str)) {
         return str;

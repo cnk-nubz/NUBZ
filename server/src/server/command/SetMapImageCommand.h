@@ -1,31 +1,31 @@
 #ifndef SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
 #define SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
 
+#include <atomic>
 #include <memory>
 
 #include <boost/filesystem.hpp>
 
-#include <db/Database.h>
-#include <db/struct/MapImage.h>
-#include <db/struct/MapTile.h>
-#include <db/struct/MapTilesInfo.h>
-
-#include <utils/ImageProcessor.h>
 #include <utils/FileHandler.h>
+#include <utils/ImageProcessor.h>
+
+#include <db/Database.h>
+
+#include <repository/MapImages.h>
 
 #include <server/io/input/SetMapImageRequest.h>
+#include <server/io/output/MapImage.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class SetMapImageCommand {
+class SetMapImageCommand : public Command {
 public:
     SetMapImageCommand(db::Database &db);
-    SRV_CMD_CP_MV(SetMapImageCommand);
 
-    void operator()(const io::input::SetMapImageRequest &input);
+    io::output::MapImage operator()(const io::input::SetMapImageRequest &input);
 
 private:
     struct ZoomLevelInfo {
@@ -34,25 +34,32 @@ private:
         std::size_t tileSize;
     };
     static const std::vector<ZoomLevelInfo> zoomLevels;
+    static volatile std::atomic_flag inProgress;
 
-    db::Database &db;
+    void removeOldData(std::int32_t floor);
+    void createImageProc(const std::string &tmpMapFilename);
+
+    ::utils::FileHandler createFloorDirectory(std::int32_t floor);
+
+    // creates and saves in public directory
+    ::utils::FileHandler createFullSizeImage(const std::string &filename, std::int32_t *widthOut,
+                                             std::int32_t *heightOut);
+
+    // creates tiles like {dst}/{zoom_level}/{x}/{y}.jpg
+    // doesn't handle any errors
+    std::vector<repository::MapImage::ZoomLevel> createZoomLevels(
+        const boost::filesystem::path &dst, const std::string &filenamePrefix);
+
+    // creates tiles like: {dst}/{x}/{y}.jpg
+    // doesn't handle any errors
+    repository::MapImage::ZoomLevel createZoomLevelTiles(const ZoomLevelInfo &zoomLevelInfo,
+                                                         const boost::filesystem::path &dst,
+                                                         const std::string &filenamePrefix);
+
+    void prepareImageProcessor(const ZoomLevelInfo &zoomLevel);
+
     std::unique_ptr<::utils::ImageProcessor> imgProc;
-    std::vector<db::MapTile> tiles;
-    std::vector<db::MapTilesInfo> tilesInfo;
-
-    void prepareImageProcessor(const std::string &originalMapFilename);
-    db::MapImage createFullMapImage(std::int32_t floor);
-
-    ::utils::FileHandler createTiles(std::int32_t floor);
-    void addTiles(const std::vector<std::vector<std::string>> &tilesNames, std::int32_t floor,
-                  std::int32_t zoomLevel, const std::string &pathPrefix);
-
-    boost::optional<boost::filesystem::path> getOldMap(std::int32_t floor,
-                                                       db::DatabaseSession &session) const;
-
-    void switchToNewTiles(const boost::filesystem::path &tmpDir, std::int32_t floor) const;
-
-    boost::filesystem::path finalTilesDir(std::int32_t floor) const;
+    db::Database &db;
 };
 }
 }

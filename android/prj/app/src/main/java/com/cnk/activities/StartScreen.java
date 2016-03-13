@@ -15,6 +15,7 @@ import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.DataHandler;
 import com.cnk.database.DatabaseHelper;
+import com.cnk.exceptions.DatabaseLoadException;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -23,22 +24,23 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static final int SHOW_ALERT = 1;
 
     private static Handler uiHandler;
-    private ProgressDialog spinner;
     private static boolean dataLoaded;
+    private ProgressDialog spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.uiHandler = new UiHandler(Looper.getMainLooper(), this);
+        uiHandler = new UiHandler(Looper.getMainLooper(), this);
         DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         DataHandler.getInstance().setDbHelper(dbHelper);
         try {
             if (!dataLoaded) {
                 DataHandler.getInstance().loadDbData();
+                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             }
-        } catch (Exception e) {
+        } catch (DatabaseLoadException e) {
             e.printStackTrace();
             downloadMap();
         }
@@ -65,8 +67,9 @@ public class StartScreen extends AppCompatActivity implements Observer {
             if (!dataLoaded) {
                 try {
                     DataHandler.getInstance().loadDbData();
+                    NetworkHandler.getInstance().uploadRaports();
                     dataLoaded = true;
-                } catch (Exception e) {
+                } catch (DatabaseLoadException e) {
                     Looper.prepare();
                     spinner.dismiss();
                     DataHandler.getInstance().deleteObserver(this);
@@ -116,10 +119,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
     private static class UiHandler extends Handler {
         private StartScreen activity;
+
         public UiHandler(Looper looper, StartScreen activity) {
             super(looper);
             this.activity = activity;
         }
+
         @Override
         public void handleMessage(Message message) {
             if (message.what == SHOW_ALERT) {

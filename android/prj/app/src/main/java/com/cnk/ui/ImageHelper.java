@@ -23,7 +23,10 @@ public class ImageHelper {
     private static final Integer maximumZoom = 4;
     private static final float expectedMaximumExhibitToScreenAreaRatio = 0.001f;
 
-    private static Pair<Integer, Integer> getInterpolatedDimensions(Integer width, Integer height, Integer minExhibitSide, Integer screenPixelsCount) {
+    private static Pair<Integer, Integer> getInterpolatedDimensions(Integer width,
+                                                                    Integer height,
+                                                                    Integer minExhibitSide,
+                                                                    Integer screenPixelsCount) {
         if (minExhibitSide == null) {
             Log.i(LOG_TAG, "No exhibit data, default scale.");
             return new Pair<>(width / 2, height / 2);
@@ -32,12 +35,14 @@ public class ImageHelper {
         Integer imagePixels = width * height;
         Integer smallestPossibleExhibitPixels = minExhibitSide * minExhibitSide;
 
-        Float scale = (screenPixelsCount * expectedMaximumExhibitToScreenAreaRatio) / smallestPossibleExhibitPixels * maximumZoom;
+        Float scale = (screenPixelsCount * expectedMaximumExhibitToScreenAreaRatio) /
+                      smallestPossibleExhibitPixels * maximumZoom;
         Log.i(LOG_TAG, "screen pixels count: " + Integer.toString(screenPixelsCount));
-        Log.i(LOG_TAG, "smallest possible exhibit pixels: " + smallestPossibleExhibitPixels.toString());
+        Log.i(LOG_TAG,
+              "smallest possible exhibit pixels: " + smallestPossibleExhibitPixels.toString());
 
-        Log.i(LOG_TAG, "Width after scaling: " + Integer.toString((int) (width * scale))
-                + " Height after scaling: " + Integer.toString((int) (height * scale)));
+        Log.i(LOG_TAG, "Width after scaling: " + Integer.toString((int) (width * scale)) +
+                       " Height after scaling: " + Integer.toString((int) (height * scale)));
 
         if ((int) (width * scale * height * scale) > maximumPixCount) {
             Integer midWidth = 0, midHeight = 0;
@@ -57,8 +62,8 @@ public class ImageHelper {
                 }
             }
             Log.i(LOG_TAG, "Since calculated dimensions exceeded maximum resolution, new " +
-                    "dimensions were calculated, width: " + lowerWidth.toString() +
-                    " height: " + lowerHeight.toString());
+                           "dimensions were calculated, width: " + lowerWidth.toString() +
+                           " height: " + lowerHeight.toString());
             return new Pair<>(lowerWidth, lowerHeight);
         } else {
             return new Pair<>((int) (width * Math.sqrt(scale)), (int) (height * Math.sqrt(scale)));
@@ -75,7 +80,8 @@ public class ImageHelper {
 
         if (map == null) {
             map = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                    drawable.getIntrinsicHeight(), Bitmap.Config.RGB_565);
+                                      drawable.getIntrinsicHeight(),
+                                      Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(map);
             Drawable temporary = drawable.getCurrent();
             temporary.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -85,26 +91,38 @@ public class ImageHelper {
         return map;
     }
 
-    public static Integer getDimensionWhenScaleApplied(Integer dimensionToScale, Integer exampleOriginalValue, Integer exampleScaled) {
+    public static Integer getDimensionWhenScaleApplied(Integer dimensionToScale,
+                                                       Integer exampleOriginalValue,
+                                                       Integer exampleScaled) {
         Float scale = (float) exampleScaled / exampleOriginalValue;
         return (int) (dimensionToScale * scale);
     }
 
-    public static Bitmap scaleBitmapToProperSize(Bitmap toScale, Integer minExhibitSide, Integer screenRes) {
+    public static Bitmap scaleBitmapToProperSize(Bitmap toScale,
+                                                 Integer minExhibitSide,
+                                                 Integer screenRes) {
         Pair<Integer, Integer> newDimensions = ImageHelper.getInterpolatedDimensions(toScale.getWidth(),
-                toScale.getHeight(), minExhibitSide, screenRes);
+                                                                                     toScale.getHeight(),
+                                                                                     minExhibitSide,
+                                                                                     screenRes);
 
         System.gc();
         Log.i(LOG_TAG, "creating scaled bitmap begin");
-        Bitmap result = Bitmap.createScaledBitmap(toScale, newDimensions.first, newDimensions.second, true);
+        Bitmap result = Bitmap.createScaledBitmap(toScale,
+                                                  newDimensions.first,
+                                                  newDimensions.second,
+                                                  true);
         Log.i(LOG_TAG, "creating scaled bitmap end");
 
         return result;
     }
 
-    public static void saveScaledBitmapForFloor(Context context, Bitmap bmp, Integer floor) throws IOException {
+    public static void saveScaledBitmapForFloor(Context context,
+                                                Bitmap bmp,
+                                                Integer floor) throws IOException {
         try {
-            FileOutputStream fos = context.openFileOutput(ScaledMapPrefix + floor.toString(), Context.MODE_PRIVATE);
+            FileOutputStream fos = context.openFileOutput(ScaledMapPrefix + floor.toString(),
+                                                          Context.MODE_PRIVATE);
             bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.close();
             Log.i(LOG_TAG, "Scaled map saved to file " + ScaledMapPrefix + floor.toString());
@@ -115,7 +133,8 @@ public class ImageHelper {
         }
     }
 
-    public static Bitmap getScaledMapBitmapForFloor(Context context, Integer floor) throws FileNotFoundException {
+    public static Bitmap getScaledMapBitmapForFloor(Context context,
+                                                    Integer floor) throws FileNotFoundException {
         try {
             FileInputStream fis = context.openFileInput(ScaledMapPrefix + Integer.toString(floor));
             BitmapFactory.Options options = new BitmapFactory.Options();

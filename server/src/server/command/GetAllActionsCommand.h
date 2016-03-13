@@ -2,19 +2,19 @@
 #define SERVER_COMMAND__GET_ALL_ACTIONS_COMMAND__H
 
 #include <db/Database.h>
-#include <db/struct/Action.h>
 
-#include "commons.h"
+#include <server/io/output/Action.h>
+
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetAllActionsCommand {
+class GetAllActionsCommand : public Command {
 public:
     GetAllActionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllActionsCommand);
 
-    std::vector<io::Action> operator()();
+    std::vector<io::output::Action> operator()();
 
 private:
     db::Database &db;

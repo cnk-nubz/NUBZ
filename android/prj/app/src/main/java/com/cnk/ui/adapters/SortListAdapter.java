@@ -17,11 +17,10 @@ import java.util.List;
 
 public class SortListAdapter<T extends ListObject> extends BaseAdapter {
     private static final Integer DEFAULT_LAYOUT = R.layout.sort_list_item_default;
-
+    SortViewItemIds viewIds;
     private List<T> options;
     private Context context;
     private Integer layout;
-    SortViewItemIds viewIds;
 
     public SortListAdapter(List<T> options, Context context) {
         this(options, context, DEFAULT_LAYOUT, new SortViewItemIds());
@@ -31,7 +30,10 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
         this(options, context, layout, new SortViewItemIds());
     }
 
-    public SortListAdapter(List<T> options, Context context, Integer layout, SortViewItemIds viewIds) {
+    public SortListAdapter(List<T> options,
+                           Context context,
+                           Integer layout,
+                           SortViewItemIds viewIds) {
         this.options = options;
         this.context = context;
         this.layout = layout;
@@ -90,10 +92,12 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
 
     private class DownClickListener implements ImageButton.OnClickListener {
         private Integer idx;
+
         public DownClickListener(Integer idx) {
             super();
             this.idx = idx;
         }
+
         @Override
         public void onClick(View v) {
             Collections.swap(options, idx, idx + 1);
@@ -103,10 +107,12 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
 
     private class UpClickListener implements ImageButton.OnClickListener {
         private Integer idx;
+
         public UpClickListener(Integer idx) {
             super();
             this.idx = idx;
         }
+
         @Override
         public void onClick(View v) {
             Collections.swap(options, idx, idx - 1);

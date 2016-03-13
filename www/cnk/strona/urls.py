@@ -14,19 +14,12 @@ urlpatterns = [
 	url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
     # get all the html you need
-    url(r'getExhibitPanel/$', views.getExhibitPanel, name='getExhibitPanel'),
-    url(r'getExhibitListElement/$', views.getExhibitListElement, name='getExhibitListElement'),
-    url(r'getSimpleQuestionDialog/$', views.getSimpleQuestionDialog, name='getSimpleQuestionDialog'),
-    url(r'getMultipleChoiceQuestionDialog/$', views.getMultipleChoiceQuestionDialog, name='getMultipleChoiceQuestionDialog'),
-    url(r'getSortQuestionDialog/$', views.getSortQuestionDialog, name='getSortQuestionDialog'),
-    url(r'getActionDialog/$', views.getActionDialog, name='getActionDialog'),
-    url(r'getChangeMapDialog/$', views.getChangeMapDialog, name='getChangeMapDialog'),
-    url(r'getChooseQuestionTypeDialog/$', views.getChooseQuestionTypeDialog, name='getChooseQuestionTypeDialog'),
+    url(r'getHTML/$', views.getHTML, name='getHTML'),
     # dialogs
     url(r'createSimpleQuestion/$', views.createSimpleQuestion, name='createSimpleQuestion'),
     url(r'createMultipleChoiceQuestion/$', views.createMultipleChoiceQuestion, name='createMultipleChoiceQuestion'),
     url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
     url(r'createAction/$', views.createAction, name='createAction'),
     #experiment
-    url(r'createExperiment/$', views.createExperiment, name='createExperiment')
+    url(r'createExperiment/$', views.createExperiment, name='createExperiment'),
 ]

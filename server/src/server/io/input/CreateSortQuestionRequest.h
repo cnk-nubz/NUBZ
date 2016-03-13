@@ -8,8 +8,6 @@
 
 #include <communication/structs_types.h>
 
-#include <server/io/MultipleChoiceQuestion.h>
-
 namespace server {
 namespace io {
 namespace input {

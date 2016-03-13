@@ -1,20 +1,15 @@
-#include <boost/filesystem.hpp>
 #include <Magick++.h>
+#include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 
-#include <utils/log.h>
 #include <utils/ImageProcessor.h>
+#include <utils/log.h>
 
-#include <db/command/GetMapImages.h>
-#include <db/command/IncrementCounter.h>
-#include <db/command/SaveMapImage.h>
-#include <db/command/GetMapTiles.h>
-#include <db/command/RemoveMapTiles.h>
-#include <db/command/RemoveMapTilesInfo.h>
-#include <db/command/SaveMapTile.h>
-#include <db/command/SaveMapTilesInfo.h>
+#include <repository/Counters.h>
+#include <repository/MapImages.h>
 
-#include <server/utils/FileHelper.h>
 #include <server/io/InvalidInput.h>
+#include <server/utils/PathHelper.h>
 
 #include "SetMapImageCommand.h"
 
@@ -23,164 +18,149 @@ namespace command {
 
 const std::vector<SetMapImageCommand::ZoomLevelInfo> SetMapImageCommand::zoomLevels = {
     {1, 1024, 64}, {2, 2048, 128}, {3, 4096, 256}, {4, 8192, 512}};
+volatile std::atomic_flag SetMapImageCommand::inProgress = ATOMIC_FLAG_INIT;
 
 SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
+    inProgress.clear();
 }
 
-// 1. create full map image and save it in public directory
-// 2. create tiles and save them in tmp directory inside map tiles directory
-// 3. update data in database
-// 4. remove old tiles, old map, tmp map
-// 5. rename tmp tiles directory to destination name
-void SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
-    prepareImageProcessor(input.filename);
-    db::MapImage fullMap = createFullMapImage(input.floor);
+io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
+    if (inProgress.test_and_set()) {
+        throw io::InvalidInput{"cannot change two maps at the same time"};
+    }
 
-    std::vector<::utils::FileHandler> handlers;
-    handlers.emplace_back(utils::FileHelper::getInstance().pathForPublicFile(fullMap.filename));
-    handlers.push_back(createTiles(input.floor));
-    boost::filesystem::path tmpDirPath = handlers.back().getPath();
+    LOG(INFO) << "Removing current images";
+    removeOldData(input.floor);
 
-    LOG(INFO) << "Saving information about image and tiles to database";
+    auto imageDirHandler = createFloorDirectory(input.floor);
+    createImageProc(input.filename);
+
+    auto mapImage = repository::MapImage{};
+    mapImage.floor = input.floor;
+
+    LOG(INFO) << "Creating full size image";
+    mapImage.filename = (boost::format("map_f%1%.jpg") % mapImage.floor).str();
+    auto fullImageHandler =
+        createFullSizeImage(mapImage.filename, &mapImage.width, &mapImage.height);
+
+    LOG(INFO) << "Creating zoom levels";
+    mapImage.zoomLevels =
+        createZoomLevels(imageDirHandler.getPath(), std::to_string(mapImage.floor) + "/");
+
+    LOG(INFO) << "Removing tmp data";
+    boost::filesystem::remove(utils::PathHelper::tmpDir.pathForFile(input.filename));
+    imgProc.reset();
+
+    LOG(INFO) << "Saving data into database";
     db.execute([&](db::DatabaseSession &session) {
-        std::vector<boost::filesystem::path> filesToDelete;
-        if (auto oldFullMapPath = getOldMap(input.floor, session)) {
-            filesToDelete.push_back(oldFullMapPath.value());
-        }
-        filesToDelete.push_back(finalTilesDir(input.floor));
-        filesToDelete.push_back(utils::FileHelper::getInstance().pathForTmpFile(input.filename));
+        auto countersRepo = repository::Counters{session};
+        auto mapImagesRepo = repository::MapImages{session};
 
-        fullMap.version = db::cmd::IncrementCounter::mapVersion()(session);
-        db::cmd::SaveMapImage{fullMap}(session);
-
-        db::cmd::RemoveMapTiles{input.floor}(session);
-        db::cmd::RemoveMapTilesInfo{input.floor}(session);
-
-        for (const auto &tile : tiles) {
-            db::cmd::SaveMapTile{tile}(session);
-        }
-        for (const auto &tileInfo : tilesInfo) {
-            db::cmd::SaveMapTilesInfo{tileInfo}(session);
-        }
-
-        for (const auto &toDel : filesToDelete) {
-            if (boost::filesystem::exists(toDel)) {
-                boost::filesystem::remove_all(toDel);
-            }
-        }
-        switchToNewTiles(tmpDirPath, input.floor);
+        mapImage.version = countersRepo.increment(repository::CounterType::LastMapVersion);
+        mapImagesRepo.set(mapImage);
     });
 
-    for (auto &handler : handlers) {
-        handler.release();
+    fullImageHandler.release();
+    imageDirHandler.release();
+
+    inProgress.clear();
+
+    return io::output::MapImage{mapImage};
+}
+
+void SetMapImageCommand::removeOldData(std::int32_t floor) {
+    boost::optional<repository::MapImage> mapImage = db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::MapImages{session};
+        auto mapImage = repo.get(floor);
+        if (mapImage) {
+            repo.remove(floor);
+        }
+        return mapImage;
+    });
+
+    if (mapImage) {
+        boost::filesystem::remove(
+            utils::PathHelper::publicDir.pathForFile(mapImage.value().filename));
     }
+    boost::filesystem::remove_all(utils::PathHelper::pathForFloorTilesDirectory(floor));
 }
 
-void SetMapImageCommand::prepareImageProcessor(const std::string &originalMapFilename) {
-    const auto pathToImg = utils::FileHelper::getInstance().pathForTmpFile(originalMapFilename);
-    imgProc.reset(new ::utils::ImageProcessor(pathToImg.string()));
+::utils::FileHandler SetMapImageCommand::createFloorDirectory(std::int32_t floor) {
+    auto path = utils::PathHelper::pathForFloorTilesDirectory(floor);
+    auto handler = ::utils::FileHandler{path};
+    boost::filesystem::create_directory(path);
+    return handler;
 }
 
-db::MapImage SetMapImageCommand::createFullMapImage(std::int32_t floor) {
-    LOG(INFO) << "Preparing full map image";
-    imgProc->reset();
-    imgProc->scale(zoomLevels.back().size);
-    imgProc->addFrameToBeDivisibleBy(zoomLevels.back().tileSize);
-
-    db::MapImage mapImage;
-    mapImage.width = (std::int32_t)imgProc->width();
-    mapImage.height = (std::int32_t)imgProc->height();
-    mapImage.floor = floor;
-    mapImage.filename =
-        "map_f" + std::to_string(floor) + "_" + std::to_string(rand() % 1000) + ".jpg";
-
-    imgProc->saveImageTo(
-        utils::FileHelper::getInstance().pathForPublicFile(mapImage.filename).string());
-    return mapImage;
+void SetMapImageCommand::createImageProc(const std::string &tmpMapFilename) {
+    auto path = utils::PathHelper::tmpDir.pathForFile(tmpMapFilename);
+    imgProc.reset(new ::utils::ImageProcessor{path});
 }
 
-::utils::FileHandler SetMapImageCommand::createTiles(std::int32_t floor) {
-    tiles.clear();
-    tilesInfo.clear();
+::utils::FileHandler SetMapImageCommand::createFullSizeImage(const std::string &filename,
+                                                             std::int32_t *widthOut,
+                                                             std::int32_t *heightOut) {
+    auto dst = utils::PathHelper::publicDir.pathForFile(filename);
+    prepareImageProcessor(zoomLevels.back());
+    auto handler = ::utils::FileHandler{dst};
+    LOG(INFO) << "Saving file into " << dst;
+    imgProc->saveImageTo(dst.string());
 
-    boost::filesystem::path mapTilesDir =
-        utils::FileHelper::getInstance().pathForMapTilesDirectory();
-    boost::filesystem::path mapTilesDirShort;
-    mapTilesDir /= "TMP";
-    mapTilesDirShort /= std::to_string(floor);
-    boost::filesystem::create_directory(mapTilesDir);
-
-    ::utils::FileHandler handler(mapTilesDir.string());
-
-    db::MapTilesInfo mapTilesInfo;
-    mapTilesInfo.floor = floor;
-    for (const auto &zoomLevelInfo : zoomLevels) {
-        LOG(INFO) << "Preparing image with zoom level " << zoomLevelInfo.levelIdx;
-        imgProc->reset();
-        imgProc->scale(zoomLevelInfo.size);
-        imgProc->setTileSize(zoomLevelInfo.tileSize);
-        imgProc->addFrameToBeDivisibleBy(zoomLevelInfo.tileSize);
-
-        boost::filesystem::path levelDir = mapTilesDir / std::to_string(zoomLevelInfo.levelIdx);
-        boost::filesystem::path levelDirShort =
-            mapTilesDirShort / std::to_string(zoomLevelInfo.levelIdx);
-        boost::filesystem::create_directory(levelDir);
-
-        LOG(INFO) << "Generating tiles for zoom level " << zoomLevelInfo.levelIdx;
-        auto tilesNames = imgProc->generateTiles(levelDir);
-
-        mapTilesInfo.imgHeight = (std::int32_t)imgProc->height();
-        mapTilesInfo.imgWidth = (std::int32_t)imgProc->width();
-        mapTilesInfo.rowsCount = (std::int32_t)tilesNames.size();
-        mapTilesInfo.colsCount = (std::int32_t)tilesNames.back().size();
-        mapTilesInfo.tileSize = (std::int32_t)zoomLevelInfo.tileSize;
-        mapTilesInfo.zoomLevel = zoomLevelInfo.levelIdx;
-        tilesInfo.push_back(mapTilesInfo);
-
-        addTiles(tilesNames, floor, zoomLevelInfo.levelIdx, levelDirShort.string());
-    }
+    *widthOut = (std::int32_t)imgProc->width();
+    *heightOut = (std::int32_t)imgProc->height();
 
     return handler;
 }
 
-void SetMapImageCommand::addTiles(const std::vector<std::vector<std::string>> &tilesNames,
-                                  std::int32_t floor, std::int32_t zoomLevel,
-                                  const std::string &pathPrefix) {
-    db::MapTile mapTile;
-    mapTile.zoomLevel = zoomLevel;
-    mapTile.floor = floor;
-    for (std::size_t rowIdx = 0; rowIdx < tilesNames.size(); rowIdx++) {
-        const auto &row = tilesNames[rowIdx];
-        for (std::size_t colIdx = 0; colIdx < row.size(); colIdx++) {
-            mapTile.row = (std::int32_t)rowIdx;
-            mapTile.col = (std::int32_t)colIdx;
-            mapTile.filename = (boost::filesystem::path(pathPrefix) / row[colIdx]).string();
-            tiles.push_back(mapTile);
+std::vector<repository::MapImage::ZoomLevel> SetMapImageCommand::createZoomLevels(
+    const boost::filesystem::path &dst, const std::string &filenamePrefix) {
+    auto result = std::vector<repository::MapImage::ZoomLevel>{};
+    for (const auto &zoomLevelInfo : zoomLevels) {
+        auto dirName = std::to_string(zoomLevelInfo.levelIdx);
+        auto levelDst = dst / dirName;
+        auto levelPrefix = filenamePrefix + dirName + "/";
+
+        boost::filesystem::create_directory(levelDst);
+        result.push_back(createZoomLevelTiles(zoomLevelInfo, levelDst, levelPrefix));
+    }
+    return result;
+}
+
+repository::MapImage::ZoomLevel SetMapImageCommand::createZoomLevelTiles(
+    const ZoomLevelInfo &zoomLevelInfo, const boost::filesystem::path &dst,
+    const std::string &filenamePrefix) {
+    LOG(INFO) << "Creating image for zoom level " << zoomLevelInfo.levelIdx;
+    prepareImageProcessor(zoomLevelInfo);
+
+    auto fullImgPath = dst / "full.jpg";
+    LOG(INFO) << "Saving file into " << fullImgPath;
+    imgProc->saveImageTo(fullImgPath.string());
+
+    LOG(INFO) << "Creating tiles for zoom level " << zoomLevelInfo.levelIdx << " in " << dst;
+    auto tiles = imgProc->generateTiles(dst);
+
+    // save data into repository struct
+    auto zoomLevel = repository::MapImage::ZoomLevel{};
+    zoomLevel.tileSize = (std::int32_t)zoomLevelInfo.tileSize;
+    zoomLevel.imageWidth = (std::int32_t)imgProc->width();
+    zoomLevel.imageHeight = (std::int32_t)imgProc->height();
+    zoomLevel.tilesFilenames = tiles;
+
+    // add prefix to each filename
+    for (auto &row : zoomLevel.tilesFilenames) {
+        for (auto &filename : row) {
+            filename = filenamePrefix + filename;
         }
     }
+
+    return zoomLevel;
 }
 
-boost::optional<boost::filesystem::path> SetMapImageCommand::getOldMap(
-    std::int32_t floor, db::DatabaseSession &session) const {
-    db::cmd::GetMapImages getMapImages(floor);
-    getMapImages(session);
-
-    if (!getMapImages.getResult().empty()) {
-        auto mapImage = getMapImages.getResult().front();
-        return utils::FileHelper::getInstance().pathForPublicFile(mapImage.filename);
-    } else {
-        return {};
-    }
-}
-
-void SetMapImageCommand::switchToNewTiles(const boost::filesystem::path &tmpDir,
-                                          std::int32_t floor) const {
-    boost::filesystem::rename(tmpDir, finalTilesDir(floor));
-}
-
-boost::filesystem::path SetMapImageCommand::finalTilesDir(std::int32_t floor) const {
-    return boost::filesystem::path(utils::FileHelper::getInstance().pathForMapTilesDirectory() /
-                                   std::to_string(floor));
+void SetMapImageCommand::prepareImageProcessor(const ZoomLevelInfo &zoomLevel) {
+    imgProc->reset();
+    imgProc->scale(zoomLevel.size);
+    imgProc->setTileSize(zoomLevel.tileSize);
+    imgProc->addFrameToBeDivisibleBy(zoomLevel.tileSize);
 }
 }
 }

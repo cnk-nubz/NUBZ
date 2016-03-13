@@ -1,9 +1,7 @@
-#include <db/command/InsertMultipleChoiceQuestion.h>
-#include <db/command/InsertMultipleChoiceQuestionOption.h>
+#include <repository/MultipleChoiceQuestions.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
-#include <server/utils/io_translation.h>
 
 #include "CreateMultipleChoiceQuestionCommand.h"
 
@@ -14,57 +12,40 @@ CreateMultipleChoiceQuestionCommand::CreateMultipleChoiceQuestionCommand(db::Dat
     : db(db) {
 }
 
-io::MultipleChoiceQuestion CreateMultipleChoiceQuestionCommand::operator()(
+io::output::MultipleChoiceQuestion CreateMultipleChoiceQuestionCommand::operator()(
     const io::input::CreateMultipleChoiceQuestionRequest &input) {
-    io::MultipleChoiceQuestion ioQuestion;
-    db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+    auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
+        validateInput(input);
 
-        db::MultipleChoiceQuestion question;
-        question.name = input.question;
+        auto question = repository::MultipleChoiceQuestion{};
         question.question = input.question;
-        if (input.name) {
-            question.name = input.name.value();
-        }
         question.singleAnswer = input.singleAnswer;
-        question.ID = db::cmd::InsertMultipleChoiceQuestion{question}(session);
+        question.name = input.name.value_or(question.question);
+        ::utils::transform(input.options, question.options, [](auto &text) {
+            auto opt = repository::MultipleChoiceQuestion::Option{};
+            opt.text = text;
+            return opt;
+        });
 
-        ioQuestion = utils::toIO(question, createOptions(session, input.options, question.ID));
+        auto repo = repository::MultipleChoiceQuestions{session};
+        repo.insert(&question);
+        return question;
     });
 
-    return ioQuestion;
+    return io::output::MultipleChoiceQuestion{dbQuestion};
 }
 
 void CreateMultipleChoiceQuestionCommand::validateInput(
-    db::DatabaseSession &session,
     const io::input::CreateMultipleChoiceQuestionRequest &input) const {
-    utils::InputChecker checker(session);
-    if (!checker.checkText(input.question)) {
+    if (!utils::checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }
-    if (input.name && !checker.checkText(input.name.value())) {
+    if (input.name && !utils::checkText(input.name.value())) {
         throw io::InvalidInput("incorrect name");
     }
-    if (input.options.size() < 2) {
-        throw io::InvalidInput("options list should contain at least 2 options");
-    }
-    if (!::utils::all_of(input.options, &decltype(checker)::checkText)) {
+    if (!::utils::all_of(input.options, utils::checkText)) {
         throw io::InvalidInput("incorrect option");
     }
-}
-
-std::vector<db::MultipleChoiceQuestionOption> CreateMultipleChoiceQuestionCommand::createOptions(
-    db::DatabaseSession &session, const std::vector<std::string> &optionsText,
-    std::int32_t questionId) const {
-    std::vector<db::MultipleChoiceQuestionOption> options;
-    db::MultipleChoiceQuestionOption option;
-    option.questionId = questionId;
-    for (const auto &text : optionsText) {
-        option.text = text;
-        option.ID = db::cmd::InsertMultipleChoiceQuestionOption{option}(session);
-        options.push_back(option);
-    }
-    return options;
 }
 }
 }

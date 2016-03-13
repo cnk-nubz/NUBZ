@@ -1,10 +1,10 @@
-#include "ImageProcessor.h"
 #include "FileHandler.h"
+#include "ImageProcessor.h"
 
 namespace utils {
 
-ImageProcessor::ImageProcessor(const std::string &pathToOriginalImage)
-    : originalImgPath(pathToOriginalImage), tileSize(256) {
+ImageProcessor::ImageProcessor(const boost::filesystem::path &srcImagePath)
+    : srcImagePath(srcImagePath.string()), tileSize(256), minTileSize(16) {
     reset();
 }
 
@@ -17,7 +17,7 @@ std::size_t ImageProcessor::height() const {
 }
 
 void ImageProcessor::reset() {
-    img = Magick::Image(originalImgPath);
+    img = Magick::Image(srcImagePath);
 }
 
 void ImageProcessor::addFrameToBeDivisibleBy(std::size_t x) {
@@ -47,10 +47,12 @@ void ImageProcessor::setTileSize(std::size_t size) {
     tileSize = size;
 }
 
+void ImageProcessor::setMinTileSize(std::size_t minSize) {
+    minTileSize = minSize;
+}
+
 std::vector<std::vector<std::string>> ImageProcessor::generateTiles(
     const boost::filesystem::path &dstDir) {
-    static const std::size_t minSize = 16;
-
     const std::size_t width = this->width();
     const std::size_t height = this->height();
 
@@ -59,8 +61,8 @@ std::vector<std::vector<std::string>> ImageProcessor::generateTiles(
         std::vector<utils::FileHandler> handlers;
 
         for (std::size_t x = 0; x < width; x += tileSize) {
-            if (width - x < minSize) {
-                // ignore remnants
+            if (width - x < minTileSize) {
+                // ignore residues
                 break;
             }
 
@@ -72,8 +74,8 @@ std::vector<std::vector<std::string>> ImageProcessor::generateTiles(
 
             result.emplace_back();
             for (std::size_t y = 0; y < height; y += tileSize) {
-                if (height - y < minSize) {
-                    // ignore remnants
+                if (height - y < minTileSize) {
+                    // ignore residues
                     break;
                 }
 
