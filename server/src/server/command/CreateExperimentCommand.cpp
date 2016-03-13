@@ -13,8 +13,8 @@ void CreateExperimentCommand::operator()(const io::input::CreateExperimentReques
     lazyExperiment.name = input.name;
     lazyExperiment.actions = input.actions;
     lazyExperiment.breakActions = input.breakActions;
-    lazyExperiment.surveyBefore = toRepo(input.surveyBefore);
-    lazyExperiment.surveyAfter = toRepo(input.surveyAfter);
+    lazyExperiment.surveyBefore = toRepoSurvey(input.surveyBefore);
+    lazyExperiment.surveyAfter = toRepoSurvey(input.surveyAfter);
 
     db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Experiments{session};
