@@ -89,6 +89,10 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             DataHandler.getInstance().startNewRaport();
         }
         initViews();
+        if (allQuestionsCount == 0) {
+            changeToNextActivity();
+            return;
+        }
         setUpCounterLabel();
         showView(0);
     }
@@ -184,16 +188,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         alert.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Class next = (Class) getIntent().getSerializableExtra("nextActivity");
-                if (next == null) {
-                    finish();
-                    DataHandler.getInstance().markRaportAsReady();
-                    NetworkHandler.getInstance().uploadRaports();
-                } else {
-                    Intent i = new Intent(getApplicationContext(), next);
-                    finish();
-                    startActivity(i);
-                }
+                changeToNextActivity();
             }
         });
         alert.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
@@ -204,6 +199,19 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         });
         alert.setCancelable(false);
         alert.show();
+    }
+
+    private void changeToNextActivity() {
+        Class next = (Class) getIntent().getSerializableExtra("nextActivity");
+        if (next == null) {
+            finish();
+            DataHandler.getInstance().markRaportAsReady();
+            NetworkHandler.getInstance().uploadRaports();
+        } else {
+            Intent i = new Intent(getApplicationContext(), next);
+            finish();
+            startActivity(i);
+        }
     }
 
     @Override
