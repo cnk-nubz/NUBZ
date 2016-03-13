@@ -1,4 +1,4 @@
-#include <db/command/IncrementCounter.h>
+#include <repository/Counters.h>
 
 #include "ReserveIdForReportCommand.h"
 
@@ -9,9 +9,10 @@ ReserveIdForReportCommand::ReserveIdForReportCommand(db::Database &db) : db(db) 
 }
 
 std::int32_t ReserveIdForReportCommand::operator()() {
-    auto incCmd = db::cmd::IncrementCounter::reportId();
-    db.execute(incCmd);
-    return incCmd.getNewVal();
+    return db.execute([](db::DatabaseSession &session) {
+        auto repo = repository::Counters{session};
+        return repo.increment(repository::CounterType::LastReportID);
+    });
 }
 }
 }

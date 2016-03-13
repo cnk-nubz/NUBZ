@@ -3,19 +3,18 @@
 
 #include <db/Database.h>
 
-#include <server/io/SimpleQuestion.h>
+#include <server/io/output/SimpleQuestion.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetAllSimpleQuestionsCommand {
+class GetAllSimpleQuestionsCommand : public Command {
 public:
     GetAllSimpleQuestionsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetAllSimpleQuestionsCommand);
 
-    std::vector<io::SimpleQuestion> operator()();
+    std::vector<io::output::SimpleQuestion> operator()();
 
 private:
     db::Database &db;

@@ -47,12 +47,6 @@ class ThriftCommunicator:
 			return client.ping(msg)
 		return self._perform_in_single_connection([action])[0]
 
-	def getMapImages(self):
-		def action(client):
-			msg = MapImagesRequest()
-			return client.getMapImages(msg)
-		return self._perform_in_single_connection([action])[0]
-
 	def setMapImage(self, floor, filename):
 		def action(client):
 			msg = SetMapImageRequest(floor, filename)
@@ -68,8 +62,8 @@ class ThriftCommunicator:
 	def getMapImageTiles(self):
 		def get_floor(floor):
 			def action(client):
-				floor_msg = MapImageTilesRequest(floor)
-				return client.getMapImageTiles(floor_msg)
+				floor_msg = NewMapImagesRequest()
+				return client.getNewMapImages(floor_msg).floors[floor]
 			return action
 		return self._perform_in_single_connection([get_floor(0), get_floor(1)])
 

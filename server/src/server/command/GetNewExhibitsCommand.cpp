@@ -1,8 +1,9 @@
-#include <db/command/GetExhibits.h>
-#include <db/command/GetCounter.h>
-#include <db/command/GetRawReports.h>
+#include <tuple>
 
-#include <server/utils/io_translation.h>
+#include <repository/Counters.h>
+#include <repository/Exhibits.h>
+
+#include <server/io/utils.h>
 
 #include "GetNewExhibitsCommand.h"
 
@@ -14,21 +15,29 @@ GetNewExhibitsCommand::GetNewExhibitsCommand(db::Database &db) : db(db) {
 
 io::output::NewExhibitsResponse GetNewExhibitsCommand::operator()(
     const io::input::NewExhibitsRequest &input) {
-    db::cmd::GetCounter getCounter(db::info::counters::element_type::exhibits);
-    db::cmd::GetExhibits getExhibits;
-    if (input.acquiredVersion) {
-        getExhibits.minVersion = input.acquiredVersion.value() + 1;
+    auto repoExhibits = std::vector<repository::Exhibit>{};
+    std::int32_t currentVersion;
+    std::tie(currentVersion, repoExhibits) = db.execute([&](db::DatabaseSession &session) {
+        auto exhibitsRepo = repository::Exhibits{session};
+        auto countersRepo = repository::Counters{session};
+
+        auto curVersion = countersRepo.get(repository::CounterType::LastExhibitVersion);
+        auto exhibits = std::vector<repository::Exhibit>{};
+        if (auto userVersion = input.acquiredVersion) {
+            exhibits = exhibitsRepo.getAllNewerThan(userVersion.value());
+        } else {
+            exhibits = exhibitsRepo.getAll();
+        }
+        return std::make_tuple(curVersion, exhibits);
+    });
+
+    auto exhibits = std::vector<io::output::Exhibit>(repoExhibits.begin(), repoExhibits.end());
+
+    auto response = io::output::NewExhibitsResponse{};
+    response.version = currentVersion;
+    for (auto &exhibit : exhibits) {
+        response.exhibits[exhibit.ID] = exhibit;
     }
-
-    db.execute(getCounter);
-    db.execute(getExhibits);
-
-    io::output::NewExhibitsResponse response;
-    response.version = getCounter.getResult();
-    for (const auto &exhibit : getExhibits.getResult()) {
-        response.exhibits[exhibit.ID] = utils::toIO(exhibit);
-    }
-
     return response;
 }
 }

@@ -8,8 +8,17 @@ namespace server {
 namespace io {
 namespace output {
 
+Experiment::Experiment(const repository::Experiment &repo)
+    : ID(repo.ID),
+      name(repo.name),
+      exhibitActions(std::vector<Action>(repo.actions.begin(), repo.actions.end())),
+      breakActions(std::vector<Action>(repo.breakActions.begin(), repo.breakActions.end())),
+      surveyBefore(repo.surveyBefore),
+      surveyAfter(repo.surveyAfter) {
+}
+
 communication::Experiment Experiment::toThrift() const {
-    communication::Experiment res;
+    auto res = communication::Experiment{};
     res.experimentId = ID;
     res.name = name;
     res.exhibitActions = ioToThrift(exhibitActions);

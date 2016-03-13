@@ -5,12 +5,12 @@ namespace io {
 namespace output {
 
 communication::NewMapImagesResponse NewMapImagesResponse::toThrift() const {
-    communication::NewMapImagesResponse ret;
-    for (const auto &e : floorImageUrls) {
-        ret.floorImageUrls[e.first] = e.second;
+    auto res = communication::NewMapImagesResponse{};
+    for (const auto &e : floors) {
+        res.floors[e.first] = e.second.toThrift();
     }
-    ret.version = version;
-    return ret;
+    res.version = version;
+    return res;
 }
 }
 }

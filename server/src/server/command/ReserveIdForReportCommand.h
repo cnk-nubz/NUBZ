@@ -3,15 +3,14 @@
 
 #include <db/Database.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class ReserveIdForReportCommand {
+class ReserveIdForReportCommand : public Command {
 public:
     ReserveIdForReportCommand(db::Database &db);
-    SRV_CMD_CP_MV(ReserveIdForReportCommand);
 
     std::int32_t operator()();
 

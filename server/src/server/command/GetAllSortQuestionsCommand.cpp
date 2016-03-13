@@ -1,9 +1,6 @@
-#include <utils/fp_algorithm.h>
+#include <repository/SortQuestions.h>
 
-#include <db/command/GetSortQuestions.h>
-#include <db/command/GetSortQuestionOptions.h>
-
-#include <server/utils/io_translation.h>
+#include <server/io/utils.h>
 
 #include "GetAllSortQuestionsCommand.h"
 
@@ -13,22 +10,15 @@ namespace command {
 GetAllSortQuestionsCommand::GetAllSortQuestionsCommand(db::Database &db) : db(db) {
 }
 
-std::vector<io::SortQuestion> GetAllSortQuestionsCommand::operator()() {
-    std::vector<io::SortQuestion> questions;
-    db.execute([&](db::DatabaseSession &session) {
-        db::cmd::GetSortQuestions getQuestions;
-        for (const auto &question : getQuestions(session)) {
-            questions.push_back(utils::toIO(question, getOptions(session, question.ID)));
-        }
+std::vector<io::output::SortQuestion> GetAllSortQuestionsCommand::operator()() {
+    auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::SortQuestions{session};
+        return repo.getAll();
     });
 
-    std::sort(questions.begin(), questions.end());
-    return questions;
-}
-
-std::vector<db::SortQuestionOption> GetAllSortQuestionsCommand::getOptions(
-    db::DatabaseSession &session, std::int32_t questionId) const {
-    return db::cmd::GetSortQuestionOptions{questionId}(session);
+    auto result = std::vector<io::output::SortQuestion>(repoQuestions.begin(), repoQuestions.end());
+    std::sort(result.begin(), result.end());
+    return result;
 }
 }
 }

@@ -32,6 +32,18 @@ template <class Container, class T>
 std::size_t count(const Container &cont, const T &t) {
     return std::count(cont.begin(), cont.end(), t);
 }
+
+template <class A, class B, class F>
+void for_each2(const A &as, const B &bs, F &&f) {
+    auto aIt = as.begin();
+    auto aEnd = as.end();
+    auto bIt = bs.begin();
+    while (aIt != aEnd) {
+        f(*aIt, *bIt);
+        ++aIt;
+        ++bIt;
+    }
+};
 }
 
 #endif

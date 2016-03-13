@@ -1,9 +1,9 @@
-#include <db/command/InsertSortQuestion.h>
-#include <db/command/InsertSortQuestionOption.h>
+#include <utils/fp_algorithm.h>
+
+#include <repository/SortQuestions.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
-#include <server/utils/io_translation.h>
 
 #include "CreateSortQuestionCommand.h"
 
@@ -13,55 +13,40 @@ namespace command {
 CreateSortQuestionCommand::CreateSortQuestionCommand(db::Database &db) : db(db) {
 }
 
-io::SortQuestion CreateSortQuestionCommand::operator()(
+io::output::SortQuestion CreateSortQuestionCommand::operator()(
     const io::input::CreateSortQuestionRequest &input) {
-    io::SortQuestion ioQuestion;
-    db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+    auto dbQuestion = db.execute([&](db::DatabaseSession &session) {
+        validateInput(input);
 
-        db::SortQuestion question;
-        question.name = input.question;
+        auto question = repository::SortQuestion{};
+
         question.question = input.question;
-        if (input.name) {
-            question.name = input.name.value();
-        }
-        question.ID = db::cmd::InsertSortQuestion{question}(session);
+        question.name = input.name.value_or(question.question);
+        ::utils::transform(input.options, question.options, [](auto &text) {
+            auto opt = repository::SortQuestion::Option{};
+            opt.text = text;
+            return opt;
+        });
 
-        ioQuestion = utils::toIO(question, createOptions(session, input.options, question.ID));
+        auto repo = repository::SortQuestions{session};
+        repo.insert(&question);
+        return question;
     });
 
-    return ioQuestion;
+    return io::output::SortQuestion{dbQuestion};
 }
 
 void CreateSortQuestionCommand::validateInput(
-    db::DatabaseSession &session, const io::input::CreateSortQuestionRequest &input) const {
-    utils::InputChecker checker(session);
-    if (!checker.checkText(input.question)) {
+    const io::input::CreateSortQuestionRequest &input) const {
+    if (!utils::checkText(input.question)) {
         throw io::InvalidInput("incorrect question");
     }
-    if (input.name && !checker.checkText(input.name.value())) {
+    if (input.name && !utils::checkText(input.name.value())) {
         throw io::InvalidInput("incorrect name");
     }
-    if (input.options.size() < 2) {
-        throw io::InvalidInput("options list should contain at least 2 options");
-    }
-    if (!::utils::all_of(input.options, &decltype(checker)::checkText)) {
+    if (!::utils::all_of(input.options, utils::checkText)) {
         throw io::InvalidInput("incorrect option");
     }
-}
-
-std::vector<db::SortQuestionOption> CreateSortQuestionCommand::createOptions(
-    db::DatabaseSession &session, const std::vector<std::string> &optionsText,
-    std::int32_t questionId) const {
-    std::vector<db::SortQuestionOption> options;
-    db::SortQuestionOption option;
-    option.questionId = questionId;
-    for (const auto &text : optionsText) {
-        option.text = text;
-        option.ID = db::cmd::InsertSortQuestionOption{option}(session);
-        options.push_back(option);
-    }
-    return options;
 }
 }
 }

@@ -6,59 +6,34 @@ con = psycopg2.connect(database='nubz_db', user='zpp')
 cur = con.cursor()
 
 ######### drop
-cur.execute('DROP TABLE IF EXISTS map_images')
-cur.execute('DROP TABLE IF EXISTS map_tiles')
-cur.execute('DROP TABLE IF EXISTS map_tiles_info')
-cur.execute('DROP TABLE IF EXISTS counters')
-cur.execute('DROP TABLE IF EXISTS exhibits')
-cur.execute('DROP TABLE IF EXISTS reports')
-cur.execute('DROP TABLE IF EXISTS actions')
-cur.execute('DROP TABLE IF EXISTS active_experiment')
-cur.execute('DROP TABLE IF EXISTS experiments')
-cur.execute('DROP TABLE IF EXISTS simple_questions')
-cur.execute('DROP TABLE IF EXISTS multiple_choice_question_options')
-cur.execute('DROP TABLE IF EXISTS multiple_choice_questions')
-cur.execute('DROP TABLE IF EXISTS sort_question_options')
-cur.execute('DROP TABLE IF EXISTS sort_questions')
+cur.execute('DROP TABLE IF EXISTS map_images CASCADE')
+cur.execute('DROP TABLE IF EXISTS counters CASCADE')
+cur.execute('DROP TABLE IF EXISTS exhibits CASCADE')
+cur.execute('DROP TABLE IF EXISTS reports CASCADE')
+cur.execute('DROP TABLE IF EXISTS actions CASCADE')
+cur.execute('DROP TABLE IF EXISTS experiments CASCADE')
+cur.execute('DROP TABLE IF EXISTS simple_questions CASCADE')
+cur.execute('DROP TABLE IF EXISTS multiple_choice_question_options CASCADE')
+cur.execute('DROP TABLE IF EXISTS multiple_choice_questions CASCADE')
+cur.execute('DROP TABLE IF EXISTS sort_question_options CASCADE')
+cur.execute('DROP TABLE IF EXISTS sort_questions CASCADE')
 
 ######### create
+
 cur.execute('''
 	CREATE TABLE map_images (
+		floor INT PRIMARY KEY,
 		filename VARCHAR NOT NULL,
 		width INT NOT NULL,
 		height INT NOT NULL,
-		floor INT NOT NULL UNIQUE,
-		version INT NOT NULL UNIQUE
-	)
-''')
-
-cur.execute('''
-	CREATE TABLE map_tiles (
-		floor INT NOT NULL,
-		zoom_level INT NOT NULL,
-		row INT NOT NULL,
-		col INT NOT NULL,
-		filename VARCHAR NOT NULL,
-		UNIQUE(floor, zoom_level, row, col)
-	)
-''')
-
-cur.execute('''
-	CREATE TABLE map_tiles_info (
-		floor INT NOT NULL,
-		zoom_level INT NOT NULL,
-		rows_count INT NOT NULL,
-		columns_count INT NOT NULL,
-		img_width INT NOT NULL,
-		img_height INT NOT NULL,
-		tile_size INT NOT NULL,
-		UNIQUE(floor, zoom_level)
+		version INT NOT NULL UNIQUE,
+		zoom_levels JSONB NOT NULL
 	)
 ''')
 
 cur.execute('''
 	CREATE TABLE counters (
-		element VARCHAR NOT NULL UNIQUE,
+		name VARCHAR NOT NULL UNIQUE,
 		counter INT NOT NULL
 	)
 ''')
@@ -130,7 +105,10 @@ cur.execute('''
 	CREATE TABLE experiments (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
-		doc JSONB NOT NULL
+		state INTEGER NOT NULL,
+		start_date VARCHAR NULL,
+		finish_date VARCHAR NULL,
+		content JSONB NOT NULL
 	)
 ''')
 
@@ -138,36 +116,18 @@ cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
 		experiment_id INT NOT NULL REFERENCES experiments(id),
-		doc JSONB NOT NULL
+		content JSONB NOT NULL
 	)
 ''')
 
-cur.execute('''
-	CREATE TABLE active_experiment (
-		id INT NULL REFERENCES experiments(id)
-	);
-
-	INSERT INTO active_experiment VALUES
-		(NULL);
-
-	CREATE RULE no_insert AS ON INSERT TO active_experiment DO INSTEAD NOTHING; 
-	CREATE RULE no_delete AS ON DELETE TO active_experiment DO INSTEAD NOTHING;
-''')
-
 ######### sample data
-# map_images
-cur.execute('''
-	INSERT INTO map_images VALUES
-		('floorplan0.jpg', 2200, 1700, 0, 1),
-		('floorplan1.jpg', 2200, 1700, 1, 2)
-''')
 
 # counters
 cur.execute('''
 	INSERT INTO counters VALUES
-		('map_images_version', 2),
-		('exhibits_version', 5),
-		('reports_last_id', 3)
+		('last_map_version', 0),
+		('last_exhibit_version', 5),
+		('last_report_id', 3)
 ''')
 
 # exhibits
@@ -183,8 +143,8 @@ cur.execute('''
 
 # experiments
 cur.execute('''
-	INSERT INTO experiments (name, doc) VALUES
-		('badanie testowe', '
+	INSERT INTO experiments (name, state, content) VALUES
+		('badanie testowe', 1, '
 			{
 				"actions": [5, 1, 4, 3, 7, 8],
 				"breakActions": [12, 9, 11],
@@ -212,64 +172,64 @@ cur.execute('''
 				"history": [
 					{
 						"exhibitId": 2,
-						"durationInSecs": 15,
+						"secs": 15,
 						"actions": [1, 4, 7]
 					}, {
 						"exhibitId": 1,
-						"durationInSecs": 30,
+						"secs": 30,
 						"actions": [1]
 					}, {
 						"exhibitID": 2,
-						"durationInSecs": 140,
+						"secs": 140,
 						"actions": []
 					}, {
-						"durationInSecs": 17,
+						"secs": 17,
 						"actions": [12, 9]
 					}, {
 						"exhibitId": 1,
-						"durationInSecs": 20,
+						"secs": 20,
 						"actions": [1, 3]
 					}, {
-						"durationInSecs": 14,
+						"secs": 14,
 						"actions": [11]
 					}
 				],
 				"surveyBefore": {
-					"simpleQuestions": [
+					"simple": [
 						{
-							"answer": "12345"
+							"ans": "12345"
 						}, {
 						}
 					],
-					"multipleChoiceQuestions": [
+					"multi": [
 						{
-							"answer": [5, 6, 9, 12]
+							"ans": [5, 6, 9, 12]
 						}
 					],
-					"sortQuestions": [
+					"sort": [
 						{
 
 						}, {
-							"answer": [7, 6, 5, 12, 8, 9, 10, 11]
+							"ans": [7, 6, 5, 12, 8, 9, 10, 11]
 						}
 					]
 				},
 				"surveyAfter": {
-					"simpleQuestions": [
+					"simple": [
 						{
-							"answer": "test answer for simple question 1"
+							"ans": "test answer for simple question 1"
 						}
 					],
-					"multipleChoiceQuestions": [
+					"multi": [
 						{
-							"answer": [2]
+							"ans": [2]
 						}, {
 						}
 					],
-					"sortQuestions": [
+					"sort": [
 						{
 						}, {
-							"answer": [3, 1, 4, 2]
+							"ans": [3, 1, 4, 2]
 						}
 					]
 				}
@@ -345,12 +305,6 @@ cur.execute('''
 		(2, 'fff'),
 		(2, 'ggg'),
 		(2, 'hhh')
-''')
-
-# current experiment
-cur.execute('''
-	UPDATE active_experiment
-	SET id=1
 ''')
 
 con.commit()

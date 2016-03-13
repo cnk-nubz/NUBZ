@@ -1,9 +1,7 @@
-#include <iostream>
-
-#include "io/input/HelloMsg.h"
-#include "io/utils.h"
 #include "CommandHandler.h"
 #include "commands.h"
+#include "io/input/HelloMsg.h"
+#include "io/utils.h"
 
 namespace server {
 
@@ -30,7 +28,7 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
     LOG(INFO) << "input: " << msg;
 
     std::int32_t output = withExceptionTranslation([&]() {
-        io::input::HelloMsg input(msg);
+        auto input = io::input::HelloMsg{msg};
         return input.num;
     });
 
@@ -48,8 +46,8 @@ void CommandHandler::getNewMapImages(communication::NewMapImagesResponse &respon
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::NewMapImagesRequest input(request);
-        io::output::NewMapImagesResponse output = command::GetNewMapImagesCommand{db}(input);
+        auto input = io::input::NewMapImagesRequest{request};
+        auto output = command::GetNewMapImagesCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -57,32 +55,17 @@ void CommandHandler::getNewMapImages(communication::NewMapImagesResponse &respon
     LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::setMapImage(const communication::SetMapImageRequest &request) {
-    std::lock_guard<std::mutex> lock(setMapLock);
-
+void CommandHandler::setMapImage(communication::MapImage &response,
+                                 const communication::SetMapImageRequest &request) {
     LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::SetMapImageRequest input(request);
-        command::SetMapImageCommand{db}(input);
-    });
-
-    LOG(INFO) << __func__ << " end";
-}
-
-void CommandHandler::getMapImageTiles(communication::MapImageTilesResponse &response,
-                                      const communication::MapImageTilesRequest &request) {
-    LOG(INFO) << __func__ << " start";
-    LOG(INFO) << "input: " << request;
-
-    withExceptionTranslation([&]() {
-        io::input::MapImageTilesRequest input(request);
-        io::output::MapImageTilesResponse output = command::GetMapImageTilesCommand{db}(input);
+        auto input = io::input::SetMapImageRequest{request};
+        auto output = command::SetMapImageCommand{db}(input);
         response = output.toThrift();
     });
 
-    LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
 
@@ -94,8 +77,8 @@ void CommandHandler::getNewExhibits(communication::NewExhibitsResponse &response
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::NewExhibitsRequest input(request);
-        io::output::NewExhibitsResponse output = command::GetNewExhibitsCommand{db}(input);
+        auto input = io::input::NewExhibitsRequest{request};
+        auto output = command::GetNewExhibitsCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -109,8 +92,8 @@ void CommandHandler::createExhibit(communication::Exhibit &response,
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::CreateExhibitRequest input(request);
-        io::Exhibit output = command::CreateExhibitCommand{db}(input);
+        auto input = io::input::CreateExhibitRequest{request};
+        auto output = command::CreateExhibitCommand{db}(input);
         response = output.toThrift();
     });
 
@@ -135,7 +118,7 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        io::input::SetExhibitFrameRequest input(request);
+        auto input = io::input::SetExhibitFrameRequest{request};
         command::SetExhibitFrameCommand{db}(input);
     });
 
@@ -148,7 +131,7 @@ void CommandHandler::getCurrentExperiment(communication::CurrentExperimentRespon
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        io::output::CurrentExperimentResponse output = command::GetCurrentExperimentCommand{db}();
+        auto output = command::GetCurrentExperimentCommand{db}();
         response = output.toThrift();
     });
 
@@ -204,7 +187,7 @@ void CommandHandler::getAllActions(std::vector<communication::Action> &response)
 
     withExceptionTranslation([&]() {
         auto output = command::GetAllActionsCommand{db}();
-        response = ioToThrift(output);
+        response = io::ioToThrift(output);
     });
 
     LOG(INFO) << "output: " << response;
