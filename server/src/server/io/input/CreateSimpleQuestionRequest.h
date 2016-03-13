@@ -7,7 +7,7 @@
 
 #include <communication/structs_types.h>
 
-#include <server/io/SimpleQuestion.h>
+#include <server/io/output/SimpleQuestion.h>
 
 namespace server {
 namespace io {
@@ -18,7 +18,7 @@ struct CreateSimpleQuestionRequest {
 
     boost::optional<std::string> name;
     std::string question;
-    SimpleQuestion::AnswerType answerType;
+    output::SimpleQuestion::AnswerType answerType;
 };
 }
 }

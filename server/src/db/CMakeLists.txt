@@ -1,9 +1,7 @@
 file(GLOB SOURCES
     *.cpp
-    factory/*.cpp
-    factory/json/*.cpp
-    struct/*.cpp
-    command/*.cpp
+    table/*.cpp
+    json/*.cpp
 )
 
 add_library(db ${SOURCES})

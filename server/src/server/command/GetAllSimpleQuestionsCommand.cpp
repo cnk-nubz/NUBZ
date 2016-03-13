@@ -1,8 +1,8 @@
 #include <utils/fp_algorithm.h>
 
-#include <db/command/GetSimpleQuestions.h>
+#include <repository/SimpleQuestions.h>
 
-#include <server/utils/io_translation.h>
+#include <server/io/utils.h>
 
 #include "GetAllSimpleQuestionsCommand.h"
 
@@ -12,16 +12,16 @@ namespace command {
 GetAllSimpleQuestionsCommand::GetAllSimpleQuestionsCommand(db::Database &db) : db(db) {
 }
 
-std::vector<io::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
-    db::cmd::GetSimpleQuestions getSimpleQuestions;
-    db.execute(getSimpleQuestions);
+std::vector<io::output::SimpleQuestion> GetAllSimpleQuestionsCommand::operator()() {
+    auto repoQuestions = db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::SimpleQuestions{session};
+        return repo.getAll();
+    });
 
-    std::vector<db::SimpleQuestion> dbSQuestions = getSimpleQuestions.getResult();
-    std::vector<io::SimpleQuestion> sQuestions;
-
-    ::utils::transform(dbSQuestions, sQuestions, [](const auto &e) { return utils::toIO(e); });
-    std::sort(sQuestions.begin(), sQuestions.end());
-    return sQuestions;
+    auto questions =
+        std::vector<io::output::SimpleQuestion>(repoQuestions.begin(), repoQuestions.end());
+    std::sort(questions.begin(), questions.end());
+    return questions;
 }
 }
 }

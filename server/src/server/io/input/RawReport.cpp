@@ -53,6 +53,40 @@ RawReport::SurveyAnswers::SortQuestionAnswer::SortQuestionAnswer(
         choosenOrder = thrift.choosenOrder;
     }
 }
+
+repository::Report RawReport::toRepo() const {
+    auto res = repository::Report{};
+    res.ID = ID;
+    res.experimentID = experimentId;
+    for (auto &event : history) {
+        res.history.push_back(event.toRepo());
+    }
+    res.surveyBefore = answersBefore.toRepo();
+    res.surveyAfter = answersAfter.toRepo();
+    return res;
+}
+
+repository::Report::Event RawReport::Event::toRepo() const {
+    auto res = repository::Report::Event{};
+    res.exhibitID = exhibitId;
+    res.durationInSecs = durationInSecs;
+    res.actions = actions;
+    return res;
+}
+
+repository::Report::SurveyAns RawReport::SurveyAnswers::toRepo() const {
+    auto res = repository::Report::SurveyAns{};
+    for (auto &ans : simpleQuestionsAnswers) {
+        res.simpleQAnswers.push_back(ans.answer);
+    }
+    for (auto &ans : multipleChoiceQuestionsAnswers) {
+        res.multiChoiceQAnswers.push_back(ans.choosenOptions);
+    }
+    for (auto &ans : sortQuestionsAnswers) {
+        res.sortQAnswers.push_back(ans.choosenOrder);
+    }
+    return res;
+}
 }
 }
 }

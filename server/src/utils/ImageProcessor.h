@@ -8,12 +8,12 @@ namespace utils {
 
 class ImageProcessor {
 public:
-    ImageProcessor(const std::string &pathToOriginalImage);
+    ImageProcessor(const boost::filesystem::path &srcImagePath);
 
     std::size_t width() const;
     std::size_t height() const;
 
-    // loads file from given path
+    // loads file from initial path
     void reset();
 
     // adds white frame to make image width and height divisible by x
@@ -25,6 +25,7 @@ public:
     void saveImageTo(const std::string &path);
 
     void setTileSize(std::size_t size);
+    void setMinTileSize(std::size_t minSize);
 
     // generates tiles, saves them, returns list of filenames
     // in case of crash removes created files and throws std::runtime_error
@@ -33,11 +34,12 @@ public:
     std::vector<std::vector<std::string>> generateTiles(const boost::filesystem::path &dstDir);
 
 private:
-    const std::string originalImgPath;
+    Magick::Image cutFromScaledAt(std::size_t x, std::size_t y) const;
+
+    const std::string srcImagePath;
     Magick::Image img;
     std::size_t tileSize;
-
-    Magick::Image cutFromScaledAt(std::size_t x, std::size_t y) const;
+    std::size_t minTileSize;
 };
 }
 

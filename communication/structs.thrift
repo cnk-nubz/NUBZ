@@ -43,10 +43,16 @@ struct MapFrame {
 	2: i32 floor,
 }
 
-struct ImageTiles {
+struct ZoomLevel {
 	1: Size scaledSize,
 	2: Size tileSize,
 	3: list<list<string>> tilesUrls,
+}
+
+struct MapImage {
+	1: i32 floor,
+	2: Size resolution,
+	3: list<ZoomLevel> zoomLevels,
 }
 
 struct NewMapImagesRequest {
@@ -55,16 +61,7 @@ struct NewMapImagesRequest {
 
 struct NewMapImagesResponse {
 	1: i32 version,
-	2: map<i32, string> floorImageUrls,
-}
-
-struct MapImageTilesRequest {
-	1: i32 floor,
-}
-
-struct MapImageTilesResponse {
-	1: Size originalSize,
-	2: list<ImageTiles> zoomLevels,
+	2: map<i32, MapImage> floors,
 }
 
 struct SetMapImageRequest {

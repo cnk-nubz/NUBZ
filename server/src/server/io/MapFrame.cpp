@@ -8,10 +8,10 @@ MapFrame::MapFrame(const communication::MapFrame &thrift)
 }
 
 communication::MapFrame MapFrame::toThrift() const {
-    communication::MapFrame thrift;
-    thrift.frame = frame.toThrift();
-    thrift.floor = floor;
-    return thrift;
+    auto res = communication::MapFrame{};
+    res.frame = frame.toThrift();
+    res.floor = floor;
+    return res;
 }
 }
 }

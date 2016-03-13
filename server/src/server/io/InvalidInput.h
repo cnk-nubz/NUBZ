@@ -9,11 +9,7 @@ namespace server {
 namespace io {
 
 struct InvalidInput : public std::logic_error {
-    inline explicit InvalidInput(const std::string &msg) : std::logic_error(msg) {
-    }
-
-    inline explicit InvalidInput(const char *msg) : std::logic_error(msg) {
-    }
+    using std::logic_error::logic_error;
 
     inline communication::InvalidData toThrift() const {
         return communication::InvalidData{};

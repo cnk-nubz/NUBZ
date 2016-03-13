@@ -7,11 +7,11 @@ Frame::Frame(const communication::Frame &thrift) : x(thrift.x), y(thrift.y), siz
 }
 
 communication::Frame Frame::toThrift() const {
-    communication::Frame thrift;
-    thrift.x = x;
-    thrift.y = y;
-    thrift.size = size.toThrift();
-    return thrift;
+    auto res = communication::Frame{};
+    res.x = x;
+    res.y = y;
+    res.size = size.toThrift();
+    return res;
 }
 }
 }

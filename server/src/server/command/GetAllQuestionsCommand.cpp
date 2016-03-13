@@ -7,8 +7,8 @@ GetAllQuestionsCommand::GetAllQuestionsCommand(db::Database &db)
     : getSimple(db), getMultiple(db), getSortQ(db) {
 }
 
-io::QuestionsList GetAllQuestionsCommand::operator()() {
-    io::QuestionsList qList;
+io::output::QuestionsList GetAllQuestionsCommand::operator()() {
+    auto qList = io::output::QuestionsList{};
     qList.simpleQuestions = getSimple();
     qList.multipleChoiceQuestions = getMultiple();
     qList.sortQuestions = getSortQ();
@@ -16,16 +16,16 @@ io::QuestionsList GetAllQuestionsCommand::operator()() {
     return qList;
 }
 
-void GetAllQuestionsCommand::generateOrder(io::QuestionsList &list) const {
-    std::vector<std::pair<io::Question, io::QuestionsList::QuestionType>> all;
+void GetAllQuestionsCommand::generateOrder(io::output::QuestionsList &list) const {
+    auto all = std::vector<std::pair<io::output::Question, io::QuestionType>>{};
     for (const auto &q : list.simpleQuestions) {
-        all.push_back({q, io::QuestionsList::QuestionType::Simple});
+        all.emplace_back(q, io::QuestionType::Simple);
     }
     for (const auto &q : list.multipleChoiceQuestions) {
-        all.push_back({q, io::QuestionsList::QuestionType::MultipleChoice});
+        all.emplace_back(q, io::QuestionType::MultipleChoice);
     }
     for (const auto &q : list.sortQuestions) {
-        all.push_back({q, io::QuestionsList::QuestionType::Sort});
+        all.emplace_back(q, io::QuestionType::Sort);
     }
     std::sort(all.begin(), all.end());
 

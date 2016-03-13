@@ -1,11 +1,8 @@
-#include <db/struct/Exhibit.h>
-#include <db/command/GetMapImages.h>
-#include <db/command/IncrementCounter.h>
-#include <db/command/InsertExhibit.h>
+#include <repository/Counters.h>
+#include <repository/MapImages.h>
 
 #include <server/io/InvalidInput.h>
 #include <server/utils/InputChecker.h>
-#include <server/utils/io_translation.h>
 
 #include "CreateExhibitCommand.h"
 
@@ -15,61 +12,41 @@ namespace command {
 CreateExhibitCommand::CreateExhibitCommand(db::Database &db) : db(db) {
 }
 
-io::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
-    io::Exhibit exhibit;
-    db.execute([&](db::DatabaseSession &session) {
-        validateInput(session, input);
+io::output::Exhibit CreateExhibitCommand::operator()(const io::input::CreateExhibitRequest &input) {
+    auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
+        validateInput(input);
 
-        db::Exhibit dbExhibit;
-        dbExhibit.name = input.name;
+        auto exhibit = repository::Exhibit{};
+        exhibit.name = input.name;
         if (input.floor) {
-            dbExhibit.frame = createExhibitFrame(input.floor.value(), input.visibleFrame);
+            exhibit.frame = createExhibitFrame(input.floor.value(), input.visibleFrame);
         }
-        dbExhibit.version = db::cmd::IncrementCounter::exhibitVersion()(session);
-        dbExhibit.ID = db::cmd::InsertExhibit{dbExhibit}(session);
 
-        exhibit = utils::toIO(dbExhibit);
+        auto exhibitsRepo = repository::Exhibits{session};
+        auto countersRepo = repository::Counters{session};
+        exhibit.version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
+        exhibitsRepo.insert(&exhibit);
+        return exhibit;
     });
-    return exhibit;
+    return io::output::Exhibit{repoExhibit};
 }
 
-void CreateExhibitCommand::validateInput(db::DatabaseSession &session,
-                                         const io::input::CreateExhibitRequest &input) const {
-    utils::InputChecker checker(session);
-    if (!checker.checkText(input.name)) {
+void CreateExhibitCommand::validateInput(const io::input::CreateExhibitRequest &input) const {
+    if (!utils::checkText(input.name)) {
         throw io::InvalidInput("incorrect name");
     }
-
-    if (input.visibleFrame) {
-        auto visibleFrame = input.visibleFrame.value();
-        if (!checker.checkFrame(visibleFrame.floor,
-                                visibleFrame.frame.x,
-                                visibleFrame.frame.y,
-                                visibleFrame.frame.size.width,
-                                visibleFrame.frame.size.height)) {
-            throw io::InvalidInput("incorrect frame");
-        }
-    }
-
-    if (input.floor) {
-        db::cmd::GetMapImages getMapImages(input.floor.value());
-        getMapImages(session);
-        if (getMapImages.getResult().empty()) {
-            throw io::InvalidInput("floor without image and therefore without frame");
-        }
-    }
 }
 
-db::MapFrame CreateExhibitCommand::createExhibitFrame(
+repository::Exhibit::Frame CreateExhibitCommand::createExhibitFrame(
     std::int32_t dstFloor, const boost::optional<io::MapFrame> &visibleFrame) const {
     static const std::int32_t minSize = 200;
     static const std::int32_t screenProportion = 3;
 
-    db::MapFrame frame;
+    auto frame = repository::Exhibit::Frame{};
     frame.floor = dstFloor;
     if (!visibleFrame || visibleFrame.value().floor != dstFloor) {
         frame.x = frame.y = 0;
-        frame.width = frame.height = minSize + rand() % minSize;
+        frame.width = frame.height = minSize;
     } else {
         auto screenFrame = visibleFrame.value().frame;
         frame.width = std::max(screenFrame.size.width / screenProportion, minSize);

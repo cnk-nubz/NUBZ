@@ -1,11 +1,11 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1)
 project (zpp-cnk)
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -DMAGICKCORE_HDRI_ENABLE=0 -DMAGICKCORE_QUANTUM_DEPTH=16")
 
-find_package(Boost COMPONENTS system program_options filesystem REQUIRED)
+find_package(Boost COMPONENTS system program_options filesystem date_time REQUIRED)
 find_package(Thrift REQUIRED)
 find_package(PostgreSQL REQUIRED)
 find_package(Pqxx REQUIRED)
@@ -27,11 +27,12 @@ link_directories(${Pqxx_LIBRARY_DIRS})
 
 add_subdirectory(src/utils)
 add_subdirectory(src/db)
+add_subdirectory(src/repository)
+add_subdirectory(src/communication)
 add_subdirectory(src/server)
 
-file(GLOB SOURCES
-    src/*.cpp
-    src/communication/*.cpp
+set(SOURCES
+    src/main.cpp
 )
 
 add_executable(main ${SOURCES})
@@ -39,6 +40,10 @@ add_executable(main ${SOURCES})
 target_link_libraries(
     main
     server
+    communication
+    repository
+    db
+    utils
     ssl
     thrift
     thriftnb

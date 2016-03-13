@@ -6,15 +6,14 @@
 #include <server/io/input/NewExhibitsRequest.h>
 #include <server/io/output/NewExhibitsResponse.h>
 
-#include "commons.h"
+#include "Command.h"
 
 namespace server {
 namespace command {
 
-class GetNewExhibitsCommand {
+class GetNewExhibitsCommand : public Command {
 public:
     GetNewExhibitsCommand(db::Database &db);
-    SRV_CMD_CP_MV(GetNewExhibitsCommand);
 
     io::output::NewExhibitsResponse operator()(const io::input::NewExhibitsRequest &input);
 

@@ -21,10 +21,7 @@ service Server {
 	structs.NewMapImagesResponse getNewMapImages(1: structs.NewMapImagesRequest request)
 		throws (1: structs.InternalError err),
 
-	structs.MapImageTilesResponse getMapImageTiles(1: structs.MapImageTilesRequest request)
-		throws (1: structs.InternalError err), 
-
-	void setMapImage(1: structs.SetMapImageRequest request)
+	structs.MapImage setMapImage(1: structs.SetMapImageRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 
