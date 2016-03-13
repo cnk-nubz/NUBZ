@@ -101,27 +101,11 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     listElement
       .querySelector(".exhibitCaption")
       .addEventListener("click", => @fireEvents("modifyExhibitWithId", exhibitId))
-      
+
     if @_getExhibitFloor(exhibitId) isnt @_NO_FLOOR
       listElement
         .querySelector(".exhibitFlyToButton")
         .addEventListener("click", => @fireEvents("flyToExhibitWithId", exhibitId))
-    return
-
-  _filterExhibits: =>
-    filterButtons = jQuery("#filterButtons button")
-    filterButtonsState = (jQuery(b).hasClass("active") for b in jQuery.makeArray(filterButtons))
-    searchedText = @_lastSearchedText.toLowerCase()
-    for e in @_exhibits
-      # filter by search bar text
-      exhibitText = e.listElement.data.caption.toLowerCase()
-      if exhibitsText.indexOf(searchedText) isnt -1
-        # filter by floor only if exhibit matches the query
-        exhibitId = e.listElement.data.exhibitId
-        exhibitFloor = @_getExhibitFloor(exhibitsId)
-        e.visible = filterButtonsState[exhibitsFloor]
-      else
-        e.visible = false
     return
 
   _getExhibitFloor: (exhibitId) =>
