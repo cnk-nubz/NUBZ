@@ -95,17 +95,8 @@ class Handlers
 
   changeMapHandler: =>
     =>
-      instance = this
-      jQuery.ajaxSetup(
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      )
-      jQuery.ajax(
-        type: 'POST'
-        dataType: 'json'
-        url: '/getChangeMapDialog/'
-        data: { floor: @mapData.activeFloor }
-        success: (data) =>
-          instance.showChangeMapPopup(data.html)
+      jQuery.getJSON('getHTML?name=changeMapDialog', floor: @mapData.activeFloor, (data) =>
+        @showChangeMapPopup(data.html)
       )
 
   showChangeMapPopup: (html) =>
