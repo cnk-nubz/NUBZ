@@ -10,16 +10,16 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
+import com.cnk.notificators.ExperimentObservable;
 import com.cnk.utilities.Consts;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Observable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ExperimentData extends Observable {
+public class ExperimentData extends ExperimentObservable {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
@@ -47,7 +47,6 @@ public class ExperimentData extends Observable {
 
     public void setNewExperimentData(Experiment newData) {
         experiment = newData;
-        setChanged();
         notifyObservers();
     }
 
@@ -66,12 +65,11 @@ public class ExperimentData extends Observable {
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
-        currentRaport = new Raport(newId,
-                                   experiment.getId(),
-                                   experiment.getSurvey(Survey.SurveyType.BEFORE)
-                                             .getSurveyAnswers(),
-                                   experiment.getSurvey(Survey.SurveyType.AFTER)
-                                             .getSurveyAnswers());
+        currentRaport =
+                new Raport(newId,
+                           experiment.getId(),
+                           experiment.getSurvey(Survey.SurveyType.BEFORE).getSurveyAnswers(),
+                           experiment.getSurvey(Survey.SurveyType.AFTER).getSurveyAnswers());
         String path;
         path = saveCurrentRaport();
 

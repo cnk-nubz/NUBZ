@@ -44,13 +44,14 @@ public class ModelTranslation {
     public static Exhibit exhibitFromRealm(ExhibitRealm er) {
         Exhibit e = null;
         if (er != null) {
-            e = new Exhibit(er.getId(),
-                            er.getX(),
-                            er.getY(),
-                            er.getWidth(),
-                            er.getHeight(),
-                            er.getFloor(),
-                            er.getName());
+            e =
+                    new Exhibit(er.getId(),
+                                er.getX(),
+                                er.getY(),
+                                er.getWidth(),
+                                er.getHeight(),
+                                er.getFloor(),
+                                er.getName());
         }
 
         return e;
@@ -94,10 +95,11 @@ public class ModelTranslation {
     public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
         RaportFile file = null;
         if (realmFile != null) {
-            file = new RaportFile(realmFile.getId(),
-                                  realmFile.getServerId(),
-                                  realmFile.getFileName(),
-                                  realmFile.getState());
+            file =
+                    new RaportFile(realmFile.getId(),
+                                   realmFile.getServerId(),
+                                   realmFile.getFileName(),
+                                   realmFile.getState());
         }
 
         return file;

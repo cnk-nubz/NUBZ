@@ -63,8 +63,7 @@ public class MapData extends MapObservable {
             currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
             ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
             ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
-            for (int detailLevel = 0;
-                 detailLevel < currentFloor.getDetailLevelsCount();
+            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount();
                  detailLevel++) {
                 detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
                 mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));

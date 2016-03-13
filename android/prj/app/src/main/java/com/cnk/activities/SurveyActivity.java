@@ -24,13 +24,12 @@ import com.cnk.data.experiment.survey.answers.SortQuestionAnswer;
 import com.cnk.data.experiment.survey.answers.SurveyAnswers;
 import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.notificators.Observer;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 public class SurveyActivity extends AppCompatActivity implements Observer {
 
@@ -53,7 +52,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        ExperimentData.getInstance().addObserver(this);
+        ExperimentData.getInstance().addObserver(this, this::experimentDataDownloaded);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
@@ -74,6 +73,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
+        ExperimentData.getInstance().deleteObserver(this);
         runOnUiThread(this::init);
         spinner.dismiss();
     }
@@ -102,9 +102,13 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                                                                              simpleAnswer));
                     break;
                 case MULTIPLE_CHOICE:
-                    MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
+                    MultipleChoiceQuestionAnswer
+                            multipleChoiceAnswer =
+                            new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    MultipleChoiceQuestion
+                            nextMultipleChoiceQuestion =
+                            currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
                                                                              this,
                                                                              multipleChoiceAnswer));
@@ -199,12 +203,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         // overriden to stop back button from working
     }
 
-    @Override
-    public void update(Observable observable, Object o) {
-        ExperimentData.getInstance().deleteObserver(this);
-        experimentDataDownloaded();
-    }
-
     private void updateCounterLabel() {
         counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
                              "/" +
@@ -212,7 +210,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void hideKeyboard() {
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager
+                mgr =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 }

@@ -32,8 +32,9 @@ public class SortQuestionView extends QuestionView {
         header.setText(R.string.sort);
         header.setTextSize(HEADER_SIZE);
         ListView table = new ListView(c);
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
-                                               LayoutParams.WRAP_CONTENT);
+        LayoutParams
+                params =
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.topMargin = 10;
         params.addRule(RelativeLayout.BELOW, R.id.questionNameLabelId);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);

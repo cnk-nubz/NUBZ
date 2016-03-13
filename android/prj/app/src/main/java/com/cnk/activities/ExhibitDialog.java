@@ -66,7 +66,9 @@ public class ExhibitDialog extends Activity {
         Button finish = (Button) findViewById(R.id.bExbibitDialogFinish);
         finish.setOnClickListener(new FinishListener());
 
-        AutoResizeTextView tvExhibitDialogName = (AutoResizeTextView) findViewById(R.id.tvExhibitDialogName);
+        AutoResizeTextView
+                tvExhibitDialogName =
+                (AutoResizeTextView) findViewById(R.id.tvExhibitDialogName);
         tvExhibitDialogName.setText(name);
         tvExhibitDialogName.setMinTextSize(2f);
         tvExhibitDialogName.setTextSize(100f);

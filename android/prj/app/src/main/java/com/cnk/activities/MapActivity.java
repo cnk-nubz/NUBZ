@@ -49,7 +49,6 @@ import com.qozix.tileview.hotspots.HotSpot;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Observable;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
@@ -146,19 +145,20 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void setActionBar() {
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(this,
-                                                 drawerLayout,
-                                                 R.string.drawer_open,
-                                                 R.string.drawer_close) {
+        drawerToggle =
+                new ActionBarDrawerToggle(this,
+                                          drawerLayout,
+                                          R.string.drawer_open,
+                                          R.string.drawer_close) {
 
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-            }
+                    public void onDrawerClosed(View view) {
+                        super.onDrawerClosed(view);
+                    }
 
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-        };
+                    public void onDrawerOpened(View drawerView) {
+                        super.onDrawerOpened(drawerView);
+                    }
+                };
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
@@ -268,8 +268,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
             rlRootLayout.removeAllViews();
 
             if (isMapReady) {
-                RelativeLayout.LayoutParams lpTileView = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                                                                                         RelativeLayout.LayoutParams.MATCH_PARENT);
+                RelativeLayout.LayoutParams
+                        lpTileView =
+                        new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                                                        RelativeLayout.LayoutParams.MATCH_PARENT);
                 rlRootLayout.addView(tileView, lpTileView);
                 tileView.setVisibility(View.INVISIBLE);
             }
@@ -293,8 +295,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private RelativeLayout addVoidLayout(RelativeLayout parent, Context c) {
         RelativeLayout rl = new RelativeLayout(c);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                         ViewGroup.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                ViewGroup.LayoutParams.MATCH_PARENT);
 
         parent.addView(rl, lp);
 
@@ -305,18 +309,24 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoading = new TextView(c);
         tvLoading.setText(getResources().getString(R.string.loading_map));
         tvLoading.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                tvLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         ProgressBar pb = new ProgressBar(c, null, android.R.attr.progressBarStyleLarge);
-        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                pbLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoading, tvLp);
@@ -331,14 +341,18 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoadingFailed = new TextView(c);
         tvLoadingFailed.setText(getResources().getString(R.string.map_missing));
         tvLoadingFailed.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                tvLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoadingFailed, tvLp);
@@ -385,18 +399,22 @@ public class MapActivity extends AppCompatActivity implements Observer {
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
         Integer floorNum = 1;
         for (Exhibit e : exhibits) {
-            posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
-                                                            mapState.originalMapSize.getWidth(),
-                                                            mapState.currentMapSize.getWidth());
-            posY = ImageHelper.getDimensionWhenScaleApplied(e.getY(),
-                                                            mapState.originalMapSize.getHeight(),
-                                                            mapState.currentMapSize.getHeight());
-            width = ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
+            posX =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                                                              mapState.originalMapSize.getWidth(),
                                                              mapState.currentMapSize.getWidth());
-            height = ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
-                                                              mapState.originalMapSize.getHeight(),
-                                                              mapState.currentMapSize.getHeight());
+            posY =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getY(),
+                                                             mapState.originalMapSize.getHeight(),
+                                                             mapState.currentMapSize.getHeight());
+            width =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
+                                                             mapState.originalMapSize.getWidth(),
+                                                             mapState.currentMapSize.getWidth());
+            height =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
+                                                             mapState.originalMapSize.getHeight(),
+                                                             mapState.currentMapSize.getHeight());
 
             artv = new AutoResizeTextView(this);
             artv.setText(e.getName());
@@ -445,7 +463,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         openedDialogs--;
         if (resultCode == RESULT_OK) {
-            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            ArrayList<Integer>
+                    selectedActions =
+                    data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
             Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
 
             Integer id = null;
@@ -475,11 +495,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
         exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
-        ActivityOptions activityOptions = ActivityOptions.makeScaleUpAnimation(voidLayout,
-                                                                               lastClick.x,
-                                                                               lastClick.y,
-                                                                               1,
-                                                                               1);
+        ActivityOptions
+                activityOptions =
+                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
         startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 
@@ -578,9 +596,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
             localUISynchronization.acquireUninterruptibly();
 
             Integer detailLevels = MapData.getInstance().getDetailLevelsCountForFloor(floor);
-            DetailLevelRes biggestResolution = MapData.getInstance()
-                                                      .getDetailLevelResolution(floor,
-                                                                                detailLevels - 1);
+            DetailLevelRes
+                    biggestResolution =
+                    MapData.getInstance().getDetailLevelResolution(floor, detailLevels - 1);
 
             mapState.currentMapSize = biggestResolution.getScaledRes();
             mapState.originalMapSize = MapData.getInstance().getOriginalResolution(floor);

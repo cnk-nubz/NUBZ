@@ -53,25 +53,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
         }
     }
 
-    private void tryMapDownload() {
-        if (!dataLoaded) {
-            try {
-                MapData.getInstance().loadDbData();
-                ExhibitsData.getInstance().loadDbData();
-                ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
-                dataLoaded = true;
-            } catch (DatabaseLoadException e) {
-                Looper.prepare();
-                spinner.dismiss();
-                MapData.getInstance().deleteObserver(this);
-                e.printStackTrace();
-                Message msg = uiHandler.obtainMessage(SHOW_ALERT);
-                msg.sendToTarget();
-            }
-        }
-    }
-
     @Override
     public void onBackPressed() {
 
