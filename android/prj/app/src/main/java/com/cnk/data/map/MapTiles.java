@@ -20,23 +20,14 @@ public class MapTiles {
         return scaledSize;
     }
 
-    public void setScaledSize(Resolution scaledSize) {
-        this.scaledSize = scaledSize;
-    }
 
     public Resolution getTileSize() {
         return tileSize;
     }
 
-    public void setTileSize(Resolution tileSize) {
-        this.tileSize = tileSize;
-    }
 
     public ArrayList<ArrayList<String>> getTilesFiles() {
         return tilesFiles;
     }
 
-    public void setTilesFiles(ArrayList<ArrayList<String>> tilesFiles) {
-        this.tilesFiles = tilesFiles;
-    }
 }

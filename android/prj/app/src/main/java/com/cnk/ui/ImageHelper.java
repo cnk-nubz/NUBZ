@@ -35,8 +35,10 @@ public class ImageHelper {
         Integer imagePixels = width * height;
         Integer smallestPossibleExhibitPixels = minExhibitSide * minExhibitSide;
 
-        Float scale = (screenPixelsCount * expectedMaximumExhibitToScreenAreaRatio) /
-                      smallestPossibleExhibitPixels * maximumZoom;
+        Float
+                scale =
+                (screenPixelsCount * expectedMaximumExhibitToScreenAreaRatio) /
+                smallestPossibleExhibitPixels * maximumZoom;
         Log.i(LOG_TAG, "screen pixels count: " + Integer.toString(screenPixelsCount));
         Log.i(LOG_TAG,
               "smallest possible exhibit pixels: " + smallestPossibleExhibitPixels.toString());
@@ -79,9 +81,10 @@ public class ImageHelper {
         }
 
         if (map == null) {
-            map = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
-                                      drawable.getIntrinsicHeight(),
-                                      Bitmap.Config.RGB_565);
+            map =
+                    Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                                        drawable.getIntrinsicHeight(),
+                                        Bitmap.Config.RGB_565);
             Canvas canvas = new Canvas(map);
             Drawable temporary = drawable.getCurrent();
             temporary.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
@@ -101,17 +104,18 @@ public class ImageHelper {
     public static Bitmap scaleBitmapToProperSize(Bitmap toScale,
                                                  Integer minExhibitSide,
                                                  Integer screenRes) {
-        Pair<Integer, Integer> newDimensions = ImageHelper.getInterpolatedDimensions(toScale.getWidth(),
-                                                                                     toScale.getHeight(),
-                                                                                     minExhibitSide,
-                                                                                     screenRes);
+        Pair<Integer, Integer>
+                newDimensions =
+                ImageHelper.getInterpolatedDimensions(toScale.getWidth(),
+                                                      toScale.getHeight(),
+                                                      minExhibitSide,
+                                                      screenRes);
 
         System.gc();
         Log.i(LOG_TAG, "creating scaled bitmap begin");
-        Bitmap result = Bitmap.createScaledBitmap(toScale,
-                                                  newDimensions.first,
-                                                  newDimensions.second,
-                                                  true);
+        Bitmap
+                result =
+                Bitmap.createScaledBitmap(toScale, newDimensions.first, newDimensions.second, true);
         Log.i(LOG_TAG, "creating scaled bitmap end");
 
         return result;
@@ -121,8 +125,10 @@ public class ImageHelper {
                                                 Bitmap bmp,
                                                 Integer floor) throws IOException {
         try {
-            FileOutputStream fos = context.openFileOutput(ScaledMapPrefix + floor.toString(),
-                                                          Context.MODE_PRIVATE);
+            FileOutputStream
+                    fos =
+                    context.openFileOutput(ScaledMapPrefix + floor.toString(),
+                                           Context.MODE_PRIVATE);
             bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
             fos.close();
             Log.i(LOG_TAG, "Scaled map saved to file " + ScaledMapPrefix + floor.toString());

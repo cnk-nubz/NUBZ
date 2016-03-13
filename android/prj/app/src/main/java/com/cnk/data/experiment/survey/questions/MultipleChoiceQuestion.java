@@ -1,4 +1,4 @@
-package com.cnk.data.experiment.questions;
+package com.cnk.data.experiment.survey.questions;
 
 import java.util.List;
 

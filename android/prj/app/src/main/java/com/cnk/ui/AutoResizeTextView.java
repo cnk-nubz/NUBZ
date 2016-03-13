@@ -3,16 +3,16 @@ package com.cnk.ui;
 /**
  * DO WHAT YOU WANT TO PUBLIC LICENSE
  * Version 2, December 2004
- * <p/>
+ * <p>
  * Copyright (C) 2004 M-WaJeEh <mwajeeh.droid@gmal.com>
- * <p/>
+ * <p>
  * Everyone is permitted to copy and distribute verbatim or modified
  * copies of this license document, and changing it is allowed as
  * long as the name is changed.
- * <p/>
+ * <p>
  * DO WHAT YOU WANT TO PUBLIC LICENSE
  * TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
- * <p/>
+ * <p>
  * 0. You just DO WHAT YOU WANT TO.
  */
 
@@ -60,13 +60,15 @@ public class AutoResizeTextView extends TextView {
                 mTextRect.bottom = mPaint.getFontSpacing();
                 mTextRect.right = mPaint.measureText(text);
             } else {
-                StaticLayout layout = new StaticLayout(text,
-                                                       mPaint,
-                                                       mWidthLimit,
-                                                       Alignment.ALIGN_NORMAL,
-                                                       mSpacingMult,
-                                                       mSpacingAdd,
-                                                       true);
+                StaticLayout
+                        layout =
+                        new StaticLayout(text,
+                                         mPaint,
+                                         mWidthLimit,
+                                         Alignment.ALIGN_NORMAL,
+                                         mSpacingMult,
+                                         mSpacingAdd,
+                                         true);
                 // return early if we have more lines
                 if (getMaxLines() != NO_LINE_LIMIT && layout.getLineCount() > getMaxLines()) {
                     return 1;
@@ -238,7 +240,8 @@ public class AutoResizeTextView extends TextView {
             return;
         }
         int startSize = (int) mMinTextSize;
-        int heightLimit =
+        int
+                heightLimit =
                 getMeasuredHeight() - getCompoundPaddingBottom() - getCompoundPaddingTop();
         mWidthLimit = getMeasuredWidth() - getCompoundPaddingLeft() - getCompoundPaddingRight();
         mAvailableSpaceRect.right = mWidthLimit;

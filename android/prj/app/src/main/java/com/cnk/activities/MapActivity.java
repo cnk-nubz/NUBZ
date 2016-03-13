@@ -2,7 +2,6 @@ package com.cnk.activities;
 
 import android.app.ActivityOptions;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -30,12 +29,15 @@ import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.DataHandler;
-import com.cnk.data.experiment.Survey;
+import com.cnk.data.exhibits.ExhibitsData;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.experiment.raport.RaportEvent;
+import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
-import com.cnk.data.raport.RaportEvent;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
+import com.cnk.notificators.Observer;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.ui.ImageHelper;
 import com.cnk.ui.MapBitmapProvider;
@@ -47,8 +49,6 @@ import com.qozix.tileview.hotspots.HotSpot;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
@@ -78,14 +78,19 @@ public class MapActivity extends AppCompatActivity implements Observer {
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
-        Log.i(LOG_TAG, "adding to DataHandler observers list");
-        DataHandler.getInstance().addObserver(this);
+        Log.i(LOG_TAG, "adding to ExhibitsData observers list");
+        ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
         setViews();
         setActionBar();
         mapState = new MapState(this);
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
         NetworkHandler.getInstance().startBgDownload();
+    }
+
+    private void onExhibitsChange(List<Exhibit> changedExhibits) {
+        Log.i(LOG_TAG, "Received exhibits update notification");
+        new MapRefreshExhibits().execute();
     }
 
     public void pauseClick(View view) {
@@ -145,19 +150,20 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void setActionBar() {
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle = new ActionBarDrawerToggle(this,
-                                                 drawerLayout,
-                                                 R.string.drawer_open,
-                                                 R.string.drawer_close) {
+        drawerToggle =
+                new ActionBarDrawerToggle(this,
+                                          drawerLayout,
+                                          R.string.drawer_open,
+                                          R.string.drawer_close) {
 
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-            }
+                    public void onDrawerClosed(View view) {
+                        super.onDrawerClosed(view);
+                    }
 
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-        };
+                    public void onDrawerOpened(View drawerView) {
+                        super.onDrawerOpened(drawerView);
+                    }
+                };
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
@@ -181,8 +187,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
         }
         NetworkHandler.getInstance().stopBgDownload();
 
-        Log.i(LOG_TAG, "deleting from DataHandler observers list");
-        DataHandler.getInstance().deleteObserver(this);
+        Log.i(LOG_TAG, "deleting from ExhibitsData observers list");
+        ExhibitsData.getInstance().deleteObserver(this);
     }
 
     private void changeFloor() {
@@ -199,7 +205,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             currentFloorNum = Consts.FLOOR1;
         }
         setTitle(TITLE_PREFIX + " " + currentFloorNum.toString());
-        if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
+        if (MapData.getInstance().mapForFloorExists(currentFloorNum)) {
             new MapChangeFloor().execute();
         } else {
             layoutMapMissing.setVisibility(View.VISIBLE);
@@ -212,50 +218,47 @@ public class MapActivity extends AppCompatActivity implements Observer {
                                  final List<Resolution> tileSizes) {
 
         final Semaphore localUISynchronization = new Semaphore(0, true);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (tileView != null) {
-                    tileView.setVisibility(View.INVISIBLE);
-                    clearAllExhibitsOnMap();
-                    rlRootLayout.removeView(tileView);
-                    tileView.destroy();
-                }
-
-                tileView = new TileView(MapActivity.this);
-
-                for (int i = 0; i < scalesList.size(); i++) {
-                    Log.i(LOG_TAG, tileSizes.get(i).toString() + " " + Integer.toString(i));
-                    ScaleData scale = scalesList.get(i);
-                    Resolution res = tileSizes.get(i);
-                    tileView.addDetailLevel(scale.getScaleValue(),
-                                            scale.getScaleCode(),
-                                            res.getWidth(),
-                                            res.getHeight());
-                }
-
-                tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
-
-                tileView.setSize(mapState.currentMapSize.getWidth(),
-                                 mapState.currentMapSize.getHeight());
-                tileView.defineBounds(0,
-                                      0,
-                                      mapState.originalMapSize.getWidth(),
-                                      mapState.originalMapSize.getHeight());
-
-                tileView.setTransitionsEnabled(false);
-                tileView.setShouldRecycleBitmaps(false);
-                tileView.setShouldScaleToFit(true);
-                tileView.setScaleLimits(MINIMUM_SCALE, MAXIMUM_SCALE);
-                tileView.setScale(MINIMUM_SCALE);
-
-                mapState.exhibitsOverlay = new RelativeLayout(MapActivity.this);
-                tileView.addScalingViewGroup(mapState.exhibitsOverlay);
-
-                tileView.requestRender();
-
-                localUISynchronization.release();
+        runOnUiThread(() -> {
+            if (tileView != null) {
+                tileView.setVisibility(View.INVISIBLE);
+                clearAllExhibitsOnMap();
+                rlRootLayout.removeView(tileView);
+                tileView.destroy();
             }
+
+            tileView = new TileView(MapActivity.this);
+
+            for (int i = 0; i < scalesList.size(); i++) {
+                Log.i(LOG_TAG, tileSizes.get(i).toString() + " " + Integer.toString(i));
+                ScaleData scale = scalesList.get(i);
+                Resolution res = tileSizes.get(i);
+                tileView.addDetailLevel(scale.getScaleValue(),
+                                        scale.getScaleCode(),
+                                        res.getWidth(),
+                                        res.getHeight());
+            }
+
+            tileView.setBitmapProvider(new MapBitmapProvider(currentFloorNum));
+
+            tileView.setSize(mapState.currentMapSize.getWidth(),
+                             mapState.currentMapSize.getHeight());
+            tileView.defineBounds(0,
+                                  0,
+                                  mapState.originalMapSize.getWidth(),
+                                  mapState.originalMapSize.getHeight());
+
+            tileView.setTransitionsEnabled(false);
+            tileView.setShouldRecycleBitmaps(false);
+            tileView.setShouldScaleToFit(true);
+            tileView.setScaleLimits(MINIMUM_SCALE, MAXIMUM_SCALE);
+            tileView.setScale(MINIMUM_SCALE);
+
+            mapState.exhibitsOverlay = new RelativeLayout(MapActivity.this);
+            tileView.addScalingViewGroup(mapState.exhibitsOverlay);
+
+            tileView.requestRender();
+
+            localUISynchronization.release();
         });
 
         localUISynchronization.acquireUninterruptibly();
@@ -264,34 +267,32 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void setLayout(final boolean isMapReady) {
         final Semaphore localUISynchronization = new Semaphore(0, true);
 
-        final Boolean currentFloorExists = DataHandler.getInstance()
-                                                      .mapForFloorExists(currentFloorNum);
+        final Boolean currentFloorExists = MapData.getInstance().mapForFloorExists(currentFloorNum);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                rlRootLayout.removeAllViews();
+        runOnUiThread(() -> {
+            rlRootLayout.removeAllViews();
 
-                if (isMapReady) {
-                    RelativeLayout.LayoutParams lpTileView = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                                                                                             RelativeLayout.LayoutParams.MATCH_PARENT);
-                    rlRootLayout.addView(tileView, lpTileView);
-                    tileView.setVisibility(View.INVISIBLE);
-                }
-
-                voidLayout = addVoidLayout(rlRootLayout, rlRootLayout.getContext());
-                layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
-                layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
-                if (currentFloorExists) {
-                    layoutLoading.setVisibility(View.VISIBLE);
-                    layoutMapMissing.setVisibility(View.INVISIBLE);
-                } else {
-                    layoutLoading.setVisibility(View.INVISIBLE);
-                    layoutMapMissing.setVisibility(View.VISIBLE);
-                }
-
-                localUISynchronization.release();
+            if (isMapReady) {
+                RelativeLayout.LayoutParams
+                        lpTileView =
+                        new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                                                        RelativeLayout.LayoutParams.MATCH_PARENT);
+                rlRootLayout.addView(tileView, lpTileView);
+                tileView.setVisibility(View.INVISIBLE);
             }
+
+            voidLayout = addVoidLayout(rlRootLayout, rlRootLayout.getContext());
+            layoutLoading = addLoadingLayout(rlRootLayout, rlRootLayout.getContext());
+            layoutMapMissing = addMapMissingLayout(rlRootLayout, rlRootLayout.getContext());
+            if (currentFloorExists) {
+                layoutLoading.setVisibility(View.VISIBLE);
+                layoutMapMissing.setVisibility(View.INVISIBLE);
+            } else {
+                layoutLoading.setVisibility(View.INVISIBLE);
+                layoutMapMissing.setVisibility(View.VISIBLE);
+            }
+
+            localUISynchronization.release();
         });
 
         localUISynchronization.acquireUninterruptibly();
@@ -299,8 +300,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private RelativeLayout addVoidLayout(RelativeLayout parent, Context c) {
         RelativeLayout rl = new RelativeLayout(c);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                                                                         ViewGroup.LayoutParams.MATCH_PARENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                                ViewGroup.LayoutParams.MATCH_PARENT);
 
         parent.addView(rl, lp);
 
@@ -311,18 +314,24 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoading = new TextView(c);
         tvLoading.setText(getResources().getString(R.string.loading_map));
         tvLoading.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                tvLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         ProgressBar pb = new ProgressBar(c, null, android.R.attr.progressBarStyleLarge);
-        LinearLayout.LayoutParams pbLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                pbLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoading, tvLp);
@@ -337,14 +346,18 @@ public class MapActivity extends AppCompatActivity implements Observer {
         TextView tvLoadingFailed = new TextView(c);
         tvLoadingFailed.setText(getResources().getString(R.string.map_missing));
         tvLoadingFailed.setTextSize(20);
-        LinearLayout.LayoutParams tvLp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                       ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams
+                tvLp =
+                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                              ViewGroup.LayoutParams.WRAP_CONTENT);
 
         LinearLayout ll = new LinearLayout(c);
         ll.setOrientation(LinearLayout.VERTICAL);
         ll.setGravity(Gravity.CENTER_HORIZONTAL);
-        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                                                                         ViewGroup.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams
+                lp =
+                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                                                ViewGroup.LayoutParams.WRAP_CONTENT);
         lp.addRule(RelativeLayout.CENTER_IN_PARENT);
 
         ll.addView(tvLoadingFailed, tvLp);
@@ -354,33 +367,20 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ll;
     }
 
-    // Data updating:
-    @Override
-    public void update(Observable observable, Object o) {
-        DataHandler.Item notification = (DataHandler.Item) o;
-        if (notification.equals(DataHandler.Item.EXHIBITS)) {
-            Log.i(LOG_TAG, "Received exhibits update notification");
-            new MapRefreshExhibits().execute();
-        }
-    }
-
     private void clearAllExhibitsOnMap() {
         final Semaphore localUISynchronization = new Semaphore(0, true);
 
         Log.i(LOG_TAG, "clearing all exhibits on map");
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (HotSpot hs : mapState.hotSpotsForFloor) {
-                    tileView.removeHotSpot(hs);
-                }
-                mapState.hotSpotsForFloor.clear();
-
-                mapState.exhibitsOverlay.removeAllViews();
-
-                localUISynchronization.release();
+        runOnUiThread(() -> {
+            for (HotSpot hs : mapState.hotSpotsForFloor) {
+                tileView.removeHotSpot(hs);
             }
+            mapState.hotSpotsForFloor.clear();
+
+            mapState.exhibitsOverlay.removeAllViews();
+
+            localUISynchronization.release();
         });
 
         localUISynchronization.acquireUninterruptibly();
@@ -399,18 +399,22 @@ public class MapActivity extends AppCompatActivity implements Observer {
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
         Integer floorNum = 1;
         for (Exhibit e : exhibits) {
-            posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
-                                                            mapState.originalMapSize.getWidth(),
-                                                            mapState.currentMapSize.getWidth());
-            posY = ImageHelper.getDimensionWhenScaleApplied(e.getY(),
-                                                            mapState.originalMapSize.getHeight(),
-                                                            mapState.currentMapSize.getHeight());
-            width = ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
+            posX =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                                                              mapState.originalMapSize.getWidth(),
                                                              mapState.currentMapSize.getWidth());
-            height = ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
-                                                              mapState.originalMapSize.getHeight(),
-                                                              mapState.currentMapSize.getHeight());
+            posY =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getY(),
+                                                             mapState.originalMapSize.getHeight(),
+                                                             mapState.currentMapSize.getHeight());
+            width =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getWidth(),
+                                                             mapState.originalMapSize.getWidth(),
+                                                             mapState.currentMapSize.getWidth());
+            height =
+                    ImageHelper.getDimensionWhenScaleApplied(e.getHeight(),
+                                                             mapState.originalMapSize.getHeight(),
+                                                             mapState.currentMapSize.getHeight());
 
             artv = new AutoResizeTextView(this);
             artv.setText(e.getName());
@@ -438,19 +442,16 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         final Semaphore waitOnUI = new Semaphore(0, true);
 
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < viewArrayList.size(); i++) {
-                    mapState.exhibitsOverlay.addView(viewArrayList.get(i).first,
-                                                     viewArrayList.get(i).second);
-                    tileView.addHotSpot(mapState.hotSpotsForFloor.get(i));
-                }
-
-                layoutLoading.setVisibility(View.INVISIBLE);
-                tileView.setVisibility(View.VISIBLE);
-                waitOnUI.release();
+        runOnUiThread(() -> {
+            for (int i = 0; i < viewArrayList.size(); i++) {
+                mapState.exhibitsOverlay.addView(viewArrayList.get(i).first,
+                                                 viewArrayList.get(i).second);
+                tileView.addHotSpot(mapState.hotSpotsForFloor.get(i));
             }
+
+            layoutLoading.setVisibility(View.INVISIBLE);
+            tileView.setVisibility(View.VISIBLE);
+            waitOnUI.release();
         });
 
         waitOnUI.acquireUninterruptibly();
@@ -462,7 +463,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         openedDialogs--;
         if (resultCode == RESULT_OK) {
-            ArrayList<Integer> selectedActions = data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
+            ArrayList<Integer>
+                    selectedActions =
+                    data.getIntegerArrayListExtra(ExhibitDialog.SELECTED_ACTIONS);
             Integer duration = (int) data.getLongExtra(ExhibitDialog.TIME, 0);
 
             Integer id = null;
@@ -480,12 +483,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
             }
 
             final RaportEvent event = new RaportEvent(id, duration, selectedActions);
-            new Runnable() {
-                @Override
-                public void run() {
-                    DataHandler.getInstance().addEventToCurrentRaport(event);
-                }
-            }.run();
+            new Thread(() -> {
+                ExperimentData.getInstance().addEventToCurrentRaport(event);
+            }).start();
         }
     }
 
@@ -495,11 +495,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Intent exhibitWindowIntent = new Intent(MapActivity.this, ExhibitDialog.class);
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
         exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
-        ActivityOptions activityOptions = ActivityOptions.makeScaleUpAnimation(voidLayout,
-                                                                               lastClick.x,
-                                                                               lastClick.y,
-                                                                               1,
-                                                                               1);
+        ActivityOptions
+                activityOptions =
+                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
         startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 
@@ -507,11 +505,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle(R.string.error);
         alert.setMessage(R.string.mapIncompleteMessage);
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
+        alert.setPositiveButton("OK", (dialog, which) -> {
+            finish();
         });
         alert.setCancelable(false);
         alert.show();
@@ -520,7 +515,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... voids) {
-            if (DataHandler.getInstance().mapForFloorExists(currentFloorNum)) {
+            if (MapData.getInstance().mapForFloorExists(currentFloorNum)) {
                 return true;
             } else {
                 setLayout(false);
@@ -546,25 +541,22 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             final Semaphore waitForUIMutex = new Semaphore(0, true);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (tileView != null) {
-                        tileView.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutMapMissing != null) {
-                        layoutMapMissing.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutLoading != null) {
-                        layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                    waitForUIMutex.release();
+            runOnUiThread(() -> {
+                if (tileView != null) {
+                    tileView.setVisibility(View.INVISIBLE);
                 }
+                if (layoutMapMissing != null) {
+                    layoutMapMissing.setVisibility(View.INVISIBLE);
+                }
+                if (layoutLoading != null) {
+                    layoutLoading.setVisibility(View.VISIBLE);
+                }
+                waitForUIMutex.release();
             });
 
             clearAllExhibitsOnMap();
             waitForUIMutex.acquireUninterruptibly();
-            addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(currentFloorNum));
+            addAllExhibitsToMap(ExhibitsData.getInstance().getExhibitsOfFloor(currentFloorNum));
 
             changeAndUpdateMutex.release();
 
@@ -588,32 +580,28 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             floor = currentFloorNum;
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (layoutMapMissing != null) {
-                        layoutMapMissing.setVisibility(View.INVISIBLE);
-                    }
-                    if (tileView != null) {
-                        tileView.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutLoading != null) {
-                        layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                    localUISynchronization.release();
+            runOnUiThread(() -> {
+                if (layoutMapMissing != null) {
+                    layoutMapMissing.setVisibility(View.INVISIBLE);
                 }
+                if (tileView != null) {
+                    tileView.setVisibility(View.INVISIBLE);
+                }
+                if (layoutLoading != null) {
+                    layoutLoading.setVisibility(View.VISIBLE);
+                }
+                localUISynchronization.release();
             });
 
             localUISynchronization.acquireUninterruptibly();
 
-            Integer detailLevels = DataHandler.getInstance().getDetailLevelsCountForFloor(floor);
-            DetailLevelRes biggestResolution = DataHandler.getInstance()
-                                                          .getDetailLevelResolution(floor,
-                                                                                    detailLevels -
-                                                                                    1);
+            Integer detailLevels = MapData.getInstance().getDetailLevelsCountForFloor(floor);
+            DetailLevelRes
+                    biggestResolution =
+                    MapData.getInstance().getDetailLevelResolution(floor, detailLevels - 1);
 
             mapState.currentMapSize = biggestResolution.getScaledRes();
-            mapState.originalMapSize = DataHandler.getInstance().getOriginalResolution(floor);
+            mapState.originalMapSize = MapData.getInstance().getOriginalResolution(floor);
 
             if (detailLevels == null || biggestResolution == null ||
                 mapState.currentMapSize == null || mapState.originalMapSize == null) {
@@ -622,8 +610,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             LinkedList<ScaleData> ll = new LinkedList<>();
             for (int i = 0; i < detailLevels; i++) {
-                DetailLevelRes current = DataHandler.getInstance()
-                                                    .getDetailLevelResolution(floor, i);
+                DetailLevelRes current = MapData.getInstance().getDetailLevelResolution(floor, i);
                 if (current == null) {
                     showAlert();
                 }
@@ -633,7 +620,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             ArrayList<Resolution> tileSizes = new ArrayList<>();
             for (int i = 0; i < detailLevels; i++) {
-                Resolution current = DataHandler.getInstance().getTileSize(floor, i);
+                Resolution current = MapData.getInstance().getTileSize(floor, i);
                 if (current == null) {
                     showAlert();
                 }
@@ -643,7 +630,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             prepareTileView(floor, ll, tileSizes);
             setLayout(true);
 
-            addAllExhibitsToMap(DataHandler.getInstance().getExhibitsOfFloor(floor));
+            addAllExhibitsToMap(ExhibitsData.getInstance().getExhibitsOfFloor(floor));
 
             changeAndUpdateMutex.release();
 

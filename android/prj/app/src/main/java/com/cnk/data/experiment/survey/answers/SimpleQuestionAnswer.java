@@ -1,4 +1,4 @@
-package com.cnk.data.experiment.answers;
+package com.cnk.data.experiment.survey.answers;
 
 import java.io.Serializable;
 

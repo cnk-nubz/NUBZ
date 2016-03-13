@@ -1,6 +1,6 @@
 package com.cnk.data;
 
-import com.cnk.data.raport.Raport;
+import com.cnk.data.experiment.raport.Raport;
 
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;

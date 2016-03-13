@@ -1,9 +1,9 @@
-package com.cnk.data.experiment;
+package com.cnk.data.experiment.survey;
 
-import com.cnk.data.experiment.answers.SurveyAnswers;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
+import com.cnk.data.experiment.survey.answers.SurveyAnswers;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.survey.questions.SimpleQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
 
 import java.util.Queue;
 

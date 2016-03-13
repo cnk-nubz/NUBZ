@@ -2,15 +2,14 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.thrift.ImageTiles;
-import com.cnk.communication.thrift.MapImageTilesRequest;
-import com.cnk.communication.thrift.MapImageTilesResponse;
+import com.cnk.communication.thrift.MapImage;
 import com.cnk.communication.thrift.NewMapImagesRequest;
 import com.cnk.communication.thrift.NewMapImagesResponse;
 import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.Size;
-import com.cnk.data.DataHandler;
+import com.cnk.communication.thrift.ZoomLevel;
 import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapData;
 import com.cnk.data.map.MapTiles;
 import com.cnk.data.map.Resolution;
 import com.cnk.notificators.Notificator;
@@ -32,54 +31,48 @@ public class MapDownloadTask extends ServerTask {
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
-        NewMapImagesResponse response = downloadUpdateStatus(client);
-        Integer version = response.getVersion();
+        Integer version = MapData.getInstance().getMapVersion();
         downloadTilesUpdate(client, version);
-        DataHandler.getInstance().notifyMapUpdated();
+        MapData.getInstance().notifyObservers();
         Log.i(LOG_TAG, "Map update complete");
-    }
-
-    private NewMapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
-        Log.i(LOG_TAG, "Downloading maps to update");
-        NewMapImagesRequest request = new NewMapImagesRequest();
-        Integer version = DataHandler.getInstance().getMapVersion();
-        if (version != null) {
-            request.setAcquiredVersion(version);
-        }
-        NewMapImagesResponse response = client.getNewMapImages(request);
-        Log.i(LOG_TAG, "Maps to update obtained");
-        return response;
     }
 
     private void downloadTilesUpdate(Server.Client client,
                                      Integer version) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
 
-        MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
-        MapImageTilesResponse floor1Response = client.getMapImageTiles(requestFloor1);
-        MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
-        MapImageTilesResponse floor2Response = client.getMapImageTiles(requestFloor2);
+        NewMapImagesRequest request = new NewMapImagesRequest();
+        if (version != null) {
+            request.setAcquiredVersion(version);
+        }
+
+        NewMapImagesResponse response = client.getNewMapImages(request);
+        MapImage floor1Response = response.getFloors().get(Consts.FLOOR1);
+        MapImage floor2Response = response.getFloors().get(Consts.FLOOR2);
 
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2);
+        MapData.getInstance().setMaps(version, floor1, floor2);
     }
 
-    private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {
+    private FloorMap translateFromThrift(MapImage thriftResponse) {
         if (thriftResponse == null) {
             return null;
         }
-        Size thriftSize = thriftResponse.getOriginalSize();
+        Size thriftSize = thriftResponse.getResolution();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
-        List<ImageTiles> imageTilesThrift = thriftResponse.getZoomLevels();
+        List<ZoomLevel> imageTilesThrift = thriftResponse.getZoomLevels();
         ArrayList<MapTiles> mapTiles = new ArrayList<>();
 
-        for (ImageTiles tile : imageTilesThrift) {
-            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(),
-                                                   tile.getScaledSize().getHeight());
-            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(),
-                                                 tile.getTileSize().getHeight());
+        for (ZoomLevel tile : imageTilesThrift) {
+            Resolution
+                    scaledSize =
+                    new Resolution(tile.getScaledSize().getWidth(),
+                                   tile.getScaledSize().getHeight());
+            Resolution
+                    tileSize =
+                    new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
             MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(toCopy));
             mapTiles.add(toAdd);

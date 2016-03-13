@@ -6,9 +6,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.cnk.R;
-import com.cnk.data.experiment.answers.SortQuestionAnswer;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
+import com.cnk.data.experiment.survey.answers.SortQuestionAnswer;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestionOption;
 import com.cnk.ui.adapters.SortListAdapter;
 
 public class SortQuestionView extends QuestionView {
@@ -32,8 +32,9 @@ public class SortQuestionView extends QuestionView {
         header.setText(R.string.sort);
         header.setTextSize(HEADER_SIZE);
         ListView table = new ListView(c);
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
-                                               LayoutParams.WRAP_CONTENT);
+        LayoutParams
+                params =
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.topMargin = 10;
         params.addRule(RelativeLayout.BELOW, R.id.questionNameLabelId);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);

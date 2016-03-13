@@ -6,15 +6,15 @@ import com.cnk.communication.thrift.CurrentExperimentResponse;
 import com.cnk.communication.thrift.QuestionType;
 import com.cnk.communication.thrift.QuestionsList;
 import com.cnk.communication.thrift.Server;
-import com.cnk.data.DataHandler;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.Experiment;
-import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestionOption;
-import com.cnk.data.experiment.questions.SimpleQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
-import com.cnk.data.experiment.questions.SortQuestionOption;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestionOption;
+import com.cnk.data.experiment.survey.questions.SimpleQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestionOption;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -46,16 +46,18 @@ public class ExperimentDataDownloadTask extends ServerTask {
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {
         Experiment experiment = translateDataFromThrift(thriftData);
-        DataHandler.getInstance().setNewExperimentData(experiment);
+        ExperimentData.getInstance().setNewExperimentData(experiment);
     }
 
     private Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {
         Integer id = thriftData.getExperiment().getExperimentId();
         String name = thriftData.getExperiment().getName();
-        List<Action> exhibitActions = translateActionsFromThrift(thriftData.getExperiment()
-                                                                           .getExhibitActions());
-        List<Action> breakActions = translateActionsFromThrift(thriftData.getExperiment()
-                                                                         .getBreakActions());
+        List<Action>
+                exhibitActions =
+                translateActionsFromThrift(thriftData.getExperiment().getExhibitActions());
+        List<Action>
+                breakActions =
+                translateActionsFromThrift(thriftData.getExperiment().getBreakActions());
         Survey preSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyBefore());
         Survey postSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyAfter());
         return new Experiment(id, name, exhibitActions, breakActions, preSurvey, postSurvey);
@@ -72,7 +74,9 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private Survey translateSurveyFromThrift(QuestionsList survey) {
         Queue<Survey.QuestionType> types = questionOrderFromThrift(survey.getQuestionsOrder());
         Queue<SimpleQuestion> simpleQs = simpleQuestionsFromThrift(survey.getSimpleQuestions());
-        Queue<MultipleChoiceQuestion> multiQs = multiQuestionsFromThrift(survey.getMultipleChoiceQuestions());
+        Queue<MultipleChoiceQuestion>
+                multiQs =
+                multiQuestionsFromThrift(survey.getMultipleChoiceQuestions());
         Queue<SortQuestion> sortQs = sortQuestionsFromThrift(survey.getSortQuestions());
 
         return new Survey(types, simpleQs, multiQs, sortQs);

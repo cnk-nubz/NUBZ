@@ -2,6 +2,8 @@ package com.cnk.data.experiment;
 
 import android.support.annotation.NonNull;
 
+import com.cnk.data.experiment.survey.Survey;
+
 import java.util.List;
 
 public class Experiment {

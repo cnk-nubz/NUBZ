@@ -59,7 +59,9 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
 
     @Override
     public View getView(final int idx, View view, ViewGroup viewGroup) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater
+                inflater =
+                (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View option = inflater.inflate(layout, null);
         TextView text = (TextView) option.findViewById(viewIds.getTextViewId());
         ImageButton downButon = (ImageButton) option.findViewById(viewIds.getDownButtonId());

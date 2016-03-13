@@ -9,9 +9,9 @@ import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.SimpleQuestionAnswer;
 import com.cnk.communication.thrift.SortQuestionAnswer;
 import com.cnk.communication.thrift.SurveyAnswers;
-import com.cnk.data.DataHandler;
-import com.cnk.data.raport.Raport;
-import com.cnk.data.raport.RaportEvent;
+import com.cnk.data.experiment.raport.Raport;
+import com.cnk.data.experiment.raport.RaportEvent;
+import com.cnk.data.raports.ReadyRaports;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -31,20 +31,19 @@ public class RaportUploadTask extends ServerTask {
 
     @Override
     protected void performInSession(Server.Client client) throws TException {
-        Map<Raport, Integer> toSend = DataHandler.getInstance().getAllReadyRaports();
+        Map<Raport, Integer> toSend = ReadyRaports.getInstance().getAllReadyRaports();
         for (Map.Entry<Raport, Integer> entry : toSend.entrySet()) {
             Raport raport = entry.getKey();
             Integer serverId = entry.getValue();
             if (serverId == null) {
                 serverId = client.getIdForNewReport();
-                DataHandler.getInstance().setServerId(raport, serverId);
+                ReadyRaports.getInstance().setServerId(raport, serverId);
             }
             Log.i(LOG_TAG, "Sending raport with id " + raport.getId().toString());
             RawReport thriftRaport = translateToThrift(raport, serverId);
             client.saveReport(thriftRaport);
             Log.i(LOG_TAG, "Raport sent");
-            DataHandler.getInstance().markRaportAsSent(raport);
-            toSend.remove(entry.getKey());
+            ReadyRaports.getInstance().markRaportAsSent(raport);
         }
     }
 
@@ -72,7 +71,7 @@ public class RaportUploadTask extends ServerTask {
         return thriftEvents;
     }
 
-    private SurveyAnswers translateSurvey(com.cnk.data.experiment.answers.SurveyAnswers answers) {
+    private SurveyAnswers translateSurvey(com.cnk.data.experiment.survey.answers.SurveyAnswers answers) {
         SurveyAnswers thriftAnswers = new SurveyAnswers();
         thriftAnswers.setSimpleQuestionsAnswers(translateSimpleAnswers(answers.getSimpleAnswers()));
         thriftAnswers.setMultipleChoiceQuestionsAnswers(translateMultiQuestions(answers.getMultipleChoiceAnswers()));
@@ -80,10 +79,10 @@ public class RaportUploadTask extends ServerTask {
         return thriftAnswers;
     }
 
-    private List<SimpleQuestionAnswer> translateSimpleAnswers(List<com.cnk.data.experiment.answers.SimpleQuestionAnswer> answers) {
+    private List<SimpleQuestionAnswer> translateSimpleAnswers(List<com.cnk.data.experiment.survey.answers.SimpleQuestionAnswer> answers) {
         Log.i(LOG_TAG, "-------SIMPLE QUESTIONS-------");
         List<SimpleQuestionAnswer> thriftAnswers = new ArrayList<>();
-        for (com.cnk.data.experiment.answers.SimpleQuestionAnswer answer : answers) {
+        for (com.cnk.data.experiment.survey.answers.SimpleQuestionAnswer answer : answers) {
             Log.i(LOG_TAG, "SIMPLE QUESTION");
             SimpleQuestionAnswer thriftAnswer = new SimpleQuestionAnswer();
             Log.i(LOG_TAG, answer.getAnswer());
@@ -94,10 +93,10 @@ public class RaportUploadTask extends ServerTask {
         return thriftAnswers;
     }
 
-    private List<MultipleChoiceQuestionAnswer> translateMultiQuestions(List<com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer> answers) {
+    private List<MultipleChoiceQuestionAnswer> translateMultiQuestions(List<com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer> answers) {
         Log.i(LOG_TAG, "-------MULTIPLE CHOICE QUESTIONS-------");
         List<MultipleChoiceQuestionAnswer> thriftAnswers = new ArrayList<>();
-        for (com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer answer : answers) {
+        for (com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer answer : answers) {
             Log.i(LOG_TAG, "MULTIPLE CHOICE QUESTION");
             MultipleChoiceQuestionAnswer thriftAnswer = new MultipleChoiceQuestionAnswer();
             List<Integer> thriftOptions = new ArrayList<>();
@@ -116,10 +115,10 @@ public class RaportUploadTask extends ServerTask {
         return thriftAnswers;
     }
 
-    private List<SortQuestionAnswer> trasnlateSortQuestions(List<com.cnk.data.experiment.answers.SortQuestionAnswer> answers) {
+    private List<SortQuestionAnswer> trasnlateSortQuestions(List<com.cnk.data.experiment.survey.answers.SortQuestionAnswer> answers) {
         Log.i(LOG_TAG, "-------SORT QUESTIONS-------");
         List<SortQuestionAnswer> thriftAnswers = new ArrayList<>();
-        for (com.cnk.data.experiment.answers.SortQuestionAnswer answer : answers) {
+        for (com.cnk.data.experiment.survey.answers.SortQuestionAnswer answer : answers) {
             Log.i(LOG_TAG, "SORT QUESTION");
             SortQuestionAnswer thriftAnswer = new SortQuestionAnswer();
             List<Integer> thriftOptions = new ArrayList<>();

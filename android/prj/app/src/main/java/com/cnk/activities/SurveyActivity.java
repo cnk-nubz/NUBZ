@@ -2,7 +2,6 @@ package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
@@ -17,21 +16,20 @@ import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.DataHandler;
-import com.cnk.data.experiment.Survey;
-import com.cnk.data.experiment.answers.MultipleChoiceQuestionAnswer;
-import com.cnk.data.experiment.answers.SimpleQuestionAnswer;
-import com.cnk.data.experiment.answers.SortQuestionAnswer;
-import com.cnk.data.experiment.answers.SurveyAnswers;
-import com.cnk.data.experiment.questions.MultipleChoiceQuestion;
-import com.cnk.data.experiment.questions.SortQuestion;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer;
+import com.cnk.data.experiment.survey.answers.SimpleQuestionAnswer;
+import com.cnk.data.experiment.survey.answers.SortQuestionAnswer;
+import com.cnk.data.experiment.survey.answers.SurveyAnswers;
+import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
+import com.cnk.data.experiment.survey.questions.SortQuestion;
+import com.cnk.notificators.Observer;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 public class SurveyActivity extends AppCompatActivity implements Observer {
 
@@ -54,7 +52,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        DataHandler.getInstance().addObserver(this);
+        ExperimentData.getInstance().addUIObserver(this, this::experimentDataDownloaded);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
@@ -75,18 +73,14 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                init();
-            }
-        });
+        ExperimentData.getInstance().deleteObserver(this);
+        init();
         spinner.dismiss();
     }
 
     private void init() {
         if (type == Survey.SurveyType.BEFORE) {
-            DataHandler.getInstance().startNewRaport();
+            ExperimentData.getInstance().startNewRaport();
         }
         initViews();
         if (allQuestionsCount == 0) {
@@ -98,7 +92,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void initViews() {
-        Survey currentSurvey = DataHandler.getInstance().getSurvey(type);
+        Survey currentSurvey = ExperimentData.getInstance().getSurvey(type);
         SurveyAnswers answers = currentSurvey.getSurveyAnswers();
         allQuestionsCount = currentSurvey.getRemainingQuestionsCount();
         while (currentSurvey.getRemainingQuestionsCount() > 0) {
@@ -112,9 +106,13 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                                                                              simpleAnswer));
                     break;
                 case MULTIPLE_CHOICE:
-                    MultipleChoiceQuestionAnswer multipleChoiceAnswer = new MultipleChoiceQuestionAnswer();
+                    MultipleChoiceQuestionAnswer
+                            multipleChoiceAnswer =
+                            new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion nextMultipleChoiceQuestion = currentSurvey.popNextMultipleChoiceQuestion();
+                    MultipleChoiceQuestion
+                            nextMultipleChoiceQuestion =
+                            currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
                                                                              this,
                                                                              multipleChoiceAnswer));
@@ -159,7 +157,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         item.setEnabled(false);
         hideKeyboard();
         currentQuestionView.saveAnswer();
-        DataHandler.getInstance().saveCurrentRaport();
         if (item.getItemId() == R.id.action_prev_question) {
             nextItem.setTitle(R.string.next);
             if (currentQuestionNo - 1 <= 0) {
@@ -185,17 +182,8 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private void showDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setMessage(R.string.confirmation);
-        alert.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                changeToNextActivity();
-            }
-        });
-        alert.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // does nothing
-            }
+        alert.setPositiveButton("Tak", (dialog, which) -> { changeToNextActivity(); });
+        alert.setNegativeButton("Nie", (dialog, which) -> {
         });
         alert.setCancelable(false);
         alert.show();
@@ -205,7 +193,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         Class next = (Class) getIntent().getSerializableExtra("nextActivity");
         if (next == null) {
             finish();
-            DataHandler.getInstance().markRaportAsReady();
+            ExperimentData.getInstance().markRaportAsReady();
             NetworkHandler.getInstance().uploadRaports();
         } else {
             Intent i = new Intent(getApplicationContext(), next);
@@ -219,15 +207,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         // overriden to stop back button from working
     }
 
-    @Override
-    public void update(Observable observable, Object o) {
-        DataHandler.Item notification = (DataHandler.Item) o;
-        if (notification.equals(DataHandler.Item.EXPERIMENT_DATA)) {
-            DataHandler.getInstance().deleteObserver(this);
-            experimentDataDownloaded();
-        }
-    }
-
     private void updateCounterLabel() {
         counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
                              "/" +
@@ -235,7 +214,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void hideKeyboard() {
-        InputMethodManager mgr = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager
+                mgr =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }
 }

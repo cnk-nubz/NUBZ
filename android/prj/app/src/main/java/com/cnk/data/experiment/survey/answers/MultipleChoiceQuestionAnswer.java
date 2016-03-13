@@ -1,9 +1,9 @@
-package com.cnk.data.experiment.answers;
+package com.cnk.data.experiment.survey.answers;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class SortQuestionAnswer implements Serializable {
+public class MultipleChoiceQuestionAnswer implements Serializable {
     private List<Integer> answer;
 
     public List<Integer> getAnswer() {
@@ -19,7 +19,7 @@ public class SortQuestionAnswer implements Serializable {
 
     @Override
     public String toString() {
-        return "SortQuestionAnswer{" +
+        return "MultipleChoiceQuestionAnswer{" +
                "answer=" + answer +
                '}';
     }
