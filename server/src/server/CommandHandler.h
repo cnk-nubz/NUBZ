@@ -39,6 +39,12 @@ public:
 
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
     virtual void createExperiment(const communication::CreateExperimentRequest &request) override;
+    virtual void getReadyExperiments(std::vector<communication::ExperimentInfo> &response) override;
+    virtual void getFinishedExperiments(
+        std::vector<communication::ExperimentInfo> &response) override;
+    virtual void getActiveExperiment(communication::SingleExperimentInfo &response) override;
+    virtual void getExperiment(communication::Experiment &response,
+                               const int32_t experimentId) override;
 
     virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
@@ -80,12 +86,15 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
         return f();
     } catch (server::io::InvalidInput &e) {
         LOG(INFO) << "InvalidInput: " << e.what();
+        LOG(INFO) << "Command aborted";
         throw e.toThrift();
     } catch (repository::InvalidData &e) {
         LOG(INFO) << "InvalidInput: " << e.what();
+        LOG(INFO) << "Command aborted";
         throw communication::InvalidData{};
     } catch (std::exception &e) {
         LOG(INFO) << "InternalError: " << e.what();
+        LOG(INFO) << "Command aborted";
         throw communication::InternalError{};
     } catch (...) {
         LOG(INFO) << "InternalError";

@@ -8,7 +8,11 @@
 #include "command/SaveRawReportCommand.h"
 
 #include "command/CreateExperimentCommand.h"
+#include "command/GetActiveExperiment.h"
 #include "command/GetCurrentExperimentCommand.h"
+#include "command/GetExperiment.h"
+#include "command/GetFinishedExperiments.h"
+#include "command/GetReadyExperiments.h"
 
 #include "command/CreateExhibitCommand.h"
 #include "command/GetAllExhibitsCommand.h"

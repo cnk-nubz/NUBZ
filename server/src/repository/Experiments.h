@@ -84,10 +84,11 @@ public:
     boost::optional<Experiment> start(std::int32_t ID);
 
     boost::optional<Experiment> getActive();
+    boost::optional<LazyExperiment> getLazyActive();
     void finishActive();
 
-    std::vector<Experiment> getAllReady();
-    std::vector<Experiment> getAllFinished();
+    std::vector<LazyExperiment> getAllReady();
+    std::vector<LazyExperiment> getAllFinished();
 
     // ID, startDate and finishDate will be saved in the given struct
     // may throw InvalidData
@@ -96,7 +97,7 @@ public:
 private:
     enum State : std::int32_t { Ready = 0, Active = 1, Finished = 2 };
 
-    std::vector<Experiment> getAllWithState(State state);
+    std::vector<LazyExperiment> getAllWithState(State state);
 
     void checkActions(const Experiments::LazyExperiment &experiment);
 

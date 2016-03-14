@@ -143,10 +143,82 @@ cur.execute('''
 
 # experiments
 cur.execute('''
-	INSERT INTO experiments (name, state, content) VALUES
-		('badanie testowe', 1, '
+	INSERT INTO experiments (name, state, start_date, finish_date, content) VALUES
+		('aktywne badanie', 1, '2010-Jan-03', NULL, '
+			{
+				"actions": [7, 8],
+				"breakActions": [12, 9, 11],
+				"surveyBefore": {
+					"typesOrder": [0, 2, 1, 0, 2],
+					"simpleQuestions": [2, 1],
+					"multipleChoiceQuestions": [2],
+					"sortQuestions": [1, 2]
+				},
+				"surveyAfter": {
+					"typesOrder": [2, 0, 1, 2, 1],
+					"simpleQuestions": [1],
+					"multipleChoiceQuestions": [1, 2],
+					"sortQuestions": [2, 1]
+				}
+			}
+		'),
+		('starsze zakonczone badanie', 2, '2002-Jan-03', '2003-Feb-13', '
 			{
 				"actions": [5, 1, 4, 3, 7, 8],
+				"breakActions": [12, 9, 11],
+				"surveyBefore": {
+					"typesOrder": [0, 2, 1, 0, 2],
+					"simpleQuestions": [2, 1],
+					"multipleChoiceQuestions": [2],
+					"sortQuestions": [1, 2]
+				},
+				"surveyAfter": {
+					"typesOrder": [2, 0, 1, 2, 1],
+					"simpleQuestions": [1],
+					"multipleChoiceQuestions": [1, 2],
+					"sortQuestions": [2, 1]
+				}
+			}
+		'),
+		('zakonczone badanie', 2, '2003-Feb-14', '2003-Feb-16', '
+			{
+				"actions": [5, 1, 4, 3],
+				"breakActions": [12, 9, 11],
+				"surveyBefore": {
+					"typesOrder": [0, 2, 1, 0, 2],
+					"simpleQuestions": [2, 1],
+					"multipleChoiceQuestions": [2],
+					"sortQuestions": [1, 2]
+				},
+				"surveyAfter": {
+					"typesOrder": [2, 0, 1, 2, 1],
+					"simpleQuestions": [1],
+					"multipleChoiceQuestions": [1, 2],
+					"sortQuestions": [2, 1]
+				}
+			}
+		'),
+		('gotowe badanie', 0, NULL, NULL, '
+			{
+				"actions": [3, 7, 8],
+				"breakActions": [12, 9, 11],
+				"surveyBefore": {
+					"typesOrder": [0, 2, 1, 0, 2],
+					"simpleQuestions": [2, 1],
+					"multipleChoiceQuestions": [2],
+					"sortQuestions": [1, 2]
+				},
+				"surveyAfter": {
+					"typesOrder": [2, 0, 1, 2, 1],
+					"simpleQuestions": [1],
+					"multipleChoiceQuestions": [1, 2],
+					"sortQuestions": [2, 1]
+				}
+			}
+		'),
+		('inne gotowe badanie', 0, NULL, NULL, '
+			{
+				"actions": [5, 1, 7, 8],
 				"breakActions": [12, 9, 11],
 				"surveyBefore": {
 					"typesOrder": [0, 2, 1, 0, 2],

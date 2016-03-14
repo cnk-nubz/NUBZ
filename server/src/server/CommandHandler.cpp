@@ -151,6 +151,55 @@ void CommandHandler::createExperiment(const communication::CreateExperimentReque
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::getReadyExperiments(std::vector<communication::ExperimentInfo> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetReadyExperiments{db}();
+        response = server::io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getFinishedExperiments(std::vector<communication::ExperimentInfo> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetFinishedExperiments{db}();
+        response = server::io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getActiveExperiment(communication::SingleExperimentInfo &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetActiveExperiment{db}();
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getExperiment(communication::Experiment &response,
+                                   const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetExperiment{db}(experimentId);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {

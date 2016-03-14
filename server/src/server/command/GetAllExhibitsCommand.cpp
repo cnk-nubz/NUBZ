@@ -1,8 +1,6 @@
-#include <utils/fp_algorithm.h>
+#include <algorithm>
 
 #include <repository/Exhibits.h>
-
-#include <server/io/utils.h>
 
 #include "GetAllExhibitsCommand.h"
 

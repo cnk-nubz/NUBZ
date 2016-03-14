@@ -16,12 +16,9 @@ struct Action {
     using thrift_t = communication::Action;
     using repo_t = repository::Action;
 
-    Action() = default;
-
-    Action(const thrift_t &thrift);
-    thrift_t toThrift() const;
-
     Action(const repo_t &repo);
+
+    thrift_t toThrift() const;
 
     std::int32_t ID;
     std::string text;
