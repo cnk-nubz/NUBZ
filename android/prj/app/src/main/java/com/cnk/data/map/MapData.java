@@ -103,7 +103,10 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
                        .renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         }
         Log.i(LOG_TAG, "Files saved, saving to db");
-        dbHelper.setMaps(version, floor0, floor1);
+        List<FloorMap> floorMaps = new ArrayList<>();
+        floorMaps.add(floor0);
+        floorMaps.add(floor1);
+        dbHelper.setMaps(version, floorMaps);
         loadDbData();
         notifyObservers();
 
