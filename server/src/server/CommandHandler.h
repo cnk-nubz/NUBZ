@@ -40,6 +40,9 @@ public:
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
     virtual void createExperiment(const communication::CreateExperimentRequest &request) override;
     virtual void getReadyExperiments(std::vector<communication::ExperimentInfo> &response) override;
+    virtual void getFinishedExperiments(
+        std::vector<communication::ExperimentInfo> &response) override;
+    virtual void getActiveExperiment(communication::SingleExperimentInfo &response) override;
 
     virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;

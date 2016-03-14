@@ -264,6 +264,10 @@ struct ExperimentInfo {
 	4: optional Date finishDate,
 }
 
+struct SingleExperimentInfo {
+	1: optional ExperimentInfo info,
+}
+
 
 /////////////////////////////////////////////////
 // Reports

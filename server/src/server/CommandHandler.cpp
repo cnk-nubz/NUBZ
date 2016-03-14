@@ -163,6 +163,30 @@ void CommandHandler::getReadyExperiments(std::vector<communication::ExperimentIn
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::getFinishedExperiments(std::vector<communication::ExperimentInfo> &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetFinishedExperiments{db}();
+        response = server::io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getActiveExperiment(communication::SingleExperimentInfo &response) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetActiveExperiment{db}();
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {

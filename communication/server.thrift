@@ -55,6 +55,12 @@ service Server {
 	list<structs.ExperimentInfo> getReadyExperiments()
 		throws (1: structs.InternalError err),
 
+	list<structs.ExperimentInfo> getFinishedExperiments()
+		throws (1: structs.InternalError err),
+
+	structs.SingleExperimentInfo getActiveExperiment()
+		throws (1: structs.InternalError err),
+
 
 /////////////////////////////////////////////////
 // Reports

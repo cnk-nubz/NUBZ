@@ -84,6 +84,7 @@ public:
     boost::optional<Experiment> start(std::int32_t ID);
 
     boost::optional<Experiment> getActive();
+    boost::optional<LazyExperiment> getLazyActive();
     void finishActive();
 
     std::vector<LazyExperiment> getAllReady();

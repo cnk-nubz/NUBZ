@@ -74,6 +74,15 @@ boost::optional<Experiments::Experiment> Experiments::getActive() {
     }
 }
 
+boost::optional<Experiments::LazyExperiment> Experiments::getLazyActive() {
+    auto sql = Table::Sql::select().where(Table::State == State::Active);
+    if (auto dbTuple = session.getResult(sql)) {
+        return lazyFromDB(dbTuple.value());
+    } else {
+        return {};
+    }
+}
+
 std::vector<Experiments::LazyExperiment> Experiments::getAllReady() {
     return getAllWithState(State::Ready);
 }
@@ -172,6 +181,8 @@ Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::o
     auto res = Experiment{};
     res.ID = lazy.ID;
     res.name = lazy.name;
+    res.startDate = lazy.startDate;
+    res.finishDate = lazy.finishDate;
 
     // actions
     {
@@ -213,6 +224,8 @@ Experiments::LazyExperiment lazyFromDB(const Table::Sql::out_t &experiment) {
     auto res = Experiments::LazyExperiment{};
     res.ID = std::get<Table::FieldID>(experiment).value;
     res.name = std::get<Table::FieldName>(experiment).value;
+    res.startDate = std::get<Table::FieldStartDate>(experiment).value;
+    res.finishDate = std::get<Table::FieldFinishDate>(experiment).value;
 
     auto content = std::get<Table::FieldContent>(experiment).value;
     res.actions = content.actions;
