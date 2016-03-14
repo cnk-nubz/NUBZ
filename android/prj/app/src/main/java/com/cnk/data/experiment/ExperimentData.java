@@ -12,7 +12,6 @@ import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.notificators.Observable;
-import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 
@@ -20,11 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import io.realm.processor.Utils;
 
 public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAction> {
     private static final String LOG_TAG = "ExperimentData";
@@ -46,7 +42,7 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
 
         @Override
         public void run() {
-            while(raport.getState() != Raport.State.SENT) {
+            while (raport.getState() != Raport.State.SENT) {
                 raportLock.lock();
                 if (!saveRaport()) {
                     raportLock.unlock();
@@ -78,6 +74,10 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
             }
             return true;
         }
+    }
+
+    public interface ExperimentUpdateAction {
+        void doOnUpdate();
     }
 
     private ExperimentData() {
@@ -163,9 +163,5 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         new File(dir).mkdirs();
         String realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
         return dir + realFile;
-    }
-
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
     }
 }

@@ -13,25 +13,27 @@
         android:text="Download Map"
         android:id="@+id/mapButton"
         android:onClick="mapClick"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginTop="185dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Map"
+        android:text="Reset exhibits"
         android:id="@+id/bMapActivity"
-        android:layout_below="@+id/mapButton"
-        android:layout_centerHorizontal="true"
-        android:onClick="mapActivityClick" />
+        android:onClick="resetClick"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/mapButton"
+        android:layout_alignStart="@+id/mapButton"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Survey"
+        android:text="Experiment"
         android:id="@+id/surveyButton"
-        android:layout_below="@+id/bMapActivity"
-        android:layout_centerHorizontal="true"
-        android:onClick="surveyClick" />
+        android:onClick="surveyClick"
+        android:layout_below="@+id/mapButton"
+        android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

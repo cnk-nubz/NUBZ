@@ -32,6 +32,28 @@ public class ExhibitDialog extends Activity {
     private SelectListAdapter<Action> actionsAdapter;
     private long startTime;
 
+    class CancelListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
+    }
+
+    class FinishListener implements View.OnClickListener {
+        @Override
+        public void onClick(View view) {
+            long endTime = System.currentTimeMillis() / Consts.SECOND;
+            Log.i("End time", Long.toString(endTime));
+            Log.i("Total time", Long.toString(startTime - endTime));
+            Intent intent = new Intent();
+            intent.putExtra(TIME, endTime - startTime);
+            intent.putIntegerArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedOptions());
+            setResult(RESULT_OK, intent);
+            finish();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,28 +106,5 @@ public class ExhibitDialog extends Activity {
 
     @Override
     public void onBackPressed() {
-    }
-
-
-    class CancelListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            setResult(RESULT_CANCELED);
-            finish();
-        }
-    }
-
-    class FinishListener implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            long endTime = System.currentTimeMillis() / Consts.SECOND;
-            Log.i("End time", Long.toString(endTime));
-            Log.i("Total time", Long.toString(startTime - endTime));
-            Intent intent = new Intent();
-            intent.putExtra(TIME, endTime - startTime);
-            intent.putIntegerArrayListExtra(SELECTED_ACTIONS, actionsAdapter.getSelectedOptions());
-            setResult(RESULT_OK, intent);
-            finish();
-        }
     }
 }

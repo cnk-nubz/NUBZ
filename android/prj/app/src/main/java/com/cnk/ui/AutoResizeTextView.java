@@ -96,6 +96,17 @@ public class AutoResizeTextView extends TextView {
     private boolean mEnableSizeCache = true;
     private boolean mInitiallized;
 
+    private interface SizeTester {
+        /**
+         * @param suggestedSize  Size of text to be tested
+         * @param availableSpace available space in which text must fit
+         * @return an integer < 0 if after applying {@code suggestedSize} to
+         * text, it takes less space than {@code availableSpace}, > 0
+         * otherwise
+         */
+        public int onTestSize(int suggestedSize, RectF availableSpace);
+    }
+
     public AutoResizeTextView(Context context) {
         super(context);
         initialize();
@@ -301,16 +312,5 @@ public class AutoResizeTextView extends TextView {
         if (width != oldwidth || height != oldheight) {
             reAdjust();
         }
-    }
-
-    private interface SizeTester {
-        /**
-         * @param suggestedSize  Size of text to be tested
-         * @param availableSpace available space in which text must fit
-         * @return an integer < 0 if after applying {@code suggestedSize} to
-         * text, it takes less space than {@code availableSpace}, > 0
-         * otherwise
-         */
-        public int onTestSize(int suggestedSize, RectF availableSpace);
     }
 }
