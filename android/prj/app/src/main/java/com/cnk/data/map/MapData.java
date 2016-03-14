@@ -35,6 +35,10 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
     private List<FloorMapInfo> floorInfos;
     private Map<Observer, MapUpdateAction> observers;
 
+    public interface MapUpdateAction {
+        void doOnUpdate();
+    }
+
     private MapData() {
         floorInfos = new ArrayList<>();
         observers = new WeakHashMap<>();
@@ -92,9 +96,7 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         }
     }
 
-    public void setMaps(Integer version,
-                        FloorMap floor0,
-                        FloorMap floor1) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -103,7 +105,10 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
                        .renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         }
         Log.i(LOG_TAG, "Files saved, saving to db");
-        dbHelper.setMaps(version, floor0, floor1);
+        List<FloorMap> floorMaps = new ArrayList<>();
+        floorMaps.add(floor0);
+        floorMaps.add(floor1);
+        dbHelper.setMaps(version, floorMaps);
         loadDbData();
         notifyObservers();
 
@@ -195,11 +200,5 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
         String dir = Consts.DATA_PATH + MAP_DIRECTORY;
         return dir + getTileFilename(x, y, floorNo, detailLevel);
-    }
-
-
-
-    public interface MapUpdateAction {
-        void doOnUpdate();
     }
 }

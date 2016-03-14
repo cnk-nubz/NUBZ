@@ -7,7 +7,6 @@ import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.notificators.Observable;
-import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
@@ -20,6 +19,10 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
     private List<FloorExhibitsInfo> floorInfos;
+
+    public interface ExhibitsUpdateAction {
+        void doOnUpdate(List<Exhibit> changedExhibits);
+    }
 
     private ExhibitsData() {
         floorInfos = new ArrayList<>();
@@ -103,10 +106,6 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
 
     public Integer getExhibitsVersion() {
         return exhibitsVersion;
-    }
-
-    public interface ExhibitsUpdateAction {
-        void doOnUpdate(List<Exhibit> changedExhibits);
     }
 
 }

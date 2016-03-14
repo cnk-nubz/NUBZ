@@ -35,6 +35,28 @@ public class NetworkHandler implements Observer {
     private boolean downloadInBg;
     private boolean uploadInBg;
 
+    private class QueueThread implements Runnable {
+        private static final int TRIES = 3;
+        private BlockingQueue<Task> queue;
+
+        public QueueThread(BlockingQueue<Task> queue) {
+            this.queue = queue;
+        }
+
+        public void run() {
+            while (true) {
+                try {
+                    Log.i(LOG_TAG, "Starting another task");
+                    queue.take().run(TRIES);
+                    Log.i(LOG_TAG, "Task finished");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    Log.i(LOG_TAG, "Thread woken");
+                }
+            }
+        }
+    }
+
     private NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
@@ -163,28 +185,6 @@ public class NetworkHandler implements Observer {
         } else if (o == experimentDataDownload) {
             Log.e(LOG_TAG, "Experiment data download task failed");
             downloadExperimentData();
-        }
-    }
-
-    private class QueueThread implements Runnable {
-        private static final int TRIES = 3;
-        private BlockingQueue<Task> queue;
-
-        public QueueThread(BlockingQueue<Task> queue) {
-            this.queue = queue;
-        }
-
-        public void run() {
-            while (true) {
-                try {
-                    Log.i(LOG_TAG, "Starting another task");
-                    queue.take().run(TRIES);
-                    Log.i(LOG_TAG, "Task finished");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Log.i(LOG_TAG, "Thread woken");
-                }
-            }
         }
     }
 

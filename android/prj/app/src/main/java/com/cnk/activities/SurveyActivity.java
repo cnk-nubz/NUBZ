@@ -75,7 +75,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private void experimentDataDownloaded() {
         ExperimentData.getInstance().deleteObserver(this);
         init();
-        spinner.dismiss();
+        if (spinner != null) {
+            spinner.dismiss();
+        }
     }
 
     private void init() {
@@ -182,7 +184,9 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private void showDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setMessage(R.string.confirmation);
-        alert.setPositiveButton("Tak", (dialog, which) -> { changeToNextActivity(); });
+        alert.setPositiveButton("Tak", (dialog, which) -> {
+            changeToNextActivity();
+        });
         alert.setNegativeButton("Nie", (dialog, which) -> {
         });
         alert.setCancelable(false);

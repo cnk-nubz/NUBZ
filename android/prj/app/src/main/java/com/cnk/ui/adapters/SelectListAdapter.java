@@ -28,6 +28,25 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     private Integer layout;
     private SelectViewItemIds viewIds;
 
+    private class OptionOnClickListener implements View.OnClickListener {
+        private Integer optionId;
+        private SelectListAdapter<T> adapterRef;
+
+        public OptionOnClickListener(SelectListAdapter<T> adapterRef, Integer optionId) {
+            this.optionId = optionId;
+            this.adapterRef = adapterRef;
+        }
+
+        @Override
+        public void onClick(View view) {
+            if (isSelected(optionId)) {
+                unselectOption(optionId, view);
+            } else {
+                adapterRef.selectOption(optionId, view);
+            }
+        }
+    }
+
     public SelectListAdapter(List<T> options, Boolean singleAnswer, Context context) {
         this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectViewItemIds());
     }
@@ -38,6 +57,7 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
                              Integer layout) {
         this(options, singleAnswer, context, layout, new SelectViewItemIds());
     }
+
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
@@ -54,7 +74,6 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
         activeView = null;
         Arrays.fill(optionChecked, false);
     }
-
 
     @Override
     public int getCount() {
@@ -123,24 +142,5 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
             }
         }
         return resultActions;
-    }
-
-    private class OptionOnClickListener implements View.OnClickListener {
-        private Integer optionId;
-        private SelectListAdapter<T> adapterRef;
-
-        public OptionOnClickListener(SelectListAdapter<T> adapterRef, Integer optionId) {
-            this.optionId = optionId;
-            this.adapterRef = adapterRef;
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (isSelected(optionId)) {
-                unselectOption(optionId, view);
-            } else {
-                adapterRef.selectOption(optionId, view);
-            }
-        }
     }
 }
