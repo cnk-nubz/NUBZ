@@ -187,6 +187,19 @@ void CommandHandler::getActiveExperiment(communication::SingleExperimentInfo &re
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::getExperiment(communication::Experiment &response,
+                                   const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() {
+        auto output = command::GetExperiment{db}(experimentId);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {
