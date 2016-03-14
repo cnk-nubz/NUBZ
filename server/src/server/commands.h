@@ -9,6 +9,7 @@
 
 #include "command/CreateExperimentCommand.h"
 #include "command/GetCurrentExperimentCommand.h"
+#include "command/GetReadyExperiments.h"
 
 #include "command/CreateExhibitCommand.h"
 #include "command/GetAllExhibitsCommand.h"

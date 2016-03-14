@@ -74,19 +74,19 @@ boost::optional<Experiments::Experiment> Experiments::getActive() {
     }
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllReady() {
+std::vector<Experiments::LazyExperiment> Experiments::getAllReady() {
     return getAllWithState(State::Ready);
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllFinished() {
+std::vector<Experiments::LazyExperiment> Experiments::getAllFinished() {
     return getAllWithState(State::Finished);
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllWithState(State state) {
+std::vector<Experiments::LazyExperiment> Experiments::getAllWithState(State state) {
     auto sql = Table::Sql::select().where(Table::State == state);
 
-    auto result = std::vector<Experiment>{};
-    utils::transform(session.getResults(sql), result, std::bind(fromDB, session, _1));
+    auto result = std::vector<LazyExperiment>{};
+    utils::transform(session.getResults(sql), result, lazyFromDB);
     return result;
 }
 
