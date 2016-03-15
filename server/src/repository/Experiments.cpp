@@ -42,21 +42,25 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
     }
 }
 
-boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
-    if (!getActive()) {
+void Experiments::start(std::int32_t ID) {
+    if (getActive()) {
         throw InvalidData{"you can only have one active experiment"};
     }
+
     auto sql = Table::Sql::update()
                    .where(Table::ID == ID && Table::State == State::Ready)
                    .set(Table::State, State::Active)
                    .set(Table::StartDate, boost::gregorian::day_clock::local_day());
     session.execute(sql);
-    return getActive();
+
+    if (!getActive()) {
+        throw InvalidData{"there is no ready experiment with given id"};
+    }
 }
 
 void Experiments::finishActive() {
     if (!getActive()) {
-        throw InvalidData{"there is no active experiment to finish"};
+        throw InvalidData{"there is no active experiment"};
     }
     auto sql = Table::Sql::update()
                    .where(Table::State == State::Active)

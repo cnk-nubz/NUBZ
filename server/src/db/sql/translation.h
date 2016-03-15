@@ -40,6 +40,17 @@ struct sql_val_cast<std::int32_t> {
 };
 
 template <>
+struct sql_val_cast<std::string> {
+    static std::string from(const std::string &raw) {
+        return raw;
+    }
+
+    static std::string to(const std::string &raw) {
+        return "'" + raw + "'";
+    }
+};
+
+template <>
 struct sql_val_cast<boost::gregorian::date> {
     static boost::gregorian::date from(const std::string &raw) {
         try {
@@ -51,18 +62,7 @@ struct sql_val_cast<boost::gregorian::date> {
     }
 
     static std::string to(const boost::gregorian::date &raw) {
-        return boost::gregorian::to_simple_string(raw);
-    }
-};
-
-template <>
-struct sql_val_cast<std::string> {
-    static std::string from(const std::string &raw) {
-        return raw;
-    }
-
-    static std::string to(const std::string &raw) {
-        return "'" + raw + "'";
+        return sql_val_cast<std::string>::to(boost::gregorian::to_simple_string(raw));
     }
 };
 

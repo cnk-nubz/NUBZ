@@ -79,9 +79,11 @@ public:
     boost::optional<Experiment> get(std::int32_t ID);
     boost::optional<LazyExperiment> getLazy(std::int32_t ID);
 
-    // may return null in case of incorrect id or id of finished experiment (it's impossible to
-    // activate finished experiment)
-    boost::optional<Experiment> start(std::int32_t ID);
+    // may throw InvalidData for several reasons:
+    // - invalid id
+    // - id of finished experiment (it's impossible to activate finished experiment)
+    // - there is currently active experiment
+    void start(std::int32_t ID);
 
     boost::optional<Experiment> getActive();
     boost::optional<LazyExperiment> getLazyActive();
