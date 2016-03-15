@@ -64,6 +64,12 @@ service Server {
 	structs.Experiment getExperiment(1: i32 experimentId)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
+	void startExperiment(1: i32 experimentId)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),		
+
+	void finishExperiment()
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 /////////////////////////////////////////////////
 // Reports
 /////////////////////////////////////////////////

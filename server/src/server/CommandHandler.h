@@ -45,6 +45,8 @@ public:
     virtual void getActiveExperiment(communication::SingleExperimentInfo &response) override;
     virtual void getExperiment(communication::Experiment &response,
                                const int32_t experimentId) override;
+    virtual void startExperiment(const int32_t experimentId) override;
+    virtual void finishExperiment() override;
 
     virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
@@ -98,6 +100,7 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
         throw communication::InternalError{};
     } catch (...) {
         LOG(INFO) << "InternalError";
+        LOG(INFO) << "Command aborted";
         throw communication::InternalError();
     }
 }

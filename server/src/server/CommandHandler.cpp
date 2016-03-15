@@ -190,6 +190,7 @@ void CommandHandler::getActiveExperiment(communication::SingleExperimentInfo &re
 void CommandHandler::getExperiment(communication::Experiment &response,
                                    const int32_t experimentId) {
     LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
 
     withExceptionTranslation([&]() {
         auto output = command::GetExperiment{db}(experimentId);
@@ -197,6 +198,23 @@ void CommandHandler::getExperiment(communication::Experiment &response,
     });
 
     LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::startExperiment(const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() { command::StartExperiment{db}(experimentId); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::finishExperiment() {
+    LOG(INFO) << __func__ << " start";
+
+    withExceptionTranslation([&]() { command::FinishExperiment{db}(); });
+
     LOG(INFO) << __func__ << " end";
 }
 

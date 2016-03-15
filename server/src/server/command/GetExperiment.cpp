@@ -6,6 +6,7 @@
 
 namespace server {
 namespace command {
+
 GetExperiment::GetExperiment(db::Database &db) : db(db) {
 }
 
