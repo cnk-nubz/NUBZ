@@ -36,6 +36,7 @@ import com.cnk.data.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.ui.exhibitwindow.ExhibitDialog;
+import com.cnk.utilities.ColorHelper;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 import com.qozix.tileview.TileView;
@@ -527,7 +528,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         final ArrayList<Pair<View, RelativeLayout.LayoutParams>> viewArrayList = new ArrayList<>();
         Integer floorNum = 1;
-        for (Exhibit e: exhibits) {
+        for (Exhibit e : exhibits) {
             posX = ImageHelper.getDimensionWhenScaleApplied(e.getX(),
                     mapState.originalMapSize.getWidth(),
                     mapState.currentMapSize.getWidth());
@@ -693,7 +694,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         exhibitWindowIntent.putExtra(ExhibitDialog.NAME, name);
         exhibitWindowIntent.putExtra(ExhibitDialog.IS_BREAK, isBreak);
         ActivityOptions activityOptions =
-            ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
+                ActivityOptions.makeScaleUpAnimation(voidLayout, lastClick.x, lastClick.y, 1, 1);
         startActivityForResult(exhibitWindowIntent, requestCode, activityOptions.toBundle());
     }
 }
