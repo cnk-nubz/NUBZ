@@ -1,5 +1,6 @@
 package com.cnk.ui.models;
 
+import android.widget.Chronometer;
 import android.widget.RelativeLayout;
 
 import com.cnk.data.Resolution;
@@ -21,4 +22,6 @@ public class MapState {
     public RelativeLayout exhibitsOverlay;
 
     public AutoResizeTextView lastExhibitTextView;
+
+    public Chronometer drawerChronometer;
 }

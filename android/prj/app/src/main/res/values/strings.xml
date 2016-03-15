@@ -12,4 +12,5 @@
     <string name="end_action">Koniec badania</string>
     <string name="cancel">Anuluj</string>
     <string name="finish">Koniec</string>
+    <string name="experiment_time">Czas trwania badania:</string>
 </resources>

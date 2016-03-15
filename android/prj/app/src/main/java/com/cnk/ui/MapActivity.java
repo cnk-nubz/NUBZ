@@ -84,6 +84,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "adding to DataHandler observers list");
         DataHandler.getInstance().addObserver(this);
 
+        mapState = new MapState(this);
         setViews();
         setActionBar();
         setSpinner();
@@ -97,6 +98,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MapActivity.this, R.style.FullHeightDialog);
         View dialogView = this.getLayoutInflater().inflate(R.layout.exhibit_dialog_layout, null);
         dialogBuilder.setView(dialogView);
+
+        Chronometer chrono = (Chronometer) dialogView.findViewById(R.id.chronometer);
+        chrono.setBase(mapState.drawerChronometer.getBase());
+        chrono.start();
 
         resultDialog.setAdapter(new ExhibitActionsAdapter(MapActivity.this, dialogActions));
 
@@ -169,7 +174,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Clicked break button");
-        showExhibitDialog(true, Consts.BREAK_DIALOG_NAME, Consts.BREAK_DIALOG_ID);
+        if (openedDialogs == 0) {
+            openedDialogs++;
+            showExhibitDialog(true, Consts.BREAK_DIALOG_NAME, Consts.BREAK_DIALOG_ID);
+        }
     }
 
     public void endClick(View view) {
@@ -222,7 +230,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void setDrawer() {
-        ((Chronometer) findViewById(R.id.chronometer)).start();
+        mapState.drawerChronometer = (Chronometer) findViewById(R.id.chronometer);
+        mapState.drawerChronometer.start();
     }
 
     private void setActionBar() {
@@ -451,7 +460,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void experimentDataDownloaded() {
         Util.waitDelay(Consts.MILLIS_IN_SEC);
         spinner.dismiss();
-        mapState = new MapState(this);
         new StartUpTask().execute();
         Log.i(LOG_TAG, "starting background download");
         networkHandler.startBgDownload();
