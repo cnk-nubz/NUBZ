@@ -1,10 +1,11 @@
 package com.cnk.ui.models;
 
-import android.app.AlertDialog;
 import android.widget.Button;
+import android.widget.Chronometer;
 
+import com.cnk.data.experiment.Action;
 import com.cnk.ui.AutoResizeTextView;
-import com.cnk.ui.exhibitwindow.ExhibitActionsAdapter;
+import com.cnk.ui.adapters.SelectListAdapter;
 
 import java.util.Date;
 
@@ -12,9 +13,10 @@ public class DialogState {
     private Long dialogOpenedTime;
     private android.support.v7.app.AlertDialog dialog;
     private AutoResizeTextView tvDialogName;
-    private ExhibitActionsAdapter adapter;
+    private SelectListAdapter<Action> adapter;
     private Button cancelButton;
     private Button finishButton;
+    private Chronometer timer;
 
     public android.support.v7.app.AlertDialog getDialog() {
         return dialog;
@@ -32,11 +34,11 @@ public class DialogState {
         this.tvDialogName = tvDialogName;
     }
 
-    public ExhibitActionsAdapter getAdapter() {
+    public SelectListAdapter<Action> getAdapter() {
         return adapter;
     }
 
-    public void setAdapter(ExhibitActionsAdapter adapter) {
+    public void setAdapter(SelectListAdapter<Action> adapter) {
         this.adapter = adapter;
     }
 
@@ -64,5 +66,13 @@ public class DialogState {
     public Integer dismissDialogWithTime() {
         dialog.dismiss();
         return ((Long) (new Date().getTime() - dialogOpenedTime)).intValue();
+    }
+
+    public Chronometer getTimer() {
+        return timer;
+    }
+
+    public void setTimer(Chronometer timer) {
+        this.timer = timer;
     }
 }

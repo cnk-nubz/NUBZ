@@ -1,0 +1,93 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 16px;
+}
+
+#questionList,
+#actionList {
+  position: relative;
+  width: 50%;
+  height: 100%;
+}
+
+#questionList {
+  float: left;
+  padding: 10px 50px 10px 150px;
+}
+
+#actionList {
+  float: right;
+  padding: 10px 150px 10px 50px;
+}
+
+#questionList td:last-child {
+  width: 120px;
+}
+
+#questionList td:last-child:hover {
+  cursor: default;
+  background: #fff;
+}
+
+#questionList tr.newListEntry td:last-child:hover {
+  background: #ADDFFF;
+}
+
+#questionList .middle,
+#actionList .middle {
+  position: absolute;
+  top: 56px;
+  bottom: 5px;
+  background: #fff;
+  overflow-y: scroll;
+}
+
+#questionList .middle {
+  right: 50px;
+  left: 150px;
+}
+
+#actionList .middle {
+  right: 150px;
+  left: 50px;
+}
+
+.middle .questionsActionsTable > tbody > tr > td:first-child {
+  text-align: left;
+}
+
+.myHeader {
+  position: relative;
+  height: 46px;
+  line-height: 46px;
+  border: 1px solid #ddd;
+  font-size: 22px;
+  font-weight: 600;
+  background: #eee;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+.addElement {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  font-size: 14px;
+  line-height: 46px;
+  width: 42px;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.addElement:hover {
+  background: #ccc;
+  border: 1px solid #bbb;
+}
