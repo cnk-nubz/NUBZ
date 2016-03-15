@@ -16,10 +16,7 @@
 #include "command/GetReadyExperiments.h"
 #include "command/StartExperiment.h"
 
-#include "command/CreateExhibitCommand.h"
-#include "command/GetAllExhibitsCommand.h"
-#include "command/GetNewExhibitsCommand.h"
-#include "command/SetExhibitFrameCommand.h"
+#include "command/ExhibitCommands.h"
 
 #include "command/CreateActionCommand.h"
 #include "command/GetAllActionsCommand.h"

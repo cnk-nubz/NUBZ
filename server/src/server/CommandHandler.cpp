@@ -78,7 +78,7 @@ void CommandHandler::getNewExhibits(communication::NewExhibitsResponse &response
 
     withExceptionTranslation([&]() {
         auto input = io::input::NewExhibitsRequest{request};
-        auto output = command::GetNewExhibitsCommand{db}(input);
+        auto output = command::ExhibitCommands{db}.getNew(input);
         response = output.toThrift();
     });
 
@@ -93,7 +93,7 @@ void CommandHandler::createExhibit(communication::Exhibit &response,
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateExhibitRequest{request};
-        auto output = command::CreateExhibitCommand{db}(input);
+        auto output = command::ExhibitCommands{db}.create(input);
         response = output.toThrift();
     });
 
@@ -105,7 +105,7 @@ void CommandHandler::getAllExhibits(std::vector<communication::Exhibit> &respons
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllExhibitsCommand{db}();
+        auto output = command::ExhibitCommands{db}.getAll();
         response = server::io::ioToThrift(output);
     });
 
@@ -119,9 +119,24 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
 
     withExceptionTranslation([&]() {
         auto input = io::input::SetExhibitFrameRequest{request};
-        command::SetExhibitFrameCommand{db}(input);
+        command::ExhibitCommands{db}.setFrame(input);
     });
 
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::updateExhibit(communication::Exhibit &response,
+                                   const communication::UpdateExhibitRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() {
+        auto input = io::input::UpdateExhibitRequest{request};
+        auto output = command::ExhibitCommands{db}.update(input);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
 

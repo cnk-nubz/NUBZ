@@ -36,6 +36,8 @@ public:
                                const communication::CreateExhibitRequest &request) override;
     virtual void getAllExhibits(std::vector<communication::Exhibit> &response) override;
     virtual void setExhibitFrame(const communication::SetExhibitFrameRequest &request) override;
+    virtual void updateExhibit(communication::Exhibit &response,
+                               const communication::UpdateExhibitRequest &request) override;
 
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
     virtual void createExperiment(const communication::CreateExperimentRequest &request) override;

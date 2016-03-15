@@ -32,6 +32,10 @@ public:
     std::vector<std::int32_t> getAllIDs();
 
     boost::optional<Exhibit> get(std::int32_t ID);
+
+    // throws InvalidData in case of non existing ID
+    Exhibit getF(std::int32_t ID);
+
     std::vector<Exhibit> getAll();
     std::vector<Exhibit> getAllNewerThan(std::int32_t version);
 
