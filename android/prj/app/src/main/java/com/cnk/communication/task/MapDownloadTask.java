@@ -24,16 +24,19 @@ import java.util.List;
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
+    private MapData.MapUpdateAction action;
 
 
-    public MapDownloadTask(Notificator notificator) {
+    public MapDownloadTask(Notificator notificator, MapData.MapUpdateAction action) {
         super(notificator);
+        this.action = action;
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
         Integer version = MapData.getInstance().getMapVersion();
         downloadTilesUpdate(client, version);
-        MapData.getInstance().notifyObservers();
+        action.doOnUpdate();
+        action = null;
         Log.i(LOG_TAG, "Map update complete");
     }
 

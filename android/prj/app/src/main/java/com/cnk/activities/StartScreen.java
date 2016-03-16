@@ -93,9 +93,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        MapData.getInstance().addUIObserver(this, this::mapDownloaded);
         setSpinner();
-        NetworkHandler.getInstance().downloadMap();
+        MapData.getInstance().downloadMap(this::mapDownloaded);
     }
 
     private void mapDownloaded() {
@@ -108,13 +107,11 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
                 spinner.dismiss();
-                MapData.getInstance().deleteObserver(this);
                 e.printStackTrace();
-                showAlert();
+                runOnUiThread(this::showAlert);
             }
         }
         spinner.dismiss();
-        MapData.getInstance().deleteObserver(this);
     }
 
     private void setSpinner() {

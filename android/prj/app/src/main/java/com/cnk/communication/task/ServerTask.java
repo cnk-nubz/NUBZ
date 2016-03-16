@@ -47,7 +47,7 @@ public abstract class ServerTask extends Task {
                 tries--;
             }
         }
-        notificator.failure();
+        notificator.failure(this);
         if (socket != null) {
             socket.close();
         }

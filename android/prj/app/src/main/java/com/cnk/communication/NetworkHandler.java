@@ -9,6 +9,8 @@ import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.map.MapData;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Consts;
 
@@ -81,13 +83,13 @@ public class NetworkHandler implements Observer {
         return instance;
     }
 
-    public synchronized void downloadExperimentData() {
-        Task task = new ExperimentDataDownloadTask(experimentDataDownload);
+    public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action) {
+        Task task = new ExperimentDataDownloadTask(experimentDataDownload, action);
         tasks.add(task);
     }
 
-    public synchronized void downloadMap() {
-        Task task = new MapDownloadTask(mapDownload);
+    public synchronized void downloadMap(MapData.MapUpdateAction action) {
+        Task task = new MapDownloadTask(mapDownload, action);
         tasks.add(task);
     }
 
@@ -129,7 +131,7 @@ public class NetworkHandler implements Observer {
         if (o == bgDownload && downloadInBg) {
             addBgDownloadTask();
         } else if (!(boolean) arg) {
-            onFailure(o);
+            onFailure(o, arg);
         } else {
             onSuccess(o);
         }
@@ -169,22 +171,21 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    private synchronized void onFailure(Observable o) {
+    private synchronized void onFailure(Observable o, Object task) {
         Log.i(LOG_TAG, "Task failed, retrying");
-        //addWaitTask();
         if (o == mapDownload) {
             Log.e(LOG_TAG, "Map download task failure");
-            downloadMap();
+            tasks.add((MapDownloadTask) task);
         } else if (o == raportUpload) {
             Log.e(LOG_TAG, "Raport upload task failure");
             addWaitTask();
-            uploadRaports();
+            tasks.add((RaportUploadTask) task);
         } else if (o == exhibitsDownload) {
             Log.e(LOG_TAG, "Exhibits download task failed");
-            downloadExhibits();
+            tasks.add((ExhibitDownloadTask) task);
         } else if (o == experimentDataDownload) {
             Log.e(LOG_TAG, "Experiment data download task failed");
-            downloadExperimentData();
+            tasks.add((ExperimentDataDownloadTask) task);
         }
     }
 
