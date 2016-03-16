@@ -100,6 +100,12 @@ struct CreateExhibitRequest {
 	3: optional MapFrame visibleFrame,
 }
 
+struct UpdateExhibitRequest {
+	1: i32 exhibitId,
+	2: optional i32 floor,
+	3: optional MapFrame visibleFrame,
+}
+
 
 /////////////////////////////////////////////////
 // Actions
@@ -230,6 +236,12 @@ struct QuestionsIdsList {
 // Experiment
 /////////////////////////////////////////////////
 
+struct Date {
+	1: i32 day,
+	2: i32 month,
+	3: i32 year,
+}
+
 struct Experiment {
 	1: i32 experimentId,
 	2: string name,
@@ -249,6 +261,17 @@ struct CreateExperimentRequest {
 	3: list<i32> exhibitActions,
 	4: list<i32> breakActions,
 	5: QuestionsIdsList surveyAfter,
+}
+
+struct ExperimentInfo {
+	1: i32 id,
+	2: string name,
+	3: optional Date startDate,
+	4: optional Date finishDate,
+}
+
+struct SingleExperimentInfo {
+	1: optional ExperimentInfo info,
 }
 
 

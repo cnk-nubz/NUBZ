@@ -20,21 +20,25 @@ import org.apache.thrift.TException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
+    private MapData.MapUpdateAction action;
 
 
-    public MapDownloadTask(Notificator notificator) {
+    public MapDownloadTask(Notificator notificator, MapData.MapUpdateAction action) {
         super(notificator);
+        this.action = action;
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
         Integer version = MapData.getInstance().getMapVersion();
         downloadTilesUpdate(client, version);
-        MapData.getInstance().notifyObservers();
         Log.i(LOG_TAG, "Map update complete");
+        action.doOnUpdate();
+        action = null;
     }
 
     private void downloadTilesUpdate(Server.Client client,

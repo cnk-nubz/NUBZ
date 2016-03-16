@@ -42,21 +42,25 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
     }
 }
 
-boost::optional<Experiments::Experiment> Experiments::start(std::int32_t ID) {
-    if (!getActive()) {
+void Experiments::start(std::int32_t ID) {
+    if (getActive()) {
         throw InvalidData{"you can only have one active experiment"};
     }
+
     auto sql = Table::Sql::update()
                    .where(Table::ID == ID && Table::State == State::Ready)
                    .set(Table::State, State::Active)
                    .set(Table::StartDate, boost::gregorian::day_clock::local_day());
     session.execute(sql);
-    return getActive();
+
+    if (!getActive()) {
+        throw InvalidData{"there is no ready experiment with given id"};
+    }
 }
 
 void Experiments::finishActive() {
     if (!getActive()) {
-        throw InvalidData{"there is no active experiment to finish"};
+        throw InvalidData{"there is no active experiment"};
     }
     auto sql = Table::Sql::update()
                    .where(Table::State == State::Active)
@@ -74,19 +78,28 @@ boost::optional<Experiments::Experiment> Experiments::getActive() {
     }
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllReady() {
+boost::optional<Experiments::LazyExperiment> Experiments::getLazyActive() {
+    auto sql = Table::Sql::select().where(Table::State == State::Active);
+    if (auto dbTuple = session.getResult(sql)) {
+        return lazyFromDB(dbTuple.value());
+    } else {
+        return {};
+    }
+}
+
+std::vector<Experiments::LazyExperiment> Experiments::getAllReady() {
     return getAllWithState(State::Ready);
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllFinished() {
+std::vector<Experiments::LazyExperiment> Experiments::getAllFinished() {
     return getAllWithState(State::Finished);
 }
 
-std::vector<Experiments::Experiment> Experiments::getAllWithState(State state) {
+std::vector<Experiments::LazyExperiment> Experiments::getAllWithState(State state) {
     auto sql = Table::Sql::select().where(Table::State == state);
 
-    auto result = std::vector<Experiment>{};
-    utils::transform(session.getResults(sql), result, std::bind(fromDB, session, _1));
+    auto result = std::vector<LazyExperiment>{};
+    utils::transform(session.getResults(sql), result, lazyFromDB);
     return result;
 }
 
@@ -172,6 +185,8 @@ Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::o
     auto res = Experiment{};
     res.ID = lazy.ID;
     res.name = lazy.name;
+    res.startDate = lazy.startDate;
+    res.finishDate = lazy.finishDate;
 
     // actions
     {
@@ -213,6 +228,8 @@ Experiments::LazyExperiment lazyFromDB(const Table::Sql::out_t &experiment) {
     auto res = Experiments::LazyExperiment{};
     res.ID = std::get<Table::FieldID>(experiment).value;
     res.name = std::get<Table::FieldName>(experiment).value;
+    res.startDate = std::get<Table::FieldStartDate>(experiment).value;
+    res.finishDate = std::get<Table::FieldFinishDate>(experiment).value;
 
     auto content = std::get<Table::FieldContent>(experiment).value;
     res.actions = content.actions;

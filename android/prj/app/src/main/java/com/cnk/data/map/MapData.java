@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.Downloader;
 import com.cnk.data.FileHandler;
 import com.cnk.database.DatabaseHelper;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class MapData extends Observable<MapData.MapUpdateAction> {
+public class MapData {
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
@@ -33,11 +34,13 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
     private Integer mapVersion;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
-    private Map<Observer, MapUpdateAction> observers;
+
+    public interface MapUpdateAction {
+        void doOnUpdate();
+    }
 
     private MapData() {
         floorInfos = new ArrayList<>();
-        observers = new WeakHashMap<>();
         mapVersion = null;
     }
 
@@ -48,16 +51,8 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         return instance;
     }
 
-    public void notifyObservers() {
-        for (MapUpdateAction action : observers.values()) {
-            action.doOnUpdate();
-        }
-
-        for (Map.Entry<Activity, MapUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            MapUpdateAction action = entry.getValue();
-            activity.runOnUiThread(action::doOnUpdate);
-        }
+    public void downloadMap(MapUpdateAction action) {
+        NetworkHandler.getInstance().downloadMap(action);
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -92,9 +87,7 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         }
     }
 
-    public void setMaps(Integer version,
-                        FloorMap floor0,
-                        FloorMap floor1) throws IOException {
+    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
         Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
         Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
@@ -103,10 +96,11 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
                        .renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         }
         Log.i(LOG_TAG, "Files saved, saving to db");
-        dbHelper.setMaps(version, floor0, floor1);
+        List<FloorMap> floorMaps = new ArrayList<>();
+        floorMaps.add(floor0);
+        floorMaps.add(floor1);
+        dbHelper.setMaps(version, floorMaps);
         loadDbData();
-        notifyObservers();
-
         Log.i(LOG_TAG, "New maps set");
     }
 
@@ -195,11 +189,5 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
     public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
         String dir = Consts.DATA_PATH + MAP_DIRECTORY;
         return dir + getTileFilename(x, y, floorNo, detailLevel);
-    }
-
-
-
-    public interface MapUpdateAction {
-        void doOnUpdate();
     }
 }

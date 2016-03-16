@@ -22,6 +22,36 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
     private Context context;
     private Integer layout;
 
+    private class DownClickListener implements ImageButton.OnClickListener {
+        private Integer idx;
+
+        public DownClickListener(Integer idx) {
+            super();
+            this.idx = idx;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Collections.swap(options, idx, idx + 1);
+            notifyDataSetChanged();
+        }
+    }
+
+    private class UpClickListener implements ImageButton.OnClickListener {
+        private Integer idx;
+
+        public UpClickListener(Integer idx) {
+            super();
+            this.idx = idx;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Collections.swap(options, idx, idx - 1);
+            notifyDataSetChanged();
+        }
+    }
+
     public SortListAdapter(List<T> options, Context context) {
         this(options, context, DEFAULT_LAYOUT, new SortViewItemIds());
     }
@@ -90,35 +120,5 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
             order.add(item.getId());
         }
         return order;
-    }
-
-    private class DownClickListener implements ImageButton.OnClickListener {
-        private Integer idx;
-
-        public DownClickListener(Integer idx) {
-            super();
-            this.idx = idx;
-        }
-
-        @Override
-        public void onClick(View v) {
-            Collections.swap(options, idx, idx + 1);
-            notifyDataSetChanged();
-        }
-    }
-
-    private class UpClickListener implements ImageButton.OnClickListener {
-        private Integer idx;
-
-        public UpClickListener(Integer idx) {
-            super();
-            this.idx = idx;
-        }
-
-        @Override
-        public void onClick(View v) {
-            Collections.swap(options, idx, idx - 1);
-            notifyDataSetChanged();
-        }
     }
 }

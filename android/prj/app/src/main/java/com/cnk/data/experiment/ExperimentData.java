@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.FileHandler;
 import com.cnk.data.experiment.raport.Raport;
 import com.cnk.data.experiment.raport.RaportEvent;
@@ -12,7 +13,6 @@ import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.notificators.Observable;
-import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 
@@ -20,13 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import io.realm.processor.Utils;
-
-public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAction> {
+public class ExperimentData {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
@@ -46,11 +43,11 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
 
         @Override
         public void run() {
-            while(raport.getState() != Raport.State.SENT) {
+            while (raport.getState() != Raport.State.SENT) {
                 raportLock.lock();
                 if (!saveRaport()) {
                     raportLock.unlock();
-                    Util.waitDelay(15 * Consts.SECOND);
+                    Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
                     continue;
                 }
                 if (raport.getState() == Raport.State.READY_TO_SEND) {
@@ -58,7 +55,7 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
                     break;
                 }
                 raportLock.unlock();
-                Util.waitDelay(15 * Consts.SECOND);
+                Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
             }
             Log.i(LOG_TAG, "Saving raport stopped");
         }
@@ -80,6 +77,10 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         }
     }
 
+    public interface ExperimentUpdateAction {
+        void doOnUpdate();
+    }
+
     private ExperimentData() {
         raportLock = new ReentrantLock(true);
     }
@@ -97,19 +98,10 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
 
     public void setNewExperimentData(Experiment newData) {
         experiment = newData;
-        notifyObservers();
     }
 
-    public void notifyObservers() {
-        for (ExperimentUpdateAction action : observers.values()) {
-            action.doOnUpdate();
-        }
-
-        for (Map.Entry<Activity, ExperimentUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            ExperimentUpdateAction action = entry.getValue();
-            activity.runOnUiThread(action::doOnUpdate);
-        }
+    public void downloadExperiment(ExperimentUpdateAction action) {
+        NetworkHandler.getInstance().downloadExperimentData(action);
     }
 
     public Survey getSurvey(@NonNull Survey.SurveyType type) {
@@ -145,7 +137,12 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         raportLock.unlock();
     }
 
-    public void markRaportAsReady() {
+    public void finishExperiment() {
+        markRaportAsReady();
+        experiment = null;
+    }
+
+    private void markRaportAsReady() {
         raportLock.lock();
         currentRaport.markAsReady();
         ReadyRaports.getInstance().addNewReadyRaport(currentRaport);
@@ -154,18 +151,10 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         raportLock.unlock();
     }
 
-    public void finishExperiment() {
-        experiment = null;
-    }
-
     private String getCurrentRaportPath() {
         String dir = Consts.DATA_PATH + RAPORT_DIRECTORY;
         new File(dir).mkdirs();
         String realFile = RAPORT_FILE_PREFIX + currentRaport.getId().toString();
         return dir + realFile;
-    }
-
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
     }
 }

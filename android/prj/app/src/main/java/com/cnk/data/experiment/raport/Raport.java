@@ -14,12 +14,6 @@ public class Raport implements Serializable {
     private SurveyAnswers postSurveyAnswers;
     private State state;
 
-    public enum State {
-        IN_PROGRESS,
-        READY_TO_SEND,
-        SENT;
-    }
-
     public Raport(Integer id,
                   Integer experimentId,
                   SurveyAnswers preSurveyAnswers,
@@ -79,5 +73,11 @@ public class Raport implements Serializable {
                ", preSurveyAnswers=" + preSurveyAnswers +
                ", history=" + history +
                '}';
+    }
+
+    public enum State {
+        IN_PROGRESS,
+        READY_TO_SEND,
+        SENT;
     }
 }

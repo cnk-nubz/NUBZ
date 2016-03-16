@@ -52,12 +52,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
         questionViews = new ArrayList<>();
-        ExperimentData.getInstance().addUIObserver(this, this::experimentDataDownloaded);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
             setSpinner();
-            NetworkHandler.getInstance().downloadExperimentData();
+            ExperimentData.getInstance().downloadExperiment(this::experimentDataDownloaded);
         } else {
             Log.i(LOG_TAG, "Survey after");
             init();
@@ -73,22 +72,25 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
-        ExperimentData.getInstance().deleteObserver(this);
         init();
-        spinner.dismiss();
+        if (spinner != null) {
+            spinner.dismiss();
+        }
     }
 
     private void init() {
         if (type == Survey.SurveyType.BEFORE) {
             ExperimentData.getInstance().startNewRaport();
         }
-        initViews();
-        if (allQuestionsCount == 0) {
-            changeToNextActivity();
-            return;
-        }
-        setUpCounterLabel();
-        showView(0);
+        runOnUiThread(() -> {
+            initViews();
+            if (allQuestionsCount == 0) {
+                changeToNextActivity();
+                return;
+            }
+            setUpCounterLabel();
+            showView(0);
+        });
     }
 
     private void initViews() {
@@ -154,7 +156,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        item.setEnabled(false);
         hideKeyboard();
         currentQuestionView.saveAnswer();
         if (item.getItemId() == R.id.action_prev_question) {
@@ -175,14 +176,15 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             }
 
         }
-        item.setEnabled(true);
         return super.onOptionsItemSelected(item);
     }
 
     private void showDialog() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setMessage(R.string.confirmation);
-        alert.setPositiveButton("Tak", (dialog, which) -> { changeToNextActivity(); });
+        alert.setPositiveButton("Tak", (dialog, which) -> {
+            changeToNextActivity();
+        });
         alert.setNegativeButton("Nie", (dialog, which) -> {
         });
         alert.setCancelable(false);
@@ -193,7 +195,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         Class next = (Class) getIntent().getSerializableExtra("nextActivity");
         if (next == null) {
             finish();
-            ExperimentData.getInstance().markRaportAsReady();
+            ExperimentData.getInstance().finishExperiment();
             NetworkHandler.getInstance().uploadRaports();
         } else {
             Intent i = new Intent(getApplicationContext(), next);

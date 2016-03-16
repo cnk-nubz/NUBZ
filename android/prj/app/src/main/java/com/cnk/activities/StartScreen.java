@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 
 import com.cnk.R;
@@ -19,14 +20,18 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.notificators.Observer;
 
+import java.util.ArrayList;
+
 public class StartScreen extends AppCompatActivity implements Observer {
+    private static final String LOG_TAG = "StartScreen";
     private static boolean dataLoaded;
+    private DatabaseHelper dbHelper;
     private ProgressDialog spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        DatabaseHelper dbHelper = new DatabaseHelper(this.getApplicationContext());
+        dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
         ExperimentData.getInstance().setDbHelper(dbHelper);
         MapData.getInstance().setDbHelper(dbHelper);
@@ -55,9 +60,9 @@ public class StartScreen extends AppCompatActivity implements Observer {
         downloadMap();
     }
 
-    public void mapActivityClick(View view) {
-        Intent i = new Intent(getApplicationContext(), MapActivity.class);
-        startActivity(i);
+    public void resetClick(View view) {
+        dbHelper.addOrUpdateExhibits(null, new ArrayList<>());
+        Log.i(LOG_TAG, "Exhibits reset");
     }
 
     public void surveyClick(View view) {
@@ -88,9 +93,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        MapData.getInstance().addUIObserver(this, this::mapDownloaded);
         setSpinner();
-        NetworkHandler.getInstance().downloadMap();
+        MapData.getInstance().downloadMap(this::mapDownloaded);
     }
 
     private void mapDownloaded() {
@@ -103,13 +107,11 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
                 spinner.dismiss();
-                MapData.getInstance().deleteObserver(this);
                 e.printStackTrace();
-                showAlert();
+                runOnUiThread(this::showAlert);
             }
         }
         spinner.dismiss();
-        MapData.getInstance().deleteObserver(this);
     }
 
     private void setSpinner() {

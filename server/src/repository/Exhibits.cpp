@@ -34,6 +34,14 @@ std::vector<std::int32_t> Exhibits::getAllIDs() {
     return Impl::getAllIDs(session);
 }
 
+Exhibit Exhibits::getF(std::int32_t ID) {
+    if (auto res = get(ID)) {
+        return res.value();
+    } else {
+        throw InvalidData{"invalid exhibit ID"};
+    }
+}
+
 boost::optional<Exhibits::Exhibit> Exhibits::get(std::int32_t ID) {
     if (auto res = Impl::get(session, ID)) {
         return fromDB(res.value());
