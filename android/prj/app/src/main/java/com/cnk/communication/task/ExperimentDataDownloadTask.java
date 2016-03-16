@@ -28,9 +28,11 @@ import java.util.Queue;
 public class ExperimentDataDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExperimentDownloadTask";
+    private ExperimentData.ExperimentUpdateAction action;
 
-    public ExperimentDataDownloadTask(Notificator notificator) {
+    public ExperimentDataDownloadTask(Notificator notificator, ExperimentData.ExperimentUpdateAction action) {
         super(notificator);
+        this.action = action;
     }
 
     @Override
@@ -42,6 +44,8 @@ public class ExperimentDataDownloadTask extends ServerTask {
         }
         Log.i(LOG_TAG, "Downloaded experiment");
         updateDataHandler(thriftData);
+        action.doOnUpdate();
+        action = null;
     }
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {
