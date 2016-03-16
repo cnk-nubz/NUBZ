@@ -80,13 +80,11 @@ def _getExhibits():
 				'width': e.frame.width,
 				'height': e.frame.height,
 				'mapLevel': e.frame.mapLevel,
-				'colorR': 180,
-				'colorG': 175,
-				'colorB': 209
+				'colorHex': '#' + hex(11841489).split('x')[1].upper()
 				#TODO UNCOMMENT:
-				#'colorR': e.frame.colorR
-				#'colorG': e.frame.colorG
-				#'colorB': e.frame.colorB
+				#'colorR': _getColorFromRGBDecimalValue(0, e.frame.rgbHex),
+				#'colorG': _getColorFromRGBDecimalValue(1, e.frame.rgbHex),
+				#'colorB': _getColorFromRGBDecimalValue(2, e.frame.rgbHex)
 			}
 		exhibitDict[k] = {
 			'name': e.name,

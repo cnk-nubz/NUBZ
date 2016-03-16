@@ -81,7 +81,7 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       options =
-          fillColor: @_rgb2hex(e.frame.colorR, e.frame.colorG, e.frame.colorB)
+          fillColor: e.frame.colorHex
           fillOpacity: 0.7
           weight: 1
           strokeColor: 'darkblue'
@@ -91,10 +91,6 @@ root.Canvas = class Canvas extends root.View
       @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
     @
-
-  _rgb2hex: (colorR, colorG, colorB) ->
-    hex = (x) -> "0#{parseInt(x).toString(16)}"[-2..]
-    '#' + hex(colorR) + hex(colorG) + hex(colorB)
 
   _exhibitOptions: (options...) =>
     jQuery.extend(options...)
