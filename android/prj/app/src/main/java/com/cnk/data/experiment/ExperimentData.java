@@ -46,7 +46,7 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
                 raportLock.lock();
                 if (!saveRaport()) {
                     raportLock.unlock();
-                    Util.waitDelay(15 * Consts.SECOND);
+                    Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
                     continue;
                 }
                 if (raport.getState() == Raport.State.READY_TO_SEND) {
@@ -54,7 +54,7 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
                     break;
                 }
                 raportLock.unlock();
-                Util.waitDelay(15 * Consts.SECOND);
+                Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
             }
             Log.i(LOG_TAG, "Saving raport stopped");
         }
