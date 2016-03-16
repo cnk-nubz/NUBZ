@@ -100,6 +100,12 @@ struct CreateExhibitRequest {
 	3: optional MapFrame visibleFrame,
 }
 
+struct UpdateExhibitRequest {
+	1: i32 exhibitId,
+	2: optional i32 floor,
+	3: optional MapFrame visibleFrame,
+}
+
 
 /////////////////////////////////////////////////
 // Actions

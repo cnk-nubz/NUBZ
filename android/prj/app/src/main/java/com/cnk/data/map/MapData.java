@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.Downloader;
 import com.cnk.data.FileHandler;
 import com.cnk.database.DatabaseHelper;
@@ -24,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-public class MapData extends Observable<MapData.MapUpdateAction> {
+public class MapData {
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
@@ -33,7 +34,6 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
     private Integer mapVersion;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
-    private Map<Observer, MapUpdateAction> observers;
 
     public interface MapUpdateAction {
         void doOnUpdate();
@@ -41,7 +41,6 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
 
     private MapData() {
         floorInfos = new ArrayList<>();
-        observers = new WeakHashMap<>();
         mapVersion = null;
     }
 
@@ -52,16 +51,8 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         return instance;
     }
 
-    public void notifyObservers() {
-        for (MapUpdateAction action : observers.values()) {
-            action.doOnUpdate();
-        }
-
-        for (Map.Entry<Activity, MapUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            MapUpdateAction action = entry.getValue();
-            activity.runOnUiThread(action::doOnUpdate);
-        }
+    public void downloadMap(MapUpdateAction action) {
+        NetworkHandler.getInstance().downloadMap(action);
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -110,8 +101,6 @@ public class MapData extends Observable<MapData.MapUpdateAction> {
         floorMaps.add(floor1);
         dbHelper.setMaps(version, floorMaps);
         loadDbData();
-        notifyObservers();
-
         Log.i(LOG_TAG, "New maps set");
     }
 

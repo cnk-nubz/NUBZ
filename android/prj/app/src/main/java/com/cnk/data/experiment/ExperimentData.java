@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.data.FileHandler;
 import com.cnk.data.experiment.raport.Raport;
 import com.cnk.data.experiment.raport.RaportEvent;
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAction> {
+public class ExperimentData {
     private static final String LOG_TAG = "ExperimentData";
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
@@ -97,19 +98,10 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
 
     public void setNewExperimentData(Experiment newData) {
         experiment = newData;
-        notifyObservers();
     }
 
-    public void notifyObservers() {
-        for (ExperimentUpdateAction action : observers.values()) {
-            action.doOnUpdate();
-        }
-
-        for (Map.Entry<Activity, ExperimentUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            ExperimentUpdateAction action = entry.getValue();
-            activity.runOnUiThread(action::doOnUpdate);
-        }
+    public void downloadExperiment(ExperimentUpdateAction action) {
+        NetworkHandler.getInstance().downloadExperimentData(action);
     }
 
     public Survey getSurvey(@NonNull Survey.SurveyType type) {
@@ -145,17 +137,18 @@ public class ExperimentData extends Observable<ExperimentData.ExperimentUpdateAc
         raportLock.unlock();
     }
 
-    public void markRaportAsReady() {
+    public void finishExperiment() {
+        markRaportAsReady();
+        experiment = null;
+    }
+
+    private void markRaportAsReady() {
         raportLock.lock();
         currentRaport.markAsReady();
         ReadyRaports.getInstance().addNewReadyRaport(currentRaport);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);
         currentRaport = null;
         raportLock.unlock();
-    }
-
-    public void finishExperiment() {
-        experiment = null;
     }
 
     private String getCurrentRaportPath() {

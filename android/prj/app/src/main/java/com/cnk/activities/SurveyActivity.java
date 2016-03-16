@@ -44,8 +44,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private TextView nextText;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
-    private MenuItem nextItem;
-    private MenuItem prevItem;
     private ProgressDialog spinner;
     private Survey.SurveyType type;
 
@@ -60,12 +58,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         goNext.setOnClickListener(new NavigateSurvey());
         nextText = (TextView) findViewById(R.id.nextText);
         questionViews = new ArrayList<>();
-        ExperimentData.getInstance().addUIObserver(this, this::experimentDataDownloaded);
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
             setSpinner();
-            NetworkHandler.getInstance().downloadExperimentData();
+            ExperimentData.getInstance().downloadExperiment(this::experimentDataDownloaded);
         } else {
             Log.i(LOG_TAG, "Survey after");
             init();
@@ -81,7 +78,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded() {
-        ExperimentData.getInstance().deleteObserver(this);
         init();
         if (spinner != null) {
             spinner.dismiss();
@@ -92,13 +88,15 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         if (type == Survey.SurveyType.BEFORE) {
             ExperimentData.getInstance().startNewRaport();
         }
-        initViews();
-        if (allQuestionsCount == 0) {
-            changeToNextActivity();
-            return;
-        }
-        setUpCounterLabel();
-        showView(0);
+        runOnUiThread(() -> {
+            initViews();
+            if (allQuestionsCount == 0) {
+                changeToNextActivity();
+                return;
+            }
+            setUpCounterLabel();
+            showView(0);
+        });
     }
 
     private void initViews() {
@@ -156,7 +154,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
         @Override
         public void onClick(View view) {
-            view.setEnabled(false);
             hideKeyboard();
             currentQuestionView.saveAnswer();
             if (view.getId() == goPrev.getId()) {
@@ -196,7 +193,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         Class next = (Class) getIntent().getSerializableExtra("nextActivity");
         if (next == null) {
             finish();
-            ExperimentData.getInstance().markRaportAsReady();
+            ExperimentData.getInstance().finishExperiment();
             NetworkHandler.getInstance().uploadRaports();
         } else {
             Intent i = new Intent(getApplicationContext(), next);

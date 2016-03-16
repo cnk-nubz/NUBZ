@@ -47,7 +47,7 @@ void CommandHandler::getNewMapImages(communication::NewMapImagesResponse &respon
 
     withExceptionTranslation([&]() {
         auto input = io::input::NewMapImagesRequest{request};
-        auto output = command::GetNewMapImagesCommand{db}(input);
+        auto output = command::MapCommands{db}.getNew(input);
         response = output.toThrift();
     });
 
@@ -62,7 +62,7 @@ void CommandHandler::setMapImage(communication::MapImage &response,
 
     withExceptionTranslation([&]() {
         auto input = io::input::SetMapImageRequest{request};
-        auto output = command::SetMapImageCommand{db}(input);
+        auto output = command::MapCommands{db}.set(input);
         response = output.toThrift();
     });
 
@@ -78,7 +78,7 @@ void CommandHandler::getNewExhibits(communication::NewExhibitsResponse &response
 
     withExceptionTranslation([&]() {
         auto input = io::input::NewExhibitsRequest{request};
-        auto output = command::GetNewExhibitsCommand{db}(input);
+        auto output = command::ExhibitCommands{db}.getNew(input);
         response = output.toThrift();
     });
 
@@ -93,7 +93,7 @@ void CommandHandler::createExhibit(communication::Exhibit &response,
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateExhibitRequest{request};
-        auto output = command::CreateExhibitCommand{db}(input);
+        auto output = command::ExhibitCommands{db}.create(input);
         response = output.toThrift();
     });
 
@@ -105,7 +105,7 @@ void CommandHandler::getAllExhibits(std::vector<communication::Exhibit> &respons
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllExhibitsCommand{db}();
+        auto output = command::ExhibitCommands{db}.getAll();
         response = server::io::ioToThrift(output);
     });
 
@@ -119,9 +119,24 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
 
     withExceptionTranslation([&]() {
         auto input = io::input::SetExhibitFrameRequest{request};
-        command::SetExhibitFrameCommand{db}(input);
+        command::ExhibitCommands{db}.setFrame(input);
     });
 
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::updateExhibit(communication::Exhibit &response,
+                                   const communication::UpdateExhibitRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << request;
+
+    withExceptionTranslation([&]() {
+        auto input = io::input::UpdateExhibitRequest{request};
+        auto output = command::ExhibitCommands{db}.update(input);
+        response = output.toThrift();
+    });
+
+    LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
 
@@ -131,7 +146,7 @@ void CommandHandler::getCurrentExperiment(communication::CurrentExperimentRespon
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetCurrentExperimentCommand{db}();
+        auto output = command::ExperimentCommands{db}.getCurrent();
         response = output.toThrift();
     });
 
@@ -145,7 +160,7 @@ void CommandHandler::createExperiment(const communication::CreateExperimentReque
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateExperimentRequest{request};
-        command::CreateExperimentCommand{db}(input);
+        command::ExperimentCommands{db}.create(input);
     });
 
     LOG(INFO) << __func__ << " end";
@@ -155,7 +170,7 @@ void CommandHandler::getReadyExperiments(std::vector<communication::ExperimentIn
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetReadyExperiments{db}();
+        auto output = command::ExperimentCommands{db}.getAllReady();
         response = server::io::ioToThrift(output);
     });
 
@@ -167,7 +182,7 @@ void CommandHandler::getFinishedExperiments(std::vector<communication::Experimen
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetFinishedExperiments{db}();
+        auto output = command::ExperimentCommands{db}.getAllFinished();
         response = server::io::ioToThrift(output);
     });
 
@@ -179,7 +194,7 @@ void CommandHandler::getActiveExperiment(communication::SingleExperimentInfo &re
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetActiveExperiment{db}();
+        auto output = command::ExperimentCommands{db}.getActive();
         response = output.toThrift();
     });
 
@@ -193,7 +208,7 @@ void CommandHandler::getExperiment(communication::Experiment &response,
     LOG(INFO) << "input: " << experimentId;
 
     withExceptionTranslation([&]() {
-        auto output = command::GetExperiment{db}(experimentId);
+        auto output = command::ExperimentCommands{db}.get(experimentId);
         response = output.toThrift();
     });
 
@@ -205,7 +220,7 @@ void CommandHandler::startExperiment(const int32_t experimentId) {
     LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << experimentId;
 
-    withExceptionTranslation([&]() { command::StartExperiment{db}(experimentId); });
+    withExceptionTranslation([&]() { command::ExperimentCommands{db}.start(experimentId); });
 
     LOG(INFO) << __func__ << " end";
 }
@@ -213,7 +228,7 @@ void CommandHandler::startExperiment(const int32_t experimentId) {
 void CommandHandler::finishExperiment() {
     LOG(INFO) << __func__ << " start";
 
-    withExceptionTranslation([&]() { command::FinishExperiment{db}(); });
+    withExceptionTranslation([&]() { command::ExperimentCommands{db}.finish(); });
 
     LOG(INFO) << __func__ << " end";
 }
@@ -224,7 +239,7 @@ std::int32_t CommandHandler::getIdForNewReport() {
     LOG(INFO) << __func__ << " start";
 
     std::int32_t response =
-        withExceptionTranslation([&]() { return command::ReserveIdForReportCommand{db}(); });
+        withExceptionTranslation([&]() { return command::ReportCommands{db}.reserveID(); });
 
     LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
@@ -238,7 +253,7 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
 
     withExceptionTranslation([&]() {
         auto input = io::input::RawReport(report);
-        command::SaveRawReportCommand{db}(input);
+        command::ReportCommands{db}.save(input);
     });
 
     LOG(INFO) << __func__ << " end";
@@ -253,7 +268,7 @@ void CommandHandler::createAction(communication::Action &response,
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateActionRequest(request);
-        auto output = command::CreateActionCommand{db}(input);
+        auto output = command::ActionCommands{db}.create(input);
         response = output.toThrift();
     });
 
@@ -265,7 +280,7 @@ void CommandHandler::getAllActions(std::vector<communication::Action> &response)
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllActionsCommand{db}();
+        auto output = command::ActionCommands{db}.getAll();
         response = io::ioToThrift(output);
     });
 
@@ -279,7 +294,7 @@ void CommandHandler::getAllQuestions(communication::QuestionsList &response) {
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllQuestionsCommand{db}();
+        auto output = command::QuestionCommands{db}.getAll();
         response = output.toThrift();
     });
 
@@ -297,7 +312,7 @@ void CommandHandler::createSimpleQuestion(
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateSimpleQuestionRequest(request);
-        auto output = command::CreateSimpleQuestionCommand{db}(input);
+        auto output = command::QuestionCommands{db}.createSimple(input);
         response = output.toThrift();
     });
 
@@ -309,7 +324,7 @@ void CommandHandler::getAllSimpleQuestions(std::vector<communication::SimpleQues
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllSimpleQuestionsCommand{db}();
+        auto output = command::QuestionCommands{db}.getAllSimple();
         response = server::io::ioToThrift(output);
     });
 
@@ -327,7 +342,7 @@ void CommandHandler::createMultipleChoiceQuestion(
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateMultipleChoiceQuestionRequest(request);
-        auto output = command::CreateMultipleChoiceQuestionCommand{db}(input);
+        auto output = command::QuestionCommands{db}.createMultipleChoice(input);
         response = output.toThrift();
     });
 
@@ -340,7 +355,7 @@ void CommandHandler::getAllMultipleChoiceQuestions(
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllMultipleChoiceQuestionsCommand{db}();
+        auto output = command::QuestionCommands{db}.getAllMultipleChoice();
         response = server::io::ioToThrift(output);
     });
 
@@ -357,7 +372,7 @@ void CommandHandler::createSortQuestion(communication::SortQuestion &response,
 
     withExceptionTranslation([&]() {
         auto input = io::input::CreateSortQuestionRequest(request);
-        auto output = command::CreateSortQuestionCommand{db}(input);
+        auto output = command::QuestionCommands{db}.createSort(input);
         response = output.toThrift();
     });
 
@@ -369,7 +384,7 @@ void CommandHandler::getAllSortQuestions(std::vector<communication::SortQuestion
     LOG(INFO) << __func__ << " start";
 
     withExceptionTranslation([&]() {
-        auto output = command::GetAllSortQuestionsCommand{db}();
+        auto output = command::QuestionCommands{db}.getAllSort();
         response = server::io::ioToThrift(output);
     });
 
