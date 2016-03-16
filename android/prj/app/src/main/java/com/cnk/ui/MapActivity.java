@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -586,7 +585,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             //TODO - hardcoded background color and border color - to change later
             bcgDrawable = new GradientDrawable();
             bcgDrawable.setColor(e.getColor());
-            bcgDrawable.setStroke(5, ColorHelper.getArgbBorderHexForColor(e.getColor()));
+            bcgDrawable.setStroke(5, ColorHelper.getRgbBorderHexForColor(e.getColor()));
 
             artv.setBackground(bcgDrawable);
 
@@ -689,9 +688,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
         @Override
         public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
-            Log.i(LOG_TAG,
-                  "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
-                  Integer.toString(y));
+            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
+                           Integer.toString(y));
             if (openedDialogs == 0) {
                 openedDialogs++;
                 // only if exhibit is clicked first time

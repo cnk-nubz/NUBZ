@@ -4,11 +4,10 @@ import android.graphics.Color;
 
 public class ColorHelper {
 
-    public static int getArgbBorderHexForColor(int color) {
-        return Color.argb(0xff,
-                          Math.max(0, Color.red(color) - 30),
-                          Math.max(0, Color.green(color) - 30),
-                          Math.max(0, Color.blue(color) - 30));
+    public static int getRgbBorderHexForColor(int color) {
+        return Color.rgb(Math.max(0, Color.red(color) - 30),
+                         Math.max(0, Color.green(color) - 30),
+                         Math.max(0, Color.blue(color) - 30));
     }
 
     public static int getRgbHexTextColorForBackground(int background) {

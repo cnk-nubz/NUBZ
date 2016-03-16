@@ -53,7 +53,7 @@ public class ModelTranslation {
                                 er.getWidth(),
                                 er.getHeight(),
                                 er.getFloor(),
-                                Color.argb(0xff, er.getColorR(), er.getColorG(), er.getColorB()),
+                                Color.rgb(er.getColorR(), er.getColorG(), er.getColorB()),
                                 er.getName());
         }
 
