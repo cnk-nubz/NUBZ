@@ -14,12 +14,12 @@ public class Notificator extends Observable {
 
     public void failure(ServerTask task) {
         setChanged();
-        notifyObservers(false);
+        notifyObservers(task);
     }
 
     public void success() {
         setChanged();
-        notifyObservers(true);
+        notifyObservers(null);
     }
 
 

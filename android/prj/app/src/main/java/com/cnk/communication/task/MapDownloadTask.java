@@ -20,6 +20,7 @@ import org.apache.thrift.TException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MapDownloadTask extends ServerTask {
 
@@ -35,9 +36,9 @@ public class MapDownloadTask extends ServerTask {
     public void performInSession(Server.Client client) throws TException, IOException {
         Integer version = MapData.getInstance().getMapVersion();
         downloadTilesUpdate(client, version);
+        Log.i(LOG_TAG, "Map update complete");
         action.doOnUpdate();
         action = null;
-        Log.i(LOG_TAG, "Map update complete");
     }
 
     private void downloadTilesUpdate(Server.Client client,

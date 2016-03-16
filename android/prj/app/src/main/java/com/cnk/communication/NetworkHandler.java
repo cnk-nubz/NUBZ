@@ -32,10 +32,8 @@ public class NetworkHandler implements Observer {
     private Notificator raportUpload;
     private Notificator exhibitsDownload;
     private Notificator bgDownload;
-    private Notificator bgRaportUpload;
     private Notificator experimentDataDownload;
     private boolean downloadInBg;
-    private boolean uploadInBg;
 
     private class QueueThread implements Runnable {
         private static final int TRIES = 3;
@@ -63,7 +61,6 @@ public class NetworkHandler implements Observer {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
         exhibitsDownload = new Notificator(this);
-        bgRaportUpload = new Notificator(this);
         bgDownload = new Notificator(this);
         experimentDataDownload = new Notificator(this);
         downloadInBg = false;
@@ -115,46 +112,14 @@ public class NetworkHandler implements Observer {
         downloadInBg = false;
     }
 
-    public synchronized void startBgUpload() {
-        if (uploadInBg) {
-            return;
-        }
-        uploadInBg = true;
-        addBgUploadTask();
-    }
-
-    public synchronized void stopBgUpload() {
-        uploadInBg = false;
-    }
-
     public void update(Observable o, Object arg) {
         if (o == bgDownload && downloadInBg) {
             addBgDownloadTask();
-        } else if (!(boolean) arg) {
-            onFailure(o, arg);
+        } else if (arg != null) {
+            onFailure((Task) arg);
         } else {
             onSuccess(o);
         }
-    }
-
-    public long getSecondsDelay() {
-        return bgDelaySeconds;
-    }
-
-    public void setSecondsDelay(long seconds) {
-        bgDelaySeconds = seconds;
-    }
-
-    private synchronized void addWaitTask() {
-        Task task = new WaitTask(SECONDS_DELAY * Consts.MILLIS_IN_SEC);
-        tasks.add(task);
-    }
-
-    private synchronized void addBgUploadTask() {
-        Task task = new RaportUploadTask(bgRaportUpload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.MILLIS_IN_SEC);
-        bgTasks.add(task);
-        bgTasks.add(wait);
     }
 
     private synchronized void addBgDownloadTask() {
@@ -171,22 +136,8 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    private synchronized void onFailure(Observable o, Object task) {
+    private synchronized void onFailure(Task task) {
         Log.i(LOG_TAG, "Task failed, retrying");
-        if (o == mapDownload) {
-            Log.e(LOG_TAG, "Map download task failure");
-            tasks.add((MapDownloadTask) task);
-        } else if (o == raportUpload) {
-            Log.e(LOG_TAG, "Raport upload task failure");
-            addWaitTask();
-            tasks.add((RaportUploadTask) task);
-        } else if (o == exhibitsDownload) {
-            Log.e(LOG_TAG, "Exhibits download task failed");
-            tasks.add((ExhibitDownloadTask) task);
-        } else if (o == experimentDataDownload) {
-            Log.e(LOG_TAG, "Experiment data download task failed");
-            tasks.add((ExperimentDataDownloadTask) task);
-        }
+        tasks.add(task);
     }
-
 }
