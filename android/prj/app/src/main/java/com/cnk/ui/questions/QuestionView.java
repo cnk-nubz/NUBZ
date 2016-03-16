@@ -2,6 +2,7 @@ package com.cnk.ui.questions;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.view.Gravity;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -38,9 +39,9 @@ public abstract class QuestionView extends RelativeLayout {
         nameLabel.setText(name);
         nameLabel.setTextSize(NAME_SIZE);
         nameLabel.setTextColor(QUESTION_COLOR);
+        nameLabel.setGravity(Gravity.CENTER_HORIZONTAL);
         nameLabel.setLayoutParams(params);
         nameLabel.setId(R.id.questionNameLabelId);
         this.addView(nameLabel);
     }
-
 }
