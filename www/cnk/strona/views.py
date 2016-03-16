@@ -79,7 +79,14 @@ def _getExhibits():
 				'y': e.frame.y,
 				'width': e.frame.width,
 				'height': e.frame.height,
-				'mapLevel': e.frame.mapLevel
+				'mapLevel': e.frame.mapLevel,
+				'colorR': 180,
+				'colorG': 175,
+				'colorB': 209
+				#TODO UNCOMMENT:
+				#'colorR': e.frame.colorR
+				#'colorG': e.frame.colorG
+				#'colorB': e.frame.colorB
 			}
 		exhibitDict[k] = {
 			'name': e.name,

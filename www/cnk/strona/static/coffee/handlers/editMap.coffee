@@ -43,12 +43,12 @@ class Handlers
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
-      # TODO: color is dummy for now
       data =
         id: id
         name: exhibit.name
         floor: exhibit.frame?.mapLevel
-        color: "2468AC"
+        #TODO what colour should be presented for invisible exhibit - white?
+        color: if exhibit.frame? then @_rgb2hex(exhibit.frame?.colorR, exhibit.frame?.colorG, exhibit.frame?.colorB) else "#2468AC"
       @exhibitEditDialog.bindData(data)
       @exhibitEditDialog.show()
     )
@@ -56,6 +56,10 @@ class Handlers
       jQuery(@button.plusZoom).prop("disabled", disablePlus)
       jQuery(@button.minusZoom).prop("disabled", disableMinus)
     )
+
+  _rgb2hex: (colorR, colorG, colorB) ->
+    hex = (x) -> "0#{parseInt(x).toString(16)}"[-2..]
+    '#' + hex(colorR) + hex(colorG) + hex(colorB)
 
   zoomOutHandler: =>
     instance = this
