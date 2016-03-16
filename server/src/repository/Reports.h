@@ -57,9 +57,6 @@ public:
     void insert(const Report &report);
 
 private:
-    // throws InvalidData in case of invalid id
-    Experiment getExperiment(std::int32_t ID);
-
     // throws InvalidData in case of greater id than reports id counter
     void checkID(std::int32_t ID);
 

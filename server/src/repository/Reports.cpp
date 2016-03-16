@@ -54,7 +54,12 @@ std::vector<Reports::Report> Reports::getAllForExperiment(std::int32_t experimen
 }
 
 void Reports::insert(const Report &report) {
-    auto experiment = getExperiment(report.experimentID);
+    auto experimentOpt = Experiments{session}.getActive();
+    if (!experimentOpt || experimentOpt.value().ID != report.experimentID) {
+        throw InvalidData{"given experiment ID is not an ID of currently active experiment"};
+    }
+    auto experiment = experimentOpt.value();
+
     checkID(report.ID);
     checkExhibits(report.history);
     checkEvents(experiment, report.history);
@@ -64,18 +69,9 @@ void Reports::insert(const Report &report) {
     Impl::insert(session, toDB(report));
 }
 
-Experiment Reports::getExperiment(std::int32_t ID) {
-    auto experiment = Experiments{session}.get(ID);
-    if (experiment) {
-        return experiment.value();
-    } else {
-        throw InvalidData("incorrect experiment ID");
-    }
-}
-
 void Reports::checkID(std::int32_t ID) {
     if (ID < 0 || ID > Counters{session}.get(CounterType::LastReportID)) {
-        throw InvalidData("incorrect report ID");
+        throw InvalidData{"incorrect report ID"};
     }
 }
 
@@ -85,7 +81,7 @@ void Reports::checkExhibits(const std::vector<Report::Event> &events) {
 
     for (const auto &event : events) {
         if (event.exhibitID && existing.count(event.exhibitID.value()) == 0) {
-            throw InvalidData("incorrect exhibit ID");
+            throw InvalidData{"incorrect exhibit ID"};
         }
     }
 }
@@ -106,7 +102,7 @@ void Reports::checkActions(const Experiment &experiment, const std::vector<Repor
         if (event.exhibitID) {
             if (!utils::all_of(event.actions,
                                std::bind(&decltype(available)::count, &available, _1))) {
-                throw InvalidData("incorrect exhibit action ID");
+                throw InvalidData{"incorrect exhibit action ID"};
             }
         }
     }
@@ -123,7 +119,7 @@ void Reports::checkBreakActions(const Experiment &experiment,
         if (!event.exhibitID) {
             if (!utils::all_of(event.actions,
                                std::bind(&decltype(available)::count, &available, _1))) {
-                throw InvalidData("incorrect break action ID");
+                throw InvalidData{"incorrect break action ID"};
             }
         }
     }
@@ -132,7 +128,7 @@ void Reports::checkBreakActions(const Experiment &experiment,
 void Reports::checkDurations(const std::vector<Report::Event> &events) {
     for (const auto &event : events) {
         if (event.durationInSecs < 0) {
-            throw InvalidData("durationInSecs cannot be less than 0");
+            throw InvalidData{"durationInSecs cannot be less than 0"};
         }
     }
 }
@@ -141,7 +137,7 @@ void Reports::checkSurveyAns(const Experiment::Survey &survey, const Report::Sur
     if (survey.simpleQuestions.size() != surveyAns.simpleQAnswers.size() ||
         survey.sortQuestions.size() != surveyAns.sortQAnswers.size() ||
         survey.multipleChoiceQuestions.size() != surveyAns.multiChoiceQAnswers.size()) {
-        throw InvalidData("incorrect number of answers");
+        throw InvalidData{"incorrect number of answers"};
     }
 
     utils::for_each2(survey.simpleQuestions, surveyAns.simpleQAnswers, checkSimpleAns);
@@ -154,8 +150,8 @@ void Reports::checkSimpleAns(const SimpleQuestion &question,
                              const Report::SurveyAns::SimpleQAnswer &answer) {
     if (answer) {
         if (question.numberAnswer && !utils::all_of(answer.value(), isdigit)) {
-            throw InvalidData(
-                "incorrect answer for simple question: number answer should contain only digits");
+            throw InvalidData{
+                "incorrect answer for simple question: number answer should contain only digits"};
         }
     }
 }
@@ -171,7 +167,7 @@ void Reports::checkMultipleChoiceAns(const MultipleChoiceQuestion &question,
     }
 
     if (!utils::all_of(answer.value(), std::bind(&decltype(available)::count, &available, _1))) {
-        throw InvalidData("incorrect answer for multiple choice question: incorrect id");
+        throw InvalidData{"incorrect answer for multiple choice question: incorrect id"};
     }
 }
 
@@ -189,7 +185,7 @@ void Reports::checkSortAns(const SortQuestion &question,
     std::sort(available.begin(), available.end());
     std::sort(choosen.begin(), choosen.end());
     if (available != choosen) {
-        throw InvalidData("incorrect answer for sort question");
+        throw InvalidData{"incorrect answer for sort question"};
     }
 }
 

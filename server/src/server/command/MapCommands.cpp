@@ -11,19 +11,43 @@
 #include <server/io/InvalidInput.h>
 #include <server/utils/PathHelper.h>
 
-#include "SetMapImageCommand.h"
+#include "MapCommands.h"
 
 namespace server {
 namespace command {
 
-const std::vector<SetMapImageCommand::ZoomLevelInfo> SetMapImageCommand::zoomLevels = {
+const std::vector<MapCommands::ZoomLevelInfo> MapCommands::zoomLevels = {
     {1, 1024, 64}, {2, 2048, 128}, {3, 4096, 256}, {4, 8192, 512}};
-volatile std::atomic_flag SetMapImageCommand::inProgress = ATOMIC_FLAG_INIT;
+volatile std::atomic_flag MapCommands::inProgress = ATOMIC_FLAG_INIT;
 
-SetMapImageCommand::SetMapImageCommand(db::Database &db) : db(db) {
+MapCommands::MapCommands(db::Database &db) : db(db) {
 }
 
-io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImageRequest &input) {
+NewMapImagesResponse MapCommands::getNew(const NewMapImagesRequest &input) {
+    auto mapImages = std::vector<repository::MapImage>{};
+    std::int32_t version;
+    std::tie(version, mapImages) = db.execute([&](db::DatabaseSession &session) {
+        auto countersRepo = repository::Counters{session};
+        auto curVersion = countersRepo.get(repository::Counters::Type::LastMapVersion);
+
+        auto imagesRepo = repository::MapImages{session};
+        if (input.acquiredVersion) {
+            auto usersVersion = input.acquiredVersion.value();
+            return std::make_pair(curVersion, imagesRepo.getAllNewerThan(usersVersion));
+        } else {
+            return std::make_pair(curVersion, imagesRepo.getAll());
+        }
+    });
+
+    auto result = NewMapImagesResponse{};
+    result.version = version;
+    for (const auto &mapImage : mapImages) {
+        result.floors[mapImage.floor] = MapImage{mapImage};
+    }
+    return result;
+}
+
+MapImage MapCommands::set(const SetMapImageRequest &input) {
     if (inProgress.test_and_set()) {
         throw io::InvalidInput{"cannot change two maps at the same time"};
     }
@@ -68,10 +92,10 @@ io::output::MapImage SetMapImageCommand::operator()(const io::input::SetMapImage
     }
     inProgress.clear();
 
-    return io::output::MapImage{mapImage};
+    return MapImage{mapImage};
 }
 
-void SetMapImageCommand::removeOldData(std::int32_t floor) {
+void MapCommands::removeOldData(std::int32_t floor) {
     boost::optional<repository::MapImage> mapImage = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::MapImages{session};
         auto mapImage = repo.get(floor);
@@ -88,21 +112,21 @@ void SetMapImageCommand::removeOldData(std::int32_t floor) {
     boost::filesystem::remove_all(utils::PathHelper::pathForFloorTilesDirectory(floor));
 }
 
-::utils::FileHandler SetMapImageCommand::createFloorDirectory(std::int32_t floor) {
+::utils::FileHandler MapCommands::createFloorDirectory(std::int32_t floor) {
     auto path = utils::PathHelper::pathForFloorTilesDirectory(floor);
     auto handler = ::utils::FileHandler{path};
     boost::filesystem::create_directory(path);
     return handler;
 }
 
-void SetMapImageCommand::createImageProc(const std::string &tmpMapFilename) {
+void MapCommands::createImageProc(const std::string &tmpMapFilename) {
     auto path = utils::PathHelper::tmpDir.pathForFile(tmpMapFilename);
     imgProc.reset(new ::utils::ImageProcessor{path});
 }
 
-::utils::FileHandler SetMapImageCommand::createFullSizeImage(const std::string &filename,
-                                                             std::int32_t *widthOut,
-                                                             std::int32_t *heightOut) {
+::utils::FileHandler MapCommands::createFullSizeImage(const std::string &filename,
+                                                      std::int32_t *widthOut,
+                                                      std::int32_t *heightOut) {
     auto dst = utils::PathHelper::publicDir.pathForFile(filename);
     prepareImageProcessor(zoomLevels.back());
     auto handler = ::utils::FileHandler{dst};
@@ -115,7 +139,7 @@ void SetMapImageCommand::createImageProc(const std::string &tmpMapFilename) {
     return handler;
 }
 
-std::vector<repository::MapImage::ZoomLevel> SetMapImageCommand::createZoomLevels(
+std::vector<repository::MapImage::ZoomLevel> MapCommands::createZoomLevels(
     const boost::filesystem::path &dst, const std::string &filenamePrefix) {
     auto result = std::vector<repository::MapImage::ZoomLevel>{};
     for (const auto &zoomLevelInfo : zoomLevels) {
@@ -129,7 +153,7 @@ std::vector<repository::MapImage::ZoomLevel> SetMapImageCommand::createZoomLevel
     return result;
 }
 
-repository::MapImage::ZoomLevel SetMapImageCommand::createZoomLevelTiles(
+repository::MapImage::ZoomLevel MapCommands::createZoomLevelTiles(
     const ZoomLevelInfo &zoomLevelInfo, const boost::filesystem::path &dst,
     const std::string &filenamePrefix) {
     LOG(INFO) << "Creating image for zoom level " << zoomLevelInfo.levelIdx;
@@ -159,7 +183,7 @@ repository::MapImage::ZoomLevel SetMapImageCommand::createZoomLevelTiles(
     return zoomLevel;
 }
 
-void SetMapImageCommand::prepareImageProcessor(const ZoomLevelInfo &zoomLevel) {
+void MapCommands::prepareImageProcessor(const ZoomLevelInfo &zoomLevel) {
     imgProc->reset();
     imgProc->scale(zoomLevel.size);
     imgProc->setTileSize(zoomLevel.tileSize);
