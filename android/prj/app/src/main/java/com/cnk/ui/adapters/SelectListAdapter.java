@@ -134,6 +134,10 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
         activeView = null;
     }
 
+    public void unselectAllOptions() {
+        Arrays.fill(optionChecked, Boolean.FALSE);
+    }
+
     public ArrayList<Integer> getSelectedOptions() {
         ArrayList<Integer> resultActions = new ArrayList<>();
         for (int i = 0; i < options.size(); i++) {
