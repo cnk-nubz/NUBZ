@@ -1,5 +1,7 @@
 package com.cnk.database;
 
+import android.graphics.Color;
+
 import com.cnk.data.FloorMap;
 import com.cnk.data.MapTiles;
 import com.cnk.data.Resolution;
@@ -32,7 +34,7 @@ public class ModelTranslation {
     }
 
     public static VersionRealm realmFromVersion(Version v) {
-        assert(v != null);
+        assert (v != null);
 
         VersionRealm vr = new VersionRealm();
         vr.setItem(v.getItem().toString());
@@ -44,9 +46,15 @@ public class ModelTranslation {
     public static Exhibit exhibitFromRealm(ExhibitRealm er) {
         Exhibit e = null;
         if (er != null) {
-            e = new Exhibit(er.getId(), er.getX(), er.getY(), er.getWidth(),
-                    er.getHeight(), er.getFloor(), er.getColorR(), er.getColorG(),
-                    er.getColorB(), er.getName());
+            e =
+                    new Exhibit(er.getId(),
+                                er.getX(),
+                                er.getY(),
+                                er.getWidth(),
+                                er.getHeight(),
+                                er.getFloor(),
+                                Color.argb(0xff, er.getColorR(), er.getColorG(), er.getColorB()),
+                                er.getName());
         }
 
         return e;
@@ -62,9 +70,11 @@ public class ModelTranslation {
         er.setWidth(e.getWidth());
         er.setHeight(e.getHeight());
         er.setFloor(e.getFloor());
-        er.setColorR(e.getColorR());
-        er.setColorG(e.getColorG());
-        er.setColorB(e.getColorB());
+        if (e.getColor() != null) {
+            er.setColorR(Color.red(e.getColor()));
+            er.setColorG(Color.green(e.getColor()));
+            er.setColorB(Color.blue(e.getColor()));
+        }
         er.setName(e.getName());
 
         return er;
@@ -80,7 +90,7 @@ public class ModelTranslation {
     }
 
     public static RaportFileRealm realmFromRaportFile(RaportFile file) {
-        assert(file != null);
+        assert (file != null);
 
         RaportFileRealm realmRaport = new RaportFileRealm();
         realmRaport.setFileName(file.getFileName());
@@ -93,8 +103,11 @@ public class ModelTranslation {
     public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
         RaportFile file = null;
         if (realmFile != null) {
-            file = new RaportFile(realmFile.getId(), realmFile.getServerId(),
-                       realmFile.getFileName(), realmFile.getState());
+            file =
+                    new RaportFile(realmFile.getId(),
+                                   realmFile.getServerId(),
+                                   realmFile.getFileName(),
+                                   realmFile.getState());
         }
 
         return file;
@@ -140,7 +153,7 @@ public class ModelTranslation {
     }
 
     public static MapTileRealm realmFromMapTile(MapTile mt) {
-        assert(mt != null);
+        assert (mt != null);
 
         MapTileRealm mtr = new MapTileRealm();
         mtr.setFloor(mt.getFloor());
@@ -157,12 +170,15 @@ public class ModelTranslation {
             return null;
         }
 
-        return new MapTile(mtr.getFloor(), mtr.getDetailLevel(), mtr.getRowNumber(),
-                mtr.getColumnNumber(), mtr.getMapTileLocation());
+        return new MapTile(mtr.getFloor(),
+                           mtr.getDetailLevel(),
+                           mtr.getRowNumber(),
+                           mtr.getColumnNumber(),
+                           mtr.getMapTileLocation());
     }
 
     public static List<MapTileRealm> realmListFromMapTileList(List<MapTile> mtl) {
-        assert(mtl != null);
+        assert (mtl != null);
 
         ArrayList<MapTileRealm> mtrl = new ArrayList<>();
 
@@ -188,7 +204,7 @@ public class ModelTranslation {
     }
 
     public static DetailLevelResRealm realmFromDetailLevelRes(DetailLevelRes dlr) {
-        assert(dlr != null);
+        assert (dlr != null);
 
         DetailLevelResRealm dlrr = new DetailLevelResRealm();
         dlrr.setFloor(dlr.getFloor());
@@ -206,13 +222,14 @@ public class ModelTranslation {
             return null;
         }
 
-        return new DetailLevelRes(dlrr.getFloor(), dlrr.getDetailLevel(),
-                new Resolution(dlrr.getOriginalWidth(), dlrr.getOriginalHeight()),
-                new Resolution(dlrr.getScaledWidth(), dlrr.getScaledHeight()));
+        return new DetailLevelRes(dlrr.getFloor(),
+                                  dlrr.getDetailLevel(),
+                                  new Resolution(dlrr.getOriginalWidth(), dlrr.getOriginalHeight()),
+                                  new Resolution(dlrr.getScaledWidth(), dlrr.getScaledHeight()));
     }
 
     public static List<DetailLevelResRealm> realmListFromDetailLevelResList(List<DetailLevelRes> dlrl) {
-        assert(dlrl != null);
+        assert (dlrl != null);
 
         ArrayList<DetailLevelResRealm> dlrrl = new ArrayList<>();
 
@@ -246,7 +263,7 @@ public class ModelTranslation {
     }
 
     public static FloorDetailLevelsRealm realmFromDetailLevels(FloorDetailLevels floorDetails) {
-        assert(floorDetails != null);
+        assert (floorDetails != null);
 
         FloorDetailLevelsRealm floorDetailRealm = new FloorDetailLevelsRealm();
         floorDetailRealm.setFloorNo(floorDetails.getFloorNo());
@@ -271,7 +288,8 @@ public class ModelTranslation {
         if (realm == null) {
             return null;
         }
-        return new MapTileInfo(realm.getFloor(), realm.getDetailLevel(),
-                                 new Resolution(realm.getWidth(), realm.getLength()));
+        return new MapTileInfo(realm.getFloor(),
+                               realm.getDetailLevel(),
+                               new Resolution(realm.getWidth(), realm.getLength()));
     }
 }
