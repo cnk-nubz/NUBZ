@@ -1,6 +1,7 @@
 #ifndef SERVER_COMMAND__EXHIBIT_COMMANDS__H
 #define SERVER_COMMAND__EXHIBIT_COMMANDS__H
 
+#include <cstdint>
 #include <vector>
 
 #include <boost/optional.hpp>

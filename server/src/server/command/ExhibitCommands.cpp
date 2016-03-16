@@ -14,25 +14,24 @@ ExhibitCommands::ExhibitCommands(db::Database &db) : db(db) {
 }
 
 Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
-    auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
-        if (!server::utils::checkText(input.name)) {
-            throw io::InvalidInput{"name contains invalid characters"};
-        }
+    if (!server::utils::checkText(input.name)) {
+        throw io::InvalidInput{"name contains invalid characters"};
+    }
 
+    auto exhibit = repository::Exhibit{};
+    exhibit.name = input.name;
+    exhibit.frame = createFrame(input.floor, input.visibleFrame);
+
+    db.execute([&](db::DatabaseSession &session) {
         auto countersRepo = repository::Counters{session};
         auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
 
-        auto exhibit = repository::Exhibit{};
-        exhibit.name = input.name;
-        exhibit.frame = createFrame(input.floor, input.visibleFrame);
         exhibit.version = version;
-
         auto exhibitsRepo = repository::Exhibits{session};
         exhibitsRepo.insert(&exhibit);
-        return exhibit;
     });
 
-    return Exhibit{repoExhibit};
+    return Exhibit{exhibit};
 }
 
 std::vector<Exhibit> ExhibitCommands::getAll() {
@@ -46,26 +45,24 @@ std::vector<Exhibit> ExhibitCommands::getAll() {
 }
 
 NewExhibitsResponse ExhibitCommands::getNew(const NewExhibitsRequest &input) {
-    auto repoExhibits = std::vector<repository::Exhibit>{};
+    auto exhibits = std::vector<repository::Exhibit>{};
     auto currentVersion = std::int32_t{};
-    std::tie(currentVersion, repoExhibits) = db.execute([&](db::DatabaseSession &session) {
+    std::tie(currentVersion, exhibits) = db.execute([&](db::DatabaseSession &session) {
         auto countersRepo = repository::Counters{session};
-        auto curVersion = countersRepo.get(repository::CounterType::LastExhibitVersion);
+        auto version = countersRepo.get(repository::CounterType::LastExhibitVersion);
 
         auto exhibitsRepo = repository::Exhibits{session};
-        auto exhibits = std::vector<repository::Exhibit>{};
         if (auto userVersion = input.acquiredVersion) {
-            exhibits = exhibitsRepo.getAllNewerThan(userVersion.value());
+            return std::make_tuple(version, exhibitsRepo.getAllNewerThan(userVersion.value()));
         } else {
-            exhibits = exhibitsRepo.getAll();
+            return std::make_tuple(version, exhibitsRepo.getAll());
         }
-        return std::make_tuple(curVersion, exhibits);
     });
 
-    auto response = io::output::NewExhibitsResponse{};
+    auto response = NewExhibitsResponse{};
     response.version = currentVersion;
-    for (auto &repoExhibit : repoExhibits) {
-        response.exhibits[repoExhibit.ID] = io::output::Exhibit{repoExhibit};
+    for (auto &e : exhibits) {
+        response.exhibits[e.ID] = Exhibit{e};
     }
     return response;
 }
@@ -103,7 +100,7 @@ Exhibit ExhibitCommands::update(const UpdateExhibitRequest &input) {
         repo.setVersion(input.exhibitId, version);
         return repo.getF(input.exhibitId);
     });
-    return io::output::Exhibit{repoExhibit};
+    return Exhibit{repoExhibit};
 }
 
 boost::optional<repository::Exhibit::Frame> ExhibitCommands::createFrame(
@@ -127,8 +124,8 @@ boost::optional<repository::Exhibit::Frame> ExhibitCommands::createFrame(
         frame.height = std::max(screenFrame.size.height / screenProportion, minSize);
         std::int32_t middleX = screenFrame.x + screenFrame.size.width / 2;
         std::int32_t middleY = screenFrame.y + screenFrame.size.height / 2;
-        frame.x = std::max(0, middleX - frame.width / 2);
-        frame.y = std::max(0, middleY - frame.height / 2);
+        frame.x = std::max<std::int32_t>(0, middleX - frame.width / 2);
+        frame.y = std::max<std::int32_t>(0, middleY - frame.height / 2);
     }
 
     return frame;

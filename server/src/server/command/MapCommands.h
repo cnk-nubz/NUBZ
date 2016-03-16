@@ -1,7 +1,8 @@
-#ifndef SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
-#define SERVER_COMMAND__SET_MAP_IMAGE_COMMAND__H
+#ifndef SERVER_COMMAND__MAP_COMMANDS__H
+#define SERVER_COMMAND__MAP_COMMANDS__H
 
 #include <atomic>
+#include <cstdint>
 #include <memory>
 
 #include <boost/filesystem.hpp>
@@ -13,19 +14,25 @@
 
 #include <repository/MapImages.h>
 
+#include <server/io/input/NewMapImagesRequest.h>
 #include <server/io/input/SetMapImageRequest.h>
 #include <server/io/output/MapImage.h>
+#include <server/io/output/NewMapImagesResponse.h>
 
 #include "Command.h"
 
 namespace server {
 namespace command {
 
-class SetMapImageCommand : public Command {
-public:
-    SetMapImageCommand(db::Database &db);
+using namespace io::input;
+using namespace io::output;
 
-    io::output::MapImage operator()(const io::input::SetMapImageRequest &input);
+class MapCommands : public Command {
+public:
+    MapCommands(db::Database &db);
+
+    NewMapImagesResponse getNew(const NewMapImagesRequest &input);
+    MapImage set(const SetMapImageRequest &input);
 
 private:
     struct ZoomLevelInfo {
