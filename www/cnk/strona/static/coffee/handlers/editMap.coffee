@@ -47,8 +47,7 @@ class Handlers
         id: id
         name: exhibit.name
         floor: exhibit.frame?.mapLevel
-        #TODO what colour should be presented for invisible exhibit - white?
-        color: exhibit.frame?.colorHex
+        color: exhibit.colorHex
       @exhibitEditDialog.bindData(data)
       @exhibitEditDialog.show()
     )
@@ -207,6 +206,8 @@ class Handlers
           name: data.name
           floor: data.floor if data.floor?
           visibleMapFrame: frame
+          #TODO uncomment:
+          #colorHex: data.colorHex
         )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -228,8 +229,9 @@ class Handlers
       )
       return
     id = data.id
-    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @mapData.exhibits[id].name = data.name
+    @mapData.exhibits[id].colorHex = data.colorHex
     if data.frame?
       @mapData.exhibits[id].frame.x = data.frame.x
       @mapData.exhibits[id].frame.y = data.frame.y

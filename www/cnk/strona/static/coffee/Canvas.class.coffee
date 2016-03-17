@@ -81,10 +81,10 @@ root.Canvas = class Canvas extends root.View
         @_map.unproject([X + e.frame.width, Y + e.frame.height], @_maxZoom[floor]),
       )
       options =
-          fillColor: e.frame.colorHex
+          fillColor: e.colorHex
           fillOpacity: 0.7
           weight: 1
-          strokeColor: 'darkblue'
+          strokeColor: '#B4AFD1'
           strokeOpacity: 1
       r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: id }))
       r.bindLabel(e.name, { direction: 'auto' })

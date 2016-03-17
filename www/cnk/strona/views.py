@@ -3,6 +3,7 @@ import os
 import json
 from enum import Enum
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
@@ -80,17 +81,18 @@ def _getExhibits():
 				'width': e.frame.width,
 				'height': e.frame.height,
 				'mapLevel': e.frame.mapLevel,
-				'colorHex': '#' + hex(11841489).split('x')[1].upper()
-				#TODO UNCOMMENT:
-                #'colorHex': '#' + hex(e.frame.rgbHex).split('x')[1].upper().rjust(6, '0')
 			}
 		exhibitDict[k] = {
 			'name': e.name,
 			'id': k,
-			'frame': frame
+			'frame': frame,
+			'colorHex': '#' + hex(11841489).split('x')[1].upper()
+			#TODO UNCOMMENT:
+			#'colorHex': '#' + hex(e.rgbHex).split('x')[1].upper().rjust(6, '0')
 		}
 	return exhibitDict
 
+@ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
 	if not _pingServer():
 		return HttpResponse('<h1>Nie mozna nawiazac polaczenia z serwerem, upewnij sie, ze jest wlaczony</h1>')
@@ -117,7 +119,7 @@ def getMapPage(request, file, activeLink):
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
 		'urlFloor1': urlFloor1,
-        'activeLink': activeLink
+		'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
 
@@ -229,6 +231,8 @@ def createNewExhibit(request):
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.exhibit.name,
 		"frame": exhibitFrame
+        #TODO uncomment:
+		#"colorHex": newExhibit.exhibit.colorHex
 	}
 	return JsonResponse(data)
 
