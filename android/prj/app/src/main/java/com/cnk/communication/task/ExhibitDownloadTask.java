@@ -2,11 +2,11 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.Exhibit;
-import com.cnk.communication.ExhibitsRequest;
-import com.cnk.communication.ExhibitsResponse;
-import com.cnk.communication.Server;
-import com.cnk.data.DataHandler;
+import com.cnk.communication.thrift.Exhibit;
+import com.cnk.communication.thrift.NewExhibitsRequest;
+import com.cnk.communication.thrift.NewExhibitsResponse;
+import com.cnk.communication.thrift.Server;
+import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
@@ -25,17 +25,17 @@ public class ExhibitDownloadTask extends ServerTask {
 
     protected void performInSession(Server.Client client) throws TException {
         Log.i(LOG_TAG, "Downloading exhibits");
-        ExhibitsRequest request = new ExhibitsRequest();
-        Integer version = DataHandler.getInstance().getExhibitsVersion();
+        NewExhibitsRequest request = new NewExhibitsRequest();
+        Integer version = ExhibitsData.getInstance().getExhibitsVersion();
         if (version != null) {
             request.setAcquiredVersion(version);
         }
-        ExhibitsResponse response = client.getExhibits(request);
-        updateDataHandler(response);
+        NewExhibitsResponse response = client.getNewExhibits(request);
+        updateExhibitsData(response);
         Log.i(LOG_TAG, "Exhibits downloaded");
     }
 
-    private void updateDataHandler(ExhibitsResponse response) {
+    private void updateExhibitsData(NewExhibitsResponse response) {
         Integer version = response.getVersion();
         Map<Integer, Exhibit> exhibits = response.getExhibits();
 
@@ -43,7 +43,7 @@ public class ExhibitDownloadTask extends ServerTask {
         for (Map.Entry<Integer, Exhibit> entry : exhibits.entrySet()) {
             dbExhibits.add(new com.cnk.database.models.Exhibit(entry.getKey(), entry.getValue()));
         }
-        DataHandler.getInstance().setExhibits(dbExhibits, version);
+        ExhibitsData.getInstance().setExhibits(dbExhibits, version);
     }
 
 }

@@ -4,6 +4,11 @@ android {
     compileSdkVersion 22
     buildToolsVersion "23.0.2"
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
     defaultConfig {
         applicationId "com.cnk"
         minSdkVersion 16
@@ -43,5 +48,10 @@ dependencies {
     compile files('libs/javatuples-1.2.jar')
     compile files('libs/tileview-2.0.7.jar')
     compile files('libs/commons-io-2.4.jar')
+}
+
+apply plugin: 'me.tatarka.retrolambda'
+retrolambda {
+    jvmArgs '-noverify'
 }
 

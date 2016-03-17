@@ -2,17 +2,16 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
-import com.cnk.communication.ImageTiles;
-import com.cnk.communication.MapImageTilesRequest;
-import com.cnk.communication.MapImageTilesResponse;
-import com.cnk.communication.MapImagesRequest;
-import com.cnk.communication.MapImagesResponse;
-import com.cnk.communication.Server;
-import com.cnk.communication.Size;
-import com.cnk.data.DataHandler;
-import com.cnk.data.FloorMap;
-import com.cnk.data.MapTiles;
-import com.cnk.data.Resolution;
+import com.cnk.communication.thrift.MapImage;
+import com.cnk.communication.thrift.NewMapImagesRequest;
+import com.cnk.communication.thrift.NewMapImagesResponse;
+import com.cnk.communication.thrift.Server;
+import com.cnk.communication.thrift.Size;
+import com.cnk.communication.thrift.ZoomLevel;
+import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapData;
+import com.cnk.data.map.MapTiles;
+import com.cnk.data.map.Resolution;
 import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Consts;
 
@@ -21,74 +20,65 @@ import org.apache.thrift.TException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
+    private MapData.MapUpdateAction action;
 
 
-    public MapDownloadTask(Notificator notificator) {
+    public MapDownloadTask(Notificator notificator, MapData.MapUpdateAction action) {
         super(notificator);
+        this.action = action;
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
-        MapImagesResponse response = downloadUpdateStatus(client);
-        Integer version = response.getVersion();
-        boolean floor1Update = (response.getLevelImageUrls().get(Consts.FLOOR1) != null);
-        boolean floor2Update = (response.getLevelImageUrls().get(Consts.FLOOR2) != null);
-        if (floor1Update || floor2Update) {
-            downloadTilesUpdate(client, floor1Update, floor2Update, version);
-        } else {
-            DataHandler.getInstance().notifyMapUpdated();
-        }
+        Integer version = MapData.getInstance().getMapVersion();
+        downloadTilesUpdate(client, version);
         Log.i(LOG_TAG, "Map update complete");
+        action.doOnUpdate();
+        action = null;
     }
 
-    private MapImagesResponse downloadUpdateStatus(Server.Client client) throws TException {
-        Log.i(LOG_TAG, "Downloading maps to update");
-        MapImagesRequest request = new MapImagesRequest();
-        Integer version = DataHandler.getInstance().getMapVersion();
+    private void downloadTilesUpdate(Server.Client client,
+                                     Integer version) throws TException, IOException {
+        Log.i(LOG_TAG, "Downloading map tiles addresses");
+
+        NewMapImagesRequest request = new NewMapImagesRequest();
         if (version != null) {
             request.setAcquiredVersion(version);
         }
-        MapImagesResponse response = client.getMapImages(request);
-        Log.i(LOG_TAG, "Maps to update obtained");
-        return response;
-    }
 
-    private void downloadTilesUpdate(Server.Client client, boolean floor1Update,
-                                     boolean floor2Update, Integer version) throws TException, IOException {
-        Log.i(LOG_TAG, "Downloading map tiles addresses");
-        MapImageTilesResponse floor1Response = null;
-        MapImageTilesResponse floor2Response = null;
-        if (floor1Update) {
-            MapImageTilesRequest requestFloor1 = new MapImageTilesRequest(Consts.FLOOR1);
-            floor1Response = client.getMapImageTiles(requestFloor1);
-        }
-        if (floor2Update) {
-            MapImageTilesRequest requestFloor2 = new MapImageTilesRequest(Consts.FLOOR2);
-            floor2Response = client.getMapImageTiles(requestFloor2);
-        }
+        NewMapImagesResponse response = client.getNewMapImages(request);
+        MapImage floor1Response = response.getFloors().get(Consts.FLOOR1);
+        MapImage floor2Response = response.getFloors().get(Consts.FLOOR2);
+
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
         FloorMap floor1 = translateFromThrift(floor1Response);
         FloorMap floor2 = translateFromThrift(floor2Response);
-        DataHandler.getInstance().setMaps(version, floor1, floor2);
+        MapData.getInstance().setMaps(version, floor1, floor2);
     }
 
-    private FloorMap translateFromThrift(MapImageTilesResponse thriftResponse) {
+    private FloorMap translateFromThrift(MapImage thriftResponse) {
         if (thriftResponse == null) {
-            return  null;
+            return null;
         }
-        Size thriftSize = thriftResponse.getOriginalSize();
+        Size thriftSize = thriftResponse.getResolution();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
-        List<ImageTiles> imageTilesThrift = thriftResponse.getZoomLevels();
+        List<ZoomLevel> imageTilesThrift = thriftResponse.getZoomLevels();
         ArrayList<MapTiles> mapTiles = new ArrayList<>();
 
-        for (ImageTiles tile : imageTilesThrift) {
-            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(), tile.getScaledSize().getHeight());
-            Resolution tileSize = new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
+        for (ZoomLevel tile : imageTilesThrift) {
+            Resolution
+                    scaledSize =
+                    new Resolution(tile.getScaledSize().getWidth(),
+                                   tile.getScaledSize().getHeight());
+            Resolution
+                    tileSize =
+                    new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
-            MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(tile.getTilesUrls()));
+            MapTiles toAdd = new MapTiles(scaledSize, tileSize, copyThriftList(toCopy));
             mapTiles.add(toAdd);
         }
 

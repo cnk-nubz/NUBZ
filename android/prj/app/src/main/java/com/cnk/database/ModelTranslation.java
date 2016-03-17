@@ -2,14 +2,14 @@ package com.cnk.database;
 
 import android.graphics.Color;
 
-import com.cnk.data.FloorMap;
-import com.cnk.data.MapTiles;
-import com.cnk.data.Resolution;
+import com.cnk.data.map.FloorMap;
+import com.cnk.data.map.MapTiles;
+import com.cnk.data.map.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;
-import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.MapTile;
+import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
@@ -292,4 +292,5 @@ public class ModelTranslation {
                                realm.getDetailLevel(),
                                new Resolution(realm.getWidth(), realm.getLength()));
     }
+
 }

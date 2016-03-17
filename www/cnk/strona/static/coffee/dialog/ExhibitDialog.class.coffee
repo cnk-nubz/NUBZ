@@ -1,21 +1,12 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
-  _dialogCreated: =>
+  _prepareDialog: (dialog) =>
     super
-    if @_dialogInfo?
-      @_dialog.setTitle(@_data.utils.text['editTitle'])
-      if not @_dialogInfo.floor?
-        @_dialogInfo.floor = 2
-      jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
-      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})").addClass("active")
-      jQuery("#dialog .popoverButton").css("background-color": "#" + @_dialogInfo.color)
-    else
-      @mapData = new MapDataHandler()
-      jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})").addClass("active")
-      jQuery("#dialog .popoverButton").css("background-color": "#9DE35A")
-
+    @mapData = new MapDataHandler()
+    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})", dialog).addClass("active")
+    jQuery(".popoverButton", dialog).css("background-color": "#9DE35A")
     instance = this
-    jQuery "#dialog input[type=text]"
+    jQuery("input[type=text]", dialog)
       .each( ->
         obj = jQuery(this)
         error = obj.parent().next()
@@ -23,38 +14,40 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         regex = new RegExp(instance._data.utils.regex.input)
         jQuery(this).keyup((e) -> instance._inputKeyUp(regex)(obj, e))
       )
-    jQuery "#dialog .popoverButton"
+    jQuery(".popoverButton", dialog)
       .each( ->
         obj = jQuery(this)
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
       )
-
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      context: this
-      url: '/getColorPickerPopoverContent/'
-      success: (data) =>
-        jQuery('.popoverButton').attr(
-          'data-content': data
-        ).popover().on('shown.bs.popover', ( ->
-          jQuery("div.popover").css("z-index", 5000)
-          jQuery('div.popover button').click( ->
-            rgbvals = jQuery(this).css("background-color")
-            hexval = instance._rgb2hex(rgbvals).toUpperCase()
-            jQuery('.popoverButton').css("background-color", hexval)
-            instance._colorPopoverClose()
-          )
-        ))
+    jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>
+      jQuery('.popoverButton', dialog).attr(
+        'data-content': data.html
+      ).popover().on('shown.bs.popover', ( ->
+        jQuery("div.popover").css("z-index", 5000)
+        jQuery("div.popover button").click( ->
+          rgbvals = jQuery(this).css("background-color")
+          hexval = instance._rgb2hex(rgbvals).toUpperCase()
+          jQuery('.popoverButton').css("background-color", hexval)
+          instance._colorPopoverClose()
+          jQuery('.popoverButton', dialog).popover()
+        )
+      ))
     )
 
+  _prepareFilledDialog: (dialog) =>
+    @_dialog.setTitle(@_data.utils.text['editTitle'])
+    if not @_dialogInfo.floor?
+      @_dialogInfo.floor = 2
+    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
+    jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
+    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
+    jQuery(".popoverButton", dialog).css("background-color": "#" + @_dialogInfo.color)
     if @readonly is true
-      jQuery("#dialog input").prop("readonly", true)
-      jQuery("#dialog label.floorNum.btn:not(.active)").remove()
-      jQuery("#dialog .popoverButton").prop("disabled", true)
+      jQuery("input", dialog).prop("readonly", true)
+      jQuery("label.floorNum.btn:not(.active)", dialog).remove()
+      jQuery(".popoverButton", dialog).prop("disabled", true)
+
 
   _inputKeyUp: (regex) =>
       (obj, e) =>

@@ -1,30 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_margin="10dp">
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="10dp">
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content">
 
-        <ProgressBar
-            android:id="@+id/pbExhibitDialog"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"/>
-
         <RelativeLayout
             android:id="@+id/rlTopLaneExhibitDialog"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             android:layout_margin="5dp">
+
             <Button
                 android:id="@+id/bExbibitDialogCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:text="@string/cancel" />
+                android:text="@string/cancel"/>
 
             <Button
                 android:id="@+id/bExbibitDialogFinish"
@@ -37,27 +34,36 @@
                 android:id="@+id/tvExhibitDialogName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toRightOf="@id/bExbibitDialogCancel"
-                android:layout_toLeftOf="@id/bExbibitDialogFinish"
-                android:layout_alignTop="@id/bExbibitDialogCancel"
                 android:layout_alignBottom="@id/bExbibitDialogCancel"
-                android:gravity="center"
+                android:layout_alignTop="@id/bExbibitDialogCancel"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:layout_marginRight="5dp"
+                android:layout_toLeftOf="@id/bExbibitDialogFinish"
+                android:layout_toRightOf="@id/bExbibitDialogCancel"
+                android:gravity="center"/>
 
         </RelativeLayout>
+
+        <Chronometer
+            android:id="@+id/chronometer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/rlTopLaneExhibitDialog"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="5dp"
+            android:textSize="30sp"/>
 
         <GridView
             android:id="@+id/gvActions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/rlTopLaneExhibitDialog"
-            android:numColumns="3"
-            android:verticalSpacing="5dp"
-            android:horizontalSpacing="5dp"
-            android:stretchMode="columnWidth"
+            android:layout_below="@id/chronometer"
             android:gravity="center"
-            android:visibility="invisible"/>
+            android:horizontalSpacing="5dp"
+            android:numColumns="3"
+            android:stretchMode="columnWidth"
+            android:verticalSpacing="5dp"/>
 
     </RelativeLayout>
 

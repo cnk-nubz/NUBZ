@@ -4,8 +4,7 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 public class ExhibitRealm extends RealmObject {
-    @PrimaryKey
-    private Integer id;
+    @PrimaryKey private Integer id;
 
     private Integer x;
     private Integer y;

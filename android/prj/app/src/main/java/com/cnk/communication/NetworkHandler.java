@@ -2,7 +2,6 @@ package com.cnk.communication;
 
 import android.util.Log;
 
-import com.cnk.utilities.Consts;
 import com.cnk.communication.task.BackgroundDownloadTask;
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;
@@ -10,7 +9,10 @@ import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
 import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
+import com.cnk.data.experiment.ExperimentData;
+import com.cnk.data.map.MapData;
 import com.cnk.notificators.Notificator;
+import com.cnk.utilities.Consts;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -21,6 +23,7 @@ public class NetworkHandler implements Observer {
 
     private static final String LOG_TAG = "NetworkHandler";
     private static final long SECONDS_DELAY = 30;
+    private static NetworkHandler instance;
 
     private long bgDelaySeconds;
     private BlockingQueue<Task> tasks;
@@ -29,19 +32,19 @@ public class NetworkHandler implements Observer {
     private Notificator raportUpload;
     private Notificator exhibitsDownload;
     private Notificator bgDownload;
-    private Notificator bgRaportUpload;
     private Notificator experimentDataDownload;
     private boolean downloadInBg;
-    private boolean uploadInBg;
 
     private class QueueThread implements Runnable {
         private static final int TRIES = 3;
         private BlockingQueue<Task> queue;
+
         public QueueThread(BlockingQueue<Task> queue) {
             this.queue = queue;
         }
+
         public void run() {
-            while(true) {
+            while (true) {
                 try {
                     Log.i(LOG_TAG, "Starting another task");
                     queue.take().run(TRIES);
@@ -54,11 +57,10 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    public NetworkHandler() {
+    private NetworkHandler() {
         mapDownload = new Notificator(this);
         raportUpload = new Notificator(this);
         exhibitsDownload = new Notificator(this);
-        bgRaportUpload = new Notificator(this);
         bgDownload = new Notificator(this);
         experimentDataDownload = new Notificator(this);
         downloadInBg = false;
@@ -71,17 +73,24 @@ public class NetworkHandler implements Observer {
         onDemendQueuer.start();
     }
 
-    public synchronized void downloadExperimentData() {
-        Task task = new ExperimentDataDownloadTask(experimentDataDownload);
+    public static NetworkHandler getInstance() {
+        if (instance == null) {
+            instance = new NetworkHandler();
+        }
+        return instance;
+    }
+
+    public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action) {
+        Task task = new ExperimentDataDownloadTask(experimentDataDownload, action);
         tasks.add(task);
     }
 
-    public synchronized void downloadMap() {
-        Task task = new MapDownloadTask(mapDownload);
+    public synchronized void downloadMap(MapData.MapUpdateAction action) {
+        Task task = new MapDownloadTask(mapDownload, action);
         tasks.add(task);
     }
 
-    public synchronized void uploadRaport() {
+    public synchronized void uploadRaports() {
         Task task = new RaportUploadTask(raportUpload);
         tasks.add(task);
     }
@@ -103,51 +112,19 @@ public class NetworkHandler implements Observer {
         downloadInBg = false;
     }
 
-    public synchronized void startBgUpload() {
-        if (uploadInBg) {
-            return;
-        }
-        uploadInBg = true;
-        addBgUploadTask();
-    }
-
-    public synchronized void stopBgUpload() {
-        uploadInBg = false;
-    }
-
     public void update(Observable o, Object arg) {
         if (o == bgDownload && downloadInBg) {
             addBgDownloadTask();
-        } else if (!(boolean) arg) {
-            onFailure(o);
+        } else if (arg != null) {
+            onFailure((Task) arg);
         } else {
             onSuccess(o);
         }
     }
 
-    public void setSecondsDelay(long seconds) {
-        bgDelaySeconds = seconds;
-    }
-
-    public long getSecondsDelay() {
-        return bgDelaySeconds;
-    }
-
-    private synchronized void addWaitTask() {
-        Task task = new WaitTask(SECONDS_DELAY * Consts.SECOND);
-        tasks.add(task);
-    }
-
-    private synchronized void addBgUploadTask() {
-        Task task = new RaportUploadTask(bgRaportUpload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
-        bgTasks.add(task);
-        bgTasks.add(wait);
-    }
-
     private synchronized void addBgDownloadTask() {
         Task task = new BackgroundDownloadTask(bgDownload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.SECOND);
+        Task wait = new WaitTask(bgDelaySeconds * Consts.MILLIS_IN_SEC);
         bgTasks.add(task);
         bgTasks.add(wait);
     }
@@ -159,22 +136,8 @@ public class NetworkHandler implements Observer {
         }
     }
 
-    private synchronized void onFailure(Observable o) {
+    private synchronized void onFailure(Task task) {
         Log.i(LOG_TAG, "Task failed, retrying");
-        //addWaitTask();
-        if (o == mapDownload) {
-            Log.e(LOG_TAG, "Map download task failure");
-            downloadMap();
-        } else if (o == raportUpload) {
-            Log.e(LOG_TAG, "Raport upload task failure");
-            uploadRaport();
-        } else if (o == exhibitsDownload) {
-            Log.e(LOG_TAG, "Exhibits download task failed");
-            downloadExhibits();
-        } else if (o == experimentDataDownload) {
-            Log.e(LOG_TAG, "Experiment data download task failed");
-            downloadExperimentData();
-        }
+        tasks.add(task);
     }
-
 }
