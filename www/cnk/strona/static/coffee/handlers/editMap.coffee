@@ -48,7 +48,7 @@ class Handlers
         name: exhibit.name
         floor: exhibit.frame?.mapLevel
         #TODO what colour should be presented for invisible exhibit - white?
-        color: if exhibit.frame? then exhibit.frame.colorHex else "#2468AC"
+        color: exhibit.frame?.colorHex
       @exhibitEditDialog.bindData(data)
       @exhibitEditDialog.show()
     )

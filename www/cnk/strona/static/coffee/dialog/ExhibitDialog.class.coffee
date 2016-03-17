@@ -8,7 +8,11 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         @_dialogInfo.floor = 2
       jQuery("#dialog .form-group:eq(0) input").val(@_dialogInfo.name)
       jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})").addClass("active")
-      jQuery("#dialog .popoverButton").css("background-color": @_dialogInfo.color)
+      if not @_dialogInfo.color?
+        jQuery("#dialog .form-group:eq(2)").hide()
+        jQuery("#dialog .popoverButton").css("background-color": "#9DE35A")
+      else
+        jQuery("#dialog .popoverButton").css("background-color": @_dialogInfo.color)
     else
       @mapData = new MapDataHandler()
       jQuery("#dialog .form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})").addClass("active")
@@ -28,6 +32,21 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         obj = jQuery(this)
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
+      )
+
+    jQuery "#dialog .form-group:eq(1) .btn-group .floorNum:eq(0)"
+      .click( ->
+        jQuery("#dialog .form-group:eq(2)").show()
+      )
+
+    jQuery "#dialog .form-group:eq(1) .btn-group .floorNum:eq(1)"
+      .click( ->
+        jQuery("#dialog .form-group:eq(2)").show()
+      )
+
+    jQuery "#dialog .form-group:eq(1) .btn-group .floorNum:eq(2)"
+      .click( ->
+        jQuery("#dialog .form-group:eq(2)").hide()
       )
 
     jQuery.ajaxSetup(
