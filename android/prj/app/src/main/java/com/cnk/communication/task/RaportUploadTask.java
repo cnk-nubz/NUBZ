@@ -9,8 +9,8 @@ import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.SimpleQuestionAnswer;
 import com.cnk.communication.thrift.SortQuestionAnswer;
 import com.cnk.communication.thrift.SurveyAnswers;
-import com.cnk.data.experiment.raport.Raport;
-import com.cnk.data.experiment.raport.RaportEvent;
+import com.cnk.data.raports.Raport;
+import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.notificators.Notificator;
 

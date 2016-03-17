@@ -15,14 +15,13 @@ import java.util.List;
 import java.util.Map;
 
 public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> {
+    public interface ExhibitsUpdateAction {
+        void doOnUpdate(List<Exhibit> changedExhibits);
+    }
     private static ExhibitsData instance;
     private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
     private List<FloorExhibitsInfo> floorInfos;
-
-    public interface ExhibitsUpdateAction {
-        void doOnUpdate(List<Exhibit> changedExhibits);
-    }
 
     private ExhibitsData() {
         floorInfos = new ArrayList<>();
@@ -40,12 +39,6 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         for (ExhibitsUpdateAction action : observers.values()) {
             action.doOnUpdate(changedExhibits);
         }
-
-        for (Map.Entry<Activity, ExhibitsUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            ExhibitsUpdateAction action = entry.getValue();
-            activity.runOnUiThread(() -> action.doOnUpdate(changedExhibits));
-        }
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -53,7 +46,7 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     }
 
     public void loadDbData() throws DatabaseLoadException {
-        exhibitsVersion = dbHelper.getVersion(Version.Item.EXHIBITS);
+        exhibitsVersion = dbHelper.getVersion(Version.EXHIBITS);
         try {
             floorInfos.clear();
             for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {

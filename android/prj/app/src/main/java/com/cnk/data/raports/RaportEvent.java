@@ -1,4 +1,4 @@
-package com.cnk.data.experiment.raport;
+package com.cnk.data.raports;
 
 import java.io.Serializable;
 import java.util.List;

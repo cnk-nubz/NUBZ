@@ -1,38 +1,29 @@
 package com.cnk.data.experiment;
 
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.data.FileHandler;
-import com.cnk.data.experiment.raport.Raport;
-import com.cnk.data.experiment.raport.RaportEvent;
 import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.raports.Raport;
+import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
-import com.cnk.notificators.Observable;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ExperimentData {
-    private static final String LOG_TAG = "ExperimentData";
-    private static final String RAPORT_DIRECTORY = "raports/";
-    private static final String RAPORT_FILE_PREFIX = "raport";
-    private static final String TMP = "TMP";
-    private static ExperimentData instance;
-    private Lock raportLock;
-    private DatabaseHelper dbHelper;
-    private Raport currentRaport;
-    private Experiment experiment;
+    public interface ExperimentUpdateAction {
+        void doOnUpdate();
+    }
 
     private class BgRaportSaver implements Runnable {
         private volatile Raport raport;
@@ -77,9 +68,15 @@ public class ExperimentData {
         }
     }
 
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
-    }
+    private static final String LOG_TAG = "ExperimentData";
+    private static final String RAPORT_DIRECTORY = "raports/";
+    private static final String RAPORT_FILE_PREFIX = "raport";
+    private static final String TMP = "TMP";
+    private static ExperimentData instance;
+    private Lock raportLock;
+    private DatabaseHelper dbHelper;
+    private Raport currentRaport;
+    private Experiment experiment;
 
     private ExperimentData() {
         raportLock = new ReentrantLock(true);

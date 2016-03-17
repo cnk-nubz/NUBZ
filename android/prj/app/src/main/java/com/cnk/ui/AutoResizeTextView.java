@@ -30,23 +30,25 @@ import android.util.TypedValue;
 import android.widget.TextView;
 
 public class AutoResizeTextView extends TextView {
+    private interface SizeTester {
+        /**
+         * @param suggestedSize  Size of text to be tested
+         * @param availableSpace available space in which text must fit
+         * @return an integer < 0 if after applying {@code suggestedSize} to
+         * text, it takes less space than {@code availableSpace}, > 0
+         * otherwise
+         */
+        public int onTestSize(int suggestedSize, RectF availableSpace);
+    }
     private static final int NO_LINE_LIMIT = -1;
     private RectF mTextRect = new RectF();
-
     private RectF mAvailableSpaceRect;
-
     private SparseIntArray mTextCachedSizes;
-
     private TextPaint mPaint;
-
     private float mMaxTextSize;
-
     private float mSpacingMult = 1.0f;
-
     private float mSpacingAdd = 0.0f;
-
     private float mMinTextSize = 1;
-
     private int mWidthLimit;
     private int mMaxLines;
     private final SizeTester mSizeTester = new SizeTester() {
@@ -95,17 +97,6 @@ public class AutoResizeTextView extends TextView {
     };
     private boolean mEnableSizeCache = true;
     private boolean mInitiallized;
-
-    private interface SizeTester {
-        /**
-         * @param suggestedSize  Size of text to be tested
-         * @param availableSpace available space in which text must fit
-         * @return an integer < 0 if after applying {@code suggestedSize} to
-         * text, it takes less space than {@code availableSpace}, > 0
-         * otherwise
-         */
-        public int onTestSize(int suggestedSize, RectF availableSpace);
-    }
 
     public AutoResizeTextView(Context context) {
         super(context);

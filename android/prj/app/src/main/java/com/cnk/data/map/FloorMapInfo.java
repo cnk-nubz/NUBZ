@@ -1,29 +1,27 @@
 package com.cnk.data.map;
 
-import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
+import com.cnk.database.models.ZoomLevelResolution;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class FloorMapInfo {
-    private List<DetailLevelRes> detailLevelRes;
+    private List<ZoomLevelResolution> zoomLevelsResolutions;
     private List<MapTileInfo> mapTilesSizes;
-    private Integer detailLevelsCount;
 
     public FloorMapInfo() {
         mapTilesSizes = new ArrayList<>();
-        detailLevelRes = new ArrayList<>();
+        zoomLevelsResolutions = new ArrayList<>();
         mapTilesSizes = new ArrayList<>();
-        detailLevelsCount = null;
     }
 
-    public List<DetailLevelRes> getDetailLevelRes() {
-        return detailLevelRes;
+    public List<ZoomLevelResolution> getZoomLevelsResolutions() {
+        return zoomLevelsResolutions;
     }
 
-    public void setDetailLevelRes(List<DetailLevelRes> detailLevelRes) {
-        this.detailLevelRes = detailLevelRes;
+    public void setZoomLevelsResolutions(List<ZoomLevelResolution> zoomLevelsResolutions) {
+        this.zoomLevelsResolutions = zoomLevelsResolutions;
     }
 
     public List<MapTileInfo> getMapTilesSizes() {
@@ -32,13 +30,5 @@ public class FloorMapInfo {
 
     public void setMapTilesSizes(List<MapTileInfo> mapTilesSizes) {
         this.mapTilesSizes = mapTilesSizes;
-    }
-
-    public Integer getDetailLevelsCount() {
-        return detailLevelsCount;
-    }
-
-    public void setDetailLevelsCount(Integer detailLevelsCount) {
-        this.detailLevelsCount = detailLevelsCount;
     }
 }

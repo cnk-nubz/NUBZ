@@ -21,20 +21,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class NetworkHandler implements Observer {
 
-    private static final String LOG_TAG = "NetworkHandler";
-    private static final long SECONDS_DELAY = 30;
-    private static NetworkHandler instance;
-
-    private long bgDelaySeconds;
-    private BlockingQueue<Task> tasks;
-    private BlockingQueue<Task> bgTasks;
-    private Notificator mapDownload;
-    private Notificator raportUpload;
-    private Notificator exhibitsDownload;
-    private Notificator bgDownload;
-    private Notificator experimentDataDownload;
-    private boolean downloadInBg;
-
     private class QueueThread implements Runnable {
         private static final int TRIES = 3;
         private BlockingQueue<Task> queue;
@@ -56,6 +42,17 @@ public class NetworkHandler implements Observer {
             }
         }
     }
+    private static final String LOG_TAG = "NetworkHandler";
+    private static final long SECONDS_DELAY = 30;
+    private static NetworkHandler instance;
+    private BlockingQueue<Task> tasks;
+    private BlockingQueue<Task> bgTasks;
+    private Notificator mapDownload;
+    private Notificator raportUpload;
+    private Notificator exhibitsDownload;
+    private Notificator bgDownload;
+    private Notificator experimentDataDownload;
+    private boolean downloadInBg;
 
     private NetworkHandler() {
         mapDownload = new Notificator(this);
@@ -64,13 +61,11 @@ public class NetworkHandler implements Observer {
         bgDownload = new Notificator(this);
         experimentDataDownload = new Notificator(this);
         downloadInBg = false;
-        bgDelaySeconds = 30;
         tasks = new LinkedBlockingQueue<>();
         bgTasks = new LinkedBlockingQueue<>();
-        Thread onDemendQueuer = new Thread(new QueueThread(tasks));
-        Thread bgQueuer = new Thread(new QueueThread(bgTasks));
-        bgQueuer.start();
-        onDemendQueuer.start();
+
+        spawnThread(tasks);
+        spawnThread(bgTasks);
     }
 
     public static NetworkHandler getInstance() {
@@ -78,6 +73,11 @@ public class NetworkHandler implements Observer {
             instance = new NetworkHandler();
         }
         return instance;
+    }
+
+    private void spawnThread(BlockingQueue<Task> tasks) {
+        Thread thread = new Thread(new QueueThread(tasks));
+        thread.start();
     }
 
     public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action) {
@@ -124,16 +124,13 @@ public class NetworkHandler implements Observer {
 
     private synchronized void addBgDownloadTask() {
         Task task = new BackgroundDownloadTask(bgDownload);
-        Task wait = new WaitTask(bgDelaySeconds * Consts.MILLIS_IN_SEC);
+        Task wait = new WaitTask(SECONDS_DELAY * Consts.MILLIS_IN_SEC);
         bgTasks.add(task);
         bgTasks.add(wait);
     }
 
     private synchronized void onSuccess(Observable o) {
         Log.i(LOG_TAG, "Task finished successfully");
-        if (downloadInBg && o == bgDownload) {
-            addBgDownloadTask();
-        }
     }
 
     private synchronized void onFailure(Task task) {

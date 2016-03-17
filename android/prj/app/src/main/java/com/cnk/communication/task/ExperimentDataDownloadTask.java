@@ -30,7 +30,8 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private static final String LOG_TAG = "ExperimentDownloadTask";
     private ExperimentData.ExperimentUpdateAction action;
 
-    public ExperimentDataDownloadTask(Notificator notificator, ExperimentData.ExperimentUpdateAction action) {
+    public ExperimentDataDownloadTask(Notificator notificator,
+                                      ExperimentData.ExperimentUpdateAction action) {
         super(notificator);
         this.action = action;
     }

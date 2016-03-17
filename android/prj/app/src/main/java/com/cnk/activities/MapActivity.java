@@ -30,22 +30,22 @@ import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.experiment.Action;
-import com.cnk.database.models.DetailLevelRes;
-import com.cnk.database.models.Exhibit;
-import com.cnk.ui.adapters.SelectListAdapter;
-import com.cnk.ui.models.DialogState;
 import com.cnk.data.exhibits.ExhibitsData;
+import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.ExperimentData;
-import com.cnk.data.experiment.raport.RaportEvent;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
+import com.cnk.data.raports.RaportEvent;
+import com.cnk.database.models.Exhibit;
+import com.cnk.database.models.ZoomLevelResolution;
 import com.cnk.notificators.Observer;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.ui.ImageHelper;
 import com.cnk.ui.MapBitmapProvider;
 import com.cnk.ui.ScaleData;
+import com.cnk.ui.adapters.SelectListAdapter;
+import com.cnk.ui.models.DialogState;
 import com.cnk.ui.models.ExhibitSpot;
 import com.cnk.ui.models.MapState;
 import com.cnk.utilities.Consts;
@@ -58,24 +58,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 
 public class MapActivity extends AppCompatActivity implements Observer {
-    private static final String LOG_TAG = "MapActivity";
-    public static final Float MAXIMUM_SCALE = 4.0f;
-    public static final Float MINIMUM_SCALE = 0.01f;
-
-    private TileView tileView;
-    private Semaphore changeAndUpdateMutex;
-    private MapState mapState;
-    private LinearLayout layoutLoading;
-    private LinearLayout layoutMapMissing;
-    private Integer currentFloorNum;
-    private RelativeLayout rlRootLayout;
-    private ProgressDialog spinner;
-    private ActionBarDrawerToggle drawerToggle;
-    private Integer openedDialogs;
-
-    private DialogState exhibitDialog;
-    private DialogState breakDialog;
-
     private class StartUpTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... voids) {
@@ -165,10 +147,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             localUISynchronization.acquireUninterruptibly();
 
-            Integer detailLevels = MapData.getInstance().getDetailLevelsCountForFloor(floor);
-            DetailLevelRes
+            Integer detailLevels = MapData.getInstance().getZoomLevelsCount(floor);
+            ZoomLevelResolution
                     biggestResolution =
-                    MapData.getInstance().getDetailLevelResolution(floor, detailLevels - 1);
+                    MapData.getInstance().getZoomLevelResolution(floor, detailLevels - 1);
 
             mapState.currentMapSize = biggestResolution.getScaledRes();
             mapState.originalMapSize = MapData.getInstance().getOriginalResolution(floor);
@@ -180,7 +162,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             LinkedList<ScaleData> ll = new LinkedList<>();
             for (int i = 0; i < detailLevels; i++) {
-                DetailLevelRes current = MapData.getInstance().getDetailLevelResolution(floor, i);
+                ZoomLevelResolution
+                        current =
+                        MapData.getInstance().getZoomLevelResolution(floor, i);
                 if (current == null) {
                     showAlert();
                 }
@@ -208,6 +192,38 @@ public class MapActivity extends AppCompatActivity implements Observer {
             return null;
         }
     }
+
+    // Action listeners:
+    private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
+        @Override
+        public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
+            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
+                           Integer.toString(y));
+            Log.i(LOG_TAG, "open dialogs: " + openedDialogs.toString());
+            if (openedDialogs == 0) {
+                openedDialogs++;
+                // only if exhibit is clicked first time
+
+                final Integer floorId = ((ExhibitSpot) hotSpot).getListId();
+                showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
+            }
+        }
+    }
+    public static final Float MAXIMUM_SCALE = 4.0f;
+    public static final Float MINIMUM_SCALE = 0.01f;
+    private static final String LOG_TAG = "MapActivity";
+    private TileView tileView;
+    private Semaphore changeAndUpdateMutex;
+    private MapState mapState;
+    private LinearLayout layoutLoading;
+    private LinearLayout layoutMapMissing;
+    private Integer currentFloorNum;
+    private RelativeLayout rlRootLayout;
+    private ProgressDialog spinner;
+    private ActionBarDrawerToggle drawerToggle;
+    private Integer openedDialogs;
+    private DialogState exhibitDialog;
+    private DialogState breakDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -555,6 +571,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ll;
     }
 
+    // Exhibits handling:
+
     private LinearLayout addMapMissingLayout(RelativeLayout parent, Context c) {
         TextView tvLoadingFailed = new TextView(c);
         tvLoadingFailed.setText(getResources().getString(R.string.map_missing));
@@ -579,8 +597,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         return ll;
     }
-
-    // Exhibits handling:
 
     private void clearAllExhibitsOnMap() {
         final Semaphore localUISynchronization = new Semaphore(0, true);
@@ -670,23 +686,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         });
 
         waitOnUI.acquireUninterruptibly();
-    }
-
-    // Action listeners:
-    private class ExhibitTapListener implements HotSpot.HotSpotTapListener {
-        @Override
-        public void onHotSpotTap(final HotSpot hotSpot, int x, int y) {
-            Log.i(LOG_TAG, "exhibit hotSpot clicked, x=" + Integer.toString(x) + " y=" +
-                           Integer.toString(y));
-            Log.i(LOG_TAG, "open dialogs: " + openedDialogs.toString());
-            if (openedDialogs == 0) {
-                openedDialogs++;
-                // only if exhibit is clicked first time
-
-                final Integer floorId = ((ExhibitSpot) hotSpot).getListId();
-                showExhibitDialog(false, ((ExhibitSpot) hotSpot).getName(), floorId);
-            }
-        }
     }
 
     private void showExhibitDialog(boolean isBreak, String name, Integer requestCode) {
