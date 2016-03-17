@@ -2,12 +2,12 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.Exhibit;
 import com.cnk.communication.thrift.NewExhibitsRequest;
 import com.cnk.communication.thrift.NewExhibitsResponse;
 import com.cnk.communication.thrift.Server;
 import com.cnk.data.exhibits.ExhibitsData;
-import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
 
@@ -19,8 +19,9 @@ public class ExhibitDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExhibitDownloadTask";
 
-    public ExhibitDownloadTask(Notificator notificator) {
-        super(notificator);
+    public ExhibitDownloadTask(NetworkHandler.FinishAction failure,
+                               NetworkHandler.FinishAction success) {
+        super(failure, success);
     }
 
     protected void performInSession(Server.Client client) throws TException {

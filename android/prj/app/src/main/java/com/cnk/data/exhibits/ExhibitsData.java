@@ -40,12 +40,6 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         for (ExhibitsUpdateAction action : observers.values()) {
             action.doOnUpdate(changedExhibits);
         }
-
-        for (Map.Entry<Activity, ExhibitsUpdateAction> entry : uiObservers.entrySet()) {
-            Activity activity = entry.getKey();
-            ExhibitsUpdateAction action = entry.getValue();
-            activity.runOnUiThread(() -> action.doOnUpdate(changedExhibits));
-        }
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
