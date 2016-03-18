@@ -4,14 +4,16 @@ import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
 public class ExhibitRealm extends RealmObject {
-    @PrimaryKey
-    private Integer id;
+    @PrimaryKey private Integer id;
 
     private Integer x;
     private Integer y;
     private Integer width;
     private Integer height;
     private Integer floor;
+    private Integer colorR;
+    private Integer colorG;
+    private Integer colorB;
     private String name;
 
     public Integer getId() {
@@ -60,6 +62,30 @@ public class ExhibitRealm extends RealmObject {
 
     public void setFloor(Integer floor) {
         this.floor = floor;
+    }
+
+    public Integer getColorR() {
+        return colorR;
+    }
+
+    public void setColorR(Integer colorR) {
+        this.colorR = colorR;
+    }
+
+    public Integer getColorG() {
+        return colorG;
+    }
+
+    public void setColorG(Integer colorG) {
+        this.colorG = colorG;
+    }
+
+    public Integer getColorB() {
+        return colorB;
+    }
+
+    public void setColorB(Integer colorB) {
+        this.colorB = colorB;
     }
 
     public String getName() {

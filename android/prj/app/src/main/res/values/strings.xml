@@ -9,7 +9,17 @@
     <string name="drawer_open">Wysunięto</string>
     <string name="drawer_close">Zamknięto</string>
     <string name="break_action">Przerwa</string>
+    <string name="pietro">Piętro</string>
     <string name="end_action">Koniec badania</string>
     <string name="cancel">Anuluj</string>
-    <string name="finish">Koniec</string>
+    <string name="finish">Zakończ</string>
+    <string name="error">Błąd</string>
+    <string name="mapIncompleteMessage">Dane o mapie są niekompletne, pobierz mapę ponownie</string>
+    <string name="dataError">Pobrane dane są uszkodzone, spróbuj ponownie lub skontaktuj się z administratorem</string>
+    <string name="confirmation">Czy na pewno chcesz przejśc dalej? Danych nie będzie się dało zmienić</string>
+    <string name="next">Następne</string>
+    <string name="prev">Poprzednie</string>
+    <string name="chooseOne">Zaznacz jedną odpowiedź</string>
+    <string name="chooseMultiple">Zaznacz dowolną liczbę odpowiedzi</string>
+    <string name="sort">Posortuj poniższe opcje</string>
 </resources>

@@ -9,8 +9,7 @@ public class RaportFileRealm extends RealmObject {
     public static final String SENT = "SENT";
     public static final String READY_TO_SEND = "READY_TO_SEND";
 
-    @PrimaryKey
-    private Integer id;
+    @PrimaryKey private Integer id;
     private Integer serverId;
     private String fileName;
     // "READY_TO_SEND", "SENT", "IN_PROGRESS", enums are not supported

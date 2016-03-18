@@ -100,6 +100,7 @@ root.Canvas = class Canvas extends root.View
 
   setFloorLayer: (floor) =>
       @mapData.activeFloor = floor
+      @_map.setView([0, 0], @_minZoom)
       @updateState()
       @
 

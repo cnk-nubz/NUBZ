@@ -1,58 +1,71 @@
 #ifndef DB__Database__H
 #define DB__Database__H
 
-#include <thread>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 #include <pqxx/pqxx>
 
-#include "external/easylogging++.h"
+#include <utils/log.h>
 
 #include "DatabaseSession.h"
 
 namespace db {
-    class Database {
-    public:
-        Database(const std::string &user, const std::string &db, const std::string &host,
-                 std::uint16_t port);
-        ~Database() = default;
-        Database(const Database &) = delete;
-        Database(Database &&) = delete;
-        Database &operator=(const Database &) = delete;
-        Database &operator=(Database &&) = delete;
 
-        // thread-safe
-        template <class CMD>
-        void execute(CMD &&cmd);
+class Database {
+public:
+    Database(const std::string &user, const std::string &db, const std::string &host,
+             std::uint16_t port);
+    Database(const Database &) = delete;
+    Database(Database &&) = delete;
+    Database &operator=(const Database &) = delete;
+    Database &operator=(Database &&) = delete;
+
+    // thread-safe
+    // no more than one transaction at a time
+    template <class Cmd>
+    std::result_of_t<Cmd(DatabaseSession &)> execute(Cmd &&cmd);
+
+private:
+    class WorkGuard {
+    public:
+        WorkGuard(pqxx::lazyconnection &lc);
+        ~WorkGuard();
+
+        pqxx::work &getWork();
+        void cancel();
 
     private:
-        std::unique_ptr<pqxx::lazyconnection> connection;
-        std::mutex cmdMutex;
+        bool canceled;
+        pqxx::work work;
     };
 
-    struct DatabaseException : public std::runtime_error {
-        DatabaseException(const pqxx::broken_connection &e);
-        DatabaseException(const pqxx::sql_error &e);
-    };
+    std::unique_ptr<pqxx::lazyconnection> connection;
+    std::mutex cmdMutex;
+};
 
-    template <class CMD>
-    void Database::execute(CMD &&cmd) {
-        std::lock_guard<std::mutex> lock(cmdMutex);
-        pqxx::work work(*connection);
-        DatabaseSession session(work);
+struct DatabaseException : public std::runtime_error {
+    DatabaseException(const pqxx::failure &e);
+};
 
-        try {
-            cmd(session);
-            work.commit();
-        } catch (pqxx::broken_connection &e) {
-            LOG(DEBUG) << e.what();
-            throw DatabaseException(e);
-        } catch (pqxx::sql_error &e) {
-            LOG(DEBUG) << e.what();
-            throw DatabaseException(e);
-        }
+template <class Cmd>
+std::result_of_t<Cmd(DatabaseSession &)> Database::execute(Cmd &&cmd) {
+    std::lock_guard<std::mutex> lock(cmdMutex);
+    WorkGuard transaction(*connection);
+    DatabaseSession session(transaction.getWork());
+
+    try {
+        return cmd(session);
+    } catch (pqxx::failure &e) {
+        transaction.cancel();
+        LOG(DEBUG) << e.what();
+        throw DatabaseException(e);
+    } catch (...) {
+        transaction.cancel();
+        throw;
     }
+}
 }
 
 #endif

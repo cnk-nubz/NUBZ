@@ -1,11 +1,11 @@
 root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
-  _dialogCreated: =>
+  _prepareDialog: (dialog) =>
     super
     inputOffset = @_data.utils.default.labelSize
     instance = this
 
-    inputs = jQuery "#dialog input[type=text]"
+    inputs = jQuery("input[type=text]", dialog)
     inputs.each( (idx) ->
         obj = jQuery(this)
         error = obj.parent().next()
@@ -18,6 +18,18 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     regex = new RegExp(instance._data.utils.regex.dynamicInput)
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp(regex), instance)
     return
+
+  _prepareFilledDialog: (dialog) =>
+    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
+    jQuery(".form-group:eq(1) input", dialog).val(@_dialogInfo.question)
+    for answer, index in @_dialogInfo.options
+      jQuery(".form-group:last-child > div input:last", dialog).val(answer).keyup()
+    if @readonly
+      jQuery("input", dialog).prop("readonly", true)
+      # remove last "add answer" entry
+      jQuery("input", dialog).last().parents('.input-group').remove()
+      @_dialog.getButton('saveButtonDialog').hide()
+    @
 
   _inputKeyUp: (regex) =>
       (obj, e) =>
@@ -54,3 +66,16 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
+
+  extractData: =>
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    options = []
+    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
+      options.push jQuery(this).val()
+    )
+    data =
+      name: name
+      question: question
+      options: options
+    data

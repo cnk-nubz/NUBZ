@@ -119,7 +119,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     else
       @refresh()
       BootstrapDialog.alert(
-        message: '<p align="center">Wystąpił nieoczekiwany błąd. Spróbuj ponownie.</p>'
+        message: "<p align=\"center\">#{data.message}</p>"
         type: BootstrapDialog.TYPE_DANGER
         title: 'Błąd serwera'
       )

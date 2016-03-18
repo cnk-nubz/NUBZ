@@ -1,15 +1,16 @@
 root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
-  _dialogCreated: =>
+  _prepareDialog: (dialog) =>
     super
+    #add dialog info
     radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this
-    jQuery "#dialog label.#{radioGroup}"
-      .filter ":first"
-      .addClass "active"
+    if not @_dialogInfo?
+      jQuery("label.#{radioGroup}", dialog).filter(":first").addClass("active")
 
-    inputs = jQuery "#dialog input[type=text]"
+    # prepare inputs with regexes etc
+    inputs = jQuery("input[type=text]", dialog)
     inputs.each( (idx) ->
         obj = jQuery(this)
         error = obj.parent().next()
@@ -22,6 +23,23 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     regex = new RegExp(instance._data.utils.regex.dynamicInput)
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp(regex), instance)
     return
+
+  _prepareFilledDialog: (dialog) =>
+    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
+    jQuery(".form-group:eq(1) input", dialog).val(@_dialogInfo.question)
+    activeLabel = if @_dialogInfo.singleAnswer then 0 else 1
+    jQuery(".form-group:eq(2) .btn-group label:eq(#{activeLabel})", dialog).addClass("active")
+    for answer, index in @_dialogInfo.options
+      obj = jQuery(".form-group:last-child > div input:last", dialog)
+      obj.val(answer).keyup()
+
+    if @readonly
+      jQuery("input", dialog).prop("readonly", true)
+      # remove last "add answer" entry
+      jQuery("input", dialog).last().parents('.input-group').remove()
+      jQuery(".btn:not(.active)", dialog).remove()
+      @_dialog.getButton('saveButtonDialog').hide()
+    @
 
   _inputKeyUp: (regex) =>
       (obj, e) =>
@@ -58,3 +76,18 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
     isValid
+
+  extractData: =>
+    name = jQuery("#dialog .form-group:eq(0) input").val()
+    question = jQuery("#dialog .form-group:eq(1) input").val()
+    singleAnswer = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")
+    options = []
+    jQuery("#dialog .form-group:last-child .input-group input:not(:last)").each( ->
+      options.push jQuery(this).val()
+    )
+    data =
+      name: name
+      question: question
+      options: options
+      singleAnswer: singleAnswer
+    data

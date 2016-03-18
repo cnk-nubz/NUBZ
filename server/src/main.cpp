@@ -1,55 +1,55 @@
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
+#include <thrift/concurrency/ThreadManager.h>
 #include <thrift/protocol/TBinaryProtocol.h>
 #include <thrift/server/TNonblockingServer.h>
 #include <thrift/transport/TServerSocket.h>
 #include <thrift/transport/TTransportUtils.h>
-#include <thrift/concurrency/ThreadManager.h>
-#include <boost/program_options.hpp>
 #include <boost/optional.hpp>
+#include <boost/program_options.hpp>
 
-#include "external/easylogging++.h"
+#include <db/Database.h>
 
-#include "CommandHandler.h"
-#include "Config.h"
-#include "FileHelper.h"
-#include "db/Database.h"
-#include "command/GetMapImagesCommand.h"
-#include "command/GetMapImageTilesCommand.h"
+#include <utils/Config.h>
+#include <utils/log.h>
+
+#include <server/CommandHandler.h>
+#include <server/utils/PathHelper.h>
 
 INITIALIZE_EASYLOGGINGPP
 
-boost::optional<Config> parseArguments(int argc, char *argv[]);
+boost::optional<utils::Config> parseArguments(int argc, char *argv[]);
 void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
-    srand((unsigned)time(NULL));
-    boost::optional<Config> cfg = parseArguments(argc, argv);
-    if (!cfg) {
-        return 0;
+    if (auto cfg = parseArguments(argc, argv)) {
+        auto config = cfg.value();
+
+        server::utils::PathHelper::mapsImgUrl.setPrefix(config.urlPrefixForMapImage);
+        server::utils::PathHelper::tilesUrl.setPrefix(config.urlPrefixForMapImageTiles);
+        server::utils::PathHelper::tmpDir.setPath(config.tmpFolderPath);
+        server::utils::PathHelper::publicDir.setPath(config.publicFolderPath);
+        server::utils::PathHelper::mapTilesDir.setPath(config.mapTilesFolderPath);
+
+        db::Database db(
+            config.databaseUser, config.databaseName, config.databaseHost, config.databasePort);
+        runServer(config.serverPort, db);
     }
-
-    FileHelper::configure(cfg->tmpFolderPath, cfg->publicFolderPath, cfg->mapTilesFolderPath);
-    command::GetMapImagesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImage);
-    command::GetMapImageTilesCommand::setUrlPathPrefix(cfg->urlPrefixForMapImageTiles);
-
-    db::Database db(cfg->databaseUser, cfg->databaseName, cfg->databaseHost, cfg->databasePort);
-    runServer(cfg->serverPort, db);
 }
 
-boost::optional<Config> parseArguments(int argc, char *argv[]) {
+boost::optional<utils::Config> parseArguments(int argc, char *argv[]) {
     static const char *configFilePathArg = "cfg";
     static const char *helpArg = "help";
     namespace po = boost::program_options;
 
-    std::string path;
-    po::options_description opts("Allowed options");
+    auto path = std::string{};
+    auto opts = po::options_description{"Allowed options"};
 
     opts.add_options()(helpArg, "produce help message");
     opts.add_options()(configFilePathArg, po::value<std::string>(&path), "set path to config file");
 
-    po::variables_map vm;
+    auto vm = po::variables_map{};
     try {
         po::store(po::parse_command_line(argc, argv, opts), vm);
         po::notify(vm);
@@ -60,7 +60,7 @@ boost::optional<Config> parseArguments(int argc, char *argv[]) {
         }
 
         if (vm.count(configFilePathArg)) {
-            return Config(path);
+            return utils::Config(path);
         } else {
             std::cout << opts;
             return {};
@@ -78,7 +78,7 @@ void runServer(std::uint16_t port, db::Database &db) {
     using namespace apache::thrift::server;
     using namespace apache::thrift::concurrency;
 
-    boost::shared_ptr<CommandHandler> handler(new CommandHandler(db));
+    boost::shared_ptr<::server::CommandHandler> handler(new ::server::CommandHandler(db));
     boost::shared_ptr<TProcessor> processor(new communication::ServerProcessor(handler));
     boost::shared_ptr<TProtocolFactory> protocolFactory(new TBinaryProtocolFactory());
 
