@@ -22,14 +22,19 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       )
     @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>
+      jQuery(dialog).click( ->
+        if instance._popoverOpened
+          instance._hidePopover()
+      )
       jQuery('.popoverButton', dialog).attr(
         'data-content': data.html
       )
-      jQuery('.popoverButton', dialog).click( ->
+      jQuery('.popoverButton', dialog).click( (event) ->
         if instance._popoverOpened
           instance._hidePopover()
         else
           instance._showPopover()
+        event.stopPropagation()
       )
       jQuery('.popoverButton', dialog).popover().on('shown.bs.popover', ( ->
         jQuery("div.popover button").mousedown( ->
