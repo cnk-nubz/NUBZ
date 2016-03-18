@@ -1,0 +1,175 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+}
+
+#activeExperiment {
+  position: absolute;
+  top: 55px;
+  height: 100px;
+  right: 150px;
+  left: 150px;
+  background: #eee;
+}
+
+#activeExperiment > div {
+  text-align: center;
+  font-size: 30px;
+  height: 50px;
+  font-weight: bold;
+  font-family: OpenSans-Semibold;
+  border-bottom: 1px solid #ccc;
+  background: #eee;
+}
+
+#activeExperiment > table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+#activeExperiment > table td:first-child {
+  font-weight: 600;
+  font-size: 26px;
+  padding: 6px;
+}
+
+#activeExperiment > table td:not(:first-child) {
+  width: 200px;
+  padding: 6px;
+}
+
+#activeExperiment > table td:not(:first-child) > div {
+  background: #ddd;
+  border: 1px solid #aaa;
+  text-align: center;
+  transition: background 230ms linear, border 230ms linear;
+}
+
+#activeExperiment > table td:not(:first-child) > div:hover {
+  background: lightgreen;
+  border: 1px solid green;
+  cursor: pointer;
+}
+
+#activeExperiment > table td:not(:first-child) > div > span {
+  font-weight: 550;
+  font-size: 22px;
+  line-height: 32px;
+}
+
+#lists {
+  position: absolute;
+  top: 152px;
+  bottom: 5px;
+  left: 0px;
+  right: 0px;
+}
+
+#readyExperiments,
+#finishedExperiments {
+  position: relative;
+  width: 50%;
+  height: 100%;
+}
+
+#readyExperiments {
+  float: left;
+  padding: 10px 50px 10px 150px;
+}
+
+#finishedExperiments {
+  float: right;
+  padding: 10px 150px 10px 50px;
+}
+
+#readyExperiments .middle,
+#finishedExperiments .middle {
+  position: absolute;
+  top: 56px;
+  bottom: 5px;
+  background: #fff;
+  overflow-y: scroll;
+}
+
+#readyExperiments .middle {
+  right: 50px;
+  left: 150px;
+}
+
+#finishedExperiments .middle {
+  right: 150px;
+  left: 50px;
+}
+
+/* styling finishedExperiments table */
+
+#finishedExperiments td:last-child {
+  width: 125px;
+}
+
+#finishedExperiments td:last-child > div:first-child {
+  display: inline-block;
+  height: 30px;
+  width: 15px;
+}
+
+#finishedExperiments td:last-child > div:last-child {
+  display: inline-block;
+}
+
+#finishedExperiments td:last-child > div:last-child > div {
+  height: 21px;
+}
+
+#finishedExperiments td:hover {
+  background: #fff;
+}
+
+/* styling readyExperiments table */
+
+#readyExperiments td:not(:first-child) {
+  width: 90px;
+}
+
+#readyExperiments td:not(:first-child) > div {
+  background: #ddd;
+  border: 1px solid #aaa;
+  text-align: center;
+  transition: background 120ms linear, border 120ms linear;
+}
+
+#readyExperiments td:not(:first-child) > div:hover {
+  cursor: pointer;
+}
+
+#readyExperiments td:last-child:hover,
+#readyExperiments td:first-child:hover {
+  background: #fff;
+}
+
+#readyExperiments td:not(:first-child) > div:hover {
+  background: lightgreen;
+}
+
+.myHeader {
+  position: relative;
+  height: 46px;
+  line-height: 46px;
+  border: 1px solid #ddd;
+  font-size: 22px;
+  font-weight: 600;
+  background: #eee;
+  text-align: center;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+.questionsActionsTable tr {
+  height: 45px !important;
+}

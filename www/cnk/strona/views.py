@@ -43,6 +43,7 @@ class ActiveLink(Enum):
     EDIT_MAP = '1'
     NEW_EXPERIMENT = '2'
     QUESTIONS_ACTIONS_PAGE = '3'
+    EXPERIMENTS_PAGE = '4'
 
 def _pingServer():
     result = thriftCommunicator.ping(1, 'x')
@@ -438,7 +439,7 @@ def createSortQuestion(request):
 def createAction(request):
     data = json.loads(request.POST.get("jsonData"))
     try:
-    	action = thriftCommunicator.createAction(data)
+        action = thriftCommunicator.createAction(data)
         result = {
             'success': True,
             'actionsList': _getAllActions(action.actionId)
@@ -465,3 +466,54 @@ def createExperiment(request):
             'message': "Wystapil nieoczekiwany blad. Sprobuj ponownie za chwile. ({})".format(str(ex))
         }
     return JsonResponse(result)
+
+def _parseExperiments(experiments):
+    experimentsList = list()
+    for e in experiments:
+        experimentsList.append({
+            'experimentId': e.id,
+            'name': e.name,
+            'startDate': {
+                'day': e.startDate.day,
+                'month': e.startDate.month,
+                'year': e.startDate.year
+            } if (not e.startDate is None) else None,
+            'finishDate': {
+                'day': e.finishDate.day,
+                'month': e.finishDate.month,
+                'year': e.finishDate.year
+            } if not (e.finishDate is None) else None
+        })
+    return experimentsList
+
+def _getFinishedExperiments():
+    return _parseExperiments(thriftCommunicator.getFinishedExperiments())
+
+def _getReadyExperiments():
+    return _parseExperiments(thriftCommunicator.getReadyExperiments())
+
+def _getActiveExperiment():
+    activeExperiment = thriftCommunicator.getActiveExperiment()
+    if activeExperiment.info is None:
+        return None
+    return _parseExperiments([activeExperiment.info])
+
+def experimentsPage(request):
+    template = loader.get_template('experimentsPage.html')
+    try:
+        context = {
+            'success': True,
+            'activeLink': ActiveLink.EXPERIMENTS_PAGE.value,
+            'finishedExperiments': _getFinishedExperiments(),
+            'readyExperiments': _getReadyExperiments(),
+            'activeExperiment': _getActiveExperiment(),
+            'finishedExperimentRow': render_to_string('list/row/finishedExperimentRow.html'),
+            'readyExperimentRow': render_to_string('list/row/readyExperimentRow.html'),
+            'tableList': render_to_string('list/dataList.html')
+        }
+    except Exception as ex:
+        context = {
+            'success': False,
+            'message': str(ex)
+        }
+    return HttpResponse(template.render(context))

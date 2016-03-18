@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
     url(r'nowe-badanie/$', views.newExperimentPage, name='newExperimentPage'),
     url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
+    url(r'badania/$', views.experimentsPage, name='experimentsPage'),
 
 	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 
