@@ -1,8 +1,6 @@
 package com.cnk.ui.questions;
 
 import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -51,10 +49,9 @@ public class MultipleChoiceQuestionView extends QuestionView {
         ListView table = new ListView(c);
         LayoutParams
                 params =
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         params.setMargins(50, 10, 50, 30);
         params.addRule(RelativeLayout.BELOW, header.getId());
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
         table.setLayoutParams(params);
         table.setDivider(getBackground());
         table.setDividerHeight(5);
