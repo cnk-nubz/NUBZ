@@ -5,11 +5,12 @@
     {{labelText}}
   </label>
   <div class="col-sm-{{inputSize|default:9}}">
-    <i class="btn btn-default popoverButton"
+    <span class="btn btn-default popoverButton"
+      tabindex="0" data-trigger="manual"
       data-original-title="{{popoverTitle}}" data-container="body"
       data-toggle="popover" data-placement="{{popoverPlacement}}"
       data-html="true" style="width: 30px; height: 30px">
       {{popoverText}}
-    </i>
+    </span>
   </div>
 </div>
