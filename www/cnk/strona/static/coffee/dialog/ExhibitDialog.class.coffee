@@ -17,6 +17,10 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery(".popoverButton", dialog)
       .each( ->
         obj = jQuery(this)
+        obj.attr(
+          tabindex: 0
+          'data-trigger': 'focus'
+        )
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
       )
@@ -30,7 +34,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
           hexval = instance._rgb2hex(rgbvals).toUpperCase()
           jQuery('.popoverButton').css("background-color", hexval)
           instance._colorPopoverClose()
-          jQuery('.popoverButton', dialog).popover()
         )
       ))
     )
