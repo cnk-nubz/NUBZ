@@ -53,8 +53,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
+    jQuery("input", dialog).prop("readonly", true)
     if @readonly is true
-      jQuery("input", dialog).prop("readonly", true)
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
 
@@ -90,9 +90,11 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       floor = null
     else
       floor = +floorText
-    exhibitColor = @_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..]
+    exhibitColor = parseInt(@_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..], 16)
     changedData =
+      id: @_dialogInfo?.id
       name: editedName
+      rgbHex: exhibitColor
       floor: floor
       color: exhibitColor
     changedData

@@ -42,9 +42,7 @@ public class Exhibit {
             this.width = exhibitFromServer.getMapFrame().getFrame().getSize().getWidth();
             this.height = exhibitFromServer.getMapFrame().getFrame().getSize().getHeight();
             this.floor = exhibitFromServer.getMapFrame().getFloor();
-            // TODO CHANGE: (to take value from exhibit frame)
-            this.color = Color.rgb(0x64, 0xB3, 0xE0);
-            // this.color = exhibitFromServer.getMapFrame().getRgbHexColor();
+             this.color = exhibitFromServer.getRgbHex();
         }
     }
 

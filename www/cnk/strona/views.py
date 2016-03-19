@@ -95,9 +95,7 @@ def _getExhibits():
 			'name': e.name,
 			'id': k,
 			'frame': frame,
-			'colorHex': '#' + hex(11841489).split('x')[1].upper()
-			#TODO UNCOMMENT:
-			#'colorHex': '#' + hex(e.rgbHex).split('x')[1].upper().rjust(6, '0')
+			'colorHex': '#' + hex(e.rgbHex).split('x')[1].upper().rjust(6, '0')
 		}
 	return exhibitsDict
 
@@ -239,9 +237,8 @@ def createNewExhibit(request):
 		"success": True,
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
+		"rgbHex": '#' + hex(newExhibit.rgbHex).split('x')[1].upper().rjust(6, '0'),
 		"frame": exhibitFrame
-        #TODO uncomment:
-		#"colorHex": newExhibit.exhibit.colorHex
 	}
 	return JsonResponse(data)
 

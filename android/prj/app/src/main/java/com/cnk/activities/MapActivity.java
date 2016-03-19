@@ -220,11 +220,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
+        mapState = new MapState(this);
 
         Log.i(LOG_TAG, "adding to ExhibitsData observers list");
         ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
-
-        mapState = new MapState(this);
 
         setViews();
         setActionBar();

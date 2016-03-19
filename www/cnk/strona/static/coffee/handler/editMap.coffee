@@ -194,10 +194,9 @@ class Handlers
       jsonData:
         JSON.stringify(
           name: data.name
+          rgbHex: data.rgbHex
           floor: data.floor if data.floor?
           visibleMapFrame: frame
-          #TODO uncomment:
-          #colorHex: data.colorHex
         )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -221,7 +220,7 @@ class Handlers
     id = data.id
     @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @mapData.exhibits[id].name = data.name
-    @mapData.exhibits[id].colorHex = data.colorHex
+    @mapData.exhibits[id].colorHex = data.rgbHex
     if data.frame?
       @mapData.exhibits[id].frame.x = data.frame.x
       @mapData.exhibits[id].frame.y = data.frame.y
