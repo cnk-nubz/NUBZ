@@ -35,7 +35,12 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     }
 
     public void notifyObservers(List<Exhibit> changedExhibits) {
+        List<ExhibitsUpdateAction> actions = new ArrayList<>();
         for (ExhibitsUpdateAction action : observers.values()) {
+            actions.add(action);
+        }
+
+        for (ExhibitsUpdateAction action : actions) {
             action.doOnUpdate(changedExhibits);
         }
     }
