@@ -30,6 +30,12 @@ struct Exhibits {
     };
     static constexpr detail::Column<FieldVersion> Version{};
 
+    struct FieldRgbHex : detail::Field<std::int32_t, Exhibits> {
+        using detail::Field<std::int32_t, Exhibits>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldRgbHex> RgbHex{};
+
     struct FieldFrameX : detail::OptField<std::int32_t, Exhibits> {
         using detail::OptField<std::int32_t, Exhibits>::OptField;
         static const std::string columnName;
@@ -62,8 +68,8 @@ struct Exhibits {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldVersion, FieldFrameX, FieldFrameY,
-                                      FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
+    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldVersion, FieldRgbHex, FieldFrameX,
+                                      FieldFrameY, FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
 };
 }
 }

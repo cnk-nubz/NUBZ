@@ -20,6 +20,7 @@ Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
 
     auto exhibit = repository::Exhibit{};
     exhibit.name = input.name;
+    exhibit.rgbHex = input.rgbHex;
     exhibit.frame = createFrame(input.floor, input.visibleFrame);
 
     db.execute([&](db::DatabaseSession &session) {

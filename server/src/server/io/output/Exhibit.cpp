@@ -8,13 +8,17 @@ communication::Exhibit Exhibit::toThrift() const {
     auto res = communication::Exhibit{};
     res.exhibitId = ID;
     res.name = name;
+    res.rgbHex = rgbHex;
     if (mapFrame) {
         res.__set_mapFrame(mapFrame.value().toThrift());
     }
     return res;
 }
 
-Exhibit::Exhibit(const repository::Exhibit &repo) : ID(repo.ID), name(repo.name) {
+Exhibit::Exhibit(const repository::Exhibit &repo)
+	: ID(repo.ID),
+		name(repo.name),
+		rgbHex(repo.rgbHex) {
     if (repo.frame) {
         auto repoFrame = repo.frame.value();
         auto mapFrame = MapFrame{};

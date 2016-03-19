@@ -23,6 +23,7 @@ public:
 
         std::int32_t ID;
         std::string name;
+        std::int32_t rgbHex;
         std::int32_t version;
         boost::optional<Frame> frame;
     };
@@ -51,6 +52,8 @@ public:
     void setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame);
 
     void setVersion(std::int32_t ID, std::int32_t newVersion);
+
+    void setRgbHex(std::int32_t ID, std::int32_t newRgbHex);
 
 private:
     void checkFrame(const Exhibit::Frame &frame);

@@ -89,6 +89,14 @@ void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     exhibit->ID = Impl::insert(session, toDB(*exhibit));
 }
 
+void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
+    if (!get(ID)) {
+        throw InvalidData{"incorrect exhibit ID"};
+    }
+    auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
+    session.execute(sql);
+}
+
 void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
     if (!get(ID)) {
         throw InvalidData{"incorrect exhibit ID"};
@@ -145,6 +153,7 @@ Table::Sql::in_t toDB(const Exhibits::Exhibit &exhibit) {
 
     return std::make_tuple(Table::FieldName{exhibit.name},
                            Table::FieldVersion{exhibit.version},
+                           Table::FieldRgbHex{exhibit.rgbHex},
                            Table::FieldFrameX{frame.x},
                            Table::FieldFrameY{frame.y},
                            Table::FieldFrameWidth{frame.width},
@@ -157,6 +166,7 @@ Exhibits::Exhibit fromDB(const Table::Sql::out_t &exhibit) {
     result.ID = std::get<Table::FieldID>(exhibit).value;
     result.name = std::get<Table::FieldName>(exhibit).value;
     result.version = std::get<Table::FieldVersion>(exhibit).value;
+    result.rgbHex = std::get<Table::FieldRgbHex>(exhibit).value;
 
     auto x = std::get<Table::FieldFrameX>(exhibit).value;
     auto y = std::get<Table::FieldFrameY>(exhibit).value;
