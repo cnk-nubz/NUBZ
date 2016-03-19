@@ -22,18 +22,17 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       )
     @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>
-      jQuery(dialog).click( ->
-        if instance._popoverOpened
-          instance._hidePopover()
+      jQuery(dialog).parents(".modal").click( ->
+        jQuery('.popoverButton', dialog).popover('hide')
       )
       jQuery('.popoverButton', dialog).attr(
         'data-content': data.html
       )
-      jQuery('.popoverButton', dialog).click( (event) ->
-        if instance._popoverOpened
-          instance._hidePopover()
+      jQuery('.popoverButton', dialog).click((event) ->
+        if jQuery('.popover').is(':visible')
+          jQuery(this).popover('hide')
         else
-          instance._showPopover()
+          jQuery(this).popover('show')
         event.stopPropagation()
       )
       jQuery('.popoverButton', dialog).popover().on('shown.bs.popover', ( ->
@@ -41,7 +40,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
           rgbvals = jQuery(this).css("background-color")
           hexval = instance._rgb2hex(rgbvals)
           jQuery('.popoverButton').css("background-color", hexval)
-          instance._hidePopover()
+          jQuery('.popoverButton', dialog).popover('hide')
         )
       ))
     )
@@ -59,14 +58,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
 
-  _showPopover: =>
-    @_popoverOpened = true
-    jQuery('.popoverButton').popover('show')
-
-  _hidePopover: =>
-    @_popoverOpened = false
-    jQuery('.popoverButton').popover('hide')
-
   _inputKeyUp: (regex) =>
       (obj, e) =>
         error = obj.parent().next()
@@ -82,13 +73,11 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _closeButton: =>
     label: super.label
     action: (dialog) =>
-      @_hidePopover()
       super.action(dialog)
 
   _saveButton: =>
     label: super.label
     action: (dialog) =>
-      @_hidePopover()
       if @readonly is false
         super.action(dialog)
       else
