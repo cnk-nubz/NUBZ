@@ -16,9 +16,7 @@ communication::Exhibit Exhibit::toThrift() const {
 }
 
 Exhibit::Exhibit(const repository::Exhibit &repo)
-	: ID(repo.ID),
-		name(repo.name),
-		rgbHex(repo.rgbHex) {
+    : ID(repo.ID), name(repo.name), rgbHex(repo.rgbHex) {
     if (repo.frame) {
         auto repoFrame = repo.frame.value();
         auto mapFrame = MapFrame{};

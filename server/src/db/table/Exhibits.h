@@ -68,8 +68,9 @@ struct Exhibits {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldVersion, FieldRgbHex, FieldFrameX,
-                                      FieldFrameY, FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
+    using Sql =
+        detail::SqlCoreWithID<FieldID, FieldName, FieldVersion, FieldRgbHex, FieldFrameX,
+                              FieldFrameY, FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
 };
 }
 }

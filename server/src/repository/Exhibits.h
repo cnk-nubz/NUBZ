@@ -53,6 +53,7 @@ public:
 
     void setVersion(std::int32_t ID, std::int32_t newVersion);
 
+    // throws InvalidData in case of incorrect rgb value
     void setRgbHex(std::int32_t ID, std::int32_t newRgbHex);
 
 private:

@@ -93,8 +93,12 @@ void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
     if (!get(ID)) {
         throw InvalidData{"incorrect exhibit ID"};
     }
-    auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
-    session.execute(sql);
+    if ((newRgbHex & 0xFFFFFF) == newRgbHex) {
+        auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
+        session.execute(sql);
+    } else {
+        throw InvalidData{"incorrect rgbHex value"};
+    }
 }
 
 void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
