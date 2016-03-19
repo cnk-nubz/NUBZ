@@ -85,6 +85,7 @@ void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     if (exhibit->frame) {
         checkFrame(exhibit->frame.value());
     }
+    checkRgbHex(exhibit->rgbHex);
 
     exhibit->ID = Impl::insert(session, toDB(*exhibit));
 }
@@ -93,10 +94,14 @@ void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
     if (!get(ID)) {
         throw InvalidData{"incorrect exhibit ID"};
     }
-    if ((newRgbHex & 0xFFFFFF) == newRgbHex) {
-        auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
-        session.execute(sql);
-    } else {
+    checkRgbHex(newRgbHex);
+
+    auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
+    session.execute(sql);
+}
+
+void Exhibits::checkRgbHex(std::int32_t rgbHex) {
+    if ((rgbHex & 0x00FFFFFF) != rgbHex) {
         throw InvalidData{"incorrect rgbHex value"};
     }
 }

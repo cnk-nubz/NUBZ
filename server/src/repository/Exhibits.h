@@ -58,6 +58,7 @@ public:
 
 private:
     void checkFrame(const Exhibit::Frame &frame);
+    void checkRgbHex(const std::int32_t rgbHex);
 
     db::DatabaseSession &session;
 };

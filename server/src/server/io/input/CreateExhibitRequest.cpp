@@ -5,8 +5,7 @@ namespace io {
 namespace input {
 
 CreateExhibitRequest::CreateExhibitRequest(const communication::CreateExhibitRequest &thrift)
-    : name(thrift.name),
-      rgbHex(thrift.rgbHex) {
+    : name(thrift.name), rgbHex(thrift.rgbHex) {
     if (thrift.__isset.floor) {
         floor = thrift.floor;
     }
