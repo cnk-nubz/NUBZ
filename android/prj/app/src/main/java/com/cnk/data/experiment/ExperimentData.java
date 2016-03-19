@@ -1,6 +1,5 @@
 package com.cnk.data.experiment;
 
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -12,14 +11,12 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
-import com.cnk.notificators.Observable;
 import com.cnk.utilities.Consts;
 import com.cnk.utilities.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
