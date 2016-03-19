@@ -1,7 +1,5 @@
 package com.cnk.data.exhibits;
 
-import android.app.Activity;
-
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;

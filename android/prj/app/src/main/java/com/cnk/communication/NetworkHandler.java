@@ -10,7 +10,6 @@ import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.map.MapData;
-import com.cnk.utilities.Consts;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -18,7 +17,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class NetworkHandler {
 
     public interface FinishAction {
-        void perform(Task t);
+        void perform(Task sender);
     }
 
     private static final String LOG_TAG = "NetworkHandler";
@@ -93,7 +92,7 @@ public class NetworkHandler {
             return;
         }
         downloadInBg = true;
-        Task task = new ExhibitDownloadTask(this::onFailure, this::onBgSuccess);
+        Task task = new ExhibitDownloadTask(this::onBgFailure, this::onBgSuccess);
         tasks.add(task);
     }
 
@@ -102,9 +101,16 @@ public class NetworkHandler {
     }
 
     private synchronized void onBgSuccess(Task t) {
-        Log.i(LOG_TAG, "Task finished successfully");
+        Log.i(LOG_TAG, "Bg task finished successfully");
         if (downloadInBg) {
-            bgTasks.add(new WaitTask(SECONDS_DELAY * Consts.MILLIS_IN_SEC));
+            bgTasks.add(new WaitTask(SECONDS_DELAY));
+            bgTasks.add(t);
+        }
+    }
+
+    private synchronized void onBgFailure(Task t) {
+        Log.i(LOG_TAG, "Bg task failed, retrying");
+        if (downloadInBg) {
             bgTasks.add(t);
         }
     }
