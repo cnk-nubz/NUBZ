@@ -11,6 +11,7 @@
   height: 100px;
   right: 150px;
   left: 150px;
+  border: 1px solid #ccc;
   background: #eee;
 }
 
@@ -21,10 +22,10 @@
   font-weight: bold;
   font-family: OpenSans-Semibold;
   border-bottom: 1px solid #ccc;
-  background: #eee;
 }
 
 #activeExperiment > table {
+  background: #fff;
   width: 100%;
   table-layout: fixed;
 }
@@ -36,7 +37,7 @@
 }
 
 #activeExperiment > table td:not(:first-child) {
-  width: 200px;
+  width: 120px;
   padding: 6px;
 }
 
@@ -105,54 +106,6 @@
 
 /* styling finishedExperiments table */
 
-#finishedExperiments td:last-child {
-  width: 125px;
-}
-
-#finishedExperiments td:last-child > div:first-child {
-  display: inline-block;
-  height: 30px;
-  width: 15px;
-}
-
-#finishedExperiments td:last-child > div:last-child {
-  display: inline-block;
-}
-
-#finishedExperiments td:last-child > div:last-child > div {
-  height: 21px;
-}
-
-#finishedExperiments td:hover {
-  background: #fff;
-}
-
-/* styling readyExperiments table */
-
-#readyExperiments td:not(:first-child) {
-  width: 90px;
-}
-
-#readyExperiments td:not(:first-child) > div {
-  background: #ddd;
-  border: 1px solid #aaa;
-  text-align: center;
-  transition: background 120ms linear, border 120ms linear;
-}
-
-#readyExperiments td:not(:first-child) > div:hover {
-  cursor: pointer;
-}
-
-#readyExperiments td:last-child:hover,
-#readyExperiments td:first-child:hover {
-  background: #fff;
-}
-
-#readyExperiments td:not(:first-child) > div:hover {
-  background: lightgreen;
-}
-
 .myHeader {
   position: relative;
   height: 46px;
@@ -168,6 +121,23 @@
   min-height: 212px;
   border: 1px solid #ddd;
   border-top: none;
+}
+
+.addElement {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  font-size: 14px;
+  line-height: 46px;
+  width: 42px;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.addElement:hover {
+  background: #ccc;
+  border: 1px solid #bbb;
 }
 
 .questionsActionsTable tr {

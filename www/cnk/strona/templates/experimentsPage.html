@@ -8,7 +8,8 @@
   <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
-  <link href="{% static "css/questionsActionsTable.css" %}" rel="stylesheet" />
+  <link href="{% static "css/readyExperimentsTable.css" %}" rel="stylesheet" />
+  <link href="{% static "css/finishedExperimentsTable.css" %}" rel="stylesheet" />
   <link href="{% static "css/experimentsPage.css" %}" rel="stylesheet" />
 {% endblock %}
 
@@ -60,7 +61,7 @@
         setTimeout(fun, 1000)
       root.readyExperiments = {{readyExperiments | jsvar}}
       root.finishedExperiments = {{finishedExperiments | jsvar}}
-      root.activeExperiment = {{activeExperiment | jsvar}}[0]
+      root.activeExperiment = {{activeExperiment | jsvar}}
       root.HTML =
         finishedExperimentRow: '{{finishedExperimentRow}}'
         readyExperimentRow: '{{readyExperimentRow}}'
@@ -83,16 +84,18 @@
               <span></span>
             </div>
           </td>
+          {% if activeExperiment != None %}
           <td>
             <div>
-              <span>Pokaż badanie</span>
+              <span>Pokaż</span>
             </div>
           </td>
           <td>
             <div>
-              <span>Zakończ badanie</span>
+              <span>Zakończ</span>
             </div>
           </td>
+          {% endif %}
         </tr>
       </tbody>
     </table>
@@ -101,6 +104,7 @@
     <div id="readyExperiments">
       <div class="myHeader">
         Gotowe badania
+        <div class="addElement"><i class="fa fa-plus"></i></div>
       </div>
       <div class="middle"></div>
     </div>

@@ -1,6 +1,8 @@
 root = exports ? this
 class Handler
   constructor: (_readyExperiments, _finishedExperiments, @_activeExperiment) ->
+    @_DOM =
+      addNewExperiment: '#readyExperiments .addElement'
     @_readyExperiments = new root.ReadyExperiments(_readyExperiments)
     @_finishedExperiments = new root.FinishedExperiments(_finishedExperiments)
     @_readyExperimentRow = new root.ReadyExperimentRow()
@@ -10,34 +12,43 @@ class Handler
 
   _setHandlers: =>
     @_setLists()
-    activeExperimentRow = document.querySelector('#activeExperiment tr')
-    activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)").addEventListener("click", ->
-      experimentId = this.parentNode.data
-      alert("TODO REDIRECT TO READONLY EXPERIMENT WITH ID: #{experimentId}")
-    )
-    activeExperimentRow.querySelector("td:last-child").addEventListener("click", ->
-      experimentId = this.parentNode.data
-      alert("TODO FINISH EXPERIMENT WITH ID: #{experimentId}")
-    )
+    @_setAddNewExperimentHandler()
+    @_setActiveExperimentHandlers()
 
   _setLists: =>
     readyExperimentsDOM = @_prepareReadyExperiments()
     finishedExperimentsDOM = @_prepareFinishedExperiments()
-    @_readyExperimentsList = new root.ExperimentsList('#readyExperiments .middle', 'questionsActionsTable', readyExperimentsDOM)
-    @_finishedExperimentsList = new root.ExperimentsList('#finishedExperiments .middle', 'questionsActionsTable', finishedExperimentsDOM)
+    @_readyExperimentsList = new root.ExperimentsList('#readyExperiments .middle', 'readyExperimentsTable', readyExperimentsDOM)
+    @_finishedExperimentsList = new root.ExperimentsList('#finishedExperiments .middle', 'finishedExperimentsTable', finishedExperimentsDOM)
     return
 
   _prepareReadyExperiments: =>
     experimentsDOM = @_readyExperiments.getAllElementsAsDOM(@_readyExperimentRow)
-    [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) ->
+    [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) =>
       viewId = element.data
       element.querySelector("td:not(:first-child):not(:last-child)")
         .addEventListener("click", =>
-          alert("TODO REDIRECT TO EXPERIMENT WITH VIEWID #{viewId}")
+          location.href = "/badanie?id=#{JSON.parse(viewId).id}"
         )
-      element.querySelector("td:last-child")
+
+      if @_activeExperiment?
+        jQuery("td:last-child > div", element).tooltip()
+      else
+        element.querySelector("td:last-child > div")
         .addEventListener("click", =>
-          alert("TODO ACTIVATE EXPERIMENT WITH VIEWID #{viewId}")
+          jQuery.ajaxSetup(
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
+          )
+          jQuery.post("startExperiment/", id: JSON.parse(viewId).id, (data) =>
+            if data.success
+              location.reload()
+            else
+              BootstrapDialog.show(
+                message: data.message
+                title: 'Nie mozna rozpoczac badania'
+                type: BootstrapDialog.TYPE_DANGER
+              )
+          , 'json')
         )
     )
     experimentsDOM
@@ -45,6 +56,36 @@ class Handler
   _prepareFinishedExperiments: =>
     experimentsDOM = @_finishedExperiments.getAllElementsAsDOM(@_finishedExperimentRow)
     # TODO: add cloning of experiment
+
+  _setAddNewExperimentHandler: =>
+    jQuery(@_DOM.addNewExperiment).click( ->
+      location.href = "/badanie"
+    )
+
+  _setActiveExperimentHandlers: =>
+    if not @_activeExperiment?
+      return
+    activeExperimentRow = document.querySelector('#activeExperiment tr')
+    activeExperimentId = @_activeExperiment.experimentId
+    activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)").addEventListener("click", ->
+      location.href = "/badanie?readonly&id=#{activeExperimentId}"
+    )
+    activeExperimentRow.querySelector("td:last-child > div").addEventListener("click", ->
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.post("finishExperiment/", null, (data) =>
+        if data.success
+          location.reload()
+        else
+          BootstrapDialog.show(
+            message: data.message
+            title: 'Nie mozna zakonczyc badania'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+      , 'json')
+    )
+    return
 
   _setDefaultState: =>
     activeExperimentRow = document.querySelector('#activeExperiment tr')

@@ -41,9 +41,8 @@ class QuestionType(Enum):
 class ActiveLink(Enum):
     JUST_MAP = '0'
     EDIT_MAP = '1'
-    NEW_EXPERIMENT = '2'
-    QUESTIONS_ACTIONS_PAGE = '3'
-    EXPERIMENTS_PAGE = '4'
+    QUESTIONS_ACTIONS_PAGE = '2'
+    EXPERIMENTS_PAGE = '3'
 
 def _pingServer():
     result = thriftCommunicator.ping(1, 'x')
@@ -295,8 +294,7 @@ def getHTML(request):
     name = request.GET.get("name")
     return HTMLRequests[name](request)
 
-def _getAllQuestions(newId = None, newType = None):
-    allQuestions = thriftCommunicator.getAllQuestions()
+def _parseQuestions(allQuestions, newId = None, newType = None):
     idxSimple = 0
     idxMultiple = 0
     idxSort = 0
@@ -339,8 +337,7 @@ def _getAllQuestions(newId = None, newType = None):
             })
     return questionsList
 
-def _getAllActions(newId = None):
-    allActions = thriftCommunicator.getAllActions()
+def _parseActions(allActions, newId = None):
     actionsList = [{
         'actionId': a.actionId,
         'isNew': newId == a.actionId,
@@ -348,13 +345,42 @@ def _getAllActions(newId = None):
     } for a in allActions]
     return actionsList
 
+def _getExperiment(experimentId):
+    experiment = thriftCommunicator.getExperiment(int(experimentId))
+    return {
+        'experimentId': experiment.experimentId,
+        'name': experiment.name,
+        'questionsBefore': _parseQuestions(experiment.surveyBefore),
+        'questionsAfter': _parseQuestions(experiment.surveyAfter),
+        'exhibitActions': _parseActions(experiment.exhibitActions),
+        'breakActions': _parseActions(experiment.breakActions)
+    }
+
+def _newExperimentReadonlyPage(request):
+    experimentId = request.GET.get("id")
+    result = {
+        'success': True,
+        'readonly': True,
+        'experimentActionRow': render_to_string('list/row/experimentActionRow.html'),
+        'experimentQuestionRow': render_to_string('list/row/experimentQuestionRow.html'),
+        'experimentData': _getExperiment(experimentId),
+        'tableList': render_to_string('list/dataList.html')
+    }
+    template = loader.get_template('newExperimentReadonlyPage.html')
+    return HttpResponse(template.render(RequestContext(request, result)))
+
 def newExperimentPage(request):
+    readonly = request.GET.get("readonly")
+    experimentId = request.GET.get("id")
     try:
+        if not (readonly is None):
+            return _newExperimentReadonlyPage(request)
         result = {
             'success': True,
-            'activeLink' : ActiveLink.NEW_EXPERIMENT.value,
-            'questionsList': _getAllQuestions(),
-            'actionsList': _getAllActions(),
+            'readonly': False,
+            'experimentData': _getExperiment(experimentId) if experimentId else None,
+            'questionsList': _parseQuestions(thriftCommunicator.getAllQuestions()),
+            'actionsList': _parseActions(thriftCommunicator.getAllActions()),
             'inputRegex': get_const("DEFAULT_CONSTANTS")['utils']['regex']['input'],
             'chooseQuestionRow': render_to_string('list/row/chooseQuestionRow.html'),
             'chooseActionRow': render_to_string('list/row/chooseActionRow.html'),
@@ -365,7 +391,6 @@ def newExperimentPage(request):
     except Exception as ex:
         result = {
             'success': False,
-            'activeLink': ActiveLink.NEW_EXPERIMENT.value,
             'message': str(ex)
         }
     template = loader.get_template('newExperimentPage.html')
@@ -376,8 +401,8 @@ def questionsAndActionsPage(request):
         result = {
             'success': True,
             'activeLink': ActiveLink.QUESTIONS_ACTIONS_PAGE.value,
-            'questionsList': _getAllQuestions(),
-            'actionsList': _getAllActions(),
+            'questionsList': _parseQuestions(thriftCommunicator.getAllQuestions()),
+            'actionsList': _parseActions(thriftCommunicator.getAllActions()),
             'showQuestionRow': render_to_string('list/row/showQuestionRow.html'),
             'showActionRow': render_to_string('list/row/showActionRow.html'),
             'tableList': render_to_string('list/dataList.html')
@@ -397,7 +422,7 @@ def createSimpleQuestion(request):
         simpleQuestion = thriftCommunicator.createSimpleQuestion(data)
         result = {
             'success': True,
-            'questionsList': _getAllQuestions(simpleQuestion.questionId, QuestionType.SIMPLE.value)
+            'questionsList': _parseQuestions(simpleQuestion.questionId, QuestionType.SIMPLE.value)
         }
     except Exception as ex:
         result = {
@@ -412,7 +437,7 @@ def createMultipleChoiceQuestion(request):
         multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(data)
         result = {
             'success': True,
-            'questionsList': _getAllQuestions(multipleChoiceQuestion.questionId, QuestionType.MULTIPLE.value)
+            'questionsList': _parseQuestions(multipleChoiceQuestion.questionId, QuestionType.MULTIPLE.value)
         }
     except Exception as ex:
         result = {
@@ -427,7 +452,7 @@ def createSortQuestion(request):
         sortQuestion = thriftCommunicator.createSortQuestion(data)
         result = {
             'success': True,
-            'questionsList': _getAllQuestions(sortQuestion.questionId, QuestionType.SORT.value)
+            'questionsList': _parseQuestions(sortQuestion.questionId, QuestionType.SORT.value)
         }
     except Exception as ex:
         result = {
@@ -442,7 +467,7 @@ def createAction(request):
         action = thriftCommunicator.createAction(data)
         result = {
             'success': True,
-            'actionsList': _getAllActions(action.actionId)
+            'actionsList': _parseActions(action.actionId)
         }
 
     except Exception as ex:
@@ -496,8 +521,9 @@ def _getActiveExperiment():
     activeExperiment = thriftCommunicator.getActiveExperiment()
     if activeExperiment.info is None:
         return None
-    return _parseExperiments([activeExperiment.info])
+    return _parseExperiments([activeExperiment.info])[0]
 
+@ensure_csrf_cookie
 def experimentsPage(request):
     template = loader.get_template('experimentsPage.html')
     try:
@@ -517,3 +543,30 @@ def experimentsPage(request):
             'message': str(ex)
         }
     return HttpResponse(template.render(context))
+
+def startExperiment(request):
+    experimentId = int(request.POST.get("id"))
+    try:
+        thriftCommunicator.startExperiment(experimentId)
+        result = {
+            'success': True
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)
+
+def finishExperiment(request):
+    try:
+        thriftCommunicator.finishExperiment()
+        result = {
+            'success': True
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
+    return JsonResponse(result)

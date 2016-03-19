@@ -151,3 +151,18 @@ class ThriftCommunicator:
 		def action(client):
 			return client.getActiveExperiment()
 		return self._perform_in_single_connection([action])[0]
+
+	def getExperiment(self, experimentId):
+		def action(client):
+			return client.getExperiment(experimentId)
+		return self._perform_in_single_connection([action])[0]
+
+	def startExperiment(self, experimentId):
+		def action(client):
+			return client.startExperiment(experimentId)
+		return self._perform_in_single_connection([action])
+
+	def finishExperiment(self):
+		def action(client):
+			return client.finishExperiment()
+		return self._perform_in_single_connection([action])

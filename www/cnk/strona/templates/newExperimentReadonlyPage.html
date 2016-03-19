@@ -1,0 +1,47 @@
+{% extends "newExperimentPage.html" %}
+{% block content %}
+<div id="container">
+  <div id="experiment" style="width: 100%;">
+    <div class="experimentTitle">
+      <div class="input-group input-group-lg">
+        <span class="input-group-addon">Nazwa</span>
+        <input readonly class="form-control" type="text" data-toggle="tooltip" data-placement="bottom" title="Nazwa musi się składać z alfabetu angielskiego oraz spacji" />
+      </div>
+    </div>
+
+    <div class="questionsBefore">
+      <div>
+        <div class="myHeader">Pytania przed</div>
+        <div class="middle"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="experimentActions">
+        <div>
+          <div class="myHeader">
+            Akcje podczas zwiedzania
+          </div>
+          <div class="middle"></div>
+        </div>
+      </div>
+
+      <div class="breakActions">
+        <div>
+          <div class="myHeader">
+            Akcje podczas przerwy
+          </div>
+          <div class="middle"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="questionsAfter">
+      <div>
+        <div class="myHeader">Pytania po</div>
+        <div class="middle"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

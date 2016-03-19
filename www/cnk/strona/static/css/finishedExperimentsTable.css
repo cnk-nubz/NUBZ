@@ -1,0 +1,29 @@
+table.finishedExperimentsTable {
+  width: 100%;
+  table-layout: fixed;
+  border-top: none;
+}
+
+table.finishedExperimentsTable > tbody > tr {
+  height: 42px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+table.finishedExperimentsTable > tbody > tr > td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+> td > div:first-child {
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+table.finishedExperimentsTable > tbody > tr > td:last-child {
+  width: 110px;
+}
+
+table.finishedExperimentsTable > tbody > tr > td:hover {
+  background: #fff;
+}

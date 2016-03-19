@@ -6,7 +6,7 @@ urlpatterns = [
     # main pages
     url(r'^$', views.index, name='index'),
     url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
-    url(r'nowe-badanie/$', views.newExperimentPage, name='newExperimentPage'),
+    url(r'badanie/$', views.newExperimentPage, name='newExperimentPage'),
     url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
     url(r'badania/$', views.experimentsPage, name='experimentsPage'),
 
@@ -23,4 +23,6 @@ urlpatterns = [
     url(r'createAction/$', views.createAction, name='createAction'),
     #experiment
     url(r'createExperiment/$', views.createExperiment, name='createExperiment'),
+    url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
+    url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment')
 ]
