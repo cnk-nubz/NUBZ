@@ -3,6 +3,7 @@ import os
 import json
 from enum import Enum
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
@@ -93,7 +94,10 @@ def _getExhibits():
 		exhibitsDict[k] = {
 			'name': e.name,
 			'id': k,
-			'frame': frame
+			'frame': frame,
+			'colorHex': '#' + hex(11841489).split('x')[1].upper()
+			#TODO UNCOMMENT:
+			#'colorHex': '#' + hex(e.rgbHex).split('x')[1].upper().rjust(6, '0')
 		}
 	return exhibitsDict
 
@@ -124,7 +128,7 @@ def getMapPage(request, file, activeLink):
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
 		'urlFloor1': urlFloor1,
-        'activeLink': activeLink
+		'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
 
@@ -236,6 +240,8 @@ def createNewExhibit(request):
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
 		"frame": exhibitFrame
+        #TODO uncomment:
+		#"colorHex": newExhibit.exhibit.colorHex
 	}
 	return JsonResponse(data)
 

@@ -20,34 +20,43 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
       )
+    @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>
+      jQuery(dialog).parents(".modal").click( ->
+        jQuery('.popoverButton', dialog).popover('hide')
+      )
       jQuery('.popoverButton', dialog).attr(
         'data-content': data.html
-      ).popover().on('shown.bs.popover', ( ->
-        jQuery("div.popover").css("z-index", 5000)
-        jQuery("div.popover button").click( ->
+      )
+      jQuery('.popoverButton', dialog).click((event) ->
+        if jQuery('.popover').is(':visible')
+          jQuery(this).popover('hide')
+        else
+          jQuery(this).popover('show')
+        event.stopPropagation()
+      )
+      jQuery('.popoverButton', dialog).popover().on('shown.bs.popover', ( ->
+        jQuery("div.popover button").mousedown( ->
           rgbvals = jQuery(this).css("background-color")
-          hexval = instance._rgb2hex(rgbvals).toUpperCase()
+          hexval = instance._rgb2hex(rgbvals)
           jQuery('.popoverButton').css("background-color", hexval)
-          instance._colorPopoverClose()
-          jQuery('.popoverButton', dialog).popover()
+          jQuery('.popoverButton', dialog).popover('hide')
         )
       ))
     )
 
   _prepareFilledDialog: (dialog) =>
-    @_dialog.setTitle(@_data.utils.text['editTitle'])
+    @_dialog.setTitle(@_data.utils.text.editTitle)
     if not @_dialogInfo.floor?
       @_dialogInfo.floor = 2
     jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
     jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
-    jQuery(".popoverButton", dialog).css("background-color": "#" + @_dialogInfo.color)
+    jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
     if @readonly is true
       jQuery("input", dialog).prop("readonly", true)
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
-
 
   _inputKeyUp: (regex) =>
       (obj, e) =>
@@ -64,20 +73,15 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _closeButton: =>
     label: super.label
     action: (dialog) =>
-      @_colorPopoverClose()
       super.action(dialog)
 
   _saveButton: =>
     label: super.label
     action: (dialog) =>
       if @readonly is false
-        @_colorPopoverClose()
         super.action(dialog)
       else
         dialog.close()
-
-  _colorPopoverClose: =>
-    jQuery('.popoverButton').popover('hide')
 
   extractData: =>
     editedName = jQuery("#dialog input[type=text]").val()

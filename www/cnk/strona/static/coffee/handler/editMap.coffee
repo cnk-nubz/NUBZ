@@ -43,12 +43,11 @@ class Handlers
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
-      # TODO: color is dummy for now
       data =
         id: id
         name: exhibit.name
         floor: exhibit.frame?.mapLevel
-        color: "2468AC"
+        color: exhibit.colorHex
       @exhibitEditDialog.bindData(data)
       @exhibitEditDialog.show()
     )
@@ -78,6 +77,7 @@ class Handlers
       jQuery(floorButtons[floor]).addClass "active"
       instance.canvas.setFloorLayer(floor)
       instance.panel.refreshDialogInstance()
+      instance.panel.filterForCurrentFloor()
 
   showLabelsHandler: =>
     instance = this
@@ -196,6 +196,8 @@ class Handlers
           name: data.name
           floor: data.floor if data.floor?
           visibleMapFrame: frame
+          #TODO uncomment:
+          #colorHex: data.colorHex
         )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -217,8 +219,9 @@ class Handlers
       )
       return
     id = data.id
-    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @mapData.exhibits[id].name = data.name
+    @mapData.exhibits[id].colorHex = data.colorHex
     if data.frame?
       @mapData.exhibits[id].frame.x = data.frame.x
       @mapData.exhibits[id].frame.y = data.frame.y

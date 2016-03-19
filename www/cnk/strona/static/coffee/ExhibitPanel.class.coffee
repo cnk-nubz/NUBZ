@@ -20,6 +20,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       jQuery(data.html).appendTo(@_containerId)
       @_setExhibitPanelHandlers()
       @_getExhibitElementHTML()
+      @filterForCurrentFloor()
     )
     return
 
