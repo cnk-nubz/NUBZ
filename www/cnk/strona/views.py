@@ -109,6 +109,9 @@ def getMapPage(request, file, activeLink):
 	})
 	return HttpResponse(template.render(context))
 
+def androidApp(request):
+    return HttpResponseRedirect("/static/android_app/example")
+
 @ensure_csrf_cookie
 def index(request):
 	if request.META.get("HTTP_USER_AGENT", '').lower().find("android") > 0:
