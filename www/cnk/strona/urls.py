@@ -13,6 +13,7 @@ urlpatterns = [
 
 	url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
+    url(r'getAllExhibits/$', views.getAllExhibits, name='getAllExhibits'),
     # get all the html you need
     url(r'getHTML/$', views.getHTML, name='getHTML'),
     # dialogs

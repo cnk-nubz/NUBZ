@@ -463,3 +463,17 @@ def createExperiment(request):
             'message': "Wystapil nieoczekiwany blad. Sprobuj ponownie za chwile. ({})".format(str(ex))
         }
     return JsonResponse(result)
+
+def getAllExhibits(request):
+    try:
+        exhibits = _getExhibits()
+        result = {
+            'success': True,
+            'exhibits': exhibits
+        }
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': 'Nie udalo sie pobrac listy eksponatow. ({})'.format(str(ex))
+        }
+    return JsonResponse(result)

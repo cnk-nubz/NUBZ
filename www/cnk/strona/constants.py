@@ -50,7 +50,7 @@ SIMPLE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "titleNew": "Tworzenie nowego pytania otwartego",
+            "titleNew": "Tworzenie pytania otwartego",
             "title": "Pytanie otwarte"
         },
     }

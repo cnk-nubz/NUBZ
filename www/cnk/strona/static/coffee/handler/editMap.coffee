@@ -38,8 +38,6 @@ class Handlers
         jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
         jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
       @canvas.flyToExhibit id
-      jQuery(@button.plusZoom).prop "disabled", true
-      jQuery(@button.minusZoom).prop "disabled", false
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
@@ -205,7 +203,7 @@ class Handlers
   ajaxNewExhibitSuccess: (data) =>
     if not data.success
       BootstrapDialog.alert(
-        message: "<p align=\"center\">#{data.message}</p>"
+        message: "#{data.message}"
         type: BootstrapDialog.TYPE_DANGER
         title: 'Błąd serwera'
       )
@@ -220,11 +218,20 @@ class Handlers
       @mapData.exhibits[id].frame.height = data.frame.height
       @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
       @canvas.addExhibits(data.frame.mapLevel, [id])
-      @panel.addExhibits([id])
       if data.frame.mapLevel is @mapData.activeFloor
         @canvas.updateState()
-    else
-      @panel.addExhibits([id])
+
+    jQuery.getJSON('/getAllExhibits', null, (data) =>
+      if not data.success
+        BootstrapDialog.alert(
+          message: data.message
+          type: BootstrapDialog.TYPE_DANGER
+          title: 'Błąd serwera'
+        )
+        return
+      @panel.replaceExhibits((e.id for e in data.exhibits))
+    )
+    return
 
 jQuery(document).ready( ->
   map = new root.MutableCanvas('#map')

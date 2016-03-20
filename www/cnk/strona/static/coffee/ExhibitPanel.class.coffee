@@ -46,7 +46,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   _getExhibitElementHTML: =>
     jQuery.getJSON('getHTML?name=exhibitListElement', null, (data) =>
       @_exhibitElementHTML = data.html
-      @addExhibits((id for id, _ of @mapData.exhibits))
+      @replaceExhibits((e.id for e in @mapData.exhibitsList))
     )
     return
 
@@ -68,6 +68,11 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       @_exhibits.push { listElement: exhibitListElement, visible: true }
     @_refreshExhibitsList()
     return
+
+  replaceExhibits: (exhibitIdList) =>
+    @_exhibits = []
+    @addExhibits(exhibitIdList)
+    @
 
   _refreshExhibitsList: =>
     jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
