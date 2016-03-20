@@ -21,16 +21,13 @@ root.Canvas = class Canvas extends root.View
     return
 
   _init: =>
-    #TODO
-    #@_map.on('moveend', @_getCurrentView)
-    #@_map.on('zoomend', @_getCurrentView)
     @_map.on('zoomend', =>
       disableMinus = @_map.getZoom() is @_minZoom
       disablePlus = @_map.getZoom() is @_maxZoom[@mapData.activeFloor]
       @fireEvents('zoomend', disableMinus, disablePlus)
     )
-    actv = @mapData.activeFloor
-    @loadData i for i in [1-actv..actv]
+    activeFloor = @mapData.activeFloor
+    @loadData i for i in [1-activeFloor..activeFloor] when @mapData.floorTilesInfo[i].length > 0
     @
 
   _getCurrentView: =>
@@ -45,13 +42,13 @@ root.Canvas = class Canvas extends root.View
     newUrl = "#{@mapData.floorUrl[floor]}?t=#{rand}"
     @_floorLayer[floor].clearLayers()
     @_exhibits[floor].clearLayers()
-    @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
+    @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
     @addExhibits(floor, (id for id, _ of @mapData.exhibits))
     @setFloorLayer(floor)
     @
 
-  _addMapBounds: (floor, northEast, southWest) =>
+  addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
                                             @_map.unproject(southWest, @_maxZoom[floor]))
     @
@@ -101,6 +98,7 @@ root.Canvas = class Canvas extends root.View
   setFloorLayer: (floor) =>
       @mapData.activeFloor = floor
       @_map.setView([0, 0], @_minZoom)
+      @_map.fireEvent('zoomend')
       @updateState()
       @
 

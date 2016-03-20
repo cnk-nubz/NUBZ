@@ -51,6 +51,18 @@
         "{{urlFloor0|escape|safe}}"
         "{{urlFloor1|escape|safe}}"
       ]
+      if floorUrl[0] is '' or floorUrl[1] is ''
+        f = ->
+          miss0 = floorUrl[0] is ''
+          miss1 = floorUrl[1] is ''
+          missingFloor = "#{if miss0 then 0 else ''} #{if miss0 and miss1 then "oraz" else ''} #{if miss1 then 1 else ''}"
+          BootstrapDialog.show(
+            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami pietra #{missingFloor}"
+            title: 'Zły plik konfiguracyjny'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+        setTimeout(f, 1000)
+        throw new Error("zły plik konfiguracyjny")
       activeFloor = +"{{acitveFloor}}"
       exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
       floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])

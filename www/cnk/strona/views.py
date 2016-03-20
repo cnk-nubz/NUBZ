@@ -43,16 +43,20 @@ def _pingServer():
 
 def _getMapImageInfo():
 	floorTiles = thriftCommunicator.getMapImageTiles()
+	print >>sys.stderr, "%s" % floorTiles
 	floorTilesInfo = {}
 	for i in xrange(0, 2):
+		if not (i in floorTiles.keys()):
+			floorTilesInfo[i] = {}
+			continue
 		floorTilesInfo[i] = {
-		idx: {
-			'tileWidth': zoom.tileSize.width,
-			'tileHeight': zoom.tileSize.height,
-			'scaledWidth': zoom.scaledSize.width,
-			'scaledHeight': zoom.scaledSize.height
-		} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
-
+			idx: {
+				'tileWidth': zoom.tileSize.width,
+				'tileHeight': zoom.tileSize.height,
+				'scaledWidth': zoom.scaledSize.width,
+				'scaledHeight': zoom.scaledSize.height
+			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)
+		}
 	return floorTilesInfo
 
 def _getExhibits():
@@ -84,11 +88,11 @@ def getMapPage(request, file, activeLink):
 		floorTilesInfo = _getMapImageInfo()
 		exhibits = _getExhibits()
 	except Exception as ex:
-		return HttpResponse('<h1>{}</h1>'.format('Zaladuj skrypt prepare_maps' if 'KeyError' in str(ex) else str(ex)))
+		return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
 	template = loader.get_template(file)
-	urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"Brak sciezki do mapy parteru")
-	urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"Brak sciezki do mapy pierwszego pietra")
+	urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
+	urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
 
 	context = RequestContext(request, {
 		'activeFloor': 0,
@@ -138,9 +142,9 @@ def uploadImage(request):
 		return JsonResponse(data)
 
 	if floor == 0:
-		floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"Brak sciezki do mapy parteru")
+		floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
 	else:
-		floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"Brak sciezki do mapy pierwszego pietra")
+		floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
 
 	data = {
 		"err": uploadError.SUCCESS.value,
