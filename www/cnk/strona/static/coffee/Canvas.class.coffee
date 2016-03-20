@@ -22,7 +22,7 @@ root.Canvas = class Canvas extends root.View
 
   _init: =>
     @_map.on('zoomend', =>
-      disableMinus = @_map.getZoom() is @_minZoom
+      disableMinus = @_map.getZoom() is @_minZoom or @_minZoom is @_maxZoom[@mapData.activeFloor]
       disablePlus = @_map.getZoom() >= @_maxZoom[@mapData.activeFloor]
       @fireEvents('zoomend', disableMinus, disablePlus)
     )
