@@ -60,12 +60,10 @@ class ThriftCommunicator:
 		return self._perform_in_single_connection([action])[0]
 
 	def getMapImageTiles(self):
-		def get_floor(floor):
-			def action(client):
-				floor_msg = NewMapImagesRequest()
-				return client.getNewMapImages(floor_msg).floors[floor]
-			return action
-		return self._perform_in_single_connection([get_floor(0), get_floor(1)])
+		def action(client):
+			floor_msg = NewMapImagesRequest()
+			return client.getNewMapImages(floor_msg).floors
+		return self._perform_in_single_connection([action])[0]
 
 	def setExhibitFrame(self, frame):
 		def action(client):
