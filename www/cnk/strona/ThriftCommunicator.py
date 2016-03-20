@@ -83,7 +83,7 @@ class ThriftCommunicator:
 					Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
 			else:
 				frame = None
-			msg = CreateExhibitRequest(request['name'], floor, frame)
+			msg = CreateExhibitRequest(request['name'], request['rgbHex'], floor, frame)
 			return client.createExhibit(msg)
 		return self._perform_in_single_connection([action])[0]
 

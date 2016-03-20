@@ -13,6 +13,7 @@ root.MapDataHandler = class MapDataHandler
       @exhibits[e.id] = {
         frame: e.frame
         name: e.name
+        colorHex: e.colorHex
       }
     @floorTilesInfo = floorTilesInfo
     @minZoom = 1

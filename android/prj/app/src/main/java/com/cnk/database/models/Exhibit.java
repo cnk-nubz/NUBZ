@@ -7,10 +7,8 @@ public class Exhibit {
     private Integer width;
     private Integer height;
     private Integer floor;
+    private Integer color;
     private String name;
-
-    public Exhibit() {
-    }
 
     public Exhibit(Integer id,
                    Integer x,
@@ -18,6 +16,7 @@ public class Exhibit {
                    Integer width,
                    Integer height,
                    Integer floor,
+                   Integer color,
                    String name) {
         this.id = id;
         this.x = x;
@@ -25,6 +24,7 @@ public class Exhibit {
         this.width = width;
         this.height = height;
         this.floor = floor;
+        this.color = color;
         this.name = name;
     }
 
@@ -37,6 +37,7 @@ public class Exhibit {
             this.width = exhibitFromServer.getMapFrame().getFrame().getSize().getWidth();
             this.height = exhibitFromServer.getMapFrame().getFrame().getSize().getHeight();
             this.floor = exhibitFromServer.getMapFrame().getFloor();
+            this.color = 0xFF000000 + exhibitFromServer.getRgbHex();
         }
     }
 
@@ -62,6 +63,18 @@ public class Exhibit {
 
     public Integer getFloor() {
         return floor;
+    }
+
+    public void setFloor(Integer floor) {
+        this.floor = floor;
+    }
+
+    public Integer getColor() {
+        return color;
+    }
+
+    public void setColor(Integer color) {
+        this.color = color;
     }
 
     public String getName() {
