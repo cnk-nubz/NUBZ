@@ -12,7 +12,7 @@ import com.cnk.R;
 public abstract class QuestionView extends RelativeLayout {
     private static final float NAME_SIZE = 40.0f;
     private static final Typeface QUESTION_TYPEFACE = Typeface.SERIF;
-    private static final Integer QUESTION_COLOR = 0xFF6AC0D9;
+    private static final Integer QUESTION_COLOR = 0xFF3A70FF;
     private static final float QUESTION_SHADOW_RANGE = 5f;
     private static final float QUESTION_SHADOW_DX = 3f;
     private static final float QUESTION_SHADOW_DY = 3f;
