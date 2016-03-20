@@ -76,11 +76,9 @@ def _getMapImageInfo():
 	return floorTilesInfo
 
 def _getExhibits():
-	result = thriftCommunicator.getExhibits()
-
-	exhibitsDict = {}
-	for k in result.exhibits:
-		e = result.exhibits[k]
+	exhibits = thriftCommunicator.getAllExhibits()
+	exhibitsList = list()
+	for e in exhibits:
 		frame = None
 		if e.mapFrame != None:
 			frame = {
@@ -90,12 +88,12 @@ def _getExhibits():
 				'height': e.mapFrame.frame.size.height,
 				'mapLevel': e.mapFrame.floor
 			}
-		exhibitsDict[k] = {
+		exhibitsList.append({
 			'name': e.name,
-			'id': k,
+			'id': e.exhibitId,
 			'frame': frame
-		}
-	return exhibitsDict
+		})
+	return exhibitsList
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):

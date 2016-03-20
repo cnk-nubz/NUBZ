@@ -50,7 +50,8 @@ SIMPLE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowego pytania",
+            "titleNew": "Tworzenie nowego pytania otwartego",
+            "title": "Pytanie otwarte"
         },
     }
 }
@@ -86,7 +87,8 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania zamkniętego",
+            "titleNew": "Tworzenie pytania zamkniętego",
+            "title": "Pytanie zamknięte"
         },
         "default": {
             "radioGroup": "ansType",
@@ -118,7 +120,8 @@ SORT_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania z sortowaniem",
+            "titleNew": "Tworzenie pytania z sortowaniem",
+            "title": "Pytanie z sortowaniem"
         },
         "default": {
             "labelSize": "3"
@@ -137,7 +140,8 @@ NEW_ACTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowej akcji",
+            "titleNew": "Tworzenie nowej akcji",
+            "title": "Akcja"
         }
     }
 }

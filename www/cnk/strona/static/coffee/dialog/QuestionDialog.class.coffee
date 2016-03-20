@@ -7,7 +7,7 @@ root.QuestionDialog = class QuestionDialog
       @_dialogHTML = data.html
       @_dialog = new BootstrapDialog(
         message: data.html
-        title: data.data.utils.text.title
+        title: data.data.utils.text.titleNew
         closable: false
         buttons: [@_closeButton(), @_saveButton()]
       )
@@ -26,9 +26,9 @@ root.QuestionDialog = class QuestionDialog
   show: =>
     @_dialog.open()
 
-  _prepareDialog: (dialog) =>
+  _prepareDialog: (dialogBody) =>
     instance = this
-    jQuery("input[type=text]", dialog).blur( ->
+    jQuery("input[type=text]", dialogBody).blur( ->
         obj = jQuery(this)
         error = obj.parent().next()
         obj.val(jQuery.trim(obj.val()))

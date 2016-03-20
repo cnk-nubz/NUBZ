@@ -106,6 +106,7 @@ class Handlers
       message: html
       title: 'Zmiana mapy'
       size: BootstrapDialog.SIZE_SMALL
+      closable: false
       buttons: [
         instance.changeMapCancelButton()
         instance.changeMapSaveButton()
@@ -223,7 +224,7 @@ class Handlers
       if data.frame.mapLevel is @mapData.activeFloor
         @canvas.updateState()
     else
-      @panel.addExhibits(id)
+      @panel.addExhibits([id])
 
 jQuery(document).ready( ->
   map = new root.MutableCanvas('#map')

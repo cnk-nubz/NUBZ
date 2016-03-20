@@ -53,10 +53,9 @@ class ThriftCommunicator:
 			client.setMapImage(msg)
 		return self._perform_in_single_connection([action])[0]
 
-	def getExhibits(self):
+	def getAllExhibits(self):
 		def action(client):
-			msg = NewExhibitsRequest()
-			return client.getNewExhibits(msg)
+			return client.getAllExhibits()
 		return self._perform_in_single_connection([action])[0]
 
 	def getMapImageTiles(self):
