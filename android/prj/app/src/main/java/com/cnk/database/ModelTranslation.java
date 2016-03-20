@@ -1,45 +1,25 @@
 package com.cnk.database;
 
+import android.graphics.Color;
+
 import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapTiles;
 import com.cnk.data.map.Resolution;
 import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.FloorDetailLevels;
-import com.cnk.database.models.MapTile;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
-import com.cnk.database.models.Version;
 import com.cnk.database.realm.DetailLevelResRealm;
 import com.cnk.database.realm.ExhibitRealm;
 import com.cnk.database.realm.FloorDetailLevelsRealm;
 import com.cnk.database.realm.MapTileInfoRealm;
-import com.cnk.database.realm.MapTileRealm;
 import com.cnk.database.realm.RaportFileRealm;
-import com.cnk.database.realm.VersionRealm;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ModelTranslation {
-    public static Version versionFromRealm(VersionRealm vr) {
-        Version v = null;
-        if (vr != null) {
-            v = new Version(Version.Item.fromString(vr.getItem()), vr.getCurrentVersion());
-        }
-
-        return v;
-    }
-
-    public static VersionRealm realmFromVersion(Version v) {
-        assert (v != null);
-
-        VersionRealm vr = new VersionRealm();
-        vr.setItem(v.getItem().toString());
-        vr.setCurrentVersion(v.getCurrentVersion());
-
-        return vr;
-    }
 
     public static Exhibit exhibitFromRealm(ExhibitRealm er) {
         Exhibit e = null;
@@ -51,6 +31,7 @@ public class ModelTranslation {
                                 er.getWidth(),
                                 er.getHeight(),
                                 er.getFloor(),
+                                Color.rgb(er.getColorR(), er.getColorG(), er.getColorB()),
                                 er.getName());
         }
 
@@ -67,6 +48,11 @@ public class ModelTranslation {
         er.setWidth(e.getWidth());
         er.setHeight(e.getHeight());
         er.setFloor(e.getFloor());
+        if (e.getColor() != null) {
+            er.setColorR(Color.red(e.getColor()));
+            er.setColorG(Color.green(e.getColor()));
+            er.setColorB(Color.blue(e.getColor()));
+        }
         er.setName(e.getName());
 
         return er;
@@ -79,17 +65,6 @@ public class ModelTranslation {
         }
 
         return list;
-    }
-
-    public static RaportFileRealm realmFromRaportFile(RaportFile file) {
-        assert (file != null);
-
-        RaportFileRealm realmRaport = new RaportFileRealm();
-        realmRaport.setFileName(file.getFileName());
-        realmRaport.setId(file.getId());
-        realmRaport.setServerId(file.getServerId());
-        realmRaport.setState(file.getState());
-        return realmRaport;
     }
 
     public static RaportFile raportFileFromRealm(RaportFileRealm realmFile) {
@@ -105,32 +80,6 @@ public class ModelTranslation {
         return file;
     }
 
-    public static ArrayList<MapTile> getMapTilesFromFloorMap(Integer floor, FloorMap fm) {
-        ArrayList<MapTile> result = new ArrayList<>();
-
-        List<MapTiles> detailLevels = fm.getLevels();
-
-        Integer detailLevel = 0;
-        Integer rowNum;
-        Integer columnNum;
-        for (MapTiles mt : detailLevels) {
-            rowNum = 0;
-            ArrayList<ArrayList<String>> tilesForLevel = mt.getTilesFiles();
-            for (List<String> row : tilesForLevel) {
-                columnNum = 0;
-                for (String location : row) {
-                    result.add(new MapTile(floor, detailLevel, rowNum, columnNum, location));
-
-                    columnNum++;
-                }
-                rowNum++;
-            }
-            detailLevel++;
-        }
-
-        return result;
-    }
-
     public static List<DetailLevelRes> getDetailLevelResFromFloorMap(Integer floor, FloorMap fm) {
         ArrayList<DetailLevelRes> result = new ArrayList<>();
 
@@ -142,57 +91,6 @@ public class ModelTranslation {
         }
 
         return result;
-    }
-
-    public static MapTileRealm realmFromMapTile(MapTile mt) {
-        assert (mt != null);
-
-        MapTileRealm mtr = new MapTileRealm();
-        mtr.setFloor(mt.getFloor());
-        mtr.setDetailLevel(mt.getDetailLevel());
-        mtr.setRowNumber(mt.getRowNumber());
-        mtr.setColumnNumber(mt.getColumnNumber());
-        mtr.setMapTileLocation(mt.getMapTileLocation());
-
-        return mtr;
-    }
-
-    public static MapTile mapTileFromRealm(MapTileRealm mtr) {
-        if (mtr == null) {
-            return null;
-        }
-
-        return new MapTile(mtr.getFloor(),
-                           mtr.getDetailLevel(),
-                           mtr.getRowNumber(),
-                           mtr.getColumnNumber(),
-                           mtr.getMapTileLocation());
-    }
-
-    public static List<MapTileRealm> realmListFromMapTileList(List<MapTile> mtl) {
-        assert (mtl != null);
-
-        ArrayList<MapTileRealm> mtrl = new ArrayList<>();
-
-        for (MapTile mt : mtl) {
-            mtrl.add(realmFromMapTile(mt));
-        }
-
-        return mtrl;
-    }
-
-    public static List<MapTile> mapTileListFromRealmList(List<MapTileRealm> mtrl) {
-        if (mtrl == null) {
-            return null;
-        }
-
-        ArrayList<MapTile> mtl = new ArrayList<>();
-
-        for (MapTileRealm mtr : mtrl) {
-            mtl.add(mapTileFromRealm(mtr));
-        }
-
-        return mtl;
     }
 
     public static DetailLevelResRealm realmFromDetailLevelRes(DetailLevelRes dlr) {
@@ -230,28 +128,6 @@ public class ModelTranslation {
         }
 
         return dlrrl;
-    }
-
-    public static List<DetailLevelRes> detailLevelResListFromRealmList(List<DetailLevelResRealm> dlrrl) {
-        if (dlrrl == null) {
-            return null;
-        }
-
-        ArrayList<DetailLevelRes> dlrl = new ArrayList<>();
-
-        for (DetailLevelResRealm dlrr : dlrrl) {
-            dlrl.add(detailLevelResFromRealm(dlrr));
-        }
-
-        return dlrl;
-    }
-
-    public static FloorDetailLevels detailLevelsFromRealm(FloorDetailLevelsRealm fdlr) {
-        if (fdlr == null) {
-            return null;
-        }
-
-        return new FloorDetailLevels(fdlr.getFloorNo(), fdlr.getDetailLevels());
     }
 
     public static FloorDetailLevelsRealm realmFromDetailLevels(FloorDetailLevels floorDetails) {

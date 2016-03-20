@@ -3,6 +3,7 @@ import os
 import json
 from enum import Enum
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
@@ -93,9 +94,13 @@ def _getExhibits():
 		exhibitsDict[k] = {
 			'name': e.name,
 			'id': k,
-			'frame': frame
+			'frame': frame,
+			'colorHex': _getHtmlColorHex(e.rgbHex)
 		}
 	return exhibitsDict
+
+def _getHtmlColorHex(intVal):
+    return '#' + hex(intVal).split('x')[1].rjust(6, '0')
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
@@ -124,7 +129,7 @@ def getMapPage(request, file, activeLink):
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
 		'urlFloor1': urlFloor1,
-        'activeLink': activeLink
+		'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
 
@@ -235,6 +240,7 @@ def createNewExhibit(request):
 		"success": True,
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
+		"rgbHex": _getHtmlColorHex(newExhibit.rgbHex),
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)
@@ -249,6 +255,14 @@ def getDialog(request, dialogName):
 		'html': html.replace("\n", "")
 	}
 	return JsonResponse(retDict)
+
+def getColorPickerPopoverContent(request):
+    colorsList = get_const("POPOVER_COLORS")
+    popoverButtonHtml = render_to_string('dialog/popoverColorsPicker.html', {'colorsList': colorsList})
+    return JsonResponse({'html': popoverButtonHtml})
+
+def getExhibitDialog(request):
+    return getDialog(request, "EXHIBIT_DIALOG")
 
 def getSimpleQuestionDialog(request):
     return getDialog(request, "SIMPLE_QUESTION_DIALOG")
@@ -286,6 +300,8 @@ HTMLRequests = {
     'actionDialog': getActionDialog,
     'chooseQuestionTypeDialog': getChooseQuestionTypeDialog,
     'changeMapDialog': getChangeMapDialog,
+    'exhibitDialog': getExhibitDialog,
+    'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
     'exhibitListElement': getExhibitListElement
 }

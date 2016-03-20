@@ -77,7 +77,8 @@ struct SetMapImageRequest {
 struct Exhibit {
 	1: i32 exhibitId,
 	2: string name,
-	3: optional MapFrame mapFrame,
+	3: i32 rgbHex,
+	4: optional MapFrame mapFrame,
 }
 
 struct NewExhibitsRequest {
@@ -96,14 +97,16 @@ struct SetExhibitFrameRequest {
 
 struct CreateExhibitRequest {
 	1: string name,
-	2: optional i32 floor,
-	3: optional MapFrame visibleFrame,
+	2: i32 rgbHex,
+	3: optional i32 floor,
+	4: optional MapFrame visibleFrame,
 }
 
 struct UpdateExhibitRequest {
 	1: i32 exhibitId,
-	2: optional i32 floor,
-	3: optional MapFrame visibleFrame,
+	2: i32 rgbHex,
+	3: optional i32 floor,
+	4: optional MapFrame visibleFrame,
 }
 
 
