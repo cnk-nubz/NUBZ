@@ -110,6 +110,7 @@ class Handlers
       message: html
       title: 'Zmiana mapy'
       size: BootstrapDialog.SIZE_SMALL
+      closable: false
       buttons: [
         instance.changeMapCancelButton()
         instance.changeMapSaveButton()
@@ -178,7 +179,7 @@ class Handlers
       message: errorData[err].message
       title: errorData[err].title
       type: errorData[err].type
-      closable: true if err is 2
+      closable: false if err is 2
       buttons: [
         label: 'OK'
         action: -> location.reload()
