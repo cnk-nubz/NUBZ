@@ -27,6 +27,7 @@ struct Exhibit {
 
     std::int32_t ID;
     std::string name;
+    std::int32_t rgbHex;
     boost::optional<MapFrame> mapFrame;
 };
 }

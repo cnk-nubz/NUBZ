@@ -43,6 +43,7 @@ cur.execute('''
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
 		version INT NOT NULL,
+		rgb_hex INT NOT NULL,
 
 		map_frame_x INT NULL,
 		map_frame_y INT NULL,
@@ -132,13 +133,13 @@ cur.execute('''
 
 # exhibits
 cur.execute('''
-	INSERT INTO exhibits (name, version, map_frame_x, map_frame_y, map_frame_width, map_frame_height, map_floor) VALUES
-		('invisible', 3, NULL, NULL, NULL, NULL, NULL),
-		('exhibit 1 floor 0', 1, 100, 100, 200, 200, 0),
-		('exhibit 2 floor 0', 2, 50, 400, 100, 100, 0),
-		('exhibit 3 floor 1', 3, 0, 0, 100, 100, 1),
-		('exhibit 4 floor 1', 4, 150, 150, 150, 150, 1),
-		('exhibit 5 floor 1', 5, 250, 250, 250, 250, 1)
+	INSERT INTO exhibits (name, version, rgb_hex, map_frame_x, map_frame_y, map_frame_width, map_frame_height, map_floor) VALUES
+		('invisible', 3, 6599648, NULL, NULL, NULL, NULL, NULL),
+		('exhibit 1 floor 0', 1, 10347354, 100, 100, 200, 200, 0),
+		('exhibit 2 floor 0', 2, 16703841, 50, 400, 100, 100, 0),
+		('exhibit 3 floor 1', 3, 16695666, 0, 0, 100, 100, 1),
+		('exhibit 4 floor 1', 4, 16605278, 150, 150, 150, 150, 1),
+		('exhibit 5 floor 1', 5, 10372537, 250, 250, 250, 250, 1)
 ''')
 
 # experiments
