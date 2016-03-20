@@ -13,9 +13,13 @@ root.MapDataHandler = class MapDataHandler
       @exhibits[e.id] = {
         frame: e.frame
         name: e.name
+        colorHex: e.colorHex
       }
     @floorTilesInfo = floorTilesInfo
     @minZoom = 1
-    @maxZoom = [@floorTilesInfo[0].length, @floorTilesInfo[1].length]
+    @maxZoom = [
+      if @floorTilesInfo[0].length is 0 then 1 else @floorTilesInfo[0].length,
+      if @floorTilesInfo[1].length is 0 then 1 else @floorTilesInfo[1].length
+    ]
     @currentZoom = [1, 1]
     @currentCenter = [[0, 0], [0, 0]]

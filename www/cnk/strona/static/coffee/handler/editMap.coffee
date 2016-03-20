@@ -2,7 +2,7 @@ root = exports ? this
 class Handlers
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
-    mapData = new MapDataHandler()
+    @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog')
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -11,10 +11,15 @@ class Handlers
       labels: "#showLabels button"
       resize: "#changeResizing button"
       changeMap: "#changeMap button"
-    jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
     jQuery(@button.minusZoom).prop "disabled", true
+    if @mapData.floorTilesInfo[0].length is 0 and @mapData.floorTilesInfo[1].length is 0
+      jQuery(@button.plusZoom).prop "disabled", true
     @_setButtonHandlers()
     @_setEvents()
+    if @mapData.activeFloor is 0
+      jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
+    else
+      jQuery("#{@button.labels}, #{@button.firstFloor}").addClass "active"
 
   _setButtonHandlers: =>
     jQuery(@button.minusZoom).on('click', @zoomOutHandler())
@@ -26,10 +31,8 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.on("addExhibit", =>
-      dialog = new ExhibitDialog(null, @mapData.activeFloor, @newExhibitRequest)
-      dialog.nameEditable = true
-      dialog.show()
+    @panel.on("addExhibit", (data) =>
+      @newExhibitRequest(data)
     )
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
@@ -38,13 +41,19 @@ class Handlers
         jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
         jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
       @canvas.flyToExhibit id
+      @panel.filterForCurrentFloor()
       jQuery(@button.plusZoom).prop "disabled", true
       jQuery(@button.minusZoom).prop "disabled", false
     )
     @panel.on("modifyExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
-      dialog = new root.ExhibitDialog(exhibit.name, exhibit.frame?.mapLevel, (->))
-      dialog.show()
+      data =
+        id: id
+        name: exhibit.name
+        floor: exhibit.frame?.mapLevel
+        color: exhibit.colorHex
+      @exhibitEditDialog.bindData(data)
+      @exhibitEditDialog.show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
       jQuery(@button.plusZoom).prop("disabled", disablePlus)
@@ -71,6 +80,8 @@ class Handlers
       jQuery(floorButtons[1 - floor]).removeClass "active"
       jQuery(floorButtons[floor]).addClass "active"
       instance.canvas.setFloorLayer(floor)
+      instance.panel.refreshDialogInstance()
+      instance.panel.filterForCurrentFloor()
 
   showLabelsHandler: =>
     instance = this
@@ -106,6 +117,7 @@ class Handlers
       message: html
       title: 'Zmiana mapy'
       size: BootstrapDialog.SIZE_SMALL
+      closable: false
       buttons: [
         instance.changeMapCancelButton()
         instance.changeMapSaveButton()
@@ -160,6 +172,10 @@ class Handlers
       data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
       @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
       @mapData.floorUrl[data.floor] = data.floorUrl
+      @mapData.maxZoom[data.floor] = data.floorTilesInfo[data.floor].length
+      northEast = [0, data.floorTilesInfo[data.floor][-1..][0].scaledHeight]
+      southWest = [data.floorTilesInfo[data.floor][-1..][0].scaledWidth, 0]
+      @canvas.addMapBounds(data.floor, northEast, southWest)
 
     err = data.err - 1
     #close existing dialog
@@ -170,6 +186,11 @@ class Handlers
       message: errorData[err].message
       title: errorData[err].title
       type: errorData[err].type
+      closable: false if err is 2
+      buttons: [
+        label: 'OK'
+        action: -> location.reload()
+      ] if err is 2
     )
     @canvas.refresh()
     return
@@ -187,6 +208,7 @@ class Handlers
       jsonData:
         JSON.stringify(
           name: data.name
+          rgbHex: data.rgbHex
           floor: data.floor if data.floor?
           visibleMapFrame: frame
         )
@@ -210,8 +232,9 @@ class Handlers
       )
       return
     id = data.id
-    @mapData.exhibits[id] = {name: null, frame: {}}
+    @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @mapData.exhibits[id].name = data.name
+    @mapData.exhibits[id].colorHex = data.rgbHex
     if data.frame?
       @mapData.exhibits[id].frame.x = data.frame.x
       @mapData.exhibits[id].frame.y = data.frame.y
