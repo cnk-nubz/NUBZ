@@ -95,9 +95,12 @@ def _getExhibits():
 			'name': e.name,
 			'id': k,
 			'frame': frame,
-			'colorHex': '#' + hex(e.rgbHex).split('x')[1].upper().rjust(6, '0')
+			'colorHex': _getHtmlColorHex(e.rgbHex)
 		}
 	return exhibitsDict
+
+def _getHtmlColorHex(intVal):
+    return '#' + hex(intVal).split('x')[1].rjust(6, '0')
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
@@ -237,7 +240,7 @@ def createNewExhibit(request):
 		"success": True,
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
-		"rgbHex": '#' + hex(newExhibit.rgbHex).split('x')[1].upper().rjust(6, '0'),
+		"rgbHex": _getHtmlColorHex(newExhibit.rgbHex),
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)

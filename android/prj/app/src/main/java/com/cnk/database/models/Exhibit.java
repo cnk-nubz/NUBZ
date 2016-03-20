@@ -1,7 +1,5 @@
 package com.cnk.database.models;
 
-import android.graphics.Color;
-
 public class Exhibit {
     private Integer id;
     private Integer x;
@@ -11,9 +9,6 @@ public class Exhibit {
     private Integer floor;
     private Integer color;
     private String name;
-
-    public Exhibit() {
-    }
 
     public Exhibit(Integer id,
                    Integer x,
@@ -42,7 +37,7 @@ public class Exhibit {
             this.width = exhibitFromServer.getMapFrame().getFrame().getSize().getWidth();
             this.height = exhibitFromServer.getMapFrame().getFrame().getSize().getHeight();
             this.floor = exhibitFromServer.getMapFrame().getFloor();
-             this.color = exhibitFromServer.getRgbHex();
+            this.color = 0xFF000000 + exhibitFromServer.getRgbHex();
         }
     }
 

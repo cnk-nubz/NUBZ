@@ -1,6 +1,5 @@
 package com.cnk.ui.models;
 
-import android.widget.Chronometer;
 import android.widget.RelativeLayout;
 
 import com.cnk.activities.MapActivity;

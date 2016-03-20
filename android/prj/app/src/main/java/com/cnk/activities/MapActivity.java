@@ -3,9 +3,7 @@ package com.cnk.activities;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,22 +30,22 @@ import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
-import com.cnk.data.experiment.Action;
-import com.cnk.database.models.DetailLevelRes;
-import com.cnk.database.models.Exhibit;
-import com.cnk.ui.adapters.SelectListAdapter;
-import com.cnk.ui.models.DialogState;
 import com.cnk.data.exhibits.ExhibitsData;
+import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.raport.RaportEvent;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
+import com.cnk.database.models.DetailLevelRes;
+import com.cnk.database.models.Exhibit;
 import com.cnk.notificators.Observer;
 import com.cnk.ui.AutoResizeTextView;
 import com.cnk.ui.ImageHelper;
 import com.cnk.ui.MapBitmapProvider;
 import com.cnk.ui.ScaleData;
+import com.cnk.ui.adapters.SelectListAdapter;
+import com.cnk.ui.models.DialogState;
 import com.cnk.ui.models.ExhibitSpot;
 import com.cnk.ui.models.MapState;
 import com.cnk.utilities.ColorHelper;
@@ -108,21 +106,19 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             final Semaphore waitForUIMutex = new Semaphore(0, true);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (tileView != null) {
-                        tileView.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutMapMissing != null) {
-                        layoutMapMissing.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutLoading != null) {
-                        layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                    waitForUIMutex.release();
+            runOnUiThread(() -> {
+                if (tileView != null) {
+                    tileView.setVisibility(View.INVISIBLE);
                 }
-            });
+                if (layoutMapMissing != null) {
+                    layoutMapMissing.setVisibility(View.INVISIBLE);
+                }
+                if (layoutLoading != null) {
+                    layoutLoading.setVisibility(View.VISIBLE);
+                }
+                waitForUIMutex.release();
+                }
+            );
 
             clearAllExhibitsOnMap();
             waitForUIMutex.acquireUninterruptibly();
@@ -651,7 +647,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             tvLP = new RelativeLayout.LayoutParams(width, height);
             tvLP.setMargins(posX, posY, 0, 0);
 
-            viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
+            viewArrayList.add(new Pair<>(artv, tvLP));
 
             es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
             es.setTag(this);
@@ -714,18 +710,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
         dialogState.getTimer().setBase(SystemClock.elapsedRealtime());
         dialogState.getTimer().start();
 
-        dialogState.getCancelButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogButtonHandler(dialogState, requestCode, true, dialogState.getAdapter());
-            }
-        });
-        dialogState.getFinishButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogButtonHandler(dialogState, requestCode, false, dialogState.getAdapter());
-            }
-        });
+        dialogState.getCancelButton().setOnClickListener((view) ->
+            dialogButtonHandler(dialogState, requestCode, true, dialogState.getAdapter())
+        );
+        dialogState.getFinishButton().setOnClickListener((view) ->
+            dialogButtonHandler(dialogState, requestCode, false, dialogState.getAdapter())
+        );
 
         dialogState.showDialog();
     }
