@@ -19,13 +19,6 @@ thriftCommunicator = ThriftCommunicator()
 def get_const(name):
     return getattr(settings, name, None)
 
-defaultImage = {
-    'tileWidth': 2200,
-    'tileHeight': 1700,
-    'scaledWidth': 2200,
-    'scaledHeight': 1700
-}
-
 class uploadError(Enum):
 	SUCCESS = 1
 	NOT_AN_IMAGE = 2
@@ -51,27 +44,14 @@ def _pingServer():
 def _getMapImageInfo():
 	floorTiles = thriftCommunicator.getMapImageTiles()
 	floorTilesInfo = {}
-
 	for i in xrange(0, 2):
-		if not floorTiles[i]:
-			continue
-
-		if not floorTiles[i].zoomLevels:
-			floorTilesInfo[i] = {
-			0: {
-				'tileWidth': defaultImage['tileWidth'],
-				'tileHeight': defaultImage['tileHeight'],
-				'scaledWidth': defaultImage['scaledWidth'],
-				'scaledHeight': defaultImage['scaledHeight']
-			}}
-		else:
-			floorTilesInfo[i] = {
-			idx: {
-				'tileWidth': zoom.tileSize.width,
-				'tileHeight': zoom.tileSize.height,
-				'scaledWidth': zoom.scaledSize.width,
-				'scaledHeight': zoom.scaledSize.height
-			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
+		floorTilesInfo[i] = {
+		idx: {
+			'tileWidth': zoom.tileSize.width,
+			'tileHeight': zoom.tileSize.height,
+			'scaledWidth': zoom.scaledSize.width,
+			'scaledHeight': zoom.scaledSize.height
+		} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
 
 	return floorTilesInfo
 
@@ -104,19 +84,11 @@ def getMapPage(request, file, activeLink):
 		floorTilesInfo = _getMapImageInfo()
 		exhibits = _getExhibits()
 	except Exception as ex:
-		return HttpResponse('<h1>{}</h1>'.format(str(ex)))
+		return HttpResponse('<h1>{}</h1>'.format('Zaladuj skrypt prepare_maps' if 'KeyError' in str(ex) else str(ex)))
 
 	template = loader.get_template(file)
-
-	if len(floorTilesInfo[0]) == 1: #just default image
-		urlFloor0 = r"/static/floorplan0.jpg"
-	else: #get from config file
-		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
-
-	if len(floorTilesInfo[1]) == 1:
-		urlFloor1 = r"/static/floorplan1.jpg"
-	else:
-		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
+	urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"Brak sciezki do mapy parteru")
+	urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"Brak sciezki do mapy pierwszego pietra")
 
 	context = RequestContext(request, {
 		'activeFloor': 0,
@@ -165,13 +137,11 @@ def uploadImage(request):
 		}
 		return JsonResponse(data)
 
-	if len(floorTilesInfo[floor]) == 1: #just default image
-		floorUrl = r"/static/floorplan0.jpg"
-	else: #get from config file
-		if floor == 0:
-			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
-		else:
-			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
+	if floor == 0:
+		floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"Brak sciezki do mapy parteru")
+	else:
+		floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"Brak sciezki do mapy pierwszego pietra")
+
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,

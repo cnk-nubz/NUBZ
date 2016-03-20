@@ -170,6 +170,11 @@ class Handlers
       message: errorData[err].message
       title: errorData[err].title
       type: errorData[err].type
+      closable: true if err is 2
+      buttons: [
+        label: 'OK'
+        action: -> location.reload()
+      ] if err is 2
     )
     @canvas.refresh()
     return
