@@ -93,7 +93,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         flyToButton.className = "clickable"
       else
         flyToButton.innerHTML = ""
-        flyToButton.className = "inactive"
+        flyToButton.className = ""
       @_attachHandlersToListElement(listElement, e.listElement.data.exhibitId)
       fragment.appendChild(listElement)
 

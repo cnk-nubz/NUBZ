@@ -211,41 +211,12 @@ def updateExhibitPosition(request):
 	return JsonResponse(data)
 
 def createNewExhibit(request):
-	data = {
-		"success": False
-	}
-	if request.method != 'POST':
-		return JsonResponse(data)
-	jsonData = request.POST.get("jsonData")
-	exhibitRequest = json.loads(jsonData)
-
-	try:
-		newExhibit = thriftCommunicator.createNewExhibit(exhibitRequest)
-	except Exception as ex:
-		data['message'] = str(ex)
-		return JsonResponse(data)
-
-	if newExhibit.mapFrame:
-		frame = newExhibit.mapFrame
-		exhibitFrame = {
-			"x": frame.frame.x,
-			"y": frame.frame.y,
-			"width": frame.frame.size.width,
-			"height": frame.frame.size.height,
-			"mapLevel": frame.floor
-		}
-	else:
-		exhibitFrame = None
-	data = {
-		"success": True,
-		"id": int(newExhibit.exhibitId),
-		"name": newExhibit.name,
-		"rgbHex": _getHtmlColorHex(newExhibit.rgbHex),
-		"frame": exhibitFrame
-	}
-	return JsonResponse(data)
+	return _exhibitRequestsUnified(request, thriftCommunicator.createNewExhibit)
 
 def updateExhibit(request):
+	return _exhibitRequestsUnified(request, thriftCommunicator.updateExhibit)
+
+def _exhibitRequestsUnified(request, funToCall):
 	data = {
 		"success": False
 	}
@@ -255,7 +226,7 @@ def updateExhibit(request):
 	exhibitRequest = json.loads(jsonData)
 
 	try:
-		newExhibit = thriftCommunicator.updateExhibit(exhibitRequest)
+		newExhibit = funToCall(exhibitRequest)
 	except Exception as ex:
 		data['message'] = str(ex)
 		return JsonResponse(data)
