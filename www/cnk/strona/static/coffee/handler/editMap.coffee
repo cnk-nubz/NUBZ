@@ -3,7 +3,7 @@ class Handlers
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
     mapData = new MapDataHandler()
-    @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog')
+    @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -233,6 +233,53 @@ class Handlers
         @canvas.updateState()
     else
       @panel.addExhibits(id)
+
+  updateExhibitRequest: (data) =>
+    if data.floor?
+      [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
+      frame =
+        x: topLeft.x
+        y: topLeft.y
+        width: viewportWidth
+        height: viewportHeight
+        mapLevel: @mapData.activeFloor
+    toSend =
+      jsonData:
+        JSON.stringify(
+          id: data.id
+          rgbHex: data.rgbHex
+          floor: data.floor if data.floor?
+          visibleMapFrame: frame
+        )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/updateExhibit/'
+      data: toSend
+      success: @ajaxUpdateExhibitSuccess
+    )
+
+  ajaxUpdateExhibitSuccess: (data) =>
+    if not data.success
+      BootstrapDialog.alert(
+        message: "<p align=\"center\">#{data.message}</p>"
+        type: BootstrapDialog.TYPE_DANGER
+        title: 'Błąd serwera'
+      )
+      return
+    @canvas.removeExhibit(data.id)
+    @mapData.exhibits[data.id] = {
+      frame: data.frame
+      name: data.name
+      colorHex: data.rgbHex
+    }
+    if data.frame?
+      @canvas.addExhibits(data.frame.mapLevel, [data.id])
+    @canvas.updateState()
+    @panel.refreshExhibitsList()
 
 jQuery(document).ready( ->
   map = new root.MutableCanvas('#map')
