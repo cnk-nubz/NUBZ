@@ -35,7 +35,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     )
     jQuery("#exhibitPanel > div.input-group span").click( =>
       @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").val()
-      @_refreshExhibitsList()
+      @refreshExhibitsList()
     )
     jQuery("#exhibitPanel > div.input-group input").keypress(@_searchBarKeypressHandler)
     jQuery("#filterButtons button").each((index) ->
@@ -47,7 +47,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         else
           jQuery(this).addClass("active")
         jQuery(this).blur()
-        instance._refreshExhibitsList()
+        instance.refreshExhibitsList()
       )
     )
 
@@ -61,7 +61,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   filterForCurrentFloor: () =>
     jQuery("#filterButtons button:eq(#{1 - @mapData.activeFloor})").removeClass("active")
     jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
-    @_refreshExhibitsList()
+    @refreshExhibitsList()
 
   addExhibits: (exhibitIdList) =>
     for id in exhibitIdList
@@ -73,24 +73,27 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
         caption: e.name
         exhibitId: id
 
-      exhibitFloor = @_getExhibitFloor(id)
-      if exhibitFloor isnt @_NO_FLOOR
-        flyToButton = exhibitListElement.querySelector(".exhibitFlyToButton div")
-        flyToButton.innerHTML = exhibitFloor
-        flyToButton.className = "clickable"
       @_exhibits.push { listElement: exhibitListElement, visible: true }
-    @_refreshExhibitsList()
+    @refreshExhibitsList()
     return
 
   refreshDialogInstance: =>
     @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler)
 
-  _refreshExhibitsList: =>
+  refreshExhibitsList: =>
     jQuery("#exhibitList .exhibitListElement").each( -> jQuery(this).remove())
     @_filterExhibits()
     fragment = document.createDocumentFragment()
     for e in @_exhibits when e.visible is true
       listElement = e.listElement.cloneNode(true)
+      flyToButton = listElement.querySelector(".exhibitFlyToButton div")
+      exhibitFloor = @_getExhibitFloor(e.listElement.data.exhibitId)
+      if exhibitFloor isnt @_NO_FLOOR
+        flyToButton.innerHTML = exhibitFloor
+        flyToButton.className = "clickable"
+      else
+        flyToButton.innerHTML = ""
+        flyToButton.className = ""
       @_attachHandlersToListElement(listElement, e.listElement.data.exhibitId)
       fragment.appendChild(listElement)
 

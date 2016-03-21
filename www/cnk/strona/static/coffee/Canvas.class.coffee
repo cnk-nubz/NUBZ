@@ -89,6 +89,16 @@ root.Canvas = class Canvas extends root.View
       @_exhibits[floor].addLayer(r)
     @
 
+  removeExhibit: (exhibitId) =>
+    exhibitFrame = @mapData.exhibits[exhibitId].frame
+    if not exhibitFrame?
+      return
+    @_exhibits[exhibitFrame.mapLevel].eachLayer((layer) =>
+      if parseInt(layer.options.id) is exhibitId
+        @_exhibits[exhibitFrame.mapLevel].removeLayer(layer)
+    )
+    @
+
   _exhibitOptions: (options...) =>
     jQuery.extend(options...)
 

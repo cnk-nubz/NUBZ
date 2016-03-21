@@ -190,6 +190,12 @@ def updateExhibitPosition(request):
 	return JsonResponse(data)
 
 def createNewExhibit(request):
+	return _exhibitRequestsUnified(request, thriftCommunicator.createNewExhibit)
+
+def updateExhibit(request):
+	return _exhibitRequestsUnified(request, thriftCommunicator.updateExhibit)
+
+def _exhibitRequestsUnified(request, funToCall):
 	data = {
 		"success": False
 	}
@@ -199,7 +205,7 @@ def createNewExhibit(request):
 	exhibitRequest = json.loads(jsonData)
 
 	try:
-		newExhibit = thriftCommunicator.createNewExhibit(exhibitRequest)
+		newExhibit = funToCall(exhibitRequest)
 	except Exception as ex:
 		data['message'] = str(ex)
 		return JsonResponse(data)
@@ -219,7 +225,7 @@ def createNewExhibit(request):
 		"success": True,
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
-		"rgbHex": _getHtmlColorHex(newExhibit.rgbHex),
+		"rgbHex": '#' + hex(newExhibit.rgbHex).split('x')[1].upper().rjust(6, '0'),
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)

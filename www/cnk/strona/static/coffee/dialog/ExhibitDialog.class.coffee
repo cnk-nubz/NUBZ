@@ -92,11 +92,10 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       floor = +floorText
     exhibitColor = parseInt(@_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..], 16)
     changedData =
-      id: @_dialogInfo?.id
+      id: parseInt(@_dialogInfo?.id)
       name: editedName
       rgbHex: exhibitColor
       floor: floor
-      color: exhibitColor
     changedData
 
   _validateForm: =>
