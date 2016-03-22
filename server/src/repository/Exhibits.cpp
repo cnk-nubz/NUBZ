@@ -145,6 +145,18 @@ void Exhibits::checkFrame(const Exhibit::Frame &frame) {
     }
 }
 
+void Exhibits::resetFrames(std::int32_t floor) {
+    using namespace db::sql;
+    auto sql = Table::Sql::update()
+                   .where(Table::FrameFloor == floor)
+                   .set(Table::FrameX, Null)
+                   .set(Table::FrameY, Null)
+                   .set(Table::FrameWidth, Null)
+                   .set(Table::FrameHeight, Null)
+                   .set(Table::FrameFloor, Null);
+    session.execute(sql);
+}
+
 namespace {
 OptFrame::OptFrame(const boost::optional<Exhibits::Exhibit::Frame> &optFrame) {
     if (optFrame) {

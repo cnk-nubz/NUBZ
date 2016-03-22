@@ -7,6 +7,7 @@
 
 #include <utils/type_traits.h>
 
+#include "Condition.h"
 #include "Where.h"
 #include "utils.h"
 
@@ -19,6 +20,16 @@ class Update : public Where<Update<AvailableFields...>, AvailableFields...> {
                   "all fields should be from the same table");
 
 public:
+    template <class Column, class = std::enable_if_t<Column::field_type::is_optional>>
+    Update &set(Column, const _Null) {
+        using Field = typename Column::field_type;
+        static_assert(::utils::types::find_type<Field, AvailableFields...>::value,
+                      "selected field is not available in this sql query");
+
+        addSet<Column>(typename Field::type{});
+        return *this;
+    }
+
     template <class Column>
     Update &set(Column, const typename Column::field_type::type &newValue) {
         using Field = typename Column::field_type;
