@@ -9,15 +9,10 @@
 DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
-            "inputError": "Napis może zawierać tylko angielski alfabet oraz spacje.",
             "emptyInputError": "Napis nie może być pusty",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
-        },
-        "regex": {
-            "input": "^[a-zA-Z\ ]+$",
-            "dynamicInput": "^[a-zA-Z\ ]*$"
         },
         "style": {
             "inputErrorColor": "#D8000C",

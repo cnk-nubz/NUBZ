@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include <server/io/InvalidInput.h>
+#include <server/utils/CmpUTF8.h>
 
 #include "ExperimentCommands.h"
 
@@ -47,7 +48,7 @@ std::vector<ExperimentInfo> ExperimentCommands::getAllReady() {
     });
 
     std::sort(repoExperiments.begin(), repoExperiments.end(), [](const auto &lhs, const auto &rhs) {
-        return lhs.name < rhs.name;
+        return utils::cmpUTF8(lhs.name, rhs.name);
     });
     return std::vector<ExperimentInfo>(repoExperiments.begin(), repoExperiments.end());
 }

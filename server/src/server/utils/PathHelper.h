@@ -1,5 +1,5 @@
-#ifndef PATH_HELPER__H
-#define PATH_HELPER__H
+#ifndef SERVER_UTILS__PATH_HELPER__H
+#define SERVER_UTILS__PATH_HELPER__H
 
 #include <memory>
 #include <string>

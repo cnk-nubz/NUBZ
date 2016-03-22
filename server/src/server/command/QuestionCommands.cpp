@@ -7,7 +7,6 @@
 #include <repository/SortQuestions.h>
 
 #include <server/io/InvalidInput.h>
-#include <server/utils/InputChecker.h>
 
 #include "QuestionCommands.h"
 
@@ -19,16 +18,6 @@ QuestionCommands::QuestionCommands(db::Database &db) : db(db) {
 
 MultipleChoiceQuestion QuestionCommands::createMultipleChoice(
     const CreateMultipleChoiceQuestionRequest &input) {
-    if (!utils::checkText(input.question)) {
-        throw io::InvalidInput("question contains invalid characters");
-    }
-    if (input.name && !utils::checkText(input.name.value())) {
-        throw io::InvalidInput("name contains invalid characters");
-    }
-    if (!::utils::all_of(input.options, utils::checkText)) {
-        throw io::InvalidInput("option contains invalid characters");
-    }
-
     auto question = repository::MultipleChoiceQuestion{};
     question.question = input.question;
     question.singleAnswer = input.singleAnswer;
@@ -48,13 +37,6 @@ MultipleChoiceQuestion QuestionCommands::createMultipleChoice(
 }
 
 SimpleQuestion QuestionCommands::createSimple(const CreateSimpleQuestionRequest &input) {
-    if (!utils::checkText(input.question)) {
-        throw io::InvalidInput("question contains invalid characters");
-    }
-    if (input.name && !utils::checkText(input.name.value())) {
-        throw io::InvalidInput("name contains invalid characters");
-    }
-
     auto question = repository::SimpleQuestion{};
     question.question = input.question;
     question.numberAnswer = input.answerType == SimpleQuestion::AnswerType::Number;
@@ -69,16 +51,6 @@ SimpleQuestion QuestionCommands::createSimple(const CreateSimpleQuestionRequest 
 }
 
 SortQuestion QuestionCommands::createSort(const CreateSortQuestionRequest &input) {
-    if (!utils::checkText(input.question)) {
-        throw io::InvalidInput("question contains invalid characters");
-    }
-    if (input.name && !utils::checkText(input.name.value())) {
-        throw io::InvalidInput("name contains invalid characters");
-    }
-    if (!::utils::all_of(input.options, utils::checkText)) {
-        throw io::InvalidInput("option contains invalid characters");
-    }
-
     auto question = repository::SortQuestion{};
     question.question = input.question;
     question.name = input.name.value_or(question.question);
@@ -117,6 +89,9 @@ QuestionsList QuestionCommands::getAll() {
         }
     });
 
+    std::sort(qList.simpleQuestions.begin(), qList.simpleQuestions.end());
+    std::sort(qList.multipleChoiceQuestions.begin(), qList.multipleChoiceQuestions.end());
+    std::sort(qList.sortQuestions.begin(), qList.sortQuestions.end());
     std::sort(all.begin(), all.end());
     for (const auto &q : all) {
         qList.questionsOrder.push_back(q.second);

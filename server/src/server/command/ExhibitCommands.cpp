@@ -3,7 +3,7 @@
 #include <repository/Counters.h>
 
 #include <server/io/InvalidInput.h>
-#include <server/utils/InputChecker.h>
+#include <server/utils/CmpUTF8.h>
 
 #include "ExhibitCommands.h"
 
@@ -14,10 +14,6 @@ ExhibitCommands::ExhibitCommands(db::Database &db) : db(db) {
 }
 
 Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
-    if (!server::utils::checkText(input.name)) {
-        throw io::InvalidInput{"name contains invalid characters"};
-    }
-
     auto exhibit = repository::Exhibit{};
     exhibit.name = input.name;
     exhibit.rgbHex = input.rgbHex;
@@ -40,7 +36,7 @@ std::vector<Exhibit> ExhibitCommands::getAll() {
         [](db::DatabaseSession &session) { return repository::Exhibits{session}.getAll(); });
 
     std::sort(repoExhibits.begin(), repoExhibits.end(), [](const auto &lhs, const auto &rhs) {
-        return lhs.name < rhs.name;
+        return utils::cmpUTF8(lhs.name, rhs.name);
     });
     return std::vector<Exhibit>{repoExhibits.begin(), repoExhibits.end()};
 }

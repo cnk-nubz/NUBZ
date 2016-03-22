@@ -2,6 +2,7 @@
 #define UTILS__LOG__H
 
 #include <iostream>
+#include <vector>
 
 namespace communication {
 template <class T>
