@@ -77,6 +77,11 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @refreshExhibitsList()
     return
 
+  replaceExhibits: (exhibitIdList) =>
+    @_exhibits = []
+    @addExhibits(exhibitIdList)
+    @
+
   refreshDialogInstance: =>
     @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler)
 
