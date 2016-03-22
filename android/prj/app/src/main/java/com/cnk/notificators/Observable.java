@@ -1,7 +1,5 @@
 package com.cnk.notificators;
 
-import android.app.Activity;
-
 import java.util.Map;
 import java.util.WeakHashMap;
 

@@ -36,16 +36,23 @@ public class MultipleChoiceQuestionView extends QuestionView {
         } else {
             header.setText(R.string.chooseMultiple);
         }
+        LayoutParams
+                headerParams =
+                new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        headerParams.addRule(RelativeLayout.BELOW, R.id.questionNameLabelId);
+        headerParams.setMargins(50, 20, 50, 0);
+        header.setLayoutParams(headerParams);
+        header.setId(R.id.questionListViewHeaderId);
         header.setTextSize(HEADER_SIZE);
+        addView(header);
+
         ListView table = new ListView(c);
         LayoutParams
                 params =
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        params.topMargin = 10;
-        params.addRule(RelativeLayout.BELOW, R.id.questionNameLabelId);
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        params.setMargins(50, 10, 50, 30);
+        params.addRule(RelativeLayout.BELOW, header.getId());
         table.setLayoutParams(params);
-        table.addHeaderView(header);
         table.setDivider(getBackground());
         table.setDividerHeight(5);
         addView(table);

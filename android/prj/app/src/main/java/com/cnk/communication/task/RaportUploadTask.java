@@ -2,6 +2,7 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.MultipleChoiceQuestionAnswer;
 import com.cnk.communication.thrift.RawReport;
 import com.cnk.communication.thrift.RawReportEvent;
@@ -12,7 +13,6 @@ import com.cnk.communication.thrift.SurveyAnswers;
 import com.cnk.data.raports.Raport;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
-import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
 
@@ -25,8 +25,9 @@ public class RaportUploadTask extends ServerTask {
 
     private static final String LOG_TAG = "RaportUploadTask";
 
-    public RaportUploadTask(Notificator notificator) {
-        super(notificator);
+    public RaportUploadTask(NetworkHandler.FinishAction failure,
+                            NetworkHandler.FinishAction success) {
+        super(failure, success);
     }
 
     @Override

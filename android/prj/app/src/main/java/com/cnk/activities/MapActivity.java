@@ -4,7 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -48,6 +48,7 @@ import com.cnk.ui.adapters.SelectListAdapter;
 import com.cnk.ui.models.DialogState;
 import com.cnk.ui.models.ExhibitSpot;
 import com.cnk.ui.models.MapState;
+import com.cnk.utilities.ColorHelper;
 import com.cnk.utilities.Consts;
 import com.qozix.tileview.TileView;
 import com.qozix.tileview.hotspots.HotSpot;
@@ -87,21 +88,19 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             final Semaphore waitForUIMutex = new Semaphore(0, true);
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (tileView != null) {
-                        tileView.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutMapMissing != null) {
-                        layoutMapMissing.setVisibility(View.INVISIBLE);
-                    }
-                    if (layoutLoading != null) {
-                        layoutLoading.setVisibility(View.VISIBLE);
-                    }
-                    waitForUIMutex.release();
+            runOnUiThread(() -> {
+                if (tileView != null) {
+                    tileView.setVisibility(View.INVISIBLE);
                 }
-            });
+                if (layoutMapMissing != null) {
+                    layoutMapMissing.setVisibility(View.INVISIBLE);
+                }
+                if (layoutLoading != null) {
+                    layoutLoading.setVisibility(View.VISIBLE);
+                }
+                waitForUIMutex.release();
+                }
+            );
 
             clearAllExhibitsOnMap();
             waitForUIMutex.acquireUninterruptibly();
@@ -233,11 +232,10 @@ public class MapActivity extends AppCompatActivity implements Observer {
         currentFloorNum = 0;
         changeAndUpdateMutex = new Semaphore(1, true);
         openedDialogs = 0;
+        mapState = new MapState(this);
 
         Log.i(LOG_TAG, "adding to ExhibitsData observers list");
         ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
-
-        mapState = new MapState(this);
 
         setViews();
         setActionBar();
@@ -623,7 +621,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         RelativeLayout.LayoutParams tvLP;
         ExhibitSpot es;
         Integer posX, posY, width, height;
-        Drawable bcgDrawable;
+        GradientDrawable bcgDrawable;
 
         HotSpot.HotSpotTapListener exhibitsListener = new ExhibitTapListener();
 
@@ -649,10 +647,13 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
             artv = new AutoResizeTextView(this);
             artv.setText(e.getName());
+            artv.setTextColor(ColorHelper.getRgbHexTextColorForBackground(e.getColor()));
 
             //TODO - hardcoded background color and border color - to change later
-            bcgDrawable = getResources().getDrawable(R.drawable.exhibit_back);
-            artv.setBackground(bcgDrawable);
+            bcgDrawable = new GradientDrawable();
+            bcgDrawable.setColor(e.getColor());
+            bcgDrawable.setStroke(5, ColorHelper.getRgbBorderHexForColor(e.getColor()));
+            artv.setBackgroundDrawable(bcgDrawable);
 
             artv.setGravity(Gravity.CENTER);
             artv.setMinTextSize(2f);
@@ -662,7 +663,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             tvLP = new RelativeLayout.LayoutParams(width, height);
             tvLP.setMargins(posX, posY, 0, 0);
 
-            viewArrayList.add(new Pair<View, RelativeLayout.LayoutParams>(artv, tvLP));
+            viewArrayList.add(new Pair<>(artv, tvLP));
 
             es = new ExhibitSpot(e.getId(), floorNum++, e.getName(), artv);
             es.setTag(this);
@@ -708,18 +709,12 @@ public class MapActivity extends AppCompatActivity implements Observer {
         dialogState.getTimer().setBase(SystemClock.elapsedRealtime());
         dialogState.getTimer().start();
 
-        dialogState.getCancelButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogButtonHandler(dialogState, requestCode, true, dialogState.getAdapter());
-            }
-        });
-        dialogState.getFinishButton().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialogButtonHandler(dialogState, requestCode, false, dialogState.getAdapter());
-            }
-        });
+        dialogState.getCancelButton().setOnClickListener((view) ->
+            dialogButtonHandler(dialogState, requestCode, true, dialogState.getAdapter())
+        );
+        dialogState.getFinishButton().setOnClickListener((view) ->
+            dialogButtonHandler(dialogState, requestCode, false, dialogState.getAdapter())
+        );
 
         dialogState.showDialog();
     }

@@ -2,6 +2,7 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.MapImage;
 import com.cnk.communication.thrift.NewMapImagesRequest;
 import com.cnk.communication.thrift.NewMapImagesResponse;
@@ -11,7 +12,6 @@ import com.cnk.data.map.FloorMap;
 import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
 import com.cnk.data.map.ZoomLevel;
-import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
 
@@ -20,14 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
     private MapData.MapUpdateAction action;
 
 
-    public MapDownloadTask(Notificator notificator, MapData.MapUpdateAction action) {
-        super(notificator);
+    public MapDownloadTask(NetworkHandler.FinishAction failure,
+                           NetworkHandler.FinishAction success,
+                           MapData.MapUpdateAction action) {
+        super(failure, success);
         this.action = action;
     }
 

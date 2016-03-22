@@ -3,6 +3,7 @@ import os
 import json
 from enum import Enum
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
@@ -18,13 +19,6 @@ from ThriftCommunicator import ThriftCommunicator
 thriftCommunicator = ThriftCommunicator()
 def get_const(name):
     return getattr(settings, name, None)
-
-defaultImage = {
-    'tileWidth': 2200,
-    'tileHeight': 1700,
-    'scaledWidth': 2200,
-    'scaledHeight': 1700
-}
 
 class uploadError(Enum):
 	SUCCESS = 1
@@ -50,29 +44,20 @@ def _pingServer():
 
 def _getMapImageInfo():
 	floorTiles = thriftCommunicator.getMapImageTiles()
+	print >>sys.stderr, "%s" % floorTiles
 	floorTilesInfo = {}
-
 	for i in xrange(0, 2):
-		if not floorTiles[i]:
+		if not (i in floorTiles.keys()):
+			floorTilesInfo[i] = {}
 			continue
-
-		if not floorTiles[i].zoomLevels:
-			floorTilesInfo[i] = {
-			0: {
-				'tileWidth': defaultImage['tileWidth'],
-				'tileHeight': defaultImage['tileHeight'],
-				'scaledWidth': defaultImage['scaledWidth'],
-				'scaledHeight': defaultImage['scaledHeight']
-			}}
-		else:
-			floorTilesInfo[i] = {
+		floorTilesInfo[i] = {
 			idx: {
 				'tileWidth': zoom.tileSize.width,
 				'tileHeight': zoom.tileSize.height,
 				'scaledWidth': zoom.scaledSize.width,
 				'scaledHeight': zoom.scaledSize.height
-			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)}
-
+			} for idx, zoom in enumerate(floorTiles[i].zoomLevels)
+		}
 	return floorTilesInfo
 
 def _getExhibits():
@@ -93,9 +78,13 @@ def _getExhibits():
 		exhibitsDict[k] = {
 			'name': e.name,
 			'id': k,
-			'frame': frame
+			'frame': frame,
+			'colorHex': _getHtmlColorHex(e.rgbHex)
 		}
 	return exhibitsDict
+
+def _getHtmlColorHex(intVal):
+    return '#' + hex(intVal).split('x')[1].rjust(6, '0')
 
 @ensure_csrf_cookie
 def getMapPage(request, file, activeLink):
@@ -107,16 +96,8 @@ def getMapPage(request, file, activeLink):
 		return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
 	template = loader.get_template(file)
-
-	if len(floorTilesInfo[0]) == 1: #just default image
-		urlFloor0 = r"/static/floorplan0.jpg"
-	else: #get from config file
-		urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
-
-	if len(floorTilesInfo[1]) == 1:
-		urlFloor1 = r"/static/floorplan1.jpg"
-	else:
-		urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
+	urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
+	urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
 
 	context = RequestContext(request, {
 		'activeFloor': 0,
@@ -124,12 +105,17 @@ def getMapPage(request, file, activeLink):
 		'floorTilesInfo': floorTilesInfo,
 		'urlFloor0': urlFloor0,
 		'urlFloor1': urlFloor1,
-        'activeLink': activeLink
+		'activeLink': activeLink
 	})
 	return HttpResponse(template.render(context))
 
+def androidApp(request):
+    return HttpResponseRedirect("/static/android_app/example")
+
 @ensure_csrf_cookie
 def index(request):
+	if request.META.get("HTTP_USER_AGENT", '').lower().find("android") > 0:
+		return HttpResponseRedirect("/static/android_app/example")
 	return getMapPage(request, 'map/justMap.html', ActiveLink.JUST_MAP.value)
 
 @ensure_csrf_cookie
@@ -165,13 +151,11 @@ def uploadImage(request):
 		}
 		return JsonResponse(data)
 
-	if len(floorTilesInfo[floor]) == 1: #just default image
-		floorUrl = r"/static/floorplan0.jpg"
-	else: #get from config file
-		if floor == 0:
-			floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', r"/static/floorplan0.jpg")
-		else:
-			floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', r"/static/floorplan1.jpg")
+	if floor == 0:
+		floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
+	else:
+		floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
+
 	data = {
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
@@ -206,6 +190,12 @@ def updateExhibitPosition(request):
 	return JsonResponse(data)
 
 def createNewExhibit(request):
+	return _exhibitRequestsUnified(request, thriftCommunicator.createNewExhibit)
+
+def updateExhibit(request):
+	return _exhibitRequestsUnified(request, thriftCommunicator.updateExhibit)
+
+def _exhibitRequestsUnified(request, funToCall):
 	data = {
 		"success": False
 	}
@@ -215,7 +205,7 @@ def createNewExhibit(request):
 	exhibitRequest = json.loads(jsonData)
 
 	try:
-		newExhibit = thriftCommunicator.createNewExhibit(exhibitRequest)
+		newExhibit = funToCall(exhibitRequest)
 	except Exception as ex:
 		data['message'] = str(ex)
 		return JsonResponse(data)
@@ -235,6 +225,7 @@ def createNewExhibit(request):
 		"success": True,
 		"id": int(newExhibit.exhibitId),
 		"name": newExhibit.name,
+		"rgbHex": '#' + hex(newExhibit.rgbHex).split('x')[1].upper().rjust(6, '0'),
 		"frame": exhibitFrame
 	}
 	return JsonResponse(data)
@@ -249,6 +240,14 @@ def getDialog(request, dialogName):
 		'html': html.replace("\n", "")
 	}
 	return JsonResponse(retDict)
+
+def getColorPickerPopoverContent(request):
+    colorsList = get_const("POPOVER_COLORS")
+    popoverButtonHtml = render_to_string('dialog/popoverColorsPicker.html', {'colorsList': colorsList})
+    return JsonResponse({'html': popoverButtonHtml})
+
+def getExhibitDialog(request):
+    return getDialog(request, "EXHIBIT_DIALOG")
 
 def getSimpleQuestionDialog(request):
     return getDialog(request, "SIMPLE_QUESTION_DIALOG")
@@ -286,6 +285,8 @@ HTMLRequests = {
     'actionDialog': getActionDialog,
     'chooseQuestionTypeDialog': getChooseQuestionTypeDialog,
     'changeMapDialog': getChangeMapDialog,
+    'exhibitDialog': getExhibitDialog,
+    'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
     'exhibitListElement': getExhibitListElement
 }

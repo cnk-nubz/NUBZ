@@ -2,8 +2,8 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.Server;
-import com.cnk.notificators.Notificator;
 import com.cnk.utilities.Util;
 
 import org.apache.thrift.TException;
@@ -19,11 +19,13 @@ public abstract class ServerTask extends Task {
     protected static final String LOG_TAG = "ServerTask";
     private static final String SEND_ADDRESS = "zpp.dns1.us";
     private static final int SEND_PORT = 9090;
+    private NetworkHandler.FinishAction failure;
+    private NetworkHandler.FinishAction success;
     protected long delay = 1;
-    protected Notificator notificator;
 
-    public ServerTask(Notificator notificator) {
-        this.notificator = notificator;
+    public ServerTask(NetworkHandler.FinishAction failure, NetworkHandler.FinishAction success) {
+        this.failure = failure;
+        this.success = success;
     }
 
     @Override
@@ -35,23 +37,22 @@ public abstract class ServerTask extends Task {
         while (tries > 0 && socket != null) {
             try {
                 performInSession(client);
-                notificator.success();
                 Log.i(LOG_TAG, "Action successful");
                 socket.close();
+                success.perform(this);
                 return;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Action failed, remaining tries: " + Integer.toString(tries));
                 e.printStackTrace();
-                Util.waitDelay(delay * 1000);
+                Util.waitDelay(delay);
                 delay += 2;
                 tries--;
             }
         }
-        notificator.failure(this);
         if (socket != null) {
             socket.close();
         }
-
+        failure.perform(this);
     }
 
     protected abstract void performInSession(Server.Client client) throws TException, IOException;

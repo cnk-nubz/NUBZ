@@ -5,7 +5,7 @@ namespace io {
 namespace input {
 
 UpdateExhibitRequest::UpdateExhibitRequest(const communication::UpdateExhibitRequest &thrift)
-    : exhibitId(thrift.exhibitId) {
+    : exhibitId(thrift.exhibitId), rgbHex(thrift.rgbHex) {
     if (thrift.__isset.visibleFrame) {
         visibleFrame = MapFrame{thrift.visibleFrame};
     }

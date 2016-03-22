@@ -1,5 +1,7 @@
 package com.cnk.database.models;
 
+import android.graphics.Color;
+
 import com.cnk.communication.thrift.Frame;
 import com.cnk.database.realm.ExhibitRealm;
 
@@ -10,6 +12,7 @@ public class Exhibit implements Realmable {
     private Integer width;
     private Integer height;
     private Integer floor;
+    private Integer color;
     private String name;
 
     public Exhibit(ExhibitRealm er) {
@@ -19,7 +22,9 @@ public class Exhibit implements Realmable {
              er.getWidth(),
              er.getHeight(),
              er.getFloor(),
-             er.getName());
+             Color.rgb(er.getColorR(), er.getColorG(), er.getColorB()),
+             er.getName()
+             );
     }
 
     public Exhibit(Integer id,
@@ -28,6 +33,7 @@ public class Exhibit implements Realmable {
                    Integer width,
                    Integer height,
                    Integer floor,
+                   Integer color,
                    String name) {
         this.id = id;
         this.x = x;
@@ -35,6 +41,7 @@ public class Exhibit implements Realmable {
         this.width = width;
         this.height = height;
         this.floor = floor;
+        this.color = color;
         this.name = name;
     }
 
@@ -48,6 +55,7 @@ public class Exhibit implements Realmable {
             width = frame.getSize().getWidth();
             height = frame.getSize().getHeight();
             floor = exhibitFromServer.getMapFrame().getFloor();
+            color = 0xFF000000 + exhibitFromServer.getRgbHex();
         }
     }
 
@@ -60,6 +68,9 @@ public class Exhibit implements Realmable {
         er.setWidth(width);
         er.setHeight(height);
         er.setFloor(floor);
+        er.setColorR(Color.red(color));
+        er.setColorG(Color.green(color));
+        er.setColorB(Color.blue(color));
         er.setName(name);
         return er;
     }
@@ -86,6 +97,10 @@ public class Exhibit implements Realmable {
 
     public Integer getFloor() {
         return floor;
+    }
+
+    public Integer getColor() {
+        return color;
     }
 
     public String getName() {

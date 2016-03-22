@@ -60,12 +60,10 @@ class ThriftCommunicator:
 		return self._perform_in_single_connection([action])[0]
 
 	def getMapImageTiles(self):
-		def get_floor(floor):
-			def action(client):
-				floor_msg = NewMapImagesRequest()
-				return client.getNewMapImages(floor_msg).floors[floor]
-			return action
-		return self._perform_in_single_connection([get_floor(0), get_floor(1)])
+		def action(client):
+			floor_msg = NewMapImagesRequest()
+			return client.getNewMapImages(floor_msg).floors
+		return self._perform_in_single_connection([action])[0]
 
 	def setExhibitFrame(self, frame):
 		def action(client):
@@ -85,8 +83,24 @@ class ThriftCommunicator:
 					Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
 			else:
 				frame = None
-			msg = CreateExhibitRequest(request['name'], floor, frame)
+			msg = CreateExhibitRequest(request['name'], request['rgbHex'], floor, frame)
 			return client.createExhibit(msg)
+		return self._perform_in_single_connection([action])[0]
+
+	def updateExhibit(self, request):
+		def action(client):
+			if 'floor' in request.keys() and request['floor'] != None:
+				floor = request['floor']
+			else:
+				floor = None
+			if 'visibleMapFrame' in request.keys() and request['visibleMapFrame']:
+				t = request['visibleMapFrame']
+				frame = MapFrame(
+					Frame(t['x'], t['y'], Size(t['width'], t['height'])), t['mapLevel'])
+			else:
+				frame = None
+			msg = UpdateExhibitRequest(request['id'], request['rgbHex'], floor, frame)
+			return client.updateExhibit(msg)
 		return self._perform_in_single_connection([action])[0]
 
 	def createSimpleQuestion(self, request):

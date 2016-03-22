@@ -20,6 +20,7 @@ Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
 
     auto exhibit = repository::Exhibit{};
     exhibit.name = input.name;
+    exhibit.rgbHex = input.rgbHex;
     exhibit.frame = createFrame(input.floor, input.visibleFrame);
 
     db.execute([&](db::DatabaseSession &session) {
@@ -96,8 +97,15 @@ Exhibit ExhibitCommands::update(const UpdateExhibitRequest &input) {
         auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
 
         auto repo = repository::Exhibits{session};
-        repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
+        auto oldExhibit = repo.getF(input.exhibitId);
+
         repo.setVersion(input.exhibitId, version);
+        repo.setRgbHex(input.exhibitId, input.rgbHex);
+        if (!input.floor || !oldExhibit.frame ||
+            input.floor.value() != oldExhibit.frame.value().floor) {
+            repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
+        }
+
         return repo.getF(input.exhibitId);
     });
     return Exhibit{repoExhibit};

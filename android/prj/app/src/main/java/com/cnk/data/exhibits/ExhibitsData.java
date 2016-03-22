@@ -1,7 +1,5 @@
 package com.cnk.data.exhibits;
 
-import android.app.Activity;
-
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
@@ -36,7 +34,12 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     }
 
     public void notifyObservers(List<Exhibit> changedExhibits) {
+        List<ExhibitsUpdateAction> actions = new ArrayList<>();
         for (ExhibitsUpdateAction action : observers.values()) {
+            actions.add(action);
+        }
+
+        for (ExhibitsUpdateAction action : actions) {
             action.doOnUpdate(changedExhibits);
         }
     }
