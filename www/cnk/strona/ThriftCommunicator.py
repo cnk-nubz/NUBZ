@@ -98,6 +98,30 @@ class ThriftCommunicator:
             return client.createExhibit(msg)
         return self._perform_in_single_connection([action])[0]
 
+    def updateExhibit(self, request):
+        def action(client):
+            if 'floor' in request.keys() and request['floor'] is not None:
+                floor = request['floor']
+            else:
+                floor = None
+            if 'visibleMapFrame' in request.keys() and request[
+                    'visibleMapFrame']:
+                t = request['visibleMapFrame']
+                frame = MapFrame(
+                    Frame(
+                        t['x'],
+                        t['y'],
+                        Size(
+                            t['width'],
+                            t['height'])),
+                    t['mapLevel'])
+            else:
+                frame = None
+            msg = UpdateExhibitRequest(
+                request['id'], request['rgbHex'], floor, frame)
+            return client.updateExhibit(msg)
+        return self._perform_in_single_connection([action])[0]
+
     def createSimpleQuestion(self, request):
         def action(client):
             if request['answerAsNumber'] == 1:

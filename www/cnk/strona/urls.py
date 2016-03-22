@@ -10,10 +10,11 @@ urlpatterns = [
     url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
     url(r'android/$', views.androidApp, name='androidApp'),
 
-	url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
+    url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
 
-	url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
+    url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
+    url(r'updateExhibit/$', views.updateExhibit, name='updateExhibit'),
 
     # get all the html you need
     url(r'getHTML/$', views.getHTML, name='getHTML'),
