@@ -465,3 +465,8 @@ def createExperiment(request):
             'message': "Wystapil nieoczekiwany blad. Sprobuj ponownie za chwile. ({})".format(str(ex))
         }
     return JsonResponse(result)
+
+def reportError(request):
+    data = json.loads(request.POST.get("jsonData"))
+    print("ERROR: " + data['url'] + " in " +  str(data['lineNumber']) + ", " + data['errorMsg'])
+    return JsonResponse({'a': 'a'})
