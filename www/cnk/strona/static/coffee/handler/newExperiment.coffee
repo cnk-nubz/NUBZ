@@ -192,7 +192,7 @@ class Handlers
     experimentTitle = jQuery(@_DOM.experimentTitle)
     titleText = experimentTitle.val()
     experimentTitle.val(jQuery.trim(titleText))
-    if not titleText.match root.inputRegex
+    if titleText.length is 0
       experimentTitle.tooltip('show')
       experimentTitle.parent().addClass("has-error")
       experimentTitle.one('focus', ->

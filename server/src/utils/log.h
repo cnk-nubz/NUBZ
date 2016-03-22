@@ -2,6 +2,7 @@
 #define UTILS__LOG__H
 
 #include <iostream>
+#include <vector>
 
 namespace communication {
 template <class T>
@@ -19,6 +20,6 @@ std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec) {
 }
 }
 
-#include <external/easylogging++.h>
+#include <easylogging++.h>
 
 #endif

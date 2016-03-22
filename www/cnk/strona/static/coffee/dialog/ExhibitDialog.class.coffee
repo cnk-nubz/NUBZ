@@ -11,8 +11,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         obj = jQuery(this)
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
-        regex = new RegExp(instance._data.utils.regex.input)
-        jQuery(this).keyup((e) -> instance._inputKeyUp(regex)(obj, e))
+        jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
       )
     jQuery(".popoverButton", dialog)
       .each( ->
@@ -58,17 +57,14 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
 
-  _inputKeyUp: (regex) =>
-      (obj, e) =>
-        error = obj.parent().next()
-        if not obj.val().match regex
-          if obj.val().length
-            @_showInputError(error, @_getInputError())
-          else
-            @_showInputError(error, @_getEmptyInputError())
-        else
-          error.html("")
-        return
+  _inputKeyUp: (obj, e) =>
+    text = obj.val()
+    error = obj.parent().next()
+    if text.length is 0
+      @_showInputError(error, @_getEmptyInputError())
+    else
+      error.html("")
+    return
 
   _closeButton: =>
     label: super.label
@@ -103,15 +99,12 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     instance = this
     jQuery "#dialog input[type=text]"
       .each( ->
-        text = jQuery(this).val()
-        regex = new RegExp(instance._data.utils.regex.input)
-        if not text.match regex
+        obj = jQuery(this)
+        text = obj.val()
+        if text.length is 0
           isValid = false
-          error = jQuery(this).parent().next()
-          if text.length
-            instance._showInputError(error, instance._getInputError())
-          else
-            instance._showInputError(error, instance._getEmptyInputError())
+          error = obj.parent().next()
+          instance._showInputError(error, instance._getEmptyInputError())
       )
     isValid
 

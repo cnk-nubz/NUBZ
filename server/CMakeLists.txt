@@ -14,6 +14,7 @@ find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 find_package(OpenSSL)
 
 include_directories("src")
+include_directories(SYSTEM "external")
 include_directories(${Boost_INCLUDE_DIR})
 include_directories(${Thrift_INCLUDE_DIR})
 include_directories(${PostgreSQL_INCLUDE_DIR})

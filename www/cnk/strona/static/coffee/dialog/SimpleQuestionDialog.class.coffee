@@ -12,15 +12,12 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
         jQuery(this).parent().next().css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup( (e) ->
           obj = jQuery(this)
-          regex = new RegExp(instance._data.utils.regex.input)
+          text = obj.val()
           error = obj.parent().next()
-          if not obj.val().match regex
-              if obj.val().length
-                instance._showInputError(error, instance._data.utils.text.inputError)
-              else
-                instance._showInputError(error, instance._data.utils.text.emptyInputError)
+          if text.length is 0
+            instance._showInputError(error, instance._data.utils.text.emptyInputError)
           else
-            obj.parent().next().html("")
+            error.html("")
         )
       )
     return
