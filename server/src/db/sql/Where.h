@@ -17,7 +17,7 @@ public:
     Subclass &where(const detail::Condition<UsedFields...> &cond) {
         static_assert(::utils::types::all_of<
                           ::utils::types::find_type<UsedFields, AvailableFields...>...>::value,
-                      "one of used columns is not available in this sql query");
+                      "one of used fields is not available in this sql query");
         if (this->cond) {
             this->cond = (detail::Condition<>{std::move(this->cond.value())} && cond).str();
         } else {
