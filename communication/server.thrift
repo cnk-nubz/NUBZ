@@ -55,6 +55,9 @@ service Server {
 	void createExperiment(1: structs.CreateExperimentRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
+	void updateExperiment(1: i32 experimentId, 2: structs.CreateExperimentRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 	list<structs.ExperimentInfo> getReadyExperiments()
 		throws (1: structs.InternalError err),
 
