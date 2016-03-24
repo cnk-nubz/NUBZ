@@ -30,6 +30,10 @@
   table-layout: fixed;
 }
 
+#activeExperiment tr {
+  border-bottom: 1px solid #ccc;
+}
+
 #activeExperiment > table td:first-child {
   font-weight: 600;
   font-size: 26px;
@@ -104,8 +108,6 @@
   left: 50px;
 }
 
-/* styling finishedExperiments table */
-
 .myHeader {
   position: relative;
   height: 46px;
@@ -138,8 +140,4 @@
 .addElement:hover {
   background: #ccc;
   border: 1px solid #bbb;
-}
-
-.questionsActionsTable tr {
-  height: 45px !important;
 }

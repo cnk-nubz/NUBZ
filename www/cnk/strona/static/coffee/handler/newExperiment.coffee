@@ -34,31 +34,43 @@ class Handlers
     @_setDefaultState()
 
   _setLists: =>
-    questionsBeforeDOM = @_prepareExperimentList(@_questionsBefore, @_questionsBeforeList, @_experimentQuestionRow)
-    questionsAfterDOM = @_prepareExperimentList(@_questionsAfter, @_questionsAfterList, @_experimentQuestionRow)
-    exhibitActionsDOM = @_prepareExperimentList(@_exhibitActions, @_exhibitActionsList, @_experimentActionRow)
-    breakActionsDOM = @_prepareExperimentList(@_breakActions, @_breakActionsList, @_experimentActionRow)
-    @_questionsBeforeList = new root.QuestionsList('.questionsBefore .middle', 'questionsActionsTable', questionsBeforeDOM)
-    @_questionsAfterList = new root.QuestionsList('.questionsAfter .middle', 'questionsActionsTable', questionsAfterDOM)
-    @_exhibitActionsList = new root.ActionsList('.experimentActions .middle', 'questionsActionsTable', exhibitActionsDOM)
-    @_breakActionsList = new root.ActionsList('.breakActions .middle', 'questionsActionsTable', breakActionsDOM)
+    questionsBeforeDOM = @_questionsBefore.getAllElementsAsDOM(@_experimentQuestionRow)
+    questionsAfterDOM = @_questionsAfter.getAllElementsAsDOM(@_experimentQuestionRow)
+    exhibitActionsDOM = @_exhibitActions.getAllElementsAsDOM(@_experimentActionRow)
+    breakActionsDOM = @_breakActions.getAllElementsAsDOM(@_experimentActionRow)
+    @_questionsBeforeList = new root.QuestionsList('.questionsBefore .middle', 'questionsActionsTable')
+    @_questionsBeforeList
+      .show()
+      .replaceElements(@_prepareExperimentList(questionsBeforeDOM, @_questionsBefore, @_questionsBeforeList))
+    @_questionsAfterList = new root.QuestionsList('.questionsAfter .middle', 'questionsActionsTable')
+    @_questionsAfterList
+      .show()
+      .replaceElements(@_prepareExperimentList(questionsAfterDOM, @_questionsAfter, @_questionsAfterList))
+    @_exhibitActionsList = new root.ActionsList('.experimentActions .middle', 'questionsActionsTable')
+    @_exhibitActionsList
+      .show()
+      .replaceElements(@_prepareExperimentList(exhibitActionsDOM, @_exhibitActions, @_exhibitActionsList))
+    @_breakActionsList = new root.ActionsList('.breakActions .middle', 'questionsActionsTable')
+    @_breakActionsList
+      .show()
+      .replaceElements(@_prepareExperimentList(breakActionsDOM, @_breakActions, @_breakActionsList))
     questionsDOM =  @_prepareQuestionsList()
     @_questionsList = new root.QuestionsList(".chooseList .middle", 'questionsActionsTable', questionsDOM)
     actionsDOM = @_prepareActionsList()
     @_actionsList = new root.ActionsList(".chooseList .middle", 'questionsActionsTable', actionsDOM)
     return
 
-  _prepareExperimentList: (dataList, contextList, rowFactory) =>
-    elementsDOM = dataList.getAllElementsAsDOM(rowFactory)
+  _prepareExperimentList: (elementsDOM, dataList, contextList) =>
     [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) =>
       viewId = element.data
-      element.querySelector("td:last-child")
-        .addEventListener("click", ->
-          contextList.removeElement(this)
-        )
       element.querySelector("td:first-child")
         .addEventListener("click", ->
           dataList.showDialog(viewId, true)
+        )
+      element.querySelector("td:last-child")
+        .addEventListener("click", ->
+          contextList.removeElement(viewId)
+          jQuery(this).parents("tr").remove()
         )
     )
     elementsDOM
@@ -129,7 +141,8 @@ class Handlers
             jQuery(this).mousedown( ->
               newElement = dataList.getElementAsDOM(id, newElementRowFactory)
               jQuery("i", newElement).parent().click( ->
-                contextList[index].removeElement(this)
+                contextList[index].removeElement(id)
+                jQuery(this).parents("tr").remove()
               )
               jQuery("td:first-child", newElement).click( ->
                 dataList.showDialog(id, true)
@@ -231,6 +244,7 @@ class Handlers
 
   _saveExperimentRequest: =>
     dataToSend = {
+      experimentId: @_experimentData.experimentId if @_experimentData?
       name: jQuery(@_DOM.experimentTitle).val()
       surveyBefore: @_questionsBeforeList.getAllElements()
       exhibitActions: @_exhibitActionsList.getAllElements()
@@ -245,7 +259,7 @@ class Handlers
       dataType: 'json'
       context: this
       data: (jsonData: JSON.stringify(dataToSend))
-      url: '/createExperiment/'
+      url: '/saveExperiment/'
       success: (data) ->
         if not data.success
           @_displayError(data.message)

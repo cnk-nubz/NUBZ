@@ -12,6 +12,7 @@ from structs.ttypes import *
 
 
 class ThriftCommunicator:
+
     def __init__(self):
         self.host = getattr(settings, 'THRIFT_HOST', 'localhost')
         self.port = int(getattr(settings, 'THRIFT_PORT', 9090))
@@ -168,27 +169,36 @@ class ThriftCommunicator:
             return client.getAllActions()
         return self._perform_in_single_connection([action])[0]
 
+    def _prepareCreateExperimentRequest(self, request):
+        sb = request['surveyBefore']
+        sa = request['surveyAfter']
+        surveyBefore = QuestionsIdsList(
+            sb['questionsOrder'],
+            sb['simpleQuestions'],
+            sb['multipleChoiceQuestions'],
+            sb['sortQuestions'])
+        surveyAfter = QuestionsIdsList(
+            sa['questionsOrder'],
+            sa['simpleQuestions'],
+            sa['multipleChoiceQuestions'],
+            sa['sortQuestions'])
+        return CreateExperimentRequest(
+            request['name'].encode('utf-8'),
+            surveyBefore,
+            request['exhibitActions'],
+            request['breakActions'],
+            surveyAfter)
+
     def createExperiment(self, request):
         def action(client):
-            sb = request['surveyBefore']
-            sa = request['surveyAfter']
-            surveyBefore = QuestionsIdsList(
-                sb['questionsOrder'],
-                sb['simpleQuestions'],
-                sb['multipleChoiceQuestions'],
-                sb['sortQuestions'])
-            surveyAfter = QuestionsIdsList(
-                sa['questionsOrder'],
-                sa['simpleQuestions'],
-                sa['multipleChoiceQuestions'],
-                sa['sortQuestions'])
-            msg = CreateExperimentRequest(
-                request['name'].encode('utf-8'),
-                surveyBefore,
-                request['exhibitActions'],
-                request['breakActions'],
-                surveyAfter)
+            msg = self._prepareCreateExperimentRequest(request)
             client.createExperiment(msg)
+        return self._perform_in_single_connection([action])[0]
+
+    def updateExperiment(self, request):
+        def action(client):
+            msg = self._prepareCreateExperimentRequest(request)
+            client.updateExperiment(request['experimentId'], msg)
         return self._perform_in_single_connection([action])[0]
 
     def getFinishedExperiments(self):
