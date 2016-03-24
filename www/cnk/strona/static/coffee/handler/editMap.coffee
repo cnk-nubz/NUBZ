@@ -170,12 +170,20 @@ class Handlers
     ]
     if data.err == 1
       data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
+      data.exhibits = jQuery.map(data.exhibits, (val) -> [val])
+      @mapData.exhibits = {}
+      for e in data.exhibits
+        @mapData.exhibits[e.id] =
+          frame: e.frame
+          name: e.name
+          colorHex: e.colorHex
       @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
       @mapData.floorUrl[data.floor] = data.floorUrl
       @mapData.maxZoom[data.floor] = data.floorTilesInfo[data.floor].length
       northEast = [0, data.floorTilesInfo[data.floor][-1..][0].scaledHeight]
       southWest = [data.floorTilesInfo[data.floor][-1..][0].scaledWidth, 0]
       @canvas.addMapBounds(data.floor, northEast, southWest)
+      @panel.replaceExhibits((e.id for e in data.exhibits))
 
     err = data.err - 1
     #close existing dialog

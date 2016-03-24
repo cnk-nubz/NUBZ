@@ -160,7 +160,8 @@ def uploadImage(request):
 		"err": uploadError.SUCCESS.value,
 		"floor": floor,
 		"floorTilesInfo": floorTilesInfo,
-		"floorUrl": floorUrl
+		"floorUrl": floorUrl,
+		"exhibits": _getExhibits()
 	}
 	return JsonResponse(data)
 

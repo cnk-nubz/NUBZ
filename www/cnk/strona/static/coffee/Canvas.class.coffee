@@ -125,6 +125,8 @@ root.Canvas = class Canvas extends root.View
 
   refresh: =>
     @loadData(@mapData.activeFloor)
+    @_exhibits[1 - @mapData.activeFloor].clearLayers()
+    @addExhibits(1 - @mapData.activeFloor, (id for id, _ of @mapData.exhibits))
     @
 
   getVisibleFrame: =>
