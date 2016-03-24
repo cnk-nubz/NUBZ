@@ -1,16 +1,16 @@
 root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
-  _prepareDialog: (dialog) =>
+  _prepareDialog: (dialogBody) =>
     super
     #add dialog info
     radioGroup = @_data.utils.default.radioGroup
     inputOffset = @_data.utils.default.labelSize
     instance = this
     if not @_dialogInfo?
-      jQuery("label.#{radioGroup}", dialog).filter(":first").addClass("active")
+      jQuery("label.#{radioGroup}", dialogBody).filter(":first").addClass("active")
 
-    # prepare inputs
-    inputs = jQuery("input[type=text]", dialog)
+    # prepare inputs with regexes etc
+    inputs = jQuery("input[type=text]", dialogBody)
     inputs.each( (idx) ->
         obj = jQuery(this)
         error = obj.parent().next()
@@ -22,20 +22,21 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
     return
 
-  _prepareFilledDialog: (dialog) =>
-    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
-    jQuery(".form-group:eq(1) input", dialog).val(@_dialogInfo.question)
+  _prepareFilledDialog: (dialogBody) =>
+    @_dialog.setTitle(@_data.utils.text.title)
+    jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
+    jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
     activeLabel = if @_dialogInfo.singleAnswer then 0 else 1
-    jQuery(".form-group:eq(2) .btn-group label:eq(#{activeLabel})", dialog).addClass("active")
+    jQuery(".form-group:eq(2) .btn-group label:eq(#{activeLabel})", dialogBody).addClass("active")
     for answer, index in @_dialogInfo.options
-      obj = jQuery(".form-group:last-child > div input:last", dialog)
+      obj = jQuery(".form-group:last-child > div input:last", dialogBody)
       obj.val(answer).keyup()
 
     if @readonly
-      jQuery("input", dialog).prop("readonly", true)
+      jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
-      jQuery("input", dialog).last().parents('.input-group').remove()
-      jQuery(".btn:not(.active)", dialog).remove()
+      jQuery("input", dialogBody).last().parents('.input-group').remove()
+      jQuery(".btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
     @
 

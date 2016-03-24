@@ -14,6 +14,7 @@ urlpatterns = [
 
     url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
+    url(r'getAllExhibits/$', views.getAllExhibits, name='getAllExhibits'),
     url(r'updateExhibit/$', views.updateExhibit, name='updateExhibit'),
 
     # get all the html you need

@@ -107,7 +107,7 @@ root.Canvas = class Canvas extends root.View
 
   setFloorLayer: (floor) =>
       @mapData.activeFloor = floor
-      @_map.setView([0, 0], @_minZoom)
+      @_map.setView([0, 0], @_minZoom, animate: false)
       @_map.fireEvent('zoomend')
       @updateState()
       @
@@ -156,10 +156,12 @@ root.Canvas = class Canvas extends root.View
     if floor isnt frame.mapLevel
       @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
         @_map.flyToBounds(bounds, animate: false)
+        @_map.fireEvent('zoomend')
       )
       @setFloorLayer(frame.mapLevel)
     else
       @_map.flyToBounds(bounds, animate: false)
+      @_map.fireEvent('zoomend')
     return
 
   changeLabelsVisibility: (areVisible) =>

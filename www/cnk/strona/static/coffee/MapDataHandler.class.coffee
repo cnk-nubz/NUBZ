@@ -9,6 +9,7 @@ root.MapDataHandler = class MapDataHandler
     @activeLabels = true
     @floorUrl = floorUrl
     @exhibits = {}
+    @exhibitsList = exhibits
     for e in exhibits
       @exhibits[e.id] = {
         frame: e.frame

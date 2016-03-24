@@ -69,7 +69,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     #update points in edge cases
     [topLeft, bottomRight] = [@_getTopLeft(exhibitPoints), @_getBottomRight(exhibitPoints)]
     [dx, dy] = @_getExhibitProtrusion(topLeft, bottomRight, maxX, maxY)
-    exhibitPoints = (new L.Point(p.x + dx, p.y + dy) for p in exhibitPoints)
+    exhibitPoints = (new L.Point(Math.min(maxX, p.x + dx), Math.min(maxY, p.y + dy)) for p in exhibitPoints)
     newGeoPoints = (@_map.unproject(p) for p in exhibitPoints)
     exhibit.setBounds(newGeoPoints)
     return newGeoPoints
