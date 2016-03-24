@@ -128,6 +128,10 @@ public class ExperimentData {
         dbHelper.setRaportFile(newId, path);
     }
 
+    public void addEventToCurrentRaportInBg(RaportEvent event) {
+        new Thread(() -> addEventToCurrentRaport(event)).run();
+    }
+
     public void addEventToCurrentRaport(RaportEvent event) {
         raportLock.lock();
         currentRaport.addEvent(event);

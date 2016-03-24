@@ -6,13 +6,13 @@ import com.cnk.communication.thrift.Frame;
 import com.cnk.database.realm.ExhibitRealm;
 
 public class Exhibit implements Realmable {
-    private Integer id;
+    private int id;
     private Integer x;
     private Integer y;
     private Integer width;
     private Integer height;
     private Integer floor;
-    private Integer color;
+    private int color;
     private String name;
 
     public Exhibit(ExhibitRealm er) {
@@ -27,13 +27,13 @@ public class Exhibit implements Realmable {
              );
     }
 
-    public Exhibit(Integer id,
+    public Exhibit(int id,
                    Integer x,
                    Integer y,
                    Integer width,
                    Integer height,
                    Integer floor,
-                   Integer color,
+                   int color,
                    String name) {
         this.id = id;
         this.x = x;
@@ -45,7 +45,7 @@ public class Exhibit implements Realmable {
         this.name = name;
     }
 
-    public Exhibit(Integer id, com.cnk.communication.thrift.Exhibit exhibitFromServer) {
+    public Exhibit(int id, com.cnk.communication.thrift.Exhibit exhibitFromServer) {
         this.id = id;
         name = exhibitFromServer.getName();
         if (exhibitFromServer.getMapFrame() != null) {
@@ -75,7 +75,7 @@ public class Exhibit implements Realmable {
         return er;
     }
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
@@ -99,7 +99,7 @@ public class Exhibit implements Realmable {
         return floor;
     }
 
-    public Integer getColor() {
+    public int getColor() {
         return color;
     }
 

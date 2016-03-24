@@ -53,13 +53,6 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,
                              Context context,
-                             Integer layout) {
-        this(options, singleAnswer, context, layout, new SelectViewItemIds());
-    }
-
-    public SelectListAdapter(List<T> options,
-                             Boolean singleAnswer,
-                             Context context,
                              Integer layout,
                              SelectViewItemIds viewIds) {
         this.options = options;

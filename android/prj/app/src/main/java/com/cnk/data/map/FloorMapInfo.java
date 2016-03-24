@@ -13,7 +13,6 @@ public class FloorMapInfo {
     public FloorMapInfo() {
         mapTilesSizes = new ArrayList<>();
         zoomLevelsResolutions = new ArrayList<>();
-        mapTilesSizes = new ArrayList<>();
     }
 
     public List<ZoomLevelResolution> getZoomLevelsResolutions() {

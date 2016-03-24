@@ -96,7 +96,7 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         }
     }
 
-    public List<Exhibit> getExhibitsOfFloor(Integer floor) {
+    public List<Exhibit> getExhibitsOfFloor(int floor) {
         return floorInfos.get(floor).getExhibitsList();
     }
 

@@ -143,7 +143,7 @@ public class DatabaseHelper {
         realm.copyToRealm(RealmFactory.getInstance().toRealmList(tilesInfos));
     }
 
-    public Integer getZoomLevelsCount(Integer floor) {
+    public int getZoomLevelsCount(Integer floor) {
         Value<Integer> res = new Value<>();
         inTransaction((realm) -> res.val =
                 (int) realm.where(ZoomLevelResolutionRealm.class).equalTo("floor", floor).count());
