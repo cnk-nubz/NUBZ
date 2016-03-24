@@ -18,6 +18,7 @@ struct CreateExhibitRequest {
     CreateExhibitRequest(const communication::CreateExhibitRequest &thrift);
 
     std::string name;
+    std::int32_t rgbHex;
     boost::optional<std::int32_t> floor;
     boost::optional<MapFrame> visibleFrame;
 };

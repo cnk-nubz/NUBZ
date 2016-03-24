@@ -23,6 +23,7 @@ public:
 
         std::int32_t ID;
         std::string name;
+        std::int32_t rgbHex;
         std::int32_t version;
         boost::optional<Frame> frame;
     };
@@ -49,11 +50,17 @@ public:
 
     // throws InvalidData in case of incorrect frame
     void setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame);
+    
+    void resetFrames(std::int32_t floor);
 
     void setVersion(std::int32_t ID, std::int32_t newVersion);
 
+    // throws InvalidData in case of incorrect rgb value
+    void setRgbHex(std::int32_t ID, std::int32_t newRgbHex);
+
 private:
     void checkFrame(const Exhibit::Frame &frame);
+    void checkRgbHex(std::int32_t rgbHex);
 
     db::DatabaseSession &session;
 };

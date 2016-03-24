@@ -96,12 +96,18 @@ public:
     // may throw InvalidData
     void insert(LazyExperiment *experiment);
 
+    // may throw InvalidData
+    void update(const LazyExperiment &experiment);
+
 private:
     enum State : std::int32_t { Ready = 0, Active = 1, Finished = 2 };
 
+    State getState(std::int32_t ID);
     std::vector<LazyExperiment> getAllWithState(State state);
 
-    void checkActions(const Experiments::LazyExperiment &experiment);
+    void checkExperiment(const LazyExperiment &experiment);
+
+    void checkActions(const LazyExperiment &experiment);
 
     // throws InvalidData in case of duplicated questions, incorrect id or invalid types order
     void checkSurvey(const LazyExperiment::Survey &survey);

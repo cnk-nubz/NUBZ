@@ -15,13 +15,11 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
         obj = jQuery(this)
         error = obj.parent().next()
         error.css("color", instance._data.utils.style.inputErrorColor)
-        regex = new RegExp(instance._data.utils.regex.input)
-        jQuery(this).keyup((e) -> instance._inputKeyUp(regex)(obj, e))
+        jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
       )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
-    regex = new RegExp(instance._data.utils.regex.dynamicInput)
-    lastInput.dynamicInputs(inputOffset, @_inputKeyUp(regex), instance)
+    lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
     return
 
   _prepareFilledDialog: (dialogBody) =>
@@ -42,32 +40,26 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       @_dialog.getButton('saveButtonDialog').hide()
     @
 
-  _inputKeyUp: (regex) =>
-      (obj, e) =>
-        error = obj.parent().next()
-        if not obj.val().match regex
-          if obj.val().length
-            @_showInputError(error, @_data.utils.text.inputError)
-          else
-            @_showInputError(error, @_data.utils.text.emptyInputError)
-        else
-          error.html("")
-        return
+  _inputKeyUp: (obj, e) =>
+    text = obj.val()
+    error = obj.parent().next()
+    if text.length is 0
+      @_showInputError(error, @_getEmptyInputError())
+    else
+      error.html("")
+    return
 
   _validateForm: =>
     isValid = true
     instance = this
     jQuery "#dialog input[type=text]:not(:last)"
       .each( ->
-        text = jQuery(this).val()
-        regex = new RegExp(instance._data.utils.regex.input)
-        if not text.match regex
+        obj = jQuery(this)
+        text = obj.val()
+        if text.length is 0
           isValid = false
-          error = jQuery(this).parent().next()
-          if text.length
-            instance._showInputError(error, instance._data.utils.text.inputError)
-          else
-            instance._showInputError(error, instance._data.utils.text.emptyInputError)
+          error = obj.parent().next()
+          instance._showInputError(error, instance._data.utils.text.emptyInputError)
       )
     #check if there is any answer given
     group = jQuery("#dialog .form-group").filter(":last")

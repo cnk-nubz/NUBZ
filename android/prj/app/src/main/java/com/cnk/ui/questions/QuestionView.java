@@ -2,6 +2,8 @@ package com.cnk.ui.questions;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Typeface;
+import android.view.Gravity;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -9,7 +11,12 @@ import com.cnk.R;
 
 public abstract class QuestionView extends RelativeLayout {
     private static final float NAME_SIZE = 40.0f;
-    private static final Integer QUESTION_COLOR = Color.RED;
+    private static final Typeface QUESTION_TYPEFACE = Typeface.SERIF;
+    private static final Integer QUESTION_COLOR = 0xFF3A70FF;
+    private static final float QUESTION_SHADOW_RANGE = 5f;
+    private static final float QUESTION_SHADOW_DX = 3f;
+    private static final float QUESTION_SHADOW_DY = 3f;
+    private static final Integer QUESTION_SHADOW_COLOR = Color.LTGRAY;
 
     public QuestionView(Context context) {
         super(context, null);
@@ -37,10 +44,15 @@ public abstract class QuestionView extends RelativeLayout {
         params.addRule(RelativeLayout.CENTER_HORIZONTAL);
         nameLabel.setText(name);
         nameLabel.setTextSize(NAME_SIZE);
+        nameLabel.setTypeface(QUESTION_TYPEFACE);
         nameLabel.setTextColor(QUESTION_COLOR);
+        nameLabel.setShadowLayer(QUESTION_SHADOW_RANGE,
+                                 QUESTION_SHADOW_DX,
+                                 QUESTION_SHADOW_DY,
+                                 QUESTION_SHADOW_COLOR);
+        nameLabel.setGravity(Gravity.CENTER_HORIZONTAL);
         nameLabel.setLayoutParams(params);
         nameLabel.setId(R.id.questionNameLabelId);
         this.addView(nameLabel);
     }
-
 }

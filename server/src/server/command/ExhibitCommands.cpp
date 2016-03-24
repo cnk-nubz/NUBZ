@@ -3,7 +3,7 @@
 #include <repository/Counters.h>
 
 #include <server/io/InvalidInput.h>
-#include <server/utils/InputChecker.h>
+#include <server/utils/CmpUTF8.h>
 
 #include "ExhibitCommands.h"
 
@@ -14,12 +14,9 @@ ExhibitCommands::ExhibitCommands(db::Database &db) : db(db) {
 }
 
 Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
-    if (!server::utils::checkText(input.name)) {
-        throw io::InvalidInput{"name contains invalid characters"};
-    }
-
     auto exhibit = repository::Exhibit{};
     exhibit.name = input.name;
+    exhibit.rgbHex = input.rgbHex;
     exhibit.frame = createFrame(input.floor, input.visibleFrame);
 
     db.execute([&](db::DatabaseSession &session) {
@@ -39,7 +36,7 @@ std::vector<Exhibit> ExhibitCommands::getAll() {
         [](db::DatabaseSession &session) { return repository::Exhibits{session}.getAll(); });
 
     std::sort(repoExhibits.begin(), repoExhibits.end(), [](const auto &lhs, const auto &rhs) {
-        return lhs.name < rhs.name;
+        return utils::cmpUTF8(lhs.name, rhs.name);
     });
     return std::vector<Exhibit>{repoExhibits.begin(), repoExhibits.end()};
 }
@@ -96,8 +93,15 @@ Exhibit ExhibitCommands::update(const UpdateExhibitRequest &input) {
         auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
 
         auto repo = repository::Exhibits{session};
-        repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
+        auto oldExhibit = repo.getF(input.exhibitId);
+
         repo.setVersion(input.exhibitId, version);
+        repo.setRgbHex(input.exhibitId, input.rgbHex);
+        if (!input.floor || !oldExhibit.frame ||
+            input.floor.value() != oldExhibit.frame.value().floor) {
+            repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
+        }
+
         return repo.getF(input.exhibitId);
     });
     return Exhibit{repoExhibit};

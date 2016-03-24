@@ -36,6 +36,7 @@ public class SimpleQuestionView extends QuestionView {
                 params =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_IN_PARENT);
+        params.setMargins(50, 0, 50, 0);
         answerBox.setLayoutParams(params);
         if (type == SimpleQuestion.AnswerType.NUMBER) {
             answerBox.setInputType(InputType.TYPE_CLASS_NUMBER);

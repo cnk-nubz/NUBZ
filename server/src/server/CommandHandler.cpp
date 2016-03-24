@@ -166,6 +166,19 @@ void CommandHandler::createExperiment(const communication::CreateExperimentReque
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::updateExperiment(const int32_t experimentId,
+                                      const communication::CreateExperimentRequest &request) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId << " " << request;
+
+    withExceptionTranslation([&]() {
+        auto input = io::input::CreateExperimentRequest{request};
+        command::ExperimentCommands{db}.update(experimentId, input);
+    });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 void CommandHandler::getReadyExperiments(std::vector<communication::ExperimentInfo> &response) {
     LOG(INFO) << __func__ << " start";
 

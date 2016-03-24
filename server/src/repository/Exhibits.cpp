@@ -85,8 +85,25 @@ void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     if (exhibit->frame) {
         checkFrame(exhibit->frame.value());
     }
+    checkRgbHex(exhibit->rgbHex);
 
     exhibit->ID = Impl::insert(session, toDB(*exhibit));
+}
+
+void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
+    if (!get(ID)) {
+        throw InvalidData{"incorrect exhibit ID"};
+    }
+    checkRgbHex(newRgbHex);
+
+    auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
+    session.execute(sql);
+}
+
+void Exhibits::checkRgbHex(std::int32_t rgbHex) {
+    if ((rgbHex & 0x00FFFFFF) != rgbHex) {
+        throw InvalidData{"incorrect rgbHex value"};
+    }
 }
 
 void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
@@ -128,6 +145,18 @@ void Exhibits::checkFrame(const Exhibit::Frame &frame) {
     }
 }
 
+void Exhibits::resetFrames(std::int32_t floor) {
+    using namespace db::sql;
+    auto sql = Table::Sql::update()
+                   .where(Table::FrameFloor == floor)
+                   .set(Table::FrameX, Null)
+                   .set(Table::FrameY, Null)
+                   .set(Table::FrameWidth, Null)
+                   .set(Table::FrameHeight, Null)
+                   .set(Table::FrameFloor, Null);
+    session.execute(sql);
+}
+
 namespace {
 OptFrame::OptFrame(const boost::optional<Exhibits::Exhibit::Frame> &optFrame) {
     if (optFrame) {
@@ -145,6 +174,7 @@ Table::Sql::in_t toDB(const Exhibits::Exhibit &exhibit) {
 
     return std::make_tuple(Table::FieldName{exhibit.name},
                            Table::FieldVersion{exhibit.version},
+                           Table::FieldRgbHex{exhibit.rgbHex},
                            Table::FieldFrameX{frame.x},
                            Table::FieldFrameY{frame.y},
                            Table::FieldFrameWidth{frame.width},
@@ -157,6 +187,7 @@ Exhibits::Exhibit fromDB(const Table::Sql::out_t &exhibit) {
     result.ID = std::get<Table::FieldID>(exhibit).value;
     result.name = std::get<Table::FieldName>(exhibit).value;
     result.version = std::get<Table::FieldVersion>(exhibit).value;
+    result.rgbHex = std::get<Table::FieldRgbHex>(exhibit).value;
 
     auto x = std::get<Table::FieldFrameX>(exhibit).value;
     auto y = std::get<Table::FieldFrameY>(exhibit).value;
