@@ -17,7 +17,7 @@ struct UpdateExhibitRequest {
     UpdateExhibitRequest(const communication::UpdateExhibitRequest &thrift);
 
     std::int32_t exhibitId;
-
+    std::int32_t rgbHex;
     boost::optional<MapFrame> visibleFrame;
     boost::optional<std::int32_t> floor;
 };

@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include <server/io/InvalidInput.h>
+#include <server/utils/CmpUTF8.h>
 
 #include "ExperimentCommands.h"
 
@@ -11,17 +12,21 @@ ExperimentCommands::ExperimentCommands(db::Database &db) : db(db) {
 }
 
 void ExperimentCommands::create(const CreateExperimentRequest &input) {
-    auto lazyExperiment = repository::Experiments::LazyExperiment{};
-    lazyExperiment.name = input.name;
-    lazyExperiment.actions = input.actions;
-    lazyExperiment.breakActions = input.breakActions;
-    lazyExperiment.surveyBefore = toRepoSurvey(input.surveyBefore);
-    lazyExperiment.surveyAfter = toRepoSurvey(input.surveyAfter);
-
+    auto lazyExperiment = toRepo(input);
     db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Experiments{session};
         repo.insert(&lazyExperiment);
     });
+}
+
+void ExperimentCommands::update(std::int32_t ID, const CreateExperimentRequest &input) {
+    auto lazyExperiment = toRepo(input);
+    lazyExperiment.ID = ID;
+    db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::Experiments{session};
+        repo.update(lazyExperiment);
+    });
+    
 }
 
 void ExperimentCommands::finish() {
@@ -47,7 +52,7 @@ std::vector<ExperimentInfo> ExperimentCommands::getAllReady() {
     });
 
     std::sort(repoExperiments.begin(), repoExperiments.end(), [](const auto &lhs, const auto &rhs) {
-        return lhs.name < rhs.name;
+        return utils::cmpUTF8(lhs.name, rhs.name);
     });
     return std::vector<ExperimentInfo>(repoExperiments.begin(), repoExperiments.end());
 }
@@ -89,8 +94,19 @@ CurrentExperimentResponse ExperimentCommands::getCurrent() {
     return result;
 }
 
+repository::Experiments::LazyExperiment ExperimentCommands::toRepo(
+    const CreateExperimentRequest &request) const {
+    auto res = repository::Experiments::LazyExperiment{};
+    res.name = request.name;
+    res.actions = request.actions;
+    res.breakActions = request.breakActions;
+    res.surveyBefore = toRepoSurvey(request.surveyBefore);
+    res.surveyAfter = toRepoSurvey(request.surveyAfter);
+    return res;
+}
+
 repository::Experiments::LazyExperiment::Survey ExperimentCommands::toRepoSurvey(
-    const QuestionsIdsList &qList) {
+    const QuestionsIdsList &qList) const {
     auto res = repository::Experiments::LazyExperiment::Survey{};
     res.simpleQuestions = qList.simpleQuestions;
     res.multipleChoiceQuestions = qList.multipleChoiceQuestions;

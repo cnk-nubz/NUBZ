@@ -9,15 +9,10 @@
 DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
-            "inputError": "Napis może zawierać tylko angielski alfabet oraz spacje.",
             "emptyInputError": "Napis nie może być pusty",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
-        },
-        "regex": {
-            "input": "^[a-zA-Z\ ]+$",
-            "dynamicInput": "^[a-zA-Z\ ]*$"
         },
         "style": {
             "inputErrorColor": "#D8000C",
@@ -50,7 +45,8 @@ SIMPLE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowego pytania",
+            "titleNew": "Tworzenie pytania otwartego",
+            "title": "Pytanie otwarte"
         },
     }
 }
@@ -86,7 +82,8 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania zamkniętego",
+            "titleNew": "Tworzenie pytania zamkniętego",
+            "title": "Pytanie zamknięte"
         },
         "default": {
             "radioGroup": "ansType",
@@ -118,7 +115,8 @@ SORT_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania z sortowaniem",
+            "titleNew": "Tworzenie pytania z sortowaniem",
+            "title": "Pytanie z sortowaniem"
         },
         "default": {
             "labelSize": "3"
@@ -137,16 +135,56 @@ NEW_ACTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowej akcji",
+            "titleNew": "Tworzenie nowej akcji",
+            "title": "Akcja"
         }
     }
 }
+
+EXHIBIT_DIALOG = {
+    "data": [
+        [
+            "dialog/input.html", {
+                "placeholder": "Nazwa eksponatu",
+                "labelText": "Nazwa",
+            }
+        ],
+        [
+            "dialog/radios.html", {
+                "radioGroup": "floorNum",
+                "labelText": "Piętro",
+                "radioSize": "2",
+                "textList": ["0", "1", "brak"]
+            }
+        ],
+        [
+            "dialog/popoverButton.html", {
+                "labelText": "Kolor",
+                "popoverTitle": "Wybierz kolor",
+                "popoverPlacement": "right",
+                "popoverText": "",
+            }
+        ]
+    ],
+    "utils": {
+        "text": {
+            "title": "Tworzenie eksponatu",
+            "editTitle": "Edycja eksponatu",
+        },
+    }
+}
+
+POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
+'#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
+'#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',
+'#175879', '#578826', '#C79403', '#D27F15', '#AE1A15', '#3C0B49']
 
 to_merge_with_defaults = [
     SIMPLE_QUESTION_DIALOG,
     MULTIPLE_CHOICE_QUESTION_DIALOG,
     SORT_QUESTION_DIALOG,
-    NEW_ACTION_DIALOG
+    NEW_ACTION_DIALOG,
+    EXHIBIT_DIALOG
 ]
 
 def merge_dicts(a, b, path=None):

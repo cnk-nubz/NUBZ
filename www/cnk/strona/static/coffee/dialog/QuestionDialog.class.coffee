@@ -7,7 +7,7 @@ root.QuestionDialog = class QuestionDialog
       @_dialogHTML = data.html
       @_dialog = new BootstrapDialog(
         message: data.html
-        title: data.data.utils.text.title
+        title: data.data.utils.text.titleNew
         closable: false
         buttons: [@_closeButton(), @_saveButton()]
       )
@@ -26,9 +26,9 @@ root.QuestionDialog = class QuestionDialog
   show: =>
     @_dialog.open()
 
-  _prepareDialog: (dialog) =>
+  _prepareDialog: (dialogBody) =>
     instance = this
-    jQuery("input[type=text]", dialog).blur( ->
+    jQuery("input[type=text]", dialogBody).blur( ->
         obj = jQuery(this)
         error = obj.parent().next()
         obj.val(jQuery.trim(obj.val()))
@@ -66,13 +66,11 @@ root.QuestionDialog = class QuestionDialog
     instance = this
     jQuery "#dialog input[type=text]"
       .each( ->
-        text = jQuery(this).val()
-        regex = new RegExp(instance._data.utils.regex.input)
-        if not text.match regex
+        obj = jQuery(this)
+        text = obj.val()
+        if text.length is 0
           isValid = false
-          if text.length
-            instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.inputError)
-          else
-            instance._showInputError(jQuery(this).parent().next(), instance._data.utils.text.emptyInputError)
+          error = obj.parent().next()
+          instance._showInputError(error, instance._data.utils.text.emptyInputError)
       )
     isValid

@@ -6,6 +6,7 @@
 #include <utils/log.h>
 
 #include <repository/Counters.h>
+#include <repository/Exhibits.h>
 #include <repository/MapImages.h>
 
 #include <server/io/InvalidInput.h>
@@ -97,6 +98,8 @@ MapImage MapCommands::set(const SetMapImageRequest &input) {
 
 void MapCommands::removeOldData(std::int32_t floor) {
     boost::optional<repository::MapImage> mapImage = db.execute([&](db::DatabaseSession &session) {
+        repository::Exhibits{session}.resetFrames(floor);
+        
         auto repo = repository::MapImages{session};
         auto mapImage = repo.get(floor);
         if (mapImage) {

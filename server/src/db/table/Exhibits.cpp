@@ -8,6 +8,7 @@ const std::string Exhibits::tableName = "exhibits";
 const std::string Exhibits::FieldID::columnName = "id";
 const std::string Exhibits::FieldName::columnName = "name";
 const std::string Exhibits::FieldVersion::columnName = "version";
+const std::string Exhibits::FieldRgbHex::columnName = "rgb_hex";
 
 const std::string Exhibits::FieldFrameX::columnName = "map_frame_x";
 const std::string Exhibits::FieldFrameY::columnName = "map_frame_y";

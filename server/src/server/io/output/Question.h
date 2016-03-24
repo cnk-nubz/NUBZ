@@ -3,7 +3,8 @@
 
 #include <cstdint>
 #include <string>
-#include <tuple>
+
+#include <server/utils/CmpUTF8.h>
 
 #include <communication/structs_types.h>
 
@@ -16,20 +17,9 @@ struct Question {
     std::string name;
     std::string question;
 
-#define CMP_OP(op)                                              \
-    bool operator op(const Question &rhs) const {               \
-        return std::make_tuple(name, question, ID)              \
-            op std::make_tuple(rhs.name, rhs.question, rhs.ID); \
+    bool operator<(const Question &that) const {
+        return utils::cmpUTF8(name, that.name);
     }
-
-    CMP_OP(<)
-    CMP_OP(>)
-    CMP_OP(<=)
-    CMP_OP(>=)
-    CMP_OP(==)
-    CMP_OP(!=)
-
-#undef CMP_OP
 };
 }
 }

@@ -1,6 +1,5 @@
 package com.cnk.data.map;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -13,8 +12,6 @@ import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.Version;
 import com.cnk.exceptions.DatabaseLoadException;
-import com.cnk.notificators.Observable;
-import com.cnk.notificators.Observer;
 import com.cnk.utilities.Consts;
 
 import java.io.FileNotFoundException;
@@ -22,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 public class MapData {
     private static final String LOG_TAG = "MapData";

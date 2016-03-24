@@ -7,10 +7,9 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -39,10 +38,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private int currentQuestionNo;
     private TextView counterLabel;
     private RelativeLayout mainView;
+    private LinearLayout goPrev;
+    private LinearLayout goNext;
+    private TextView nextText;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
-    private MenuItem nextItem;
-    private MenuItem prevItem;
     private ProgressDialog spinner;
     private Survey.SurveyType type;
 
@@ -51,6 +51,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
+        goPrev = (LinearLayout) findViewById(R.id.goPrev);
+        goPrev.setOnClickListener(new NavigateSurvey());
+        goNext = (LinearLayout) findViewById(R.id.goNext);
+        goNext.setOnClickListener(new NavigateSurvey());
+        nextText = (TextView) findViewById(R.id.nextText);
         questionViews = new ArrayList<>();
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
@@ -144,39 +149,31 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.survey_activity_menu, menu);
-        prevItem = menu.getItem(0);
-        nextItem = menu.getItem(1);
-        prevItem.setEnabled(false);
-        return true;
-    }
+    private class NavigateSurvey implements View.OnClickListener {
 
-    @Override
-    public boolean onOptionsItemSelected(final MenuItem item) {
-        hideKeyboard();
-        currentQuestionView.saveAnswer();
-        if (item.getItemId() == R.id.action_prev_question) {
-            nextItem.setTitle(R.string.next);
-            if (currentQuestionNo - 1 <= 0) {
-                prevItem.setEnabled(false);
-            }
-            showView(currentQuestionNo - 1);
-        } else if (item.getItemId() == R.id.action_next_question) {
-            prevItem.setEnabled(true);
-            if (currentQuestionNo >= allQuestionsCount - 1) {
-                showDialog();
-            } else {
-                if (currentQuestionNo == allQuestionsCount - 2) {
-                    nextItem.setTitle(R.string.finish);
+        @Override
+        public void onClick(View view) {
+            hideKeyboard();
+            currentQuestionView.saveAnswer();
+            if (view.getId() == goPrev.getId()) {
+                nextText.setText(R.string.next);
+                if (currentQuestionNo - 1 <= 0) {
+                    goPrev.setVisibility(View.INVISIBLE);
                 }
-                showView(currentQuestionNo + 1);
+                showView(currentQuestionNo - 1);
+            } else if (view.getId() == goNext.getId()) {
+                goPrev.setVisibility(View.VISIBLE);
+                if (currentQuestionNo >= allQuestionsCount - 1) {
+                    showDialog();
+                } else {
+                    if (currentQuestionNo == allQuestionsCount - 2) {
+                        nextText.setText(R.string.finish);
+                    }
+                    showView(currentQuestionNo + 1);
+                }
             }
-
+            view.setEnabled(true);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     private void showDialog() {

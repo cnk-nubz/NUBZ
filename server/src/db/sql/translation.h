@@ -2,12 +2,15 @@
 #define DB_SQL__TRANSLATION__H
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <unordered_set>
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+
+#include <libpq-fe.h>
 
 namespace db {
 namespace sql {
@@ -46,7 +49,9 @@ struct sql_val_cast<std::string> {
     }
 
     static std::string to(const std::string &raw) {
-        return "'" + raw + "'";
+        auto buf = std::make_unique<char[]>(raw.size() * 3);
+        PQescapeString(buf.get(), raw.c_str(), raw.size());
+        return "'" + std::string{buf.get()} + "'";
     }
 };
 

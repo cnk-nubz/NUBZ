@@ -46,16 +46,15 @@ void Experiments::start(std::int32_t ID) {
     if (getActive()) {
         throw InvalidData{"you can only have one active experiment"};
     }
+    if (getState(ID) != State::Ready) {
+        throw InvalidData{"you can only start ready experiments"};
+    }
 
     auto sql = Table::Sql::update()
-                   .where(Table::ID == ID && Table::State == State::Ready)
+                   .where(Table::ID == ID)
                    .set(Table::State, State::Active)
                    .set(Table::StartDate, boost::gregorian::day_clock::local_day());
     session.execute(sql);
-
-    if (!getActive()) {
-        throw InvalidData{"there is no ready experiment with given id"};
-    }
 }
 
 void Experiments::finishActive() {
@@ -104,13 +103,40 @@ std::vector<Experiments::LazyExperiment> Experiments::getAllWithState(State stat
 }
 
 void Experiments::insert(Experiments::LazyExperiment *experiment) {
-    checkActions(*experiment);
-    checkSurvey(experiment->surveyBefore);
-    checkSurvey(experiment->surveyAfter);
+    checkExperiment(*experiment);
 
     experiment->startDate = boost::none;
     experiment->finishDate = boost::none;
     experiment->ID = Impl::insert(session, toDB(*experiment, State::Ready));
+}
+
+void Experiments::update(const Experiments::LazyExperiment &experiment) {
+    if (!get(experiment.ID)) {
+        throw InvalidData{"there is no ready experiment with given id"};
+    }
+    if (getState(experiment.ID) != State::Ready) {
+        throw InvalidData{"you can only update ready experiments"};
+    }
+    checkExperiment(experiment);
+
+    auto dbContent = std::get<Table::FieldContent>(toDB(experiment, State::Ready)).value;
+    auto sql = Table::Sql::update()
+                   .where(Table::ID == experiment.ID)
+                   .set(Table::Name, experiment.name)
+                   .set(Table::Content, dbContent);
+    session.execute(sql);
+}
+
+Experiments::State Experiments::getState(std::int32_t ID) {
+    auto sql = db::sql::Select<Table::FieldID, Table::FieldState>{}.where(Table::ID == ID);
+    auto stateNum = std::get<Table::FieldState>(session.getResult(sql).value()).value;
+    return static_cast<State>(stateNum);
+}
+
+void Experiments::checkExperiment(const LazyExperiment &experiment) {
+    checkActions(experiment);
+    checkSurvey(experiment.surveyBefore);
+    checkSurvey(experiment.surveyAfter);
 }
 
 void Experiments::checkActions(const Experiments::LazyExperiment &experiment) {

@@ -28,6 +28,7 @@ public:
     ExperimentCommands(db::Database &db);
 
     void create(const CreateExperimentRequest &input);
+    void update(std::int32_t ID, const CreateExperimentRequest &input);
 
     void finish();
     void start(std::int32_t ID);
@@ -42,7 +43,9 @@ public:
     CurrentExperimentResponse getCurrent();
 
 private:
-    repository::Experiments::LazyExperiment::Survey toRepoSurvey(const QuestionsIdsList &qList);
+    repository::Experiments::LazyExperiment toRepo(const CreateExperimentRequest &request) const;
+    repository::Experiments::LazyExperiment::Survey toRepoSurvey(
+        const QuestionsIdsList &qList) const;
 
     db::Database &db;
 };

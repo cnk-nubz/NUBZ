@@ -41,6 +41,8 @@ public:
 
     virtual void getCurrentExperiment(communication::CurrentExperimentResponse &response) override;
     virtual void createExperiment(const communication::CreateExperimentRequest &request) override;
+    virtual void updateExperiment(const int32_t experimentId,
+                                  const communication::CreateExperimentRequest &request) override;
     virtual void getReadyExperiments(std::vector<communication::ExperimentInfo> &response) override;
     virtual void getFinishedExperiments(
         std::vector<communication::ExperimentInfo> &response) override;

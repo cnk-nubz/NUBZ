@@ -1,16 +1,22 @@
 root = exports ? this
 class Handlers
   constructor: (@canvas) ->
+    @mapData = new MapDataHandler()
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
       groundFloor: "#changeFloor button:first-child"
       firstFloor: "#changeFloor button:last-child"
       labels: "#showLabels button"
-    jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
     jQuery(@button.minusZoom).prop "disabled", true
+    if @mapData.floorTilesInfo[0].length is 0 and @mapData.floorTilesInfo[1].length is 0
+      jQuery(@button.plusZoom).prop "disabled", true
     @_setButtonHandlers()
     @_setEvents()
+    if @mapData.activeFloor is 0
+      jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
+    else
+      jQuery("#{@button.labels}, #{@button.firstFloor}").addClass "active"
 
   _setButtonHandlers: =>
     jQuery(@button.minusZoom).on('click', @zoomOutHandler())

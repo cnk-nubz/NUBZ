@@ -82,9 +82,9 @@
         setTimeout(showError, 1000)
       root.questionsList = {{questionsList|jsvar}}
       root.actionsList = {{actionsList|jsvar}}
-      root.inputRegex = new RegExp("{{inputRegex}}")
       root.experimentData = {{experimentData|jsvar}}
       root.isExperimentReadonly = {{readonly|jsvar}}
+
       root.HTML =
         chooseQuestionRow: '{{chooseQuestionRow}}'
         experimentQuestionRow: '{{experimentQuestionRow}}'
@@ -100,7 +100,7 @@
     <div class="experimentTitle">
       <div class="input-group input-group-lg">
         <span class="input-group-addon">Nazwa</span>
-        <input class="form-control" type="text" data-toggle="tooltip" data-placement="bottom" title="Nazwa musi się składać z alfabetu angielskiego oraz spacji" />
+        <input class="form-control" type="text" data-toggle="tooltip" data-placement="bottom" title="Nazwa nie może być pusta" />
       </div>
     </div>
 

@@ -2,6 +2,7 @@ package com.cnk.communication.task;
 
 import android.util.Log;
 
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.CurrentExperimentResponse;
 import com.cnk.communication.thrift.QuestionType;
 import com.cnk.communication.thrift.QuestionsList;
@@ -15,7 +16,6 @@ import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestionOption;
 import com.cnk.data.experiment.survey.questions.SimpleQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestionOption;
-import com.cnk.notificators.Notificator;
 
 import org.apache.thrift.TException;
 
@@ -30,8 +30,10 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private static final String LOG_TAG = "ExperimentDownloadTask";
     private ExperimentData.ExperimentUpdateAction action;
 
-    public ExperimentDataDownloadTask(Notificator notificator, ExperimentData.ExperimentUpdateAction action) {
-        super(notificator);
+    public ExperimentDataDownloadTask(NetworkHandler.FinishAction failure,
+                                      NetworkHandler.FinishAction success,
+                                      ExperimentData.ExperimentUpdateAction action) {
+        super(failure, success);
         this.action = action;
     }
 
