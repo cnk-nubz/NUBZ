@@ -25,6 +25,7 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.database.models.Exhibit;
 import com.cnk.notificators.Observer;
+import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +74,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void prepareMapContainer(@NonNull RelativeLayout parentLayout) {
         List<Exhibit> exhibits = new ArrayList<>();
-        exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(0));
-        exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(1));
+        for (int i = 0; i < Consts.FLOOR_COUNT; i++) {
+            exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(i));
+        }
         mapContainer = new MapContainer(MapActivity.this, parentLayout);
         mapContainer.updateExhibits(exhibits);
     }
@@ -179,7 +181,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         if (drawerToggle.onOptionsItemSelected(item)) {
             return true;
         } else if (item.getItemId() == R.id.action_next_floor) {
-            setFloor((currentFloor + 1) % 2);
+            setFloor((currentFloor + 1) % Consts.FLOOR_COUNT);
         }
         return super.onOptionsItemSelected(item);
     }

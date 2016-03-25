@@ -206,7 +206,7 @@ public class MapContainer extends Observable<MapContainer.ExhibitClickListener> 
 
     private void addExhibits(@NonNull MapView mapView) {
         for (Exhibit e : exhibits.values()) {
-            if (e.getFloor() == null || e.getFloor().intValue() != mapView.floor) {
+            if (e.getFloor() == null || e.getFloor() != mapView.floor) {
                 continue;
             }
 
