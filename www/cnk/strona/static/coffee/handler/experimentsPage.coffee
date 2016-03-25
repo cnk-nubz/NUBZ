@@ -32,6 +32,7 @@ class Handler
         )
 
       if @_activeExperiment?
+        jQuery("td:last-child", element).addClass("nonclickable noselect")
         jQuery("td:last-child > div", element).tooltip()
       else
         element.querySelector("td:last-child > div")
@@ -65,6 +66,7 @@ class Handler
   _setActiveExperimentHandlers: =>
     if not @_activeExperiment?
       return
+    jQuery("td:not(:first-child) > div").addClass("noselect")
     activeExperimentRow = document.querySelector('#activeExperiment tr')
     activeExperimentId = @_activeExperiment.experimentId
     activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)").addEventListener("click", ->

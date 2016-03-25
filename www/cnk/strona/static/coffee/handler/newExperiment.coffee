@@ -67,11 +67,12 @@ class Handlers
         .addEventListener("click", ->
           dataList.showDialog(viewId, true)
         )
-      element.querySelector("td:last-child")
-        .addEventListener("click", ->
-          contextList.removeElement(viewId)
-          jQuery(this).parents("tr").remove()
-        )
+      if not @_isExperimentReadonly
+        element.querySelector("td:last-child")
+          .addEventListener("click", ->
+            contextList.removeElement(viewId)
+            jQuery(this).parents("tr").remove()
+          )
     )
     elementsDOM
 
