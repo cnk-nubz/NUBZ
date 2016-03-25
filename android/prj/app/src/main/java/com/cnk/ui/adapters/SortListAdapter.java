@@ -16,12 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class SortListAdapter<T extends ListObject> extends BaseAdapter {
-    private static final Integer DEFAULT_LAYOUT = R.layout.sort_list_item_default;
-    SortViewItemIds viewIds;
-    private List<T> options;
-    private Context context;
-    private Integer layout;
-
     private class DownClickListener implements ImageButton.OnClickListener {
         private Integer idx;
 
@@ -51,6 +45,11 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
             notifyDataSetChanged();
         }
     }
+    private static final Integer DEFAULT_LAYOUT = R.layout.sort_list_item_default;
+    SortViewItemIds viewIds;
+    private List<T> options;
+    private Context context;
+    private Integer layout;
 
     public SortListAdapter(List<T> options, Context context) {
         this(options, context, DEFAULT_LAYOUT, new SortViewItemIds());

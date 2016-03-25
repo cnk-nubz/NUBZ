@@ -1,14 +1,14 @@
-package com.cnk.data.experiment.raport;
+package com.cnk.data.raports;
 
 import java.io.Serializable;
 import java.util.List;
 
 public class RaportEvent implements Serializable {
     private Integer exhibitId;
-    private Integer durationSeconds;
+    private int durationSeconds;
     private List<Integer> actions;
 
-    public RaportEvent(Integer exhibitId, Integer durationSeconds, List<Integer> actions) {
+    public RaportEvent(Integer exhibitId, int durationSeconds, List<Integer> actions) {
         this.exhibitId = exhibitId;
         this.durationSeconds = durationSeconds;
         this.actions = actions;
@@ -18,7 +18,7 @@ public class RaportEvent implements Serializable {
         return exhibitId;
     }
 
-    public Integer getDurationSeconds() {
+    public int getDurationSeconds() {
         return durationSeconds;
     }
 

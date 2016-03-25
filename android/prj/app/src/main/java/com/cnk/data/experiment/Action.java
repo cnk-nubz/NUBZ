@@ -4,16 +4,16 @@ import com.cnk.data.ListObject;
 
 public class Action implements ListObject {
 
-    private Integer id;
+    private int id;
     private String text;
 
-    public Action(Integer id, String text) {
+    public Action(int id, String text) {
         this.id = id;
         this.text = text;
     }
 
     @Override
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 

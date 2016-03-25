@@ -13,7 +13,7 @@ public class SortQuestionAnswer implements Serializable {
     public void setAnswer(List<Integer> answer) {
         this.answer = answer;
         if (answer.size() == 0) {
-            answer = null;
+            this.answer = null;
         }
     }
 
