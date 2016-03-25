@@ -141,7 +141,7 @@ struct SimpleQuestion {
 }
 
 struct SimpleQuestionAnswer {
-	1: optional string answer,
+	1: string answer,
 }
 
 // name is optional, null means name == question
@@ -170,7 +170,7 @@ struct MultipleChoiceQuestion {
 }
 
 struct MultipleChoiceQuestionAnswer {
-	1: optional list<i32> choosenOptions,
+	1: list<i32> choosenOptions,
 }
 
 // name is optional, null means name == question
@@ -199,7 +199,7 @@ struct SortQuestion {
 }
 
 struct SortQuestionAnswer {
-	1: optional list<i32> choosenOrder,
+	1: list<i32> choosenOrder,
 }
 
 // name is optional, null means name == question
