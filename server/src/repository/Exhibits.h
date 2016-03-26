@@ -50,8 +50,8 @@ public:
 
     // throws InvalidData in case of incorrect frame
     void setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame);
-    
-    void resetFrames(std::int32_t floor);
+
+    void resetFrames(std::int32_t floor, std::int32_t newVersion);
 
     void setVersion(std::int32_t ID, std::int32_t newVersion);
 
