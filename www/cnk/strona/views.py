@@ -398,12 +398,11 @@ def _newExperimentReadonlyPage(request):
     experimentId = request.GET.get("id")
     result = {
         'success': True,
-        'readonly': True,
-        'experimentActionRow': render_to_string('list/row/experimentActionRow.html'),
-        'experimentQuestionRow': render_to_string('list/row/experimentQuestionRow.html'),
+        'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
+        'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
         'experimentData': _getExperiment(experimentId),
         'tableList': render_to_string('list/dataList.html')}
-    template = loader.get_template('newExperimentReadonlyPage.html')
+    template = loader.get_template('readonlyExperiment.html')
     return HttpResponse(template.render(RequestContext(request, result)))
 
 
@@ -415,7 +414,6 @@ def newExperimentPage(request):
             return _newExperimentReadonlyPage(request)
         result = {
             'success': True,
-            'readonly': False,
             'experimentData': _getExperiment(experimentId) if experimentId else None,
             'questionsList': _parseQuestions(
                 thriftCommunicator.getAllQuestions()),

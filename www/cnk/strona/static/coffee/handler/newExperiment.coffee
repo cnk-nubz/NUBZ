@@ -67,12 +67,11 @@ class Handlers
         .addEventListener("click", ->
           dataList.showDialog(viewId, true)
         )
-      if not @_isExperimentReadonly
-        element.querySelector("td:last-child")
-          .addEventListener("click", ->
-            contextList.removeElement(viewId)
-            jQuery(this).parents("tr").remove()
-          )
+      element.querySelector("td:last-child")
+        .addEventListener("click", ->
+          contextList.removeElement(viewId)
+          jQuery(this).parents("tr").remove()
+        )
     )
     elementsDOM
 
@@ -164,13 +163,12 @@ class Handlers
     return
 
   _setDefaultState: =>
-    if not @_isExperimentReadonly
-      @_questionsList.show()
-      jQuery(@_DOM.chooseListTitle).text("Pytania")
-      jQuery(@_DOM.questionButton).addClass("active")
-      jQuery(@_DOM.addElementToList).click( => @_addNewQuestion())
     if @_experimentData?
       jQuery(@_DOM.experimentTitle).val(@_experimentData.name)
+    @_questionsList.show()
+    jQuery(@_DOM.chooseListTitle).text("Pytania")
+    jQuery(@_DOM.questionButton).addClass("active")
+    jQuery(@_DOM.addElementToList).click( => @_addNewQuestion())
     @_questionsBeforeList.show()
     @_questionsAfterList.show()
     @_exhibitActionsList.show()
@@ -334,5 +332,5 @@ class Handlers
     )
 
 jQuery(document).ready( ->
-  new Handlers(root.questionsList, root.actionsList, root.experimentData, root.isExperimentReadonly)
+  new Handlers(root.questionsList, root.actionsList, root.experimentData)
 )
