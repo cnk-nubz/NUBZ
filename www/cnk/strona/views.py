@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import logging
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -468,5 +469,6 @@ def createExperiment(request):
 
 def reportError(request):
     data = json.loads(request.POST.get("jsonData"))
-    print("ERROR: " + data['url'] + " in " +  str(data['lineNumber']) + ", " + data['errorMsg'])
+    logger = logging.getLogger('jsLogger')
+    logger.error(": " + data['url'] + " in " +  str(data['lineNumber']) + ", " + data['errorMsg'])
     return JsonResponse({'a': 'a'})

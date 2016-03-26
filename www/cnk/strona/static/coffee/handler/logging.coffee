@@ -1,8 +1,7 @@
 root = exports ? this
-class Logging
-  constructor: () ->
-  logError: (errorMsg, url, lineNumber) =>
-    instance = this
+window.onerror = do ->
+  timeoutId = 0
+  (errorMsg, url, lineNumber) ->
     toSend =
       jsonData:
         JSON.stringify(
@@ -10,14 +9,12 @@ class Logging
           lineNumber: lineNumber
           errorMsg: errorMsg
         )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      url: '/errorReporting/'
-      data: toSend
-      error: () ->
-        setTimeout ( -> instance.logError(errorMsg, url, lineNumber)), 1000
-    )
-
-logger = new Logging()
-window.onerror = logger.logError
+    clearTimeout timeoutId
+    timeoutId = setTimeout ( ->
+      jQuery.ajax(
+        type: 'POST'
+        dataType: 'json'
+        url: '/errorReporting/'
+        data: toSend
+        error: () -> window.onerror(errorMsg, url, lineNumber)
+      )), 1000
