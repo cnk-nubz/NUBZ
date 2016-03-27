@@ -7,7 +7,8 @@
 
 #include <db/Database.h>
 
-#include <repository/InvalidData.h>
+#include <repository/error/DuplicateName.h>
+#include <repository/error/InvalidData.h>
 
 #include <communication/Server.h>
 
@@ -43,6 +44,7 @@ public:
     virtual void createExperiment(const communication::CreateExperimentRequest &request) override;
     virtual void updateExperiment(const int32_t experimentId,
                                   const communication::CreateExperimentRequest &request) override;
+    virtual void cloneExperiment(const communication::CloneRequest &request) override;
     virtual void getReadyExperiments(std::vector<communication::ExperimentInfo> &response) override;
     virtual void getFinishedExperiments(
         std::vector<communication::ExperimentInfo> &response) override;
@@ -98,6 +100,10 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
         LOG(INFO) << "InvalidInput: " << e.what();
         LOG(INFO) << "Command aborted";
         throw communication::InvalidData{};
+    } catch (repository::DuplicateName &e) {
+        LOG(INFO) << "DuplicateName: " << e.what();
+        LOG(INFO) << "Command aborted";
+        throw communication::DuplicateName{};
     } catch (std::exception &e) {
         LOG(INFO) << "InternalError: " << e.what();
         LOG(INFO) << "Command aborted";

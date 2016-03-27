@@ -11,6 +11,9 @@ exception InternalError {
 exception InvalidData {
 }
 
+exception DuplicateName {
+}
+
 
 /////////////////////////////////////////////////
 // Ping
@@ -275,6 +278,11 @@ struct ExperimentInfo {
 
 struct SingleExperimentInfo {
 	1: optional ExperimentInfo info,
+}
+
+struct CloneRequest {
+	1: required i32 id,
+	2: required string name,
 }
 
 

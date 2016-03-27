@@ -4,8 +4,8 @@
 
 #include "DefaultRepo.h"
 #include "Exhibits.h"
-#include "InvalidData.h"
 #include "MapImages.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 
