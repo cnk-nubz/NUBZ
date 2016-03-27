@@ -93,29 +93,43 @@ public:
     std::vector<LazyExperiment> getAllFinished();
 
     // ID, startDate and finishDate will be saved in the given struct
-    // may throw InvalidData
+    // may throw:
+    // - InvalidData
+    // - DuplicateName
     void insert(LazyExperiment *experiment);
 
-    // may throw InvalidData
+    // may throw:
+    // - InvalidData
+    // - DuplicateName (in case of new name)
     void update(const LazyExperiment &experiment);
+
+    // may throw:
+    // - InvalidData (in case of nonexisting ID)
+    // - DuplicateName
+    void clone(std::int32_t ID, const std::string &name);
 
 private:
     enum State : std::int32_t { Ready = 0, Active = 1, Finished = 2 };
 
+    void insertCheck(const LazyExperiment &experiment);
+    void insertExec(LazyExperiment *experiment);
+
+    void updateCheck(const LazyExperiment &experiment);
+    void updateExec(const LazyExperiment &experiment);
+
+    void cloneCheck(std::int32_t ID, const std::string &name);
+    void cloneExec(std::int32_t ID, const std::string &name);
+
     State getState(std::int32_t ID);
     std::vector<LazyExperiment> getAllWithState(State state);
 
+    void checkID(std::int32_t ID);
+    void checkName(const std::string &name);
     void checkExperiment(const LazyExperiment &experiment);
-
     void checkActions(const LazyExperiment &experiment);
-
-    // throws InvalidData in case of duplicated questions, incorrect id or invalid types order
     void checkSurvey(const LazyExperiment::Survey &survey);
-
-    // throws InvalidData in case of not existing or duplicated id
     void checkIds(const std::unordered_set<std::int32_t> &existing,
                   const std::vector<std::int32_t> &choosen) const;
-
     void checkForDuplicates(std::vector<std::int32_t> ids) const;
 
     db::DatabaseSession &session;
