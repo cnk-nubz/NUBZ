@@ -28,5 +28,6 @@ urlpatterns = [
     #experiment
     url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment'),
     url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
-    url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment')
+    url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment'),
+    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment')
 ]

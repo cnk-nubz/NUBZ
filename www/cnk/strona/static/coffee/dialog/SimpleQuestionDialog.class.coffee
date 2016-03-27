@@ -9,7 +9,6 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
 
     jQuery("input[type=text]", dialogBody)
       .each( ->
-        jQuery(this).parent().next().css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup( (e) ->
           obj = jQuery(this)
           text = obj.val()

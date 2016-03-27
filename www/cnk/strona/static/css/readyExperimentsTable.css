@@ -29,7 +29,7 @@ table.readyExperimentsTable > tbody > tr > td:not(:first-child) > div:not(.toolt
   border: 1px solid #aaa;
   cursor: default;
   text-align: center;
-  transition: background 120ms linear, border 120ms linear;
+  transition: background 120ms linear;
 }
 
 table.readyExperimentsTable > tbody > tr > td:not(:first-child):not(.nonclickable) > div:not(.tooltip):hover {

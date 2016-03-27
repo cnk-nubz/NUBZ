@@ -9,8 +9,8 @@
   position: absolute;
   top: 55px;
   height: 100px;
-  right: 150px;
-  left: 150px;
+  right: 75px;
+  left: 75px;
   border: 1px solid #ccc;
   background: #eee;
 }
@@ -36,9 +36,10 @@
 }
 
 #activeExperiment > table td:first-child {
-  font-weight: 600;
   font-size: 26px;
   padding: 6px;
+  white-space: nowrap;
+  overflow-x: hidden;
 }
 
 #activeExperiment > table td:not(:first-child) {
@@ -82,12 +83,12 @@
 
 #readyExperiments {
   float: left;
-  padding: 10px 50px 10px 150px;
+  padding: 10px 25px 10px 75px;
 }
 
 #finishedExperiments {
   float: right;
-  padding: 10px 150px 10px 50px;
+  padding: 10px 75px 10px 25px;
 }
 
 #readyExperiments .middle,
@@ -100,13 +101,13 @@
 }
 
 #readyExperiments .middle {
-  right: 50px;
-  left: 150px;
+  right: 25px;
+  left: 75px;
 }
 
 #finishedExperiments .middle {
-  right: 150px;
-  left: 50px;
+  right: 75px;
+  left: 25px;
 }
 
 .myHeader {

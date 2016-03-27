@@ -26,9 +26,13 @@ class Handler
     experimentsDOM = @_readyExperiments.getAllElementsAsDOM(@_readyExperimentRow)
     [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) =>
       viewId = element.data
-      element.querySelector("td:not(:first-child):not(:last-child)")
+      element.querySelector("td:first-child + td > div")
         .addEventListener("click", =>
           location.href = "/badanie?id=#{JSON.parse(viewId).id}"
+        )
+      element.querySelector("td:first-child + td + td > div")
+        .addEventListener("click", =>
+          @_proceedCloningExperiment(JSON.parse(viewId).id)
         )
 
       if @_activeExperiment?
@@ -56,7 +60,63 @@ class Handler
 
   _prepareFinishedExperiments: =>
     experimentsDOM = @_finishedExperiments.getAllElementsAsDOM(@_finishedExperimentRow)
-    # TODO: add cloning of experiment
+    [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) =>
+      viewId = element.data
+      element.querySelector('td:first-child + td + td > div')
+        .addEventListener('click', ->
+          location.href = "/badanie?readonly&id=#{JSON.parse(viewId).id}"
+        )
+      element.querySelector('td:first-child + td + td + td > div')
+        .addEventListener('click', =>
+          @_proceedCloningExperiment(JSON.parse(viewId).id)
+        )
+    )
+    experimentsDOM
+
+  _proceedCloningExperiment: (experimentId) =>
+    dialogData = root.changeNameDialog.data
+    dialogMessage = root.changeNameDialog.html
+    BootstrapDialog.show(
+      message: dialogMessage
+      title: dialogData.utils.text.title
+      closable: false
+      buttons: [
+        @_changeNameDialogCancelButton()
+        @_changeNameDialogSaveButton(experimentId)
+      ]
+    )
+
+  _changeNameDialogCancelButton: ->
+    dialogData = root.changeNameDialog.data
+    label: dialogData.utils.text.cancelButton
+    action: (dialog) ->
+      dialog.close()
+
+  _changeNameDialogSaveButton: (experimentId) =>
+    dialogData = root.changeNameDialog.data
+    label: dialogData.utils.text.saveButton
+    action: (dialog) =>
+      jQuery('.inputError').html('')
+      newName = jQuery('#dialog input').val()
+      @_tryCloningExperiment(experimentId, newName)
+
+  _tryCloningExperiment: (experimentId, newName) ->
+    dialogData = root.changeNameDialog.data
+    toSend =
+      jsonData: JSON.stringify(
+        experimentId: experimentId
+        newName: newName
+      )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.post('cloneExperiment/', toSend, (data) ->
+      if data.success is true
+        location.reload()
+      else
+        jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
+    )
+    return
 
   _setAddNewExperimentHandler: =>
     jQuery(@_DOM.addNewExperiment).click( ->
@@ -92,8 +152,13 @@ class Handler
   _setDefaultState: =>
     activeExperimentRow = document.querySelector('#activeExperiment tr')
     if @_activeExperiment?
+      date = @_activeExperiment.startDate
+      fixDate = (x) -> if 0 < x < 10 then "0#{x}" else "#{x}"
+      activeExperimentDate = "(#{fixDate date.day}/#{fixDate date.month}/#{fixDate date.year} - )"
       activeExperimentRow.data = @_activeExperiment.experimentId
-      activeExperimentRow.querySelector("td:first-child > div > span").innerHTML = @_activeExperiment.name
+      oldHeaderText = jQuery('#activeExperiment > div').text()
+      jQuery('#activeExperiment > div').text("#{oldHeaderText} #{activeExperimentDate}")
+      jQuery("td:first-child > div > span").html("#{@_activeExperiment.name}").shortenText()
     else
       activeExperimentRow.querySelector("td:first-child > div > span").innerHTML = "Brak aktywnego badania"
     @_readyExperimentsList.show()

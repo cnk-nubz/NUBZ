@@ -12,6 +12,7 @@
   font-family: OpenSans;
   box-sizing: border-box;
 }
+
 *.noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -20,6 +21,7 @@
   -ms-user-select: none;
   user-select: none;
 }
+
 body, html {
   overflow: hidden;
   height: 100%;
@@ -28,4 +30,8 @@ body, html {
 
 .modal {
   top: 95px;
+}
+
+.inputError {
+  color: #D8000C;
 }

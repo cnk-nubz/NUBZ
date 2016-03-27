@@ -251,11 +251,12 @@ def _exhibitRequestsUnified(request, funToCall):
     return JsonResponse(data)
 
 
-def getDialog(request, dialogName):
+def getDialog(dialogName):
     contextDict = {
         'data': get_const(dialogName)['data']
     }
     html = render_to_string('dialog/dialog.html', contextDict)
+    print >>sys.stderr, "UWAGA LECE \n ###%s\n###" % get_const(dialogName)
     retDict = {
         'data': get_const(dialogName),
         'html': html.replace("\n", "")
@@ -271,15 +272,15 @@ def getColorPickerPopoverContent(request):
 
 
 def getExhibitDialog(request):
-    return getDialog(request, "EXHIBIT_DIALOG")
+    return getDialog("EXHIBIT_DIALOG")
 
 
 def getSimpleQuestionDialog(request):
-    return getDialog(request, "SIMPLE_QUESTION_DIALOG")
+    return getDialog("SIMPLE_QUESTION_DIALOG")
 
 
 def getMultipleChoiceQuestionDialog(request):
-    return getDialog(request, "MULTIPLE_CHOICE_QUESTION_DIALOG")
+    return getDialog("MULTIPLE_CHOICE_QUESTION_DIALOG")
 
 
 def getExhibitPanel(request):
@@ -293,11 +294,11 @@ def getExhibitListElement(request):
 
 
 def getSortQuestionDialog(request):
-    return getDialog(request, "SORT_QUESTION_DIALOG")
+    return getDialog("SORT_QUESTION_DIALOG")
 
 
 def getActionDialog(request):
-    return getDialog(request, "NEW_ACTION_DIALOG")
+    return getDialog("NEW_ACTION_DIALOG")
 
 
 def getChangeMapDialog(request):
@@ -310,6 +311,9 @@ def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
 
+def getChangeNameDialog(request):
+    return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
+
 HTMLRequests = {
     'simpleQuestionDialog': getSimpleQuestionDialog,
     'sortQuestionDialog': getSortQuestionDialog,
@@ -320,14 +324,13 @@ HTMLRequests = {
     'exhibitDialog': getExhibitDialog,
     'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
-    'exhibitListElement': getExhibitListElement
+    'exhibitListElement': getExhibitListElement,
+    'changeNameDialog': getChangeNameDialog
 }
-
 
 def getHTML(request):
     name = request.GET.get("name")
     return HTMLRequests[name](request)
-
 
 def _parseQuestions(allQuestions, newId=None, newType=None):
     idxSimple = 0
@@ -638,6 +641,18 @@ def finishExperiment(request):
         }
     return JsonResponse(result)
 
+def cloneExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    try:
+        thriftCommunicator.cloneExperiment(data['experimentId'], data['newName'])
+        result = {
+            'success': True
+        }
+    except:
+        result = {
+            'success': False
+        }
+    return JsonResponse(result)
 
 def getAllExhibits(request):
     try:

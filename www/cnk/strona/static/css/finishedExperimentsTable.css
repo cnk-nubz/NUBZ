@@ -15,13 +15,31 @@ table.finishedExperimentsTable > tbody > tr > td {
   padding-right: 8px;
 }
 
-> td > div:first-child {
+table.finishedExperimentsTable > tbody > tr > td > div:first-child {
   white-space: nowrap;
   overflow-x: hidden;
 }
 
-table.finishedExperimentsTable > tbody > tr > td:last-child {
-  width: 110px;
+table.finishedExperimentsTable > tbody > tr > td + td + td {
+  width: 90px;
+}
+
+table.finishedExperimentsTable td:first-child + td {
+  width: 90px;
+  font-size: 14px;
+}
+
+table.finishedExperimentsTable > tbody > tr > td + td + td > div {
+  background: #ddd;
+  border: 1px solid #aaa;
+  cursor: default;
+  text-align: center;
+  transition: background 120ms linear;
+}
+
+table.finishedExperimentsTable > tbody > tr > td + td + td > div:hover {
+  background: lightgreen;
+  cursor: pointer;
 }
 
 table.finishedExperimentsTable > tbody > tr > td:hover {

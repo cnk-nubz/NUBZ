@@ -230,3 +230,9 @@ class ThriftCommunicator:
         def action(client):
             return client.finishExperiment()
         return self._perform_in_single_connection([action])[0]
+
+    def cloneExperiment(self, experimentId, newName):
+        def action(client):
+            msg = CloneRequest(experimentId, newName)
+            return client.cloneExperiment(msg)
+        return self._perform_in_single_connection([action])[0]
