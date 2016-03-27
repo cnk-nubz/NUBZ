@@ -26,7 +26,13 @@ void ExperimentCommands::update(std::int32_t ID, const CreateExperimentRequest &
         auto repo = repository::Experiments{session};
         repo.update(lazyExperiment);
     });
-    
+}
+
+void ExperimentCommands::clone(const CloneRequest &input) {
+    db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::Experiments{session};
+        repo.clone(input.ID, input.name);
+    });
 }
 
 void ExperimentCommands::finish() {

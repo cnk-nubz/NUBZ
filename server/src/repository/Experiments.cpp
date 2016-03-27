@@ -6,7 +6,8 @@
 
 #include "DefaultRepo.h"
 #include "Experiments.h"
-#include "InvalidData.h"
+#include "error/DuplicateName.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 
@@ -43,6 +44,7 @@ boost::optional<Experiments::LazyExperiment> Experiments::getLazy(std::int32_t I
 }
 
 void Experiments::start(std::int32_t ID) {
+    checkID(ID);
     if (getActive()) {
         throw InvalidData{"you can only have one active experiment"};
     }
@@ -102,23 +104,56 @@ std::vector<Experiments::LazyExperiment> Experiments::getAllWithState(State stat
     return result;
 }
 
-void Experiments::insert(Experiments::LazyExperiment *experiment) {
-    checkExperiment(*experiment);
+void Experiments::clone(std::int32_t ID, const std::string &name) {
+    cloneCheck(ID, name);
+    cloneExec(ID, name);
+}
 
+void Experiments::cloneCheck(std::int32_t ID, const std::string &name) {
+    checkID(ID);
+    checkName(name);
+}
+
+void Experiments::cloneExec(std::int32_t ID, const std::string &name) {
+    auto original = getLazy(ID).value();
+    original.name = name;
+    insertExec(&original);
+}
+
+void Experiments::insert(Experiments::LazyExperiment *experiment) {
+    insertCheck(*experiment);
+    insertExec(experiment);
+}
+
+void Experiments::insertCheck(const LazyExperiment &experiment) {
+    checkName(experiment.name);
+    checkExperiment(experiment);
+}
+
+void Experiments::insertExec(LazyExperiment *experiment) {
     experiment->startDate = boost::none;
     experiment->finishDate = boost::none;
     experiment->ID = Impl::insert(session, toDB(*experiment, State::Ready));
 }
 
 void Experiments::update(const Experiments::LazyExperiment &experiment) {
-    if (!get(experiment.ID)) {
-        throw InvalidData{"there is no ready experiment with given id"};
-    }
+    updateCheck(experiment);
+    updateExec(experiment);
+}
+
+void Experiments::updateCheck(const LazyExperiment &experiment) {
+    checkID(experiment.ID);
     if (getState(experiment.ID) != State::Ready) {
         throw InvalidData{"you can only update ready experiments"};
     }
+    // name updated? need to check for duplicates
+    if (get(experiment.ID).value().name != experiment.name) {
+        checkName(experiment.name);
+    }
     checkExperiment(experiment);
+}
 
+void Experiments::updateExec(const LazyExperiment &experiment) {
     auto dbContent = std::get<Table::FieldContent>(toDB(experiment, State::Ready)).value;
     auto sql = Table::Sql::update()
                    .where(Table::ID == experiment.ID)
@@ -131,6 +166,26 @@ Experiments::State Experiments::getState(std::int32_t ID) {
     auto sql = db::sql::Select<Table::FieldID, Table::FieldState>{}.where(Table::ID == ID);
     auto stateNum = std::get<Table::FieldState>(session.getResult(sql).value()).value;
     return static_cast<State>(stateNum);
+}
+
+void Experiments::checkID(std::int32_t ID) {
+    using namespace db::sql;
+    auto sql = Select<Table::FieldID>{}.where(Table::ID == ID);
+    if (!session.getResult(sql)) {
+        throw InvalidData{"there is no experiment with given id"};
+    }
+}
+
+void Experiments::checkName(const std::string &name) {
+    if (name.empty()) {
+        throw InvalidData{"name cannot be empty"};
+    }
+
+    using namespace db::sql;
+    auto sql = Select<Table::FieldName>{}.where(Table::Name == name);
+    if (session.getResult(sql)) {
+        throw DuplicateName{"experiment with given name already exists"};
+    }
 }
 
 void Experiments::checkExperiment(const LazyExperiment &experiment) {
