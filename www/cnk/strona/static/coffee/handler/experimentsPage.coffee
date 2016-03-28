@@ -101,10 +101,10 @@ class Handler
       @_tryCloningExperiment(experimentId, newName)
 
   _tryCloningExperiment: (experimentId, newName) =>
-    if newName is ''
-      jQuery('.inputError').html(dialogData.utils.text.emptyInputError)
-      return
     dialogData = root.changeNameDialog.data
+    if newName is ''
+      jQuery('.inputError').text(dialogData.utils.text.emptyInputError)
+      return
     toSend =
       jsonData: JSON.stringify(
         experimentId: experimentId
