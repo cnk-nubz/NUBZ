@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -28,10 +29,15 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
+    // throws
+    // - DuplicateName
+    // - InvalidData in case of empty name
     void insert(Question *simpleQuestion);
     void insert(std::vector<Question> *simpleQuestion);
 
 private:
+    void checkName(const std::string &name);
+
     db::DatabaseSession &session;
 };
 

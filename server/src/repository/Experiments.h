@@ -79,7 +79,7 @@ public:
     boost::optional<Experiment> get(std::int32_t ID);
     boost::optional<LazyExperiment> getLazy(std::int32_t ID);
 
-    // may throw InvalidData for several reasons:
+    // throws InvalidData for several reasons:
     // - invalid id
     // - id of finished experiment (it's impossible to activate finished experiment)
     // - there is currently active experiment
@@ -93,17 +93,17 @@ public:
     std::vector<LazyExperiment> getAllFinished();
 
     // ID, startDate and finishDate will be saved in the given struct
-    // may throw:
+    // throws:
     // - InvalidData
     // - DuplicateName
     void insert(LazyExperiment *experiment);
 
-    // may throw:
+    // throws:
     // - InvalidData
     // - DuplicateName (in case of new name)
     void update(const LazyExperiment &experiment);
 
-    // may throw:
+    // throws:
     // - InvalidData (in case of nonexisting ID)
     // - DuplicateName
     void clone(std::int32_t ID, const std::string &name);

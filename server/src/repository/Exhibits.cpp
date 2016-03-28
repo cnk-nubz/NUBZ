@@ -5,6 +5,7 @@
 #include "DefaultRepo.h"
 #include "Exhibits.h"
 #include "MapImages.h"
+#include "error/DuplicateName.h"
 #include "error/InvalidData.h"
 
 namespace repository {
@@ -82,6 +83,7 @@ void Exhibits::insert(std::vector<Exhibits::Exhibit> *exhibits) {
 
 void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     assert(exhibit);
+    checkName(exhibit->name);
     if (exhibit->frame) {
         checkFrame(exhibit->frame.value());
     }
@@ -98,6 +100,17 @@ void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
 
     auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
     session.execute(sql);
+}
+
+void Exhibits::checkName(const std::string &name) {
+    if (name.empty()) {
+        throw InvalidData{"exhibit name cannot be empty"};
+    }
+
+    auto sql = db::sql::Select<Table::FieldName>{}.where(Table::Name == name);
+    if (session.getResult(sql)) {
+        throw DuplicateName{};
+    }
 }
 
 void Exhibits::checkRgbHex(std::int32_t rgbHex) {

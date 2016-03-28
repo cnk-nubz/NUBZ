@@ -5,6 +5,7 @@
 
 #include "DefaultRepo.h"
 #include "MultipleChoiceQuestions.h"
+#include "error/DuplicateName.h"
 #include "error/InvalidData.h"
 
 namespace repository {
@@ -72,14 +73,41 @@ void MultipleChoiceQuestions::insert(std::vector<MultipleChoiceQuestions::Questi
 
 void MultipleChoiceQuestions::insert(MultipleChoiceQuestions::Question *question) {
     assert(question);
-    if (question->options.size() < 2) {
-        throw InvalidData{"question should have at least 2 options"};
-    }
+    checkOptions(question->options);
+    checkName(question->name);
 
     question->ID = MainImpl::insert(session, toDB(*question));
 
     for (auto &option : question->options) {
         insert(&option, question->ID);
+    }
+}
+
+void MultipleChoiceQuestions::checkName(const std::string &name) {
+    if (name.empty()) {
+        throw InvalidData{"question name cannot be empty"};
+    }
+
+    auto sql = db::sql::Select<MainTable::FieldName>{}.where(MainTable::Name == name);
+    if (session.getResult(sql)) {
+        throw DuplicateName{};
+    }
+}
+
+void MultipleChoiceQuestions::checkOptions(const std::vector<Question::Option> &options) {
+    if (options.size() < 2) {
+        throw InvalidData{"question should have at least 2 options"};
+    }
+
+    std::unordered_set<std::string> optionsSet;
+    for (auto &opt : options) {
+        if (opt.text.empty()) {
+            throw InvalidData{"question option cannot be empty"};
+        }
+        optionsSet.insert(opt.text);
+    }
+    if (options.size() != optionsSet.size()) {
+        throw InvalidData{"question options should be unique"};
     }
 }
 

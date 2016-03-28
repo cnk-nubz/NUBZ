@@ -4,6 +4,9 @@
 namespace repository {
 struct DuplicateName : std::invalid_argument {
     using invalid_argument::invalid_argument;
+
+    inline DuplicateName() : std::invalid_argument("") {
+    }
 };
 }
 

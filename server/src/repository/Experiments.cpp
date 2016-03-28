@@ -178,11 +178,10 @@ void Experiments::checkID(std::int32_t ID) {
 
 void Experiments::checkName(const std::string &name) {
     if (name.empty()) {
-        throw InvalidData{"name cannot be empty"};
+        throw InvalidData{"experiment name cannot be empty"};
     }
 
-    using namespace db::sql;
-    auto sql = Select<Table::FieldName>{}.where(Table::Name == name);
+    auto sql = db::sql::Select<Table::FieldName>{}.where(Table::Name == name);
     if (session.getResult(sql)) {
         throw DuplicateName{"experiment with given name already exists"};
     }

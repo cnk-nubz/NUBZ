@@ -16,9 +16,9 @@ namespace input {
 struct CreateSimpleQuestionRequest {
     CreateSimpleQuestionRequest(const communication::CreateSimpleQuestionRequest &thrift);
 
-    boost::optional<std::string> name;
-    std::string question;
-    output::SimpleQuestion::AnswerType answerType;
+    const std::string name;
+    const std::string question;
+    const output::SimpleQuestion::AnswerType answerType;
 };
 }
 }

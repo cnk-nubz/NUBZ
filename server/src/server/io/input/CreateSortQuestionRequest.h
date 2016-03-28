@@ -15,9 +15,9 @@ namespace input {
 struct CreateSortQuestionRequest {
     CreateSortQuestionRequest(const communication::CreateSortQuestionRequest &thrift);
 
-    boost::optional<std::string> name;
-    std::string question;
-    std::vector<std::string> options;
+    const std::string name;
+    const std::string question;
+    const std::vector<std::string> options;
 };
 }
 }

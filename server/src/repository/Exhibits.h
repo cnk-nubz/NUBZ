@@ -44,7 +44,9 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
-    // throws InvalidData in case of incorrect frame
+    // throws
+    // - DuplicateName
+    // - InvalidData in case of incorrect frame, incorrect color
     void insert(Exhibit *exhibit);
     void insert(std::vector<Exhibit> *exhibits);
 
@@ -59,6 +61,7 @@ public:
     void setRgbHex(std::int32_t ID, std::int32_t newRgbHex);
 
 private:
+    void checkName(const std::string &name);
     void checkFrame(const Exhibit::Frame &frame);
     void checkRgbHex(std::int32_t rgbHex);
 
