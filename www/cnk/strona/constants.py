@@ -188,6 +188,14 @@ CHANGE_EXPERIMENT_NAME_DIALOG = {
     }
 }
 
+EXPERIMENT_CONFIRMATION_MESSAGES = {
+    'finishExperiment': 'Czy chcesz zakończyć dane badanie? Na żadnym tablecie nie będzie można rozpocząć tego badania. Tej operacji nie da się cofnąć.',
+    'activateExperiment': 'Czy chcesz aktywować dane badanie? Nie będzie ono już edytowalne. Tej operacji nie da się cofnąć.',
+    'cancelButton': 'Anuluj',
+    'confirmButton': 'OK',
+    'title': 'Potwierdzenie'
+}
+
 POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
 '#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
 '#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',

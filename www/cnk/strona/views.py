@@ -607,6 +607,7 @@ def experimentsPage(request):
             'activeExperiment': _getActiveExperiment(),
             'finishedExperimentRow': render_to_string('list/row/finishedExperimentRow.html'),
             'readyExperimentRow': render_to_string('list/row/readyExperimentRow.html'),
+            'confirmationMessages': get_const("EXPERIMENT_CONFIRMATION_MESSAGES"),
             'tableList': render_to_string('list/dataList.html')}
     except Exception as ex:
         context = {
