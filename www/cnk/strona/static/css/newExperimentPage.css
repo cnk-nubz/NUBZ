@@ -162,3 +162,8 @@
 .middle .questionsActionsTable > tbody > tr > td:first-child {
   text-align: left;
 }
+
+#experiment.readonly .middle .questionsActionsTable > tbody > tr > td:last-child:hover {
+  background: #fff;
+  cursor: default;
+}

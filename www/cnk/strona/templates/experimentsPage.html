@@ -1,0 +1,122 @@
+{% extends "mainPage.html" %}
+{% load staticfiles %}
+{% load compress %}
+{% load jsvar %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
+  <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
+  <link href="{% static "css/readyExperimentsTable.css" %}" rel="stylesheet" />
+  <link href="{% static "css/finishedExperimentsTable.css" %}" rel="stylesheet" />
+  <link href="{% static "css/experimentsPage.css" %}" rel="stylesheet" />
+{% endblock %}
+
+{% block includes %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/experimentData/ExperimentData.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/ReadyExperiments.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/FinishedExperiments.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/list/ListView.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/ExperimentsList.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/list/row/FinishedExperimentRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/list/row/ReadyExperimentRow.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+
+{% block script %}
+  {{ block.super }}
+  <script src="{% static "include/js/jquery.min.js" %}"></script>
+  {% compress js %}
+  <script src="{% static "coffee/plugin/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/handler/experimentsPage.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  <script src="{% static "include/js/bootstrap.min.js" %}"></script>
+  <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
+  <script src="{% static "include/js/csrf.js" %}"></script>
+{% endblock %}
+{% block init %}
+  {% compress js %}
+    <script type="text/coffeescript">
+      root = exports ? this
+      success = {{success | jsvar}}
+      if not success
+        fun = ->
+          BootstrapDialog.show(
+            message: '{{message}}'
+            title: 'Wystąpił nieoczekiwany błąd'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+        setTimeout(fun, 1000)
+      root.readyExperiments = {{readyExperiments | jsvar}}
+      root.finishedExperiments = {{finishedExperiments | jsvar}}
+      root.activeExperiment = {{activeExperiment | jsvar}}
+      jQuery.getJSON('getHTML?name=changeNameDialog', null, (data) ->
+        root.changeNameDialog = data
+      )
+      root.HTML =
+        finishedExperimentRow: '{{finishedExperimentRow}}'
+        readyExperimentRow: '{{readyExperimentRow}}'
+        tableList: '{{tableList}}'
+    </script>
+  {% endcompress %}
+{% endblock %}
+
+{% block content %}
+<div id="container">
+  <div id="activeExperiment">
+    <div>
+      Aktywne badanie
+    </div>
+    <table>
+      <tbody>
+        <tr>
+          <td>
+            <div>
+              <span></span>
+            </div>
+          </td>
+          {% if activeExperiment != None %}
+          <td>
+            <div>
+              <span>Pokaż</span>
+            </div>
+          </td>
+          <td>
+            <div>
+              <span>Zakończ</span>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div id="lists">
+    <div id="readyExperiments">
+      <div class="myHeader">
+        Gotowe badania
+        <div class="addElement"><i class="fa fa-plus"></i></div>
+      </div>
+      <div class="middle"></div>
+    </div>
+    <div id="finishedExperiments">
+      <div class="myHeader">
+        Zakończone badania
+      </div>
+      <div class="middle"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
