@@ -17,12 +17,22 @@ namespace input {
 
 struct RawReport {
     struct Event {
+        struct Time {
+            Time(const communication::Time &thrift);
+            repository::Report::Event::TimePoint toRepo() const;
+
+            const std::int32_t hour;
+            const std::int32_t min;
+            const std::int32_t sec;
+        };
+
         Event(const communication::RawReportEvent &thrift);
         repository::Report::Event toRepo() const;
 
         boost::optional<std::int32_t> exhibitId;
-        std::int32_t durationInSecs;
-        std::vector<std::int32_t> actions;
+        const Time startTime;
+        const std::int32_t durationInSecs;
+        const std::vector<std::int32_t> actions;
     };
 
     struct SurveyAnswers {

@@ -290,11 +290,19 @@ struct CloneRequest {
 // Reports
 /////////////////////////////////////////////////
 
+// 00:00:00 - 23:59:59
+struct Time {
+	1: required i32 hour,
+	2: required i32 min,
+	3: required i32 sec,
+}
+
 // exhibitID is optional, null means break
 struct RawReportEvent {
 	1: optional i32 exhibitId,
-	2: i32 durationInSecs,
-	3: list<i32> actions,
+	2: required Time beginTime,
+	3: required i32 durationInSecs,
+	4: required list<i32> actions,
 }
 
 struct SurveyAnswers {

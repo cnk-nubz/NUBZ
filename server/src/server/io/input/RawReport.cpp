@@ -15,10 +15,14 @@ RawReport::RawReport(const communication::RawReport &thrift)
 }
 
 RawReport::Event::Event(const communication::RawReportEvent &thrift)
-    : durationInSecs(thrift.durationInSecs), actions(thrift.actions) {
+    : startTime(thrift.beginTime), durationInSecs(thrift.durationInSecs), actions(thrift.actions) {
     if (thrift.__isset.exhibitId) {
         exhibitId = thrift.exhibitId;
     }
+}
+
+RawReport::Event::Time::Time(const communication::Time &thrift)
+    : hour(thrift.hour), min(thrift.min), sec(thrift.sec) {
 }
 
 RawReport::SurveyAnswers::SurveyAnswers(const communication::SurveyAnswers &thrift) {
@@ -69,8 +73,17 @@ repository::Report RawReport::toRepo() const {
 repository::Report::Event RawReport::Event::toRepo() const {
     auto res = repository::Report::Event{};
     res.exhibitID = exhibitId;
+    res.beginTime = startTime.toRepo();
     res.durationInSecs = durationInSecs;
     res.actions = actions;
+    return res;
+}
+
+repository::Report::Event::TimePoint RawReport::Event::Time::toRepo() const {
+    auto res = repository::Report::Event::TimePoint{};
+    res.h = hour;
+    res.m = min;
+    res.s = sec;
     return res;
 }
 

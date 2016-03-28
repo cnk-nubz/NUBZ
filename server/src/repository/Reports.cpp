@@ -125,11 +125,20 @@ void Reports::checkBreakActions(const Experiment &experiment,
     }
 }
 
-void Reports::checkDurations(const std::vector<Report::Event> &events) {
+void Reports::checkDurations(const std::vector<Report::Event> &events) const {
     for (const auto &event : events) {
         if (event.durationInSecs < 0) {
             throw InvalidData{"durationInSecs cannot be less than 0"};
         }
+
+        checkTimePoint(event.beginTime);
+    }
+}
+
+void Reports::checkTimePoint(const Reports::Report::Event::TimePoint &timePoint) const {
+    if (timePoint.h < 0 || timePoint.m < 0 || timePoint.s < 0 || timePoint.h > 23 ||
+        timePoint.m > 59 || timePoint.s > 59) {
+        throw InvalidData{"incorrect time"};
     }
 }
 
@@ -204,6 +213,9 @@ Table::Sql::in_t toDB(const Reports::Report &report) {
 Table::ContentData::Event eventToDB(const Reports::Report::Event &event) {
     auto res = Table::ContentData::Event{};
     res.actions = event.actions;
+    res.beginHour = event.beginTime.h;
+    res.beginMin = event.beginTime.m;
+    res.beginSec = event.beginTime.s;
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
     return res;
@@ -232,6 +244,9 @@ Reports::Report fromDB(const Table::Sql::out_t &report) {
 Reports::Report::Event eventFromDB(const Table::ContentData::Event &event) {
     auto res = Reports::Report::Event{};
     res.actions = event.actions;
+    res.beginTime.h = event.beginHour;
+    res.beginTime.m = event.beginMin;
+    res.beginTime.s = event.beginSec;
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
     return res;
