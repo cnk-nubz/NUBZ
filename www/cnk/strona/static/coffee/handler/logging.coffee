@@ -10,11 +10,14 @@ window.onerror = do ->
           errorMsg: errorMsg
         )
     clearTimeout timeoutId
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
     timeoutId = setTimeout ( ->
       jQuery.ajax(
         type: 'POST'
         dataType: 'json'
         url: '/errorReporting/'
         data: toSend
-        error: () -> window.onerror(errorMsg, url, lineNumber)
+        error: -> window.onerror(errorMsg, url, lineNumber)
       )), 1000
