@@ -41,22 +41,35 @@ class Handler
       else
         element.querySelector("td:last-child > div")
         .addEventListener("click", =>
-          jQuery.ajaxSetup(
-            headers: { "X-CSRFToken": getCookie("csrftoken") }
+          BootstrapDialog.show(
+            message: root.confirmationMessages.activateExperiment
+            title: root.confirmationMessages.title
+            closable: false
+            buttons: [
+              @_confirmationCancelButton()
+              @_confirmationConfirmButton(@_activateExperiment(JSON.parse(viewId).id))
+            ]
           )
-          jQuery.post("startExperiment/", id: JSON.parse(viewId).id, (data) =>
-            if data.success
-              location.reload()
-            else
-              BootstrapDialog.show(
-                message: data.message
-                title: 'Nie mozna rozpoczac badania'
-                type: BootstrapDialog.TYPE_DANGER
-              )
-          , 'json')
         )
     )
     experimentsDOM
+
+  _activateExperiment: (experimentId) ->
+    ->
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.post("startExperiment/", id: experimentId, (data) =>
+        if data.success
+          location.reload()
+        else
+          BootstrapDialog.show(
+            message: data.message
+            title: 'Nie mozna rozpoczac badania'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+      , 'json')
+      return
 
   _prepareFinishedExperiments: =>
     experimentsDOM = @_finishedExperiments.getAllElementsAsDOM(@_finishedExperimentRow)
@@ -146,21 +159,43 @@ class Handler
     activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)").addEventListener("click", ->
       location.href = "/badanie?readonly&id=#{activeExperimentId}"
     )
-    activeExperimentRow.querySelector("td:last-child > div").addEventListener("click", ->
-      jQuery.ajaxSetup(
+    activeExperimentRow.querySelector("td:last-child > div").addEventListener("click", =>
+      BootstrapDialog.show(
+        message: root.confirmationMessages.finishExperiment
+        title: root.confirmationMessages.title
+        closable: false
+        buttons: [
+          @_confirmationCancelButton()
+          @_confirmationConfirmButton(@_finishExperiment)
+        ]
+      )
+
+    )
+    return
+
+  _confirmationCancelButton: ->
+    label: root.confirmationMessages.cancelButton
+    action: (dialog) ->
+      dialog.close()
+
+  _confirmationConfirmButton: (handler) ->
+    label: root.confirmationMessages.confirmButton
+    action: -> handler()
+
+  _finishExperiment: ->
+    jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post("finishExperiment/", null, (data) =>
-        if data.success
-          location.reload()
-        else
-          BootstrapDialog.show(
-            message: data.message
-            title: 'Nie mozna zakonczyc badania'
-            type: BootstrapDialog.TYPE_DANGER
-          )
-      , 'json')
-    )
+    jQuery.post("finishExperiment/", null, (data) ->
+      if data.success
+        location.reload()
+      else
+        BootstrapDialog.show(
+          message: data.message
+          title: 'Nie mozna zakonczyc badania'
+          type: BootstrapDialog.TYPE_DANGER
+        )
+    , 'json')
     return
 
   _setDefaultState: =>

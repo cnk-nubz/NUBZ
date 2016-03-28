@@ -62,6 +62,7 @@
       root.readyExperiments = {{readyExperiments | jsvar}}
       root.finishedExperiments = {{finishedExperiments | jsvar}}
       root.activeExperiment = {{activeExperiment | jsvar}}
+      root.confirmationMessages = {{confirmationMessages | jsvar}}
       jQuery.getJSON('getHTML?name=changeNameDialog', null, (data) ->
         root.changeNameDialog = data
       )
