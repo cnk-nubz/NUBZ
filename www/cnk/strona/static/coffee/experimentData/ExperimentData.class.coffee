@@ -4,6 +4,13 @@ root.ExperimentData = class ExperimentData
   # _getViewId(index)
   # _elementListFormat(viewId)
   constructor: (_list) ->
+    @_escapeMap =
+      '&': '&amp;'
+      '<': '&lt;'
+      '>': '&gt;'
+      '"': '&quot;'
+      "'": '&#039;'
+
     @setElements(_list)
     @_newElements = {}
 
@@ -39,3 +46,6 @@ root.ExperimentData = class ExperimentData
     row.data = viewId
     fragment.appendChild(row)
     fragment
+
+  escapeText: (text) ->
+    text.replace(/[&<>"']/g, (m) => @_escapeMap[m])

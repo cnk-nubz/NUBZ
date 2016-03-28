@@ -5,7 +5,7 @@ root.ReadyExperiments = class ReadyExperiments extends root.ExperimentData
 
   _elementListFormat: (viewId) =>
     id: @_elementsDict[viewId].experimentId
-    name: @_elementsDict[viewId].name
+    name: @escapeText(@_elementsDict[viewId].name)
 
   _getViewId: (index) =>
     JSON.stringify(

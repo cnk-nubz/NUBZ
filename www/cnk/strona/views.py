@@ -18,7 +18,12 @@ from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
 thriftCommunicator = ThriftCommunicator()
-
+class InternalError(Exception):
+    pass
+class InvalidData(Exception):
+    pass
+class DuplicateName(Exception):
+    pass
 
 def get_const(name):
     return getattr(settings, name, None)
@@ -52,7 +57,6 @@ def _pingServer():
 
 def _getMapImageInfo():
     floorTiles = thriftCommunicator.getMapImageTiles()
-    print >>sys.stderr, "%s" % floorTiles
     floorTilesInfo = {}
     for i in xrange(0, 2):
         if not (i in floorTiles.keys()):
@@ -256,7 +260,6 @@ def getDialog(dialogName):
         'data': get_const(dialogName)['data']
     }
     html = render_to_string('dialog/dialog.html', contextDict)
-    print >>sys.stderr, "UWAGA LECE \n ###%s\n###" % get_const(dialogName)
     retDict = {
         'data': get_const(dialogName),
         'html': html.replace("\n", "")
@@ -648,9 +651,11 @@ def cloneExperiment(request):
         result = {
             'success': True
         }
-    except:
+    except Exception as ex:
         result = {
-            'success': False
+            'success': False,
+            'exceptionType': "{}".format(type(ex).__name__),
+            'message': str(ex)
         }
     return JsonResponse(result)
 

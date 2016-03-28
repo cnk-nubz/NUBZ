@@ -32,15 +32,24 @@ class ThriftCommunicator:
         self.transport.close()
 
     def _perform_in_single_connection(self, actions):
+        errorTemplate = "An exception of type {0} occured. Arguments:\n{1!r}"
+
         try:
             client = self._start_connection()
             ret = [action(client) for action in actions]
             self._end_connection()
-        except Exception as ex:
-            template = "An exception of type {0} occured. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
+        except InternalError as ex:
+            message = errorTemplate.format(type(ex).__name__, ex.args)
             print message
-            raise Exception(message)
+            raise InternalError(message)
+        except InvalidData as ex:
+            message = errorTemplate.format(type(ex).__name__, ex.args)
+            print message
+            raise InvalidData(message)
+        except DuplicateName as ex:
+            message = errorTemplate.format(type(ex).__name__, ex.args)
+            print message
+            raise DuplicateName(message)
         return ret
 
     def ping(self, number, text):
@@ -233,6 +242,6 @@ class ThriftCommunicator:
 
     def cloneExperiment(self, experimentId, newName):
         def action(client):
-            msg = CloneRequest(experimentId, newName)
+            msg = CloneRequest(experimentId, newName.encode('utf-8'))
             return client.cloneExperiment(msg)
         return self._perform_in_single_connection([action])[0]

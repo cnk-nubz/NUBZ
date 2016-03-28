@@ -100,7 +100,10 @@ class Handler
       newName = jQuery('#dialog input').val()
       @_tryCloningExperiment(experimentId, newName)
 
-  _tryCloningExperiment: (experimentId, newName) ->
+  _tryCloningExperiment: (experimentId, newName) =>
+    if newName is ''
+      jQuery('.inputError').html(dialogData.utils.text.emptyInputError)
+      return
     dialogData = root.changeNameDialog.data
     toSend =
       jsonData: JSON.stringify(
@@ -110,11 +113,22 @@ class Handler
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.post('cloneExperiment/', toSend, (data) ->
+    jQuery.post('cloneExperiment/', toSend, (data) =>
       if data.success is true
         location.reload()
       else
-        jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
+        if data.exceptionType is 'DuplicateName'
+          jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
+        else
+          @_showError(data.exceptionType, data.message)
+    )
+    return
+
+  _showError: (exceptionType, message) ->
+    BootstrapDialog.show(
+      message: message
+      title: exceptionType
+      type: BootstrapDialog.TYPE_DANGER
     )
     return
 

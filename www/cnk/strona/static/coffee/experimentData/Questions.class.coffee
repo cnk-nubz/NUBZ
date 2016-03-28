@@ -17,7 +17,7 @@ root.Questions = class Questions extends root.ExperimentData
         dialog: @_sortQuestionDialog
 
   _elementListFormat: (viewId) =>
-    name: @_elementsDict[viewId].name
+    name: @escapeText(@_elementsDict[viewId].name)
     typeName: @_questionType[@_elementsDict[viewId].type].name
     id: @_elementsDict[viewId].questionId
     isNew: @_elementsDict[viewId].isNew

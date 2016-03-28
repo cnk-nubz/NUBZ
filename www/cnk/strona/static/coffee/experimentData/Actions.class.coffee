@@ -5,7 +5,7 @@ root.Actions = class Actions extends root.ExperimentData
     @_actionDialog = new root.ActionDialog('getHTML?name=actionDialog')
 
   _elementListFormat: (viewId) =>
-    text: @_elementsDict[viewId].text
+    text: @escapeText(@_elementsDict[viewId].text)
     id: @_elementsDict[viewId].actionId
     isNew: @_elementsDict[viewId].isNew
 
