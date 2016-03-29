@@ -7,7 +7,7 @@
   {% compress js %}
   <script src="{% static "coffee/plugin/dynamicInputs.ext.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/handler/newExperiment.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/handler/newExperimentReadonly.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   <script src="{% static "include/js/bootstrap.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
@@ -19,7 +19,7 @@
   <link href="{% static "css/navbar.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
-  <link href="{% static "css/newExperimentPage.css" %}" rel="stylesheet" />
+  <link href="{% static "css/readonlyExperiment.css" %}" rel="stylesheet" />
   <link href="{% static "css/questionsActionsTable.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block includes %}
@@ -50,16 +50,10 @@
   <script src="{% static "coffee/list/ListView.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/list/row/ChooseQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ReadonlyExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
-  <script src="{% static "coffee/list/row/ChooseActionRow.class.coffee" %}" type="text/coffeescript"></script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/list/row/ExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/list/row/ExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ReadonlyExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/list/QuestionsList.class.coffee" %}" type="text/coffeescript"></script>
@@ -80,15 +74,11 @@
             type: BootstrapDialog.TYPE_DANGER
           )
         setTimeout(showError, 1000)
-      root.questionsList = {{questionsList|jsvar}}
-      root.actionsList = {{actionsList|jsvar}}
       root.experimentData = {{experimentData|jsvar}}
 
       root.HTML =
-        chooseQuestionRow: '{{chooseQuestionRow}}'
-        experimentQuestionRow: '{{experimentQuestionRow}}'
-        chooseActionRow: '{{chooseActionRow}}'
-        experimentActionRow: '{{experimentActionRow}}'
+        readonlyExperimentQuestionRow: '{{readonlyExperimentQuestionRow}}'
+        readonlyExperimentActionRow: '{{readonlyExperimentActionRow}}'
         tableList: '{{tableList}}'
     </script>
   {% endcompress %}
@@ -99,7 +89,7 @@
     <div class="experimentTitle">
       <div class="input-group input-group-lg">
         <span class="input-group-addon">Nazwa</span>
-        <input class="form-control" type="text" data-toggle="tooltip" data-placement="bottom" title="Nazwa nie może być pusta" />
+        <input readonly class="form-control" type="text" />
       </div>
     </div>
 
@@ -134,24 +124,6 @@
       <div>
         <div class="myHeader">Pytania po</div>
         <div class="middle"></div>
-      </div>
-    </div>
-    <div class="saveExperiment">
-      <div class="myFooter">
-        <button class="btn btn-success">Zapisz badanie</button>
-      </div>
-    </div>
-  </div>
-  <div class="chooseList">
-    <div>
-      <div class="myHeader">
-        <span></span>
-        <div class="addElement"><i class="fa fa-plus"></i></div>
-      </div>
-      <div class="middle"></div>
-      <div class="myFooter">
-        <button class="btn btn-default">Akcje</button>
-        <button class="btn btn-default">Pytania</button>
       </div>
     </div>
   </div>

@@ -37,10 +37,7 @@ root.ListView = class ListView extends root.View
     document.querySelector(@_containerId).removeChild(@_listElementsDOM)
     @
 
-  removeElement: (DOMElement) =>
-    TRElement = jQuery(DOMElement).parents("tr")
-    viewId = TRElement[0].data
-    TRElement.remove()
+  removeElement: (viewId) =>
     @_elementsOnList.splice(index, 1) for el, index in @_elementsOnList when el is viewId
     @
 
