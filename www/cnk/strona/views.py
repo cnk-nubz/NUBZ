@@ -454,6 +454,7 @@ def questionsAndActionsPage(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'activeLink': ActiveLink.QUESTIONS_ACTIONS_PAGE.value,
             'message': str(ex)
         }
@@ -476,6 +477,7 @@ def createSimpleQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -496,6 +498,7 @@ def createMultipleChoiceQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -516,6 +519,7 @@ def createSortQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -536,6 +540,7 @@ def createAction(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)

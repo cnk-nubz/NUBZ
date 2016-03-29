@@ -57,9 +57,13 @@ root.QuestionDialog = class QuestionDialog
     id: 'saveButtonDialog'
     label: @_data.utils.text.saveButton
     action: (dialog) =>
+      dialog.showNameDuplicatedError = @_showNameDuplicatedError
       if @_validateForm()
-        @_saveHandler(@extractData())
-        dialog.close()
+        @_saveHandler(@extractData(), dialog)
+
+  _showNameDuplicatedError: =>
+    jQuery('#dialog .form-group:first-child div:last-child').html(@_data.utils.text.nameDuplicatedError)
+    return
 
   _validateForm: =>
     isValid = true

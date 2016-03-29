@@ -10,6 +10,7 @@ DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
             "emptyInputError": "Napis nie może być pusty",
+            "nameDuplicatedError": "Taka nazwa już istnieje.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
         }
@@ -81,6 +82,7 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
             "titleNew": "Tworzenie pytania zamkniętego",
             "title": "Pytanie zamknięte",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
+            "optionDuplicatedError": "Ta opcja już się pojawiła na liście."
         },
         "default": {
             "radioGroup": "ansType",
@@ -115,6 +117,7 @@ SORT_QUESTION_DIALOG = {
             "titleNew": "Tworzenie pytania z sortowaniem",
             "title": "Pytanie z sortowaniem",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
+            "optionDuplicatedError": "Ta opcja już się pojawiła na liście."
         },
         "default": {
             "labelSize": "3"
@@ -183,7 +186,6 @@ CHANGE_EXPERIMENT_NAME_DIALOG = {
     "utils": {
         "text": {
             "title": "Klonowanie badania",
-            "nameDuplicatedError": "Taka nazwa badania już istnieje."
         }
     }
 }

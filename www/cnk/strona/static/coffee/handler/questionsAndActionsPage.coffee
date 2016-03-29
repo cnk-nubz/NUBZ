@@ -83,7 +83,7 @@ class Handlers
     return
 
   _newEntryRequest: (url, callback) =>
-    (data) =>
+    (data, dialog) =>
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
@@ -92,24 +92,25 @@ class Handlers
         dataType: 'json'
         data: (jsonData: JSON.stringify(data))
         url: url
-        success: (data) =>
-          callback(data)
+        success: (recvData) =>
+          if not recvData.success
+            if recvData.exceptionType is 'DuplicateName'
+              dialog.showNameDuplicatedError()
+            else
+              @_displayError(recvData.message)
+          else
+            callback(recvData)
+            dialog.close()
       )
       return
 
   _createNewQuestion: (data) =>
-    if not data.success
-      @_displayError(data.message)
-      return
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)
     return
 
   _createNewAction: (data) =>
-    if not data.success
-      @_displayError(data.message)
-      return
     @_actions.setElements(data.actionsList)
     toAdd = @_prepareActionsList()
     @_actionsList.replaceElements(toAdd)
