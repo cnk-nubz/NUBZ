@@ -1,4 +1,4 @@
-package com.cnk.data.experiment.raport;
+package com.cnk.data.raports;
 
 import com.cnk.data.experiment.survey.answers.SurveyAnswers;
 
@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Raport implements Serializable {
+    public enum State {
+        IN_PROGRESS,
+        READY_TO_SEND,
+        SENT
+    }
+
     private Integer id;
     private Integer experimentId;
     private List<RaportEvent> history;
@@ -73,11 +79,5 @@ public class Raport implements Serializable {
                ", preSurveyAnswers=" + preSurveyAnswers +
                ", history=" + history +
                '}';
-    }
-
-    public enum State {
-        IN_PROGRESS,
-        READY_TO_SEND,
-        SENT;
     }
 }

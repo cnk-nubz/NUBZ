@@ -3,20 +3,19 @@ package com.cnk.database;
 import android.content.Context;
 
 import com.cnk.data.map.FloorMap;
-import com.cnk.database.models.DetailLevelRes;
+import com.cnk.data.map.ZoomLevel;
 import com.cnk.database.models.Exhibit;
-import com.cnk.database.models.FloorDetailLevels;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.RaportFile;
+import com.cnk.database.models.RealmFactory;
 import com.cnk.database.models.Version;
-import com.cnk.database.realm.DetailLevelResRealm;
+import com.cnk.database.models.ZoomLevelResolution;
 import com.cnk.database.realm.ExhibitRealm;
-import com.cnk.database.realm.FloorDetailLevelsRealm;
 import com.cnk.database.realm.MapTileInfoRealm;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.database.realm.VersionRealm;
+import com.cnk.database.realm.ZoomLevelResolutionRealm;
 import com.cnk.exceptions.InternalDatabaseError;
-import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,18 +24,32 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 
 public class DatabaseHelper {
-    Context applicationContext;
-
-    private class Value<T> {
-        public T val;
-    }
-
     private interface DatabaseAction {
         void perform(Realm r);
     }
 
+    private class Value<T> {
+        public T val;
+    }
+    private Context applicationContext;
+
     public DatabaseHelper(Context applicationContext) {
         this.applicationContext = applicationContext;
+    }
+
+    private void inTransaction(DatabaseAction action) {
+        Realm r = open();
+        try {
+            beginTransaction(r);
+            action.perform(r);
+            commitTransaction(r);
+        } catch (RuntimeException re) {
+            cancelTransaction(r);
+            re.printStackTrace();
+            throw new InternalDatabaseError(re.toString());
+        } finally {
+            close(r);
+        }
     }
 
     private Realm open() {
@@ -59,22 +72,7 @@ public class DatabaseHelper {
         realm.cancelTransaction();
     }
 
-    private void inTransaction(DatabaseAction action) {
-        Realm r = open();
-        try {
-            beginTransaction(r);
-            action.perform(r);
-            commitTransaction(r);
-        } catch (RuntimeException re) {
-            cancelTransaction(r);
-            re.printStackTrace();
-            throw new InternalDatabaseError(re.toString());
-        } finally {
-            close(r);
-        }
-    }
-
-    public Integer getVersion(Version.Item item) {
+    public Integer getVersion(Version item) {
         Value<Integer> versionNumber = new Value<>();
         inTransaction((realm) -> {
             VersionRealm
@@ -85,115 +83,85 @@ public class DatabaseHelper {
         return versionNumber.val;
     }
 
-    private void setVersion(Realm realm, Version.Item item, Integer versionNumber) {
+    private void setVersion(Realm realm, Version ver, Integer versionNumber) {
         VersionRealm version = new VersionRealm();
-        version.setItem(item.toString());
+        version.setItem(ver.toString());
         version.setCurrentVersion(versionNumber);
         realm.copyToRealmOrUpdate(version);
     }
 
-    public DetailLevelRes getDetailLevelRes(Integer floor, Integer detailLevel) {
-        Value<DetailLevelRes> res = new Value<>();
+    public ZoomLevelResolution getZoomLevelResolution(Integer floor, Integer zoomLevel) {
+        Value<ZoomLevelResolution> res = new Value<>();
         inTransaction((realm) -> {
-            DetailLevelResRealm
+            ZoomLevelResolutionRealm
                     dbRes =
-                    realm.where(DetailLevelResRealm.class)
+                    realm.where(ZoomLevelResolutionRealm.class)
                          .equalTo("floor", floor)
-                         .equalTo("detailLevel", detailLevel)
+                         .equalTo("zoomLevel", zoomLevel)
                          .findFirst();
-            res.val = ModelTranslation.detailLevelResFromRealm(dbRes);
+            if (dbRes != null) {
+                res.val = new ZoomLevelResolution(dbRes);
+            }
         });
         return res.val;
     }
 
-    public void setMaps(Integer versionNum, List<FloorMap> floorMaps) {
-        List<List<DetailLevelResRealm>> floorsResolutions = new ArrayList<>();
-        List<FloorDetailLevelsRealm> floorsDetailLevels = new ArrayList<>();
-        List<List<MapTileInfoRealm>> floorsTileInfos = new ArrayList<>();
-        for (int currentFloorNo = 0; currentFloorNo < Consts.FLOOR_COUNT; currentFloorNo++) {
-            FloorMap currentFloor = floorMaps.get(currentFloorNo);
-            if (currentFloor == null) {
-                floorsResolutions.add(null);
-                floorsDetailLevels.add(null);
-                floorsTileInfos.add(null);
-                continue;
-            }
-            List<DetailLevelRes>
-                    resolutions =
-                    ModelTranslation.getDetailLevelResFromFloorMap(currentFloorNo, currentFloor);
-            floorsResolutions.add(ModelTranslation.realmListFromDetailLevelResList(resolutions));
-            FloorDetailLevels
-                    detailLevels =
-                    new FloorDetailLevels(currentFloorNo, currentFloor.getLevels().size());
-            floorsDetailLevels.add(ModelTranslation.realmFromDetailLevels(detailLevels));
-            floorsTileInfos.add(ModelTranslation.getMapTileInfo(currentFloor, currentFloorNo));
-        }
+    public void setMap(FloorMap map) {
+        List<ZoomLevelResolution> resolutions = new ArrayList<>();
+        List<MapTileInfo> tilesInfos = new ArrayList<>();
 
-        inTransaction((realm) -> {
-            setVersion(realm, Version.Item.MAP, versionNum);
-            setMapsResolution(realm, floorsResolutions);
-            setDetailLevels(realm, floorsDetailLevels);
-            setMapTilesInfos(realm, floorsTileInfos);
-        });
-    }
+        for (int i = 0; i < map.getZoomLevels().size(); i++) {
+            ZoomLevel zoomLevel = map.getZoomLevels().get(i);
 
-    private void setMapsResolution(Realm realm, List<List<DetailLevelResRealm>> floorsResolutions) {
-        for (int currentFloorNo = 0; currentFloorNo < Consts.FLOOR_COUNT; currentFloorNo++) {
-            realm.where(DetailLevelResRealm.class)
-                 .equalTo("floor", currentFloorNo)
-                 .findAll()
-                 .clear();
-            realm.copyToRealm(floorsResolutions.get(currentFloorNo));
-        }
-    }
-
-    private void setDetailLevels(Realm realm, List<FloorDetailLevelsRealm> floorsDetailLevels) {
-        for (int currentFLoorNo = 0; currentFLoorNo < Consts.FLOOR_COUNT; currentFLoorNo++) {
-            realm.where(FloorDetailLevelsRealm.class)
-                 .equalTo("floorNo", floorsDetailLevels.get(currentFLoorNo).getFloorNo())
-                 .findAll()
-                 .clear();
-            realm.copyToRealm(floorsDetailLevels.get(currentFLoorNo));
-        }
-    }
-
-    private void setMapTilesInfos(Realm realm, List<List<MapTileInfoRealm>> floorsInfos) {
-        for (int currentFloorNo = 0; currentFloorNo < Consts.FLOOR_COUNT; currentFloorNo++) {
-            List<MapTileInfoRealm> floorInfo = floorsInfos.get(currentFloorNo);
-            for (MapTileInfoRealm tileInfo : floorInfo) {
-                realm.where(MapTileInfoRealm.class)
-                     .equalTo("floor", tileInfo.getFloor())
-                     .equalTo("detailLevel", tileInfo.getDetailLevel())
-                     .findAll()
-                     .clear();
-                realm.copyToRealm(tileInfo);
-            }
-        }
-    }
-
-    public Integer getDetailLevelsForFloor(Integer floorNo) {
-        Value<Integer> detailLevels = new Value<>();
-        inTransaction((realm) -> {
-            FloorDetailLevelsRealm
+            ZoomLevelResolution
                     res =
-                    realm.where(FloorDetailLevelsRealm.class)
-                         .equalTo("floorNo", floorNo)
-                         .findFirst();
-            detailLevels.val = res == null ? null : res.getDetailLevels();
+                    new ZoomLevelResolution(map.getFloor(),
+                                            i,
+                                            map.getOriginalSize(),
+                                            zoomLevel.getScaledSize());
+            resolutions.add(res);
+
+            MapTileInfo tilesInfo = new MapTileInfo(map.getFloor(), i, zoomLevel.getTileSize());
+            tilesInfos.add(tilesInfo);
+        }
+
+        inTransaction((realm) -> {
+            setMapsResolution(realm, map.getFloor(), resolutions);
+            setMapTilesInfos(realm, map.getFloor(), tilesInfos);
         });
-        return detailLevels.val;
     }
 
-    public MapTileInfo getMapTileInfo(Integer floorNo, Integer detailLevel) {
+    private void setMapsResolution(Realm realm,
+                                   Integer floor,
+                                   List<ZoomLevelResolution> resolutions) {
+        realm.where(ZoomLevelResolutionRealm.class).equalTo("floor", floor).findAll().clear();
+        realm.copyToRealm(RealmFactory.getInstance().toRealmList(resolutions));
+    }
+
+    private void setMapTilesInfos(Realm realm, Integer floor, List<MapTileInfo> tilesInfos) {
+        realm.where(MapTileInfoRealm.class).equalTo("floor", floor).findAll().clear();
+        realm.copyToRealm(RealmFactory.getInstance().toRealmList(tilesInfos));
+    }
+
+    public int getZoomLevelsCount(Integer floor) {
+        Value<Integer> res = new Value<>();
+        inTransaction((realm) -> res.val =
+                (int) realm.where(ZoomLevelResolutionRealm.class).equalTo("floor", floor).count());
+        return res.val;
+    }
+
+    public MapTileInfo getMapTileInfo(Integer floorNo, Integer zoomLevel) {
         Value<MapTileInfo> res = new Value<>();
         inTransaction((realm) -> {
             MapTileInfoRealm
                     dbRes =
                     realm.where(MapTileInfoRealm.class)
                          .equalTo("floor", floorNo)
-                         .equalTo("detailLevel", detailLevel)
+                         .equalTo("zoomLevel", zoomLevel)
                          .findFirst();
-            res.val = ModelTranslation.mapTileInfoFromRealm(dbRes);
+            if (dbRes != null) {
+                res.val = new MapTileInfo(dbRes);
+            }
         });
         return res.val;
     }
@@ -206,7 +174,7 @@ public class DatabaseHelper {
                     realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
 
             for (ExhibitRealm er : results) {
-                exhibits.add(ModelTranslation.exhibitFromRealm(er));
+                exhibits.add(new Exhibit(er));
             }
         });
         return exhibits;
@@ -214,28 +182,24 @@ public class DatabaseHelper {
 
     public void addOrUpdateExhibits(Integer versionNum, Iterable<Exhibit> exhibits) {
         inTransaction((realm) -> {
-            realm.copyToRealmOrUpdate(ModelTranslation.realmFromExhibits(exhibits));
-            setVersion(realm, Version.Item.EXHIBITS, versionNum);
+            realm.copyToRealmOrUpdate(RealmFactory.getInstance().toRealmList(exhibits));
+            setVersion(realm, Version.EXHIBITS, versionNum);
         });
     }
 
     public Integer getNextRaportId() {
         Value<Number> maxId = new Value<>();
-        inTransaction((realm) -> {
-            maxId.val = realm.where(RaportFileRealm.class).max("id");
-        });
+        inTransaction((realm) -> maxId.val = realm.where(RaportFileRealm.class).max("id"));
         return maxId.val == null ? 0 : maxId.val.intValue() + 1;
     }
 
     public void setRaportFile(Integer id, String raportFilename) {
-        inTransaction((realm) -> {
-            RaportFileRealm raportFileRealm = new RaportFileRealm();
-            raportFileRealm.setId(id);
-            raportFileRealm.setFileName(raportFilename);
-            raportFileRealm.setState(RaportFileRealm.IN_PROGRESS);
-            raportFileRealm.setServerId(null);
-            realm.copyToRealmOrUpdate(raportFileRealm);
-        });
+        RaportFileRealm raportFileRealm = new RaportFileRealm();
+        raportFileRealm.setId(id);
+        raportFileRealm.setFileName(raportFilename);
+        raportFileRealm.setState(RaportFileRealm.IN_PROGRESS);
+        raportFileRealm.setServerId(null);
+        inTransaction((realm) -> realm.copyToRealmOrUpdate(raportFileRealm));
     }
 
     public List<RaportFile> getAllReadyRaports() {
@@ -247,7 +211,7 @@ public class DatabaseHelper {
                          .equalTo("state", RaportFileRealm.READY_TO_SEND)
                          .findAll();
             for (RaportFileRealm r : results) {
-                raports.add(ModelTranslation.raportFileFromRealm(r));
+                raports.add(new RaportFile(r));
             }
         });
         return raports;

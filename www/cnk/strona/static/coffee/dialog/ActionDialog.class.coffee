@@ -1,11 +1,10 @@
 root = exports ? this
 root.ActionDialog = class ActionDialog extends root.QuestionDialog
-  _prepareDialog: (dialog) =>
+  _prepareDialog: (dialogBody) =>
     super
     instance = this
-    jQuery("input[type=text]", dialog)
+    jQuery("input[type=text]", dialogBody)
       .each( ->
-        jQuery(this).parent().next().css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup( (e) ->
           obj = jQuery(this)
           text = obj.val()
@@ -19,10 +18,11 @@ root.ActionDialog = class ActionDialog extends root.QuestionDialog
 
     return
 
-  _prepareFilledDialog: (dialog) =>
-    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.text)
+  _prepareFilledDialog: (dialogBody) =>
+    @_dialog.setTitle(@_data.utils.text.title)
+    jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.text)
     if @readonly
-      jQuery("input", dialog).prop("readonly", true)
+      jQuery("input", dialogBody).prop("readonly", true)
       @_dialog.getButton('saveButtonDialog').hide()
     @
 

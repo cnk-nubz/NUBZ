@@ -1,15 +1,13 @@
 root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
-  _prepareDialog: (dialog) =>
+  _prepareDialog: (dialogBody) =>
     super
     inputOffset = @_data.utils.default.labelSize
     instance = this
 
-    inputs = jQuery("input[type=text]", dialog)
+    inputs = jQuery("input[type=text]", dialogBody)
     inputs.each( (idx) ->
         obj = jQuery(this)
-        error = obj.parent().next()
-        error.css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
       )
     lastInput = inputs.filter(":last")
@@ -17,15 +15,16 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
     return
 
-  _prepareFilledDialog: (dialog) =>
-    jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
-    jQuery(".form-group:eq(1) input", dialog).val(@_dialogInfo.question)
+  _prepareFilledDialog: (dialogBody) =>
+    @_dialog.setTitle(@_data.utils.text.title)
+    jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
+    jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
     for answer, index in @_dialogInfo.options
-      jQuery(".form-group:last-child > div input:last", dialog).val(answer).keyup()
+      jQuery(".form-group:last-child > div input:last", dialogBody).val(answer).keyup()
     if @readonly
-      jQuery("input", dialog).prop("readonly", true)
+      jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
-      jQuery("input", dialog).last().parents('.input-group').remove()
+      jQuery("input", dialogBody).last().parents('.input-group').remove()
       @_dialog.getButton('saveButtonDialog').hide()
     @
 

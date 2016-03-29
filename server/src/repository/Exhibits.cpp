@@ -4,8 +4,8 @@
 
 #include "DefaultRepo.h"
 #include "Exhibits.h"
-#include "InvalidData.h"
 #include "MapImages.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 
@@ -143,6 +143,19 @@ void Exhibits::checkFrame(const Exhibit::Frame &frame) {
     } else {
         throw InvalidData{"incorrect exhibit frame - given floor doesn't exist"};
     }
+}
+
+void Exhibits::resetFrames(std::int32_t floor, std::int32_t newVersion) {
+    using namespace db::sql;
+    auto sql = Table::Sql::update()
+                   .where(Table::FrameFloor == floor)
+                   .set(Table::Version, newVersion)
+                   .set(Table::FrameX, Null)
+                   .set(Table::FrameY, Null)
+                   .set(Table::FrameWidth, Null)
+                   .set(Table::FrameHeight, Null)
+                   .set(Table::FrameFloor, Null);
+    session.execute(sql);
 }
 
 namespace {

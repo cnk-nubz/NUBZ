@@ -3,20 +3,25 @@ package com.cnk.data.map;
 import java.util.ArrayList;
 
 public class FloorMap {
-
+    private Integer floor;
     private Resolution originalSize;
-    private ArrayList<MapTiles> zoomLevels;
+    private ArrayList<ZoomLevel> zoomLevels;
 
-    public FloorMap(Resolution originalSize, ArrayList<MapTiles> zoomLevels) {
+    public FloorMap(Integer floor, Resolution originalSize, ArrayList<ZoomLevel> zoomLevels) {
+        this.floor = floor;
         this.originalSize = originalSize;
         this.zoomLevels = zoomLevels;
+    }
+
+    public Integer getFloor() {
+        return floor;
     }
 
     public Resolution getOriginalSize() {
         return originalSize;
     }
 
-    public ArrayList<MapTiles> getLevels() {
+    public ArrayList<ZoomLevel> getZoomLevels() {
         return zoomLevels;
     }
 

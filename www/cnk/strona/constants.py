@@ -10,12 +10,8 @@ DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
             "emptyInputError": "Napis nie może być pusty",
-            "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
-        },
-        "style": {
-            "inputErrorColor": "#D8000C",
         }
     }
 }
@@ -45,7 +41,8 @@ SIMPLE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowego pytania",
+            "titleNew": "Tworzenie pytania otwartego",
+            "title": "Pytanie otwarte"
         },
     }
 }
@@ -81,7 +78,9 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania zamkniętego",
+            "titleNew": "Tworzenie pytania zamkniętego",
+            "title": "Pytanie zamknięte",
+            "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
         },
         "default": {
             "radioGroup": "ansType",
@@ -113,7 +112,9 @@ SORT_QUESTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie pytania z sortowaniem",
+            "titleNew": "Tworzenie pytania z sortowaniem",
+            "title": "Pytanie z sortowaniem",
+            "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
         },
         "default": {
             "labelSize": "3"
@@ -132,7 +133,8 @@ NEW_ACTION_DIALOG = {
     ],
     "utils": {
         "text": {
-            "title": "Tworzenie nowej akcji",
+            "titleNew": "Tworzenie nowej akcji",
+            "title": "Akcja"
         }
     }
 }
@@ -170,6 +172,30 @@ EXHIBIT_DIALOG = {
     }
 }
 
+CHANGE_EXPERIMENT_NAME_DIALOG = {
+    "data": [
+        [
+            "dialog/input.html", {
+                "labelText": "Nowa nazwa"
+            }
+        ]
+    ],
+    "utils": {
+        "text": {
+            "title": "Klonowanie badania",
+            "nameDuplicatedError": "Taka nazwa badania już istnieje."
+        }
+    }
+}
+
+EXPERIMENT_CONFIRMATION_MESSAGES = {
+    'finishExperiment': 'Czy chcesz zakończyć dane badanie? Na żadnym tablecie nie będzie można rozpocząć tego badania. Tej operacji nie da się cofnąć.',
+    'activateExperiment': 'Czy chcesz aktywować dane badanie? Nie będzie ono już edytowalne. Tej operacji nie da się cofnąć.',
+    'cancelButton': 'Anuluj',
+    'confirmButton': 'OK',
+    'title': 'Potwierdzenie'
+}
+
 POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
 '#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
 '#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',
@@ -180,7 +206,8 @@ to_merge_with_defaults = [
     MULTIPLE_CHOICE_QUESTION_DIALOG,
     SORT_QUESTION_DIALOG,
     NEW_ACTION_DIALOG,
-    EXHIBIT_DIALOG
+    EXHIBIT_DIALOG,
+    CHANGE_EXPERIMENT_NAME_DIALOG
 ]
 
 def merge_dicts(a, b, path=None):

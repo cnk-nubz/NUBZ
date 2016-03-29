@@ -2,12 +2,11 @@ package com.cnk.database.realm;
 
 import io.realm.RealmObject;
 
-
 public class MapTileInfoRealm extends RealmObject {
     private Integer floor;
-    private Integer detailLevel;
+    private Integer zoomLevel;
     private Integer width;
-    private Integer length;
+    private Integer height;
 
     public Integer getFloor() {
         return floor;
@@ -17,12 +16,12 @@ public class MapTileInfoRealm extends RealmObject {
         this.floor = floor;
     }
 
-    public Integer getDetailLevel() {
-        return detailLevel;
+    public Integer getZoomLevel() {
+        return zoomLevel;
     }
 
-    public void setDetailLevel(Integer detailLevel) {
-        this.detailLevel = detailLevel;
+    public void setZoomLevel(Integer zoomLevel) {
+        this.zoomLevel = zoomLevel;
     }
 
     public Integer getWidth() {
@@ -33,11 +32,11 @@ public class MapTileInfoRealm extends RealmObject {
         this.width = width;
     }
 
-    public Integer getLength() {
-        return length;
+    public Integer getHeight() {
+        return height;
     }
 
-    public void setLength(Integer length) {
-        this.length = length;
+    public void setHeight(Integer height) {
+        this.height = height;
     }
 }

@@ -16,18 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
-    private static final Integer ACTIVE_COLOR = Color.GREEN;
-    private static final Integer NOT_ACTIVE_COLOR = 0xffd3d3d3;
-    private static final Integer DEFAULT_LAYOUT = R.layout.select_list_item_default;
-    private List<T> options;
-    private Context context;
-    private Boolean optionChecked[];
-    private Boolean singleAnswer;
-    private View activeView;
-    private Integer activeId;
-    private Integer layout;
-    private SelectViewItemIds viewIds;
-
     private class OptionOnClickListener implements View.OnClickListener {
         private Integer optionId;
         private SelectListAdapter<T> adapterRef;
@@ -46,18 +34,21 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
             }
         }
     }
+    private static final Integer ACTIVE_COLOR = Color.GREEN;
+    private static final Integer NOT_ACTIVE_COLOR = 0xffd3d3d3;
+    private static final Integer DEFAULT_LAYOUT = R.layout.select_list_item_default;
+    private List<T> options;
+    private Context context;
+    private Boolean optionChecked[];
+    private Boolean singleAnswer;
+    private View activeView;
+    private Integer activeId;
+    private Integer layout;
+    private SelectViewItemIds viewIds;
 
     public SelectListAdapter(List<T> options, Boolean singleAnswer, Context context) {
         this(options, singleAnswer, context, DEFAULT_LAYOUT, new SelectViewItemIds());
     }
-
-    public SelectListAdapter(List<T> options,
-                             Boolean singleAnswer,
-                             Context context,
-                             Integer layout) {
-        this(options, singleAnswer, context, layout, new SelectViewItemIds());
-    }
-
 
     public SelectListAdapter(List<T> options,
                              Boolean singleAnswer,

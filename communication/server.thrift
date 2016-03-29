@@ -53,10 +53,13 @@ service Server {
 		throws (1: structs.InternalError err),
 
 	void createExperiment(1: structs.CreateExperimentRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	void updateExperiment(1: i32 experimentId, 2: structs.CreateExperimentRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+
+	void cloneExperiment(1: structs.CloneRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.ExperimentInfo> getReadyExperiments()
 		throws (1: structs.InternalError err),
@@ -75,6 +78,7 @@ service Server {
 
 	void finishExperiment()
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Reports

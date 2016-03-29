@@ -7,10 +7,6 @@
 
 namespace db {
 namespace table {
-
-struct _Null {
-} static constexpr Null{};
-
 namespace detail {
 
 template <class Field>
@@ -55,13 +51,13 @@ auto operator!=(Column<Field> col, const Value &val) {
 }
 
 template <class Field, class Value = typename Field::internal_type>
-auto operator==(Column<Field> col, _Null) {
+auto operator==(Column<Field> col, sql::_Null) {
     using namespace db::sql::detail;
     return Condition<Field>(col, IsNull);
 }
 
 template <class Field, class Value = typename Field::internal_type>
-auto operator!=(Column<Field> col, _Null) {
+auto operator!=(Column<Field> col, sql::_Null) {
     using namespace db::sql::detail;
     return Condition<Field>(col, IsNotNull);
 }

@@ -13,6 +13,10 @@
 
 namespace db {
 namespace sql {
+
+struct _Null {
+} static constexpr Null{};
+
 namespace detail {
 
 struct Op {

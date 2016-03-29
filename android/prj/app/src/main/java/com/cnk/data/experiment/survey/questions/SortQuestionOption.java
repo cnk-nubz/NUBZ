@@ -4,15 +4,15 @@ import com.cnk.data.ListObject;
 
 public class SortQuestionOption implements ListObject {
 
-    private Integer id;
+    private int id;
     private String text;
 
-    public SortQuestionOption(Integer id, String text) {
+    public SortQuestionOption(int id, String text) {
         this.id = id;
         this.text = text;
     }
 
-    public Integer getId() {
+    public int getId() {
         return id;
     }
 
