@@ -2,6 +2,7 @@
 import sys
 import os
 import json
+import logging
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -673,3 +674,9 @@ def getAllExhibits(request):
             'message': 'Nie udało sie pobrać listy eksponatów. ({})'.format(
                 str(ex))}
     return JsonResponse(result)
+
+def reportError(request):
+    data = json.loads(request.POST.get("jsonData"))
+    logger = logging.getLogger('jsLogger')
+    logger.error(": {0} in {1}, {2}".format(data['url'], data['lineNumber'], data['errorMsg']))
+    return JsonResponse({'a': 'a'})

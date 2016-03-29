@@ -25,6 +25,10 @@ urlpatterns = [
     url(r'createMultipleChoiceQuestion/$', views.createMultipleChoiceQuestion, name='createMultipleChoiceQuestion'),
     url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
     url(r'createAction/$', views.createAction, name='createAction'),
+
+    #errors_reporting
+    url(r'errorReporting/$', views.reportError, name='reportError'),
+
     #experiment
     url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment'),
     url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
