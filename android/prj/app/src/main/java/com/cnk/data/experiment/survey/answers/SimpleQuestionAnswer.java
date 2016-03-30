@@ -11,7 +11,7 @@ public class SimpleQuestionAnswer implements Serializable {
 
     public void setAnswer(String answer) {
         this.answer = answer;
-        if (answer.length() == 0) {
+        if (answer.isEmpty()) {
             this.answer = null;
         }
     }

@@ -42,63 +42,19 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private RelativeLayout mainView;
     private LinearLayout goPrev;
     private LinearLayout goNext;
+    private View.OnClickListener defaultNextAction;
     private TextView nextText;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
     private ProgressDialog spinner;
     private Survey.SurveyType type;
 
-    private class NavigateSurvey implements View.OnClickListener {
-        @Override
-        public void onClick(View view) {
-            currentQuestionView.saveAnswer();
-            if (!currentQuestionView.canContinue()) {
-                Toast.makeText(getApplicationContext(), R.string.notFilled, Toast.LENGTH_SHORT)
-                     .show();
-                return;
-            }
-            hideKeyboard();
-            if (view.getId() == goPrev.getId()) {
-                nextText.setText(R.string.next);
-                if (currentQuestionNo - 1 <= 0) {
-                    goPrev.setVisibility(View.INVISIBLE);
-                }
-                showView(currentQuestionNo - 1);
-            } else if (view.getId() == goNext.getId()) {
-                goPrev.setVisibility(View.VISIBLE);
-                if (currentQuestionNo >= allQuestionsCount - 1) {
-                    DialogInterface.OnClickListener
-                            positiveAction =
-                            (dialog, which) -> changeToNextActivity();
-                    DialogInterface.OnClickListener negativeAction = (dialog, which) -> {
-                    };
-                    Utils.showDialog(SurveyActivity.this,
-                                     R.string.confirmation,
-                                     R.string.confirm,
-                                     R.string.cancel,
-                                     positiveAction,
-                                     negativeAction);
-                } else {
-                    if (currentQuestionNo == allQuestionsCount - 2) {
-                        nextText.setText(R.string.finish);
-                    }
-                    showView(currentQuestionNo + 1);
-                }
-            }
-            view.setEnabled(true);
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
-        goPrev = (LinearLayout) findViewById(R.id.goPrev);
-        goPrev.setOnClickListener(new NavigateSurvey());
-        goNext = (LinearLayout) findViewById(R.id.goNext);
-        goNext.setOnClickListener(new NavigateSurvey());
-        nextText = (TextView) findViewById(R.id.nextText);
+        setButtons();
         questionViews = new ArrayList<>();
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
@@ -108,6 +64,62 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         } else {
             Log.i(LOG_TAG, "Survey after");
             init();
+        }
+    }
+
+    private void setButtons() {
+        goPrev = (LinearLayout) findViewById(R.id.goPrev);
+        goPrev.setOnClickListener((view) -> {
+            currentQuestionView.saveAnswer();
+            hideKeyboard();
+            currentQuestionNo--;
+            refreshButtons();
+            showView(currentQuestionNo);
+        });
+
+        defaultNextAction = (view) -> {
+            currentQuestionView.saveAnswer();
+            if (!currentQuestionView.canContinue()) {
+                Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+                return;
+            }
+            hideKeyboard();
+            currentQuestionNo++;
+            refreshButtons();
+            showView(currentQuestionNo);
+        };
+        goNext = (LinearLayout) findViewById(R.id.goNext);
+        goNext.setOnClickListener(defaultNextAction);
+        nextText = (TextView) findViewById(R.id.nextText);
+    }
+
+    private void refreshButtons() {
+        if (currentQuestionNo == 0) {
+            goPrev.setVisibility(View.INVISIBLE);
+        } else {
+            goPrev.setVisibility(View.VISIBLE);
+        }
+
+        if (currentQuestionNo == allQuestionsCount - 1) {
+            nextText.setText(R.string.finish);
+            goNext.setOnClickListener((view) -> {
+                currentQuestionView.saveAnswer();
+                if (!currentQuestionView.canContinue()) {
+                    Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                hideKeyboard();
+                DialogInterface.OnClickListener positiveAction =
+                        (dialog, which) -> changeToNextActivity();
+                Utils.showDialog(SurveyActivity.this,
+                                 R.string.confirmation,
+                                 R.string.confirm,
+                                 R.string.cancel,
+                                 positiveAction);
+            });
+        } else {
+            nextText.setText(R.string.next);
+            goNext.setOnClickListener(defaultNextAction);
         }
     }
 
@@ -138,6 +150,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             }
             setUpCounterLabel();
             showView(0);
+            refreshButtons();
         });
     }
 
