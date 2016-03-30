@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -19,6 +18,7 @@ import com.cnk.data.raports.ReadyRaports;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.notificators.Observer;
+import com.cnk.ui.Utils;
 
 import java.util.ArrayList;
 
@@ -72,26 +72,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
         startActivity(i);
     }
 
-    public void showAlert() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle(R.string.error);
-        alert.setMessage(R.string.dataError);
-        alert.setPositiveButton("Spróbuj ponownie", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                downloadMap();
-            }
-        });
-        alert.setNegativeButton("Wyjdź", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                System.exit(1);
-            }
-        });
-        alert.setCancelable(false);
-        alert.show();
-    }
-
     private void downloadMap() {
         setSpinner();
         MapData.getInstance().downloadMap(this::mapDownloaded);
@@ -112,6 +92,17 @@ public class StartScreen extends AppCompatActivity implements Observer {
             }
         }
         spinner.dismiss();
+    }
+
+    private void showAlert() {
+        DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
+        DialogInterface.OnClickListener negativeAction = (dialog, which) -> System.exit(1);
+        Utils.showDialog(this,
+                         R.string.dataError,
+                         R.string.tryAgain,
+                         R.string.exit,
+                         positiveAction,
+                         negativeAction);
     }
 
     private void setSpinner() {

@@ -25,8 +25,14 @@ public class MultipleChoiceQuestionView extends QuestionView {
         this.answer = answer;
     }
 
+    @Override
     public void saveAnswer() {
         answer.setAnswer(adapter.getSelectedOptions());
+    }
+
+    @Override
+    public boolean canContinue() {
+        return answer.getAnswer() != null;
     }
 
     private void setUpTable(Context c, MultipleChoiceQuestion question) {
