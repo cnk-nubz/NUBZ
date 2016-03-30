@@ -2,7 +2,7 @@ package com.cnk.data;
 
 public interface ListObject {
 
-    public Integer getId();
+    int getId();
 
-    public String getText();
+    String getText();
 }

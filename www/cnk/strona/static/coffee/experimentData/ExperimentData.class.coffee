@@ -39,3 +39,6 @@ root.ExperimentData = class ExperimentData
     row.data = viewId
     fragment.appendChild(row)
     fragment
+
+  escapeText: (text) ->
+    jQuery("<div>").text(text).html()

@@ -8,11 +8,11 @@
 #include "Counters.h"
 #include "DefaultRepo.h"
 #include "Exhibits.h"
-#include "InvalidData.h"
 #include "MultipleChoiceQuestions.h"
 #include "Reports.h"
 #include "SimpleQuestions.h"
 #include "SortQuestions.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 

@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.cnk.data.DataTranslator;
 import com.cnk.data.FileHandler;
-import com.cnk.data.experiment.raport.Raport;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.realm.RaportFileRealm;

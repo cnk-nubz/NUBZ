@@ -9,15 +9,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery("input[type=text]", dialog)
       .each( ->
         obj = jQuery(this)
-        error = obj.parent().next()
-        error.css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-      )
-    jQuery(".popoverButton", dialog)
-      .each( ->
-        obj = jQuery(this)
-        error = obj.parent().next()
-        error.css("color", instance._data.utils.style.inputErrorColor)
       )
     @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>

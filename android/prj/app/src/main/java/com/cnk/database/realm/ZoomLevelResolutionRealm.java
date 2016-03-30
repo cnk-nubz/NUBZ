@@ -3,9 +3,9 @@ package com.cnk.database.realm;
 
 import io.realm.RealmObject;
 
-public class DetailLevelResRealm extends RealmObject {
+public class ZoomLevelResolutionRealm extends RealmObject {
     private Integer floor;
-    private Integer detailLevel;
+    private Integer zoomLevel;
     private Integer originalWidth;
     private Integer originalHeight;
     private Integer scaledWidth;
@@ -19,12 +19,12 @@ public class DetailLevelResRealm extends RealmObject {
         this.floor = floor;
     }
 
-    public Integer getDetailLevel() {
-        return detailLevel;
+    public Integer getZoomLevel() {
+        return zoomLevel;
     }
 
-    public void setDetailLevel(Integer detailLevel) {
-        this.detailLevel = detailLevel;
+    public void setZoomLevel(Integer zoomLevel) {
+        this.zoomLevel = zoomLevel;
     }
 
     public Integer getOriginalWidth() {

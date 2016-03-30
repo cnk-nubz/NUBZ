@@ -8,8 +8,6 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     inputs = jQuery("input[type=text]", dialogBody)
     inputs.each( (idx) ->
         obj = jQuery(this)
-        error = obj.parent().next()
-        error.css("color", instance._data.utils.style.inputErrorColor)
         jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
       )
     lastInput = inputs.filter(":last")

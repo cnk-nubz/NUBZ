@@ -37,9 +37,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-	'strona',
-	'compressor',
-	'thrift',
+    'strona',
+    'compressor',
+    'thrift',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -58,8 +58,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-		BASE_DIR + '/strona/templates'	
-	],
+        BASE_DIR + '/strona/templates'
+    ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,22 +85,40 @@ DATABASES = {
 }
 
 LOGGING = {
-	'version': 1,
-	'disable_existing_loggers': False,
-	'handlers': {
-		'file': {
-			'level': 'INFO',
-			'class': 'logging.FileHandler',
-			'filename': os.path.join(BASE_DIR, 'dumplog.log'),
-		},
-	},
-	'loggers': {
-		'django.request': {
-			'handlers': ['file'],
-			'level': 'INFO',
-			'propagate': True,
-		},
-	},
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format' : "[%(asctime)s] %(levelname)s %(message)s",
+            'datefmt' : "%d/%b/%Y %H:%M:%S"
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'dumplog.log'),
+            'formatter': 'verbose',
+        },
+        'jsError': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'jsLog.log'),
+            'formatter': 'verbose',
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'jsLogger': {
+            'handlers': ['jsError'],
+            'level': 'ERROR',
+            'propagate': True,
+        }
+    },
 }
 
 
@@ -128,9 +146,9 @@ STATICFILES_FINDERS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = ''
 
-STATICFILES_DIRS = ( 
-	os.path.join('download'),
-	os.path.join(BASE_DIR + '/strona/', 'static'),
+STATICFILES_DIRS = (
+    os.path.join('download'),
+    os.path.join(BASE_DIR + '/strona/', 'static'),
 )
 MEDIA_URL = os.path.join(BASE_DIR, 'media/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'download_tmp/')

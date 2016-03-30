@@ -1,24 +1,33 @@
 package com.cnk.database.models;
 
 import com.cnk.data.map.Resolution;
+import com.cnk.database.realm.MapTileInfoRealm;
 
-public class MapTileInfo {
+public class MapTileInfo implements Realmable {
     private Integer floor;
-    private Integer detailLevel;
     private Resolution tileSize;
+    private Integer zoomLevel;
 
-    public MapTileInfo(Integer floor, Integer detailLevel, Resolution tileSize) {
+    public MapTileInfo(MapTileInfoRealm realm) {
+        this(realm.getFloor(),
+             realm.getZoomLevel(),
+             new Resolution(realm.getWidth(), realm.getHeight()));
+    }
+
+    public MapTileInfo(Integer floor, Integer zoomLevel, Resolution tileSize) {
         this.floor = floor;
-        this.detailLevel = detailLevel;
         this.tileSize = tileSize;
+        this.zoomLevel = zoomLevel;
     }
 
-    public Integer getFloor() {
-        return floor;
-    }
-
-    public Integer getDetailLevel() {
-        return detailLevel;
+    @Override
+    public MapTileInfoRealm toRealm() {
+        MapTileInfoRealm res = new MapTileInfoRealm();
+        res.setFloor(floor);
+        res.setZoomLevel(zoomLevel);
+        res.setWidth(tileSize.getWidth());
+        res.setHeight(tileSize.getHeight());
+        return res;
     }
 
     public Resolution getTileSize() {

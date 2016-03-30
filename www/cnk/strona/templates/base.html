@@ -47,6 +47,9 @@
   {% endblock %}
   {% block init %}
     {% compress js %}
+    <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
     <script type="text/coffeescript">
       document.detached = {}
       root = exports ? this

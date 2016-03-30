@@ -15,8 +15,6 @@ public class Downloader {
     private Downloader() {
     }
 
-    ;
-
     public static Downloader getInstance() {
         if (instance == null) {
             instance = new Downloader();

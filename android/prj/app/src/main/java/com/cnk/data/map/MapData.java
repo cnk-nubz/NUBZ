@@ -8,9 +8,8 @@ import com.cnk.communication.NetworkHandler;
 import com.cnk.data.Downloader;
 import com.cnk.data.FileHandler;
 import com.cnk.database.DatabaseHelper;
-import com.cnk.database.models.DetailLevelRes;
 import com.cnk.database.models.MapTileInfo;
-import com.cnk.database.models.Version;
+import com.cnk.database.models.ZoomLevelResolution;
 import com.cnk.exceptions.DatabaseLoadException;
 import com.cnk.utilities.Consts;
 
@@ -21,22 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapData {
+    public interface MapUpdateAction {
+        void doOnUpdate();
+    }
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
     private static MapData instance;
-    private Integer mapVersion;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
 
-    public interface MapUpdateAction {
-        void doOnUpdate();
-    }
-
     private MapData() {
         floorInfos = new ArrayList<>();
-        mapVersion = null;
     }
 
     public static MapData getInstance() {
@@ -55,7 +51,6 @@ public class MapData {
     }
 
     public void loadDbData() throws DatabaseLoadException {
-        mapVersion = dbHelper.getVersion(Version.Item.MAP);
         try {
             loadMapFromDb();
         } catch (Exception e) {
@@ -64,43 +59,75 @@ public class MapData {
         }
     }
 
-    private void loadMapFromDb() {
+    private void loadMapFromDb() throws DatabaseLoadException {
         floorInfos.clear();
         for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
-            FloorMapInfo currentFloor = new FloorMapInfo();
-            currentFloor.setDetailLevelsCount(dbHelper.getDetailLevelsForFloor(floor));
-            ArrayList<DetailLevelRes> detailLevelRes = new ArrayList<>();
-            ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
-            for (int detailLevel = 0; detailLevel < currentFloor.getDetailLevelsCount();
-                 detailLevel++) {
-                detailLevelRes.add(dbHelper.getDetailLevelRes(floor, detailLevel));
-                mapTileInfos.add(dbHelper.getMapTileInfo(floor, detailLevel));
+            int zoomLevelsCount = dbHelper.getZoomLevelsCount(floor);
+            if (zoomLevelsCount == 0) {
+                throw new DatabaseLoadException();
             }
-            currentFloor.setDetailLevelRes(detailLevelRes);
+
+            ArrayList<ZoomLevelResolution> zoomLevelsResolutions = new ArrayList<>();
+            ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
+            for (int zoomLevel = 0; zoomLevel < zoomLevelsCount; zoomLevel++) {
+                zoomLevelsResolutions.add(dbHelper.getZoomLevelResolution(floor, zoomLevel));
+                mapTileInfos.add(dbHelper.getMapTileInfo(floor, zoomLevel));
+            }
+
+            FloorMapInfo currentFloor = new FloorMapInfo();
+            currentFloor.setZoomLevelsResolutions(zoomLevelsResolutions);
             currentFloor.setMapTilesSizes(mapTileInfos);
             floorInfos.add(currentFloor);
         }
     }
 
-    public void setMaps(Integer version, FloorMap floor0, FloorMap floor1) throws IOException {
+    public void setMaps(List<FloorMap> maps) throws IOException {
         Log.i(LOG_TAG, "Setting new maps");
-        Boolean floor0Changed = downloadAndSaveFloor(floor0, Consts.FLOOR1);
-        Boolean floor1Changed = downloadAndSaveFloor(floor1, Consts.FLOOR2);
-        if (floor0Changed || floor1Changed) {
-            FileHandler.getInstance()
-                       .renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
+        for (FloorMap map : maps) {
+            downloadAndSaveFloor(map);
         }
+
+        FileHandler.getInstance().renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
         Log.i(LOG_TAG, "Files saved, saving to db");
-        List<FloorMap> floorMaps = new ArrayList<>();
-        floorMaps.add(floor0);
-        floorMaps.add(floor1);
-        dbHelper.setMaps(version, floorMaps);
+
+        for (FloorMap map : maps) {
+            dbHelper.setMap(map);
+        }
         loadDbData();
         Log.i(LOG_TAG, "New maps set");
     }
 
-    public Bitmap getTile(Integer floor, Integer detailLevel, Integer row, Integer column) {
-        String tileFilename = getTileFilename(row, column, floor, detailLevel);
+    private void downloadAndSaveFloor(FloorMap map) throws IOException {
+        ArrayList<ZoomLevel> levels = map.getZoomLevels();
+        for (int level = 0; level < levels.size(); level++) {
+            ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
+            for (int i = 0; i < tiles.size(); i++) {
+                for (int j = 0; j < tiles.get(i).size(); j++) {
+                    InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
+                    String tmpFilename = getTemporaryPathForTile(map.getFloor(), level, i, j);
+                    String actualFilename = getPathForTile(map.getFloor(), level, i, j);
+                    FileHandler.getInstance().saveInputStream(in, tmpFilename);
+                    tiles.get(i).set(j, actualFilename);
+                }
+            }
+        }
+    }
+
+    private String getTemporaryPathForTile(int floorNo,
+                                           int zoomLevel,
+                                           int x,
+                                           int y) {
+        String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
+        return dir + getTileFilename(x, y, floorNo, zoomLevel);
+    }
+
+    private String getPathForTile(int floorNo, int zoomLevel, int x, int y) {
+        String dir = Consts.DATA_PATH + MAP_DIRECTORY;
+        return dir + getTileFilename(x, y, floorNo, zoomLevel);
+    }
+
+    public Bitmap getTile(int floor, int zoomLevel, int row, int column) {
+        String tileFilename = getTileFilename(row, column, floor, zoomLevel);
         tileFilename = Consts.DATA_PATH + MAP_DIRECTORY + "/" + tileFilename;
         Bitmap bmp = null;
         InputStream in = null;
@@ -122,67 +149,45 @@ public class MapData {
         return bmp;
     }
 
-    private String getTileFilename(Integer x, Integer y, Integer floorNo, Integer detailLevel) {
-        return TILE_FILE_PREFIX + floorNo.toString() + "_" + detailLevel.toString() + "_" +
-               x.toString() + "_" + y.toString();
+    private String getTileFilename(int x, int y, int floorNo, int zoomLevel) {
+        return TILE_FILE_PREFIX + floorNo + "_" + zoomLevel + "_" + x + "_" + y;
     }
 
-    public Boolean mapForFloorExists(Integer floor) {
-        return floorInfos.get(floor).getDetailLevelsCount() > 0;
+    public Boolean mapForFloorExists(int floor) {
+        return floorInfos.get(floor).getZoomLevelsResolutions().size() > 0;
     }
 
-    public Integer getDetailLevelsCountForFloor(Integer floor) {
-        return floorInfos.get(floor).getDetailLevelsCount();
+    public List<ZoomLevelInfo> getZoomLevels(int floor) {
+        int count = getZoomLevelsCount(floor);
+        List<ZoomLevelInfo> res = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            ZoomLevelInfo info = new ZoomLevelInfo();
+            info.tileSize = getTileSize(floor, i);
+            info.scaledSize = getZoomLevelResolution(floor, i).getScaledRes();
+            res.add(info);
+        }
+        return res;
     }
 
-    public Resolution getOriginalResolution(Integer floor) {
-        return floorInfos.get(floor).getDetailLevelRes().get(0).getOriginalRes();
+    public int getZoomLevelsCount(int floor) {
+        return floorInfos.get(floor).getZoomLevelsResolutions().size();
     }
 
-    public Integer getMapVersion() {
-        return mapVersion;
+    public Resolution getOriginalResolution(int floor) {
+        return floorInfos.get(floor).getZoomLevelsResolutions().get(0).getOriginalRes();
     }
 
-    public DetailLevelRes getDetailLevelResolution(Integer floor, Integer detailLevel) {
-        return floorInfos.get(floor).getDetailLevelRes().get(detailLevel);
+    public Resolution getMaxZoomResolution(int floor) {
+        int maxZoomLevel = getZoomLevelsCount(floor) - 1;
+        return floorInfos.get(floor).getZoomLevelsResolutions().get(maxZoomLevel).getScaledRes();
     }
 
-    public Resolution getTileSize(Integer floor, Integer detailLevel) {
-        MapTileInfo size = floorInfos.get(floor).getMapTilesSizes().get(detailLevel);
+    public ZoomLevelResolution getZoomLevelResolution(int floor, int zoomLevel) {
+        return floorInfos.get(floor).getZoomLevelsResolutions().get(zoomLevel);
+    }
+
+    public Resolution getTileSize(int floor, int zoomLevel) {
+        MapTileInfo size = floorInfos.get(floor).getMapTilesSizes().get(zoomLevel);
         return size != null ? size.getTileSize() : null;
-    }
-
-    private Boolean downloadAndSaveFloor(FloorMap floor, Integer floorNo) throws IOException {
-        if (floor == null) {
-            return false;
-        }
-
-        ArrayList<MapTiles> levels = floor.getLevels();
-        for (int level = 0; level < levels.size(); level++) {
-            ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
-            for (int i = 0; i < tiles.size(); i++) {
-                for (int j = 0; j < tiles.get(i).size(); j++) {
-                    InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
-                    String tmpFilename = getTemporaryPathForTile(floorNo, level, i, j);
-                    String actualFilename = getPathForTile(floorNo, level, i, j);
-                    FileHandler.getInstance().saveInputStream(in, tmpFilename);
-                    tiles.get(i).set(j, actualFilename);
-                }
-            }
-        }
-        return true;
-    }
-
-    public String getTemporaryPathForTile(Integer floorNo,
-                                          Integer detailLevel,
-                                          Integer x,
-                                          Integer y) {
-        String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
-        return dir + getTileFilename(x, y, floorNo, detailLevel);
-    }
-
-    public String getPathForTile(Integer floorNo, Integer detailLevel, Integer x, Integer y) {
-        String dir = Consts.DATA_PATH + MAP_DIRECTORY;
-        return dir + getTileFilename(x, y, floorNo, detailLevel);
     }
 }
