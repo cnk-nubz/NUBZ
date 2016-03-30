@@ -19,7 +19,7 @@
  * exhibitId, durationInSecs = int
  * actions = [int, ...]
  * survey = {simpleQuestionsAnswers, multipleChoiceQuestionsAnswers, sortQuestionsAnswers}
- * anyAnswers = [optional(answer), ...]
+ * anyAnswers = [answer, ...]
  * simpleQuestionsAnswers = string
  * multipleChoiceQuestionsAnswer, sortQuestionsAnswer = [int, ...]
  */
@@ -107,17 +107,17 @@ Reports::ContentData::SurveyAns parseSurveyAns(const rapidjson::Value &json) {
 
 Reports::ContentData::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    return parseOpt(json, Keys::answer, parseString);
+    return parseString(getNode(json, Keys::answer));
 }
 
 Reports::ContentData::SurveyAns::MultiChoiceQAnswer parseMultiAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    return parseOpt(json, Keys::answer, parseIntArray);
+    return parseIntArray(getNode(json, Keys::answer));
 }
 
 Reports::ContentData::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value &json) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    return parseOpt(json, Keys::answer, parseIntArray);
+    return parseIntArray(getNode(json, Keys::answer));
 }
 }
 
@@ -183,33 +183,21 @@ rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,
 rapidjson::Value createSimpleAns(rapidjson::Document::AllocatorType &allocator,
                                  const Reports::ContentData::SurveyAns::SimpleQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    if (ans) {
-        return createDictionary(allocator, std::make_pair(Keys::answer, createString(ans.value())));
-    } else {
-        return {};
-    }
+    return createDictionary(allocator, std::make_pair(Keys::answer, createString(ans)));
 }
 
 rapidjson::Value createMultiAns(rapidjson::Document::AllocatorType &allocator,
                                 const Reports::ContentData::SurveyAns::MultiChoiceQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    if (ans) {
-        return createDictionary(
-            allocator, std::make_pair(Keys::answer, createIntArray(allocator, ans.value())));
-    } else {
-        return {};
-    }
+    return createDictionary(allocator,
+                            std::make_pair(Keys::answer, createIntArray(allocator, ans)));
 }
 
 rapidjson::Value createSortAns(rapidjson::Document::AllocatorType &allocator,
                                const Reports::ContentData::SurveyAns::SortQAnswer &ans) {
     using Keys = RootKeys::SurveyAnsKeys::AnsKeys;
-    if (ans) {
-        return createDictionary(
-            allocator, std::make_pair(Keys::answer, createIntArray(allocator, ans.value())));
-    } else {
-        return {};
-    }
+    return createDictionary(allocator,
+                            std::make_pair(Keys::answer, createIntArray(allocator, ans)));
 }
 }
 }

@@ -148,40 +148,39 @@ void Reports::checkSurveyAns(const Experiment::Survey &survey, const Report::Sur
 
 void Reports::checkSimpleAns(const SimpleQuestion &question,
                              const Report::SurveyAns::SimpleQAnswer &answer) {
-    if (answer) {
-        if (question.numberAnswer && !utils::all_of(answer.value(), isdigit)) {
-            throw InvalidData{
-                "incorrect answer for simple question: number answer should contain only digits"};
-        }
+    if (answer.empty()) {
+        throw InvalidData{"answer for simple question cannot be empty"};
+    }
+    if (question.numberAnswer && !utils::all_of(answer, isdigit)) {
+        throw InvalidData{
+            "incorrect answer for simple question: number answer should contain only digits"};
     }
 }
 
 void Reports::checkMultipleChoiceAns(const MultipleChoiceQuestion &question,
                                      const Report::SurveyAns::MultiChoiceQAnswer &answer) {
-    if (!answer) {
-        return;
+    if (answer.empty()) {
+        throw InvalidData{"answer for multiple choice question cannot be empty"};
     }
+
     auto available = std::unordered_set<std::int32_t>{};
     for (const auto &opt : question.options) {
         available.insert(opt.ID);
     }
 
-    if (!utils::all_of(answer.value(), std::bind(&decltype(available)::count, &available, _1))) {
+    if (!utils::all_of(answer, std::bind(&decltype(available)::count, &available, _1))) {
         throw InvalidData{"incorrect answer for multiple choice question: incorrect id"};
     }
 }
 
 void Reports::checkSortAns(const SortQuestion &question,
                            const Report::SurveyAns::SortQAnswer &answer) {
-    if (!answer) {
-        return;
-    }
     auto available = std::vector<std::int32_t>{};
     for (const auto &opt : question.options) {
         available.push_back(opt.ID);
     }
 
-    auto choosen = answer.value();
+    auto choosen = answer;
     std::sort(available.begin(), available.end());
     std::sort(choosen.begin(), choosen.end());
     if (available != choosen) {

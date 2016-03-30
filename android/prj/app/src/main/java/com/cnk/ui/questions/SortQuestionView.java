@@ -23,8 +23,14 @@ public class SortQuestionView extends QuestionView {
         setUpTable(c, question);
     }
 
+    @Override
     public void saveAnswer() {
         answer.setAnswer(adapter.getOrder());
+    }
+
+    @Override
+    public boolean canContinue() {
+        return true;
     }
 
     private void setUpTable(Context c, SortQuestion question) {
