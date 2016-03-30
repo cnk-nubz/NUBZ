@@ -42,7 +42,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     private RelativeLayout mainView;
     private LinearLayout goPrev;
     private LinearLayout goNext;
-    private View.OnClickListener defaultNextAction;
     private TextView nextText;
     private QuestionView currentQuestionView;
     private List<QuestionView> questionViews;
@@ -69,28 +68,30 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void setButtons() {
         goPrev = (LinearLayout) findViewById(R.id.goPrev);
-        goPrev.setOnClickListener((view) -> {
-            currentQuestionView.saveAnswer();
-            hideKeyboard();
-            currentQuestionNo--;
-            refreshButtons();
-            showView(currentQuestionNo);
-        });
-
-        defaultNextAction = (view) -> {
-            currentQuestionView.saveAnswer();
-            if (!currentQuestionView.canContinue()) {
-                Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
-                return;
-            }
-            hideKeyboard();
-            currentQuestionNo++;
-            refreshButtons();
-            showView(currentQuestionNo);
-        };
+        goPrev.setOnClickListener(this::defaultPrevAction);
         goNext = (LinearLayout) findViewById(R.id.goNext);
-        goNext.setOnClickListener(defaultNextAction);
+        goNext.setOnClickListener(this::defaultNextAction);
         nextText = (TextView) findViewById(R.id.nextText);
+    }
+
+    private void defaultNextAction(View view) {
+        currentQuestionView.saveAnswer();
+        if (!currentQuestionView.canContinue()) {
+            Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        hideKeyboard();
+        currentQuestionNo++;
+        refreshButtons();
+        showView(currentQuestionNo);
+    }
+
+    private void defaultPrevAction(View view) {
+        currentQuestionView.saveAnswer();
+        hideKeyboard();
+        currentQuestionNo--;
+        refreshButtons();
+        showView(currentQuestionNo);
     }
 
     private void refreshButtons() {
@@ -102,25 +103,47 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
         if (currentQuestionNo == allQuestionsCount - 1) {
             nextText.setText(R.string.finish);
-            goNext.setOnClickListener((view) -> {
-                currentQuestionView.saveAnswer();
-                if (!currentQuestionView.canContinue()) {
-                    Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                hideKeyboard();
-                DialogInterface.OnClickListener positiveAction =
-                        (dialog, which) -> changeToNextActivity();
-                Utils.showDialog(SurveyActivity.this,
-                                 R.string.confirmation,
-                                 R.string.confirm,
-                                 R.string.cancel,
-                                 positiveAction);
-            });
+            goNext.setOnClickListener(this::finishButtonAction);
         } else {
             nextText.setText(R.string.next);
-            goNext.setOnClickListener(defaultNextAction);
+            goNext.setOnClickListener(this::defaultNextAction);
         }
+    }
+
+    private void finishButtonAction(View view) {
+        currentQuestionView.saveAnswer();
+        if (!currentQuestionView.canContinue()) {
+            Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        hideKeyboard();
+        DialogInterface.OnClickListener positiveAction =
+                (dialog, which) -> changeToNextActivity();
+        Utils.showDialog(SurveyActivity.this,
+                         R.string.confirmation,
+                         R.string.confirm,
+                         R.string.cancel,
+                         positiveAction);
+    }
+
+    private void changeToNextActivity() {
+        Class next = (Class) getIntent().getSerializableExtra("nextActivity");
+        if (next == null) {
+            finish();
+            ExperimentData.getInstance().finishExperiment();
+            NetworkHandler.getInstance().uploadRaports();
+        } else {
+            Intent i = new Intent(getApplicationContext(), next);
+            finish();
+            startActivity(i);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        goNext.setOnClickListener(null);
+        goPrev.setOnClickListener(null);
     }
 
     private void setSpinner() {
@@ -205,18 +228,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    private void changeToNextActivity() {
-        Class next = (Class) getIntent().getSerializableExtra("nextActivity");
-        if (next == null) {
-            finish();
-            ExperimentData.getInstance().finishExperiment();
-            NetworkHandler.getInstance().uploadRaports();
-        } else {
-            Intent i = new Intent(getApplicationContext(), next);
-            finish();
-            startActivity(i);
-        }
-    }
+
 
     @Override
     public void onBackPressed() {
