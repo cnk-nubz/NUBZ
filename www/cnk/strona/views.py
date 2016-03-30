@@ -559,8 +559,11 @@ def saveExperiment(request):
     except Exception as ex:
         result = {
             'success': False,
-            'message': "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-                str(ex))
+            'exceptionType': type(ex).__name__,
+            'message': get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+                       if type(ex).__name__ == 'DuplicateName' else
+                        "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
+                        str(ex))
         }
     return JsonResponse(result)
 

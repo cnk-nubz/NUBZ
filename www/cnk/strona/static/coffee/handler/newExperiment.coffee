@@ -258,10 +258,28 @@ class Handlers
       url: '/saveExperiment/'
       success: (data) ->
         if not data.success
-          @_displayError(data.message)
+          if data.exceptionType is 'DuplicateName'
+            @_showNameDuplicatedError(data.message)
+          else
+            @_displayError(data.message)
         else
           location.href = '/badania'
     )
+    return
+
+  _showNameDuplicatedError: (message) =>
+    experimentTitle = jQuery(@_DOM.experimentTitle)
+    oldTitle = experimentTitle.attr("title")
+    experimentTitle
+      .attr("title", message)
+      .tooltip('show')
+      .one('focus', ->
+        jQuery(this).attr("title", oldTitle)
+        jQuery(this).parent().removeClass("has-error")
+        jQuery(this).tooltip('destroy')
+      )
+      .parent().addClass("has-error")
+    jQuery('#experiment').scrollTop(0)
     return
 
   _addNewQuestion: =>
