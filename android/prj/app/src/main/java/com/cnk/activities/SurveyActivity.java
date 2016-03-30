@@ -70,7 +70,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         goPrev = (LinearLayout) findViewById(R.id.goPrev);
         goPrev.setOnClickListener(this::defaultPrevAction);
         goNext = (LinearLayout) findViewById(R.id.goNext);
-        goNext.setOnClickListener(this::defaultNextAction);
         nextText = (TextView) findViewById(R.id.nextText);
     }
 
@@ -82,7 +81,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         }
         hideKeyboard();
         currentQuestionNo++;
-        refreshButtons();
         showView(currentQuestionNo);
     }
 
@@ -90,7 +88,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         currentQuestionView.saveAnswer();
         hideKeyboard();
         currentQuestionNo--;
-        refreshButtons();
         showView(currentQuestionNo);
     }
 
@@ -173,7 +170,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             }
             setUpCounterLabel();
             showView(0);
-            refreshButtons();
         });
     }
 
@@ -225,11 +221,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         mainView.removeView(currentQuestionView);
         currentQuestionView = questionViews.get(no);
         mainView.addView(currentQuestionView);
+        refreshButtons();
         updateCounterLabel();
     }
 
-
-
+    
     @Override
     public void onBackPressed() {
         // overriden to stop back button from working
