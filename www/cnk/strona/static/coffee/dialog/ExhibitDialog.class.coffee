@@ -2,6 +2,7 @@ root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   _prepareDialog: (dialog) =>
     super
+    @_dialog.setTitle(@_data.utils.text.title)
     @mapData = new MapDataHandler()
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": "#9DE35A")
@@ -15,7 +16,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       .each( ->
         obj = jQuery(this)
         error = obj.parent().next()
-        error.css("color", instance._data.utils.style.inputErrorColor)
       )
     @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>

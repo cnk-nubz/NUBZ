@@ -231,7 +231,13 @@ def _exhibitRequestsUnified(request, funToCall):
     try:
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
-        data['message'] = str(ex)
+        if type(ex).__name__ == "DuplicateName":
+            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+        else:
+            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
+            str(ex))
+        data['message'] = message
+        data['exceptionType'] = type(ex).__name__
         return JsonResponse(data)
 
     if newExhibit.mapFrame:
@@ -557,13 +563,15 @@ def saveExperiment(request):
             'success': True,
         }
     except Exception as ex:
+        if type(ex).__name__ == "DuplicateName":
+            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+        else:
+            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
+            str(ex))
         result = {
             'success': False,
             'exceptionType': type(ex).__name__,
-            'message': get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
-                       if type(ex).__name__ == 'DuplicateName' else
-                        "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-                        str(ex))
+            'message': message
         }
     return JsonResponse(result)
 

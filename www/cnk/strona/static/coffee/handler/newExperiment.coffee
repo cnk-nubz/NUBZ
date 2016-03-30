@@ -225,8 +225,8 @@ class Handlers
 
   _isExperimentReady: =>
     experimentTitle = jQuery(@_DOM.experimentTitle)
-    titleText = experimentTitle.val()
-    experimentTitle.val(jQuery.trim(titleText))
+    titleText = jQuery.trim(experimentTitle.val())
+    experimentTitle.val(titleText)
     if titleText.length is 0
       experimentTitle.tooltip('show')
       experimentTitle.parent().addClass("has-error")
@@ -241,7 +241,7 @@ class Handlers
   _saveExperimentRequest: =>
     dataToSend = {
       experimentId: @_experimentData.experimentId if @_experimentData?
-      name: jQuery.trim(jQuery(@_DOM.experimentTitle).val())
+      name: jQuery(@_DOM.experimentTitle).val()
       surveyBefore: @_questionsBeforeList.getAllElements()
       exhibitActions: @_exhibitActionsList.getAllElements()
       breakActions: @_breakActionsList.getAllElements()

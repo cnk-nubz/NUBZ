@@ -31,8 +31,8 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.on("addExhibit", (data) =>
-      @newExhibitRequest(data)
+    @panel.on("addExhibit", (data, dialog) =>
+      @newExhibitRequest(data, dialog)
     )
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
@@ -203,7 +203,7 @@ class Handlers
     @canvas.refresh()
     return
 
-  newExhibitRequest: (data) =>
+  newExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
       frame =
@@ -228,16 +228,19 @@ class Handlers
       dataType: 'json'
       url: '/createNewExhibit/'
       data: toSend
-      success: @ajaxNewExhibitSuccess
+      success: (recvData) => @ajaxNewExhibitSuccess(recvData, dialog)
     )
 
-  ajaxNewExhibitSuccess: (data) =>
+  ajaxNewExhibitSuccess: (data, dialog) =>
     if not data.success
-      BootstrapDialog.alert(
-        message: "#{data.message}"
-        type: BootstrapDialog.TYPE_DANGER
-        title: 'Błąd serwera'
-      )
+      if data.exceptionType is "DuplicateName"
+        dialog.showNameDuplicatedError()
+      else
+        BootstrapDialog.alert(
+          message: "#{data.message}"
+          type: BootstrapDialog.TYPE_DANGER
+          title: 'Błąd serwera'
+        )
       return
     id = data.id
     @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
