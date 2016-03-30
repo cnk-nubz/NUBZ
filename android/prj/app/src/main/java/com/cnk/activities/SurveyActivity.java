@@ -216,7 +216,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    private void showView(Integer no) {
+    private void showView(int no) {
         currentQuestionNo = no;
         mainView.removeView(currentQuestionView);
         currentQuestionView = questionViews.get(no);
@@ -225,16 +225,14 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    
+
     @Override
     public void onBackPressed() {
         // overriden to stop back button from working
     }
 
     private void updateCounterLabel() {
-        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
-                             "/" +
-                             Integer.toString(allQuestionsCount));
+        counterLabel.setText((currentQuestionNo + 1) + "/" + (allQuestionsCount));
     }
 
     private void hideKeyboard() {
