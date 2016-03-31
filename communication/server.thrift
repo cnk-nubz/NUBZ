@@ -33,7 +33,7 @@ service Server {
 		throws (1: structs.InternalError err),
 
 	structs.Exhibit createExhibit(1: structs.CreateExhibitRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.Exhibit> getAllExhibits()
 		throws (1: structs.InternalError err),
@@ -96,7 +96,7 @@ service Server {
 /////////////////////////////////////////////////
 
 	structs.Action createAction(1: structs.CreateActionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.Action> getAllActions()
 		throws (1: structs.InternalError err),
@@ -115,7 +115,7 @@ service Server {
 /////////////////////////////////////////////////
 
 	structs.SimpleQuestion createSimpleQuestion(1: structs.CreateSimpleQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.SimpleQuestion> getAllSimpleQuestions()
 		throws (1: structs.InternalError err),
@@ -126,7 +126,7 @@ service Server {
 /////////////////////////////////////////////////
 
 	structs.MultipleChoiceQuestion createMultipleChoiceQuestion(1: structs.CreateMultipleChoiceQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
 		throws (1: structs.InternalError err),
@@ -137,7 +137,7 @@ service Server {
 /////////////////////////////////////////////////
 
 	structs.SortQuestion createSortQuestion(1: structs.CreateSortQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
 	list<structs.SortQuestion> getAllSortQuestions()
 		throws (1: structs.InternalError err),

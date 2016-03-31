@@ -66,6 +66,17 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       isValid = false
       error = inputs.parent().last().next()
       instance._showInputError(error, @_data.utils.text.needMultipleAnswerError)
+    else # check if there are any duplicates in options
+      option = {}
+      inputs.each( ->
+        inputVal = jQuery(this).val()
+        if option.hasOwnProperty(inputVal)
+          isValid = false
+          error = jQuery(this).parent().next()
+          instance._showInputError(error, instance._data.utils.text.optionDuplicatedError)
+          return
+        option[inputVal] = true
+      )
     isValid
 
   extractData: =>

@@ -19,9 +19,9 @@ QuestionCommands::QuestionCommands(db::Database &db) : db(db) {
 MultipleChoiceQuestion QuestionCommands::createMultipleChoice(
     const CreateMultipleChoiceQuestionRequest &input) {
     auto question = repository::MultipleChoiceQuestion{};
+    question.name = input.name;
     question.question = input.question;
     question.singleAnswer = input.singleAnswer;
-    question.name = input.name.value_or(question.question);
     ::utils::transform(input.options, question.options, [](auto &text) {
         auto opt = repository::MultipleChoiceQuestion::Option{};
         opt.text = text;
@@ -38,9 +38,9 @@ MultipleChoiceQuestion QuestionCommands::createMultipleChoice(
 
 SimpleQuestion QuestionCommands::createSimple(const CreateSimpleQuestionRequest &input) {
     auto question = repository::SimpleQuestion{};
+    question.name = input.name;
     question.question = input.question;
     question.numberAnswer = input.answerType == SimpleQuestion::AnswerType::Number;
-    question.name = input.name.value_or(question.question);
 
     db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::SimpleQuestions{session};
@@ -52,8 +52,8 @@ SimpleQuestion QuestionCommands::createSimple(const CreateSimpleQuestionRequest 
 
 SortQuestion QuestionCommands::createSort(const CreateSortQuestionRequest &input) {
     auto question = repository::SortQuestion{};
+    question.name = input.name;
     question.question = input.question;
-    question.name = input.name.value_or(question.question);
     ::utils::transform(input.options, question.options, [](auto &text) {
         auto opt = repository::SortQuestion::Option{};
         opt.text = text;

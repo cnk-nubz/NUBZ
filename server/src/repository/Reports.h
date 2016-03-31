@@ -60,7 +60,7 @@ public:
     boost::optional<Report> get(std::int32_t ID);
     std::vector<Report> getAllForExperiment(std::int32_t experimentID);
 
-    // may throw InvalidData in case of incorrect data
+    // throws InvalidData in case of incorrect data
     void insert(const Report &report);
 
 private:

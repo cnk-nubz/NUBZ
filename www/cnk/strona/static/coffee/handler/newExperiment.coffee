@@ -212,9 +212,6 @@ class Handlers
     return
 
   _createNewAction: (data) =>
-    if not data.success
-      @_displayError(data.message)
-      return
     @_actions.setElements(data.actionsList)
     toAdd = @_prepareActionsList()
     @_actionsList.replaceElements(toAdd)
@@ -228,8 +225,8 @@ class Handlers
 
   _isExperimentReady: =>
     experimentTitle = jQuery(@_DOM.experimentTitle)
-    titleText = experimentTitle.val()
-    experimentTitle.val(jQuery.trim(titleText))
+    titleText = jQuery.trim(experimentTitle.val())
+    experimentTitle.val(titleText)
     if titleText.length is 0
       experimentTitle.tooltip('show')
       experimentTitle.parent().addClass("has-error")
@@ -261,10 +258,28 @@ class Handlers
       url: '/saveExperiment/'
       success: (data) ->
         if not data.success
-          @_displayError(data.message)
+          if data.exceptionType is 'DuplicateName'
+            @_showNameDuplicatedError(data.message)
+          else
+            @_displayError(data.message)
         else
           location.href = '/badania'
     )
+    return
+
+  _showNameDuplicatedError: (message) =>
+    experimentTitle = jQuery(@_DOM.experimentTitle)
+    oldTitle = experimentTitle.attr("title")
+    experimentTitle
+      .attr("title", message)
+      .tooltip('show')
+      .one('focus', ->
+        jQuery(this).attr("title", oldTitle)
+        jQuery(this).parent().removeClass("has-error")
+        jQuery(this).tooltip('destroy')
+      )
+      .parent().addClass("has-error")
+    jQuery('#experiment').scrollTop(0)
     return
 
   _addNewQuestion: =>
@@ -301,7 +316,7 @@ class Handlers
     return
 
   _newEntryRequest: (url, callback) =>
-    (data) =>
+    (data, dialog) =>
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
@@ -310,15 +325,19 @@ class Handlers
         dataType: 'json'
         data: (jsonData: JSON.stringify(data))
         url: url
-        success: (data) =>
-          callback(data)
+        success: (recvData) =>
+          if not recvData.success
+            if recvData.exceptionType is 'DuplicateName'
+              dialog.showNameDuplicatedError()
+            else
+              @_displayError(recvData.message)
+          else
+            callback(recvData)
+            dialog.close()
       )
       return
 
   _createNewQuestion: (data) =>
-    if not data.success
-      @_displayError(data.message)
-      return
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)

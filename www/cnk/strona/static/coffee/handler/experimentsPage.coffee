@@ -111,11 +111,12 @@ class Handler
     action: (dialog) =>
       jQuery('.inputError').html('')
       newName = jQuery('#dialog input').val()
-      @_tryCloningExperiment(experimentId, newName)
+      jQuery("#dialog input").val(jQuery.trim(newName))
+      @_tryCloningExperiment(experimentId, jQuery.trim(newName))
 
   _tryCloningExperiment: (experimentId, newName) =>
     dialogData = root.changeNameDialog.data
-    if newName is ''
+    if newName.length is 0
       jQuery('.inputError').text(dialogData.utils.text.emptyInputError)
       return
     toSend =

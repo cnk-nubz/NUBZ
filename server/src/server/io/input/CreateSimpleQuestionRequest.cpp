@@ -6,11 +6,9 @@ namespace input {
 
 CreateSimpleQuestionRequest::CreateSimpleQuestionRequest(
     const communication::CreateSimpleQuestionRequest &thrift)
-    : question(thrift.question),
+    : name(thrift.name),
+      question(thrift.question),
       answerType(output::SimpleQuestion::AnswerTypeFromThrift(thrift.answerType)) {
-    if (thrift.__isset.name) {
-        name = thrift.name;
-    }
 }
 }
 }

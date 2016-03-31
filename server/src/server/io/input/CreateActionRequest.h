@@ -12,7 +12,7 @@ namespace input {
 struct CreateActionRequest {
     CreateActionRequest(const communication::CreateActionRequest &thrift);
 
-    std::string text;
+    const std::string text;
 };
 }
 }

@@ -232,7 +232,13 @@ def _exhibitRequestsUnified(request, funToCall):
     try:
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
-        data['message'] = str(ex)
+        if type(ex).__name__ == "DuplicateName":
+            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+        else:
+            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
+            str(ex))
+        data['message'] = message
+        data['exceptionType'] = type(ex).__name__
         return JsonResponse(data)
 
     if newExhibit.mapFrame:
@@ -455,6 +461,7 @@ def questionsAndActionsPage(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'activeLink': ActiveLink.QUESTIONS_ACTIONS_PAGE.value,
             'message': str(ex)
         }
@@ -477,6 +484,7 @@ def createSimpleQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -497,6 +505,7 @@ def createMultipleChoiceQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -517,6 +526,7 @@ def createSortQuestion(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -537,6 +547,7 @@ def createAction(request):
     except Exception as ex:
         result = {
             'success': False,
+            'exceptionType': type(ex).__name__,
             'message': str(ex)
         }
     return JsonResponse(result)
@@ -553,10 +564,15 @@ def saveExperiment(request):
             'success': True,
         }
     except Exception as ex:
+        if type(ex).__name__ == "DuplicateName":
+            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+        else:
+            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
+            str(ex))
         result = {
             'success': False,
-            'message': "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-                str(ex))
+            'exceptionType': type(ex).__name__,
+            'message': message
         }
     return JsonResponse(result)
 

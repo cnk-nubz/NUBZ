@@ -31,8 +31,8 @@ class Handlers
     jQuery(@button.changeMap).on('click', @changeMapHandler())
 
   _setEvents: =>
-    @panel.on("addExhibit", (data) =>
-      @newExhibitRequest(data)
+    @panel.on("addExhibit", (data, dialog) =>
+      @newExhibitRequest(data, dialog)
     )
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @mapData.exhibits[id]
@@ -45,15 +45,14 @@ class Handlers
       jQuery(@button.plusZoom).prop "disabled", true
       jQuery(@button.minusZoom).prop "disabled", false
     )
-    @panel.on("modifyExhibitWithId", (id) =>
+    @panel.on("modifyExhibitWithId", (id, dialog) =>
       exhibit = @mapData.exhibits[id]
       data =
         id: id
         name: exhibit.name
         floor: exhibit.frame?.mapLevel
         color: exhibit.colorHex
-      @exhibitEditDialog.bindData(data)
-      @exhibitEditDialog.show()
+      @exhibitEditDialog.bindData(data).show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
       jQuery(@button.plusZoom).prop("disabled", disablePlus)
@@ -203,7 +202,7 @@ class Handlers
     @canvas.refresh()
     return
 
-  newExhibitRequest: (data) =>
+  newExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
       frame =
@@ -228,17 +227,22 @@ class Handlers
       dataType: 'json'
       url: '/createNewExhibit/'
       data: toSend
-      success: @ajaxNewExhibitSuccess
+      success: (recvData) =>
+        if not recvData.success
+          if recvData.exceptionType is "DuplicateName"
+            dialog.showNameDuplicatedError()
+          else
+            BootstrapDialog.alert(
+              message: "#{data.message}"
+              type: BootstrapDialog.TYPE_DANGER
+              title: 'Błąd serwera'
+            )
+          return
+        @ajaxNewExhibitSuccess(recvData, dialog)
+        dialog.close()
     )
 
   ajaxNewExhibitSuccess: (data) =>
-    if not data.success
-      BootstrapDialog.alert(
-        message: "#{data.message}"
-        type: BootstrapDialog.TYPE_DANGER
-        title: 'Błąd serwera'
-      )
-      return
     id = data.id
     @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @mapData.exhibits[id].name = data.name
@@ -265,7 +269,7 @@ class Handlers
     )
     return
 
-  updateExhibitRequest: (data) =>
+  updateExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
       frame =
@@ -290,7 +294,19 @@ class Handlers
       dataType: 'json'
       url: '/updateExhibit/'
       data: toSend
-      success: @ajaxUpdateExhibitSuccess
+      success: (recvData) =>
+        if not recvData.success
+          if recvData.exceptionType is "DuplicateName"
+            dialog.showNameDuplicatedError()
+          else
+            BootstrapDialog.alert(
+              message: "#{data.message}"
+              type: BootstrapDialog.TYPE_DANGER
+              title: 'Błąd serwera'
+            )
+          return
+        @ajaxUpdateExhibitSuccess(recvData)
+        dialog.close()
     )
 
   ajaxUpdateExhibitSuccess: (data) =>

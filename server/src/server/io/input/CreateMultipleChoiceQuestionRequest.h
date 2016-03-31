@@ -16,10 +16,10 @@ struct CreateMultipleChoiceQuestionRequest {
     CreateMultipleChoiceQuestionRequest(
         const communication::CreateMultipleChoiceQuestionRequest &thrift);
 
-    boost::optional<std::string> name;
-    std::string question;
-    std::vector<std::string> options;
-    bool singleAnswer;
+    const std::string name;
+    const std::string question;
+    const std::vector<std::string> options;
+    const bool singleAnswer;
 };
 }
 }

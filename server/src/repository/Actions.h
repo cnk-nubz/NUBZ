@@ -28,10 +28,15 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
+    // throws:
+    // - Duplicate Name
+    // - InvalidData in case of empty name
     void insert(Action *action);
     void insert(std::vector<Action> *actions);
 
 private:
+    void checkName(const std::string &name);
+
     db::DatabaseSession &session;
 };
 

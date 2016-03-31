@@ -4,6 +4,8 @@
 
 #include "Actions.h"
 #include "DefaultRepo.h"
+#include "error/DuplicateName.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 
@@ -53,7 +55,19 @@ void Actions::insert(std::vector<Actions::Action> *actions) {
 
 void Actions::insert(Actions::Action *action) {
     assert(action);
+    checkName(action->text);
     action->ID = Impl::insert(session, toDB(*action));
+}
+
+void Actions::checkName(const std::string &name) {
+    if (name.empty()) {
+        throw InvalidData{"action text cannot be empty"};
+    }
+
+    auto sql = db::sql::Select<Table::FieldText>{}.where(Table::Text == name);
+    if (session.getResult(sql)) {
+        throw DuplicateName{};
+    }
 }
 
 namespace {

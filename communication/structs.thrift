@@ -149,7 +149,7 @@ struct SimpleQuestionAnswer {
 
 // name is optional, null means name == question
 struct CreateSimpleQuestionRequest {
-	1: optional string name,
+	1: required string name,
 	2: required string question,
 	3: required SimpleQuestionAnswerType answerType,
 }
@@ -178,7 +178,7 @@ struct MultipleChoiceQuestionAnswer {
 
 // name is optional, null means name == question
 struct CreateMultipleChoiceQuestionRequest {
-	1: optional string name,
+	1: required string name,
 	2: required string question,
 	3: required bool singleAnswer,
 	4: required list<string> options,
@@ -207,7 +207,7 @@ struct SortQuestionAnswer {
 
 // name is optional, null means name == question
 struct CreateSortQuestionRequest {
-	1: optional string name,
+	1: required string name,
 	2: required string question,
 	3: required list<string> options,
 }

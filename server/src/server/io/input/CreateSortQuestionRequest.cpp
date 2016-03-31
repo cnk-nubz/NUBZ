@@ -6,10 +6,7 @@ namespace input {
 
 CreateSortQuestionRequest::CreateSortQuestionRequest(
     const communication::CreateSortQuestionRequest &thrift)
-    : question(thrift.question), options(thrift.options) {
-    if (thrift.__isset.name) {
-        name = thrift.name;
-    }
+    : name(thrift.name), question(thrift.question), options(thrift.options) {
 }
 }
 }

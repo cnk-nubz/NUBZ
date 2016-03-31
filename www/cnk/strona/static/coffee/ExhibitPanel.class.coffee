@@ -24,8 +24,8 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     )
     return
 
-  addExhibitHandler: (data) =>
-    @fireEvents("addExhibit", data)
+  addExhibitHandler: (data, dialog) =>
+    @fireEvents("addExhibit", data, dialog)
 
   _setExhibitPanelHandlers: =>
     instance = this

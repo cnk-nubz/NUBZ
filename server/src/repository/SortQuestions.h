@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include <boost/optional.hpp>
 
@@ -33,11 +34,17 @@ public:
     void removeAll();
 
     // ID will be saved in the given struct
+    // throws
+    // - DuplicateName
+    // - InvalidData in case of empty name, duplicate options, options count < 2
     void insert(Question *simpleQuestion);
     void insert(std::vector<Question> *simpleQuestions);
 
 private:
     std::vector<Question::Option> getOptions(std::int32_t questionID);
+
+    void checkName(const std::string &name);
+    void checkOptions(const std::vector<Question::Option> &options);
 
     // ID will be saved in the given struct
     void insert(Question::Option *questionOption, std::int32_t questionID);

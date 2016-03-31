@@ -28,10 +28,6 @@ body, html {
   width: 100%;
 }
 
-.modal {
-  top: 95px;
-}
-
 .inputError {
   color: #D8000C;
 }

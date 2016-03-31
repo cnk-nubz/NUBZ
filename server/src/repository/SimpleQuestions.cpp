@@ -4,6 +4,8 @@
 
 #include "DefaultRepo.h"
 #include "SimpleQuestions.h"
+#include "error/DuplicateName.h"
+#include "error/InvalidData.h"
 
 namespace repository {
 
@@ -49,7 +51,19 @@ void SimpleQuestions::insert(std::vector<SimpleQuestions::Question> *questions) 
 
 void SimpleQuestions::insert(SimpleQuestions::Question *question) {
     assert(question);
+    checkName(question->name);
     question->ID = Impl::insert(session, toDB(*question));
+}
+
+void SimpleQuestions::checkName(const std::string &name) {
+    if (name.empty()) {
+        throw InvalidData{"question name cannot be empty"};
+    }
+
+    auto sql = db::sql::Select<Table::FieldName>{}.where(Table::Name == name);
+    if (session.getResult(sql)) {
+        throw DuplicateName{};
+    }
 }
 
 namespace {
