@@ -22,6 +22,9 @@ struct Reports {
     struct ContentData {
         struct Event {
             boost::optional<std::int32_t> exhibitID;
+            std::int32_t beginHour;
+            std::int32_t beginMin;
+            std::int32_t beginSec;
             std::int32_t durationInSecs;
             std::vector<std::int32_t> actions;
         };

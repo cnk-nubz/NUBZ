@@ -15,8 +15,8 @@
  *
  * content = {events, surveyBefore, surveyAfter}
  * events = [event, ...]
- * event = {optional(exhibitId), durationInSecs, actions}
- * exhibitId, durationInSecs = int
+ * event = {optional(exhibitId), beginHour, beginMin, beginSec, durationInSecs, actions}
+ * exhibitId, beginHour, beginMin, beginSec, durationInSecs = int
  * actions = [int, ...]
  * survey = {simpleQuestionsAnswers, multipleChoiceQuestionsAnswers, sortQuestionsAnswers}
  * anyAnswers = [answer, ...]
@@ -40,6 +40,9 @@ struct RootKeys {
     static const char *surveyAfter;
     struct EventKeys {
         static const char *exhibitId;
+        static const char *beginH;
+        static const char *beginM;
+        static const char *beginS;
         static const char *duration;
         static const char *actions;
     };
@@ -58,6 +61,9 @@ const char *RootKeys::surveyBefore = "surveyBefore";
 const char *RootKeys::surveyAfter = "surveyAfter";
 
 const char *RootKeys::EventKeys::exhibitId = "exhibitId";
+const char *RootKeys::EventKeys::beginH = "beginH";
+const char *RootKeys::EventKeys::beginM = "beginM";
+const char *RootKeys::EventKeys::beginS = "beginS";
 const char *RootKeys::EventKeys::duration = "secs";
 const char *RootKeys::EventKeys::actions = "actions";
 
@@ -91,6 +97,9 @@ Reports::ContentData::Event parseEvent(const rapidjson::Value &json) {
     using Keys = RootKeys::EventKeys;
     auto event = Reports::ContentData::Event{};
     event.exhibitID = parseOpt(json, Keys::exhibitId, parseInt);
+    event.beginHour = parseInt(getNode(json, Keys::beginH));
+    event.beginMin = parseInt(getNode(json, Keys::beginM));
+    event.beginSec = parseInt(getNode(json, Keys::beginS));
     event.durationInSecs = parseInt(getNode(json, Keys::duration));
     event.actions = parseIntArray(getNode(json, Keys::actions));
     return event;
@@ -152,17 +161,28 @@ namespace {
 rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
                              const Reports::ContentData::Event &event) {
     using Keys = RootKeys::EventKeys;
+
+    auto beginH = std::make_pair(Keys::beginH, createInt(event.beginHour));
+    auto beginM = std::make_pair(Keys::beginM, createInt(event.beginMin));
+    auto beginS = std::make_pair(Keys::beginS, createInt(event.beginSec));
+    auto duration = std::make_pair(Keys::duration, createInt(event.durationInSecs));
+    auto actions = std::make_pair(Keys::actions, createIntArray(allocator, event.actions));
+
     if (event.exhibitID) {
-        return createDictionary(
-            allocator,
-            std::make_pair(Keys::exhibitId, createInt(event.exhibitID.value())),
-            std::make_pair(Keys::duration, createInt(event.durationInSecs)),
-            std::make_pair(Keys::actions, createIntArray(allocator, event.actions)));
+        return createDictionary(allocator,
+                                std::make_pair(Keys::exhibitId, createInt(event.exhibitID.value())),
+                                std::move(beginH),
+                                std::move(beginM),
+                                std::move(beginS),
+                                std::move(duration),
+                                std::move(actions));
     } else {
-        return createDictionary(
-            allocator,
-            std::make_pair(Keys::duration, createInt(event.durationInSecs)),
-            std::make_pair(Keys::actions, createIntArray(allocator, event.actions)));
+        return createDictionary(allocator,
+                                std::move(beginH),
+                                std::move(beginM),
+                                std::move(beginS),
+                                std::move(duration),
+                                std::move(actions));
     }
 }
 
