@@ -2,9 +2,9 @@ package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cnk.R;
 import com.cnk.communication.NetworkHandler;
@@ -24,6 +25,7 @@ import com.cnk.data.experiment.survey.answers.SurveyAnswers;
 import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestion;
 import com.cnk.notificators.Observer;
+import com.cnk.ui.Utils;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
 
@@ -51,11 +53,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_survey);
         mainView = (RelativeLayout) findViewById(R.id.mainView);
-        goPrev = (LinearLayout) findViewById(R.id.goPrev);
-        goPrev.setOnClickListener(new NavigateSurvey());
-        goNext = (LinearLayout) findViewById(R.id.goNext);
-        goNext.setOnClickListener(new NavigateSurvey());
-        nextText = (TextView) findViewById(R.id.nextText);
+        setButtons();
         questionViews = new ArrayList<>();
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
@@ -66,6 +64,83 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             Log.i(LOG_TAG, "Survey after");
             init();
         }
+    }
+
+    private void setButtons() {
+        goPrev = (LinearLayout) findViewById(R.id.goPrev);
+        goPrev.setOnClickListener(this::defaultPrevAction);
+        goNext = (LinearLayout) findViewById(R.id.goNext);
+        nextText = (TextView) findViewById(R.id.nextText);
+    }
+
+    private void defaultNextAction(View view) {
+        currentQuestionView.saveAnswer();
+        if (!currentQuestionView.canContinue()) {
+            Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        hideKeyboard();
+        currentQuestionNo++;
+        showView(currentQuestionNo);
+    }
+
+    private void defaultPrevAction(View view) {
+        currentQuestionView.saveAnswer();
+        hideKeyboard();
+        currentQuestionNo--;
+        showView(currentQuestionNo);
+    }
+
+    private void refreshButtons() {
+        if (currentQuestionNo == 0) {
+            goPrev.setVisibility(View.INVISIBLE);
+        } else {
+            goPrev.setVisibility(View.VISIBLE);
+        }
+
+        if (currentQuestionNo == allQuestionsCount - 1) {
+            nextText.setText(R.string.finish);
+            goNext.setOnClickListener(this::finishButtonAction);
+        } else {
+            nextText.setText(R.string.next);
+            goNext.setOnClickListener(this::defaultNextAction);
+        }
+    }
+
+    private void finishButtonAction(View view) {
+        currentQuestionView.saveAnswer();
+        if (!currentQuestionView.canContinue()) {
+            Toast.makeText(this, R.string.notFilled, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        hideKeyboard();
+        DialogInterface.OnClickListener positiveAction =
+                (dialog, which) -> changeToNextActivity();
+        Utils.showDialog(SurveyActivity.this,
+                         R.string.confirmation,
+                         R.string.confirm,
+                         R.string.cancel,
+                         positiveAction);
+    }
+
+    private void changeToNextActivity() {
+        Class next = (Class) getIntent().getSerializableExtra("nextActivity");
+        if (next == null) {
+            finish();
+            ExperimentData.getInstance().finishExperiment();
+            NetworkHandler.getInstance().uploadRaports();
+        } else {
+            Intent i = new Intent(getApplicationContext(), next);
+            finish();
+            startActivity(i);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        goNext.setOnClickListener(null);
+        goPrev.setOnClickListener(null);
     }
 
     private void setSpinner() {
@@ -141,65 +216,15 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         updateCounterLabel();
     }
 
-    private void showView(Integer no) {
+    private void showView(int no) {
         currentQuestionNo = no;
         mainView.removeView(currentQuestionView);
         currentQuestionView = questionViews.get(no);
         mainView.addView(currentQuestionView);
+        refreshButtons();
         updateCounterLabel();
     }
 
-    private class NavigateSurvey implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-            hideKeyboard();
-            currentQuestionView.saveAnswer();
-            if (view.getId() == goPrev.getId()) {
-                nextText.setText(R.string.next);
-                if (currentQuestionNo - 1 <= 0) {
-                    goPrev.setVisibility(View.INVISIBLE);
-                }
-                showView(currentQuestionNo - 1);
-            } else if (view.getId() == goNext.getId()) {
-                goPrev.setVisibility(View.VISIBLE);
-                if (currentQuestionNo >= allQuestionsCount - 1) {
-                    showDialog();
-                } else {
-                    if (currentQuestionNo == allQuestionsCount - 2) {
-                        nextText.setText(R.string.finish);
-                    }
-                    showView(currentQuestionNo + 1);
-                }
-            }
-            view.setEnabled(true);
-        }
-    }
-
-    private void showDialog() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setMessage(R.string.confirmation);
-        alert.setPositiveButton("Tak", (dialog, which) -> {
-            changeToNextActivity();
-        });
-        alert.setNegativeButton("Nie", (dialog, which) -> {
-        });
-        alert.setCancelable(false);
-        alert.show();
-    }
-
-    private void changeToNextActivity() {
-        Class next = (Class) getIntent().getSerializableExtra("nextActivity");
-        if (next == null) {
-            finish();
-            ExperimentData.getInstance().finishExperiment();
-            NetworkHandler.getInstance().uploadRaports();
-        } else {
-            Intent i = new Intent(getApplicationContext(), next);
-            finish();
-            startActivity(i);
-        }
-    }
 
     @Override
     public void onBackPressed() {
@@ -207,9 +232,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void updateCounterLabel() {
-        counterLabel.setText(Integer.toString(currentQuestionNo + 1) +
-                             "/" +
-                             Integer.toString(allQuestionsCount));
+        counterLabel.setText((currentQuestionNo + 1) + "/" + (allQuestionsCount));
     }
 
     private void hideKeyboard() {

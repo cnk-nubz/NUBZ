@@ -36,23 +36,9 @@ struct RawReport {
     };
 
     struct SurveyAnswers {
-        struct SimpleQuestionAnswer {
-            SimpleQuestionAnswer(const communication::SimpleQuestionAnswer &thrift);
-
-            boost::optional<std::string> answer;
-        };
-
-        struct MultipleChoiceQuestionAnswer {
-            MultipleChoiceQuestionAnswer(const communication::MultipleChoiceQuestionAnswer &thrift);
-
-            boost::optional<std::vector<std::int32_t>> choosenOptions;
-        };
-
-        struct SortQuestionAnswer {
-            SortQuestionAnswer(const communication::SortQuestionAnswer &thrift);
-
-            boost::optional<std::vector<std::int32_t>> choosenOrder;
-        };
+        using SimpleQuestionAnswer = std::string;
+        using MultipleChoiceQuestionAnswer = std::vector<std::int32_t>;
+        using SortQuestionAnswer = std::vector<std::int32_t>;
 
         SurveyAnswers(const communication::SurveyAnswers &thrift);
         repository::Report::SurveyAns toRepo() const;

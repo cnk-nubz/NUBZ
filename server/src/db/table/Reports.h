@@ -30,9 +30,9 @@ struct Reports {
         };
 
         struct SurveyAns {
-            using SimpleQAnswer = boost::optional<std::string>;
-            using MultiChoiceQAnswer = boost::optional<std::vector<std::int32_t>>;
-            using SortQAnswer = boost::optional<std::vector<std::int32_t>>;
+            using SimpleQAnswer = std::string;
+            using MultiChoiceQAnswer = std::vector<std::int32_t>;
+            using SortQAnswer = std::vector<std::int32_t>;
 
             std::vector<SimpleQAnswer> simpleQAnswers;
             std::vector<MultiChoiceQAnswer> multiChoiceQAnswers;
