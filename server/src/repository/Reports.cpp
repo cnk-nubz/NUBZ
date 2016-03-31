@@ -125,11 +125,20 @@ void Reports::checkBreakActions(const Experiment &experiment,
     }
 }
 
-void Reports::checkDurations(const std::vector<Report::Event> &events) {
+void Reports::checkDurations(const std::vector<Report::Event> &events) const {
     for (const auto &event : events) {
         if (event.durationInSecs < 0) {
             throw InvalidData{"durationInSecs cannot be less than 0"};
         }
+
+        checkTimePoint(event.beginTime);
+    }
+}
+
+void Reports::checkTimePoint(const Reports::Report::Event::TimePoint &timePoint) const {
+    if (timePoint.h < 0 || timePoint.m < 0 || timePoint.s < 0 || timePoint.h > 23 ||
+        timePoint.m > 59 || timePoint.s > 59) {
+        throw InvalidData{"incorrect time"};
     }
 }
 
@@ -148,40 +157,39 @@ void Reports::checkSurveyAns(const Experiment::Survey &survey, const Report::Sur
 
 void Reports::checkSimpleAns(const SimpleQuestion &question,
                              const Report::SurveyAns::SimpleQAnswer &answer) {
-    if (answer) {
-        if (question.numberAnswer && !utils::all_of(answer.value(), isdigit)) {
-            throw InvalidData{
-                "incorrect answer for simple question: number answer should contain only digits"};
-        }
+    if (answer.empty()) {
+        throw InvalidData{"answer for simple question cannot be empty"};
+    }
+    if (question.numberAnswer && !utils::all_of(answer, isdigit)) {
+        throw InvalidData{
+            "incorrect answer for simple question: number answer should contain only digits"};
     }
 }
 
 void Reports::checkMultipleChoiceAns(const MultipleChoiceQuestion &question,
                                      const Report::SurveyAns::MultiChoiceQAnswer &answer) {
-    if (!answer) {
-        return;
+    if (answer.empty()) {
+        throw InvalidData{"answer for multiple choice question cannot be empty"};
     }
+
     auto available = std::unordered_set<std::int32_t>{};
     for (const auto &opt : question.options) {
         available.insert(opt.ID);
     }
 
-    if (!utils::all_of(answer.value(), std::bind(&decltype(available)::count, &available, _1))) {
+    if (!utils::all_of(answer, std::bind(&decltype(available)::count, &available, _1))) {
         throw InvalidData{"incorrect answer for multiple choice question: incorrect id"};
     }
 }
 
 void Reports::checkSortAns(const SortQuestion &question,
                            const Report::SurveyAns::SortQAnswer &answer) {
-    if (!answer) {
-        return;
-    }
     auto available = std::vector<std::int32_t>{};
     for (const auto &opt : question.options) {
         available.push_back(opt.ID);
     }
 
-    auto choosen = answer.value();
+    auto choosen = answer;
     std::sort(available.begin(), available.end());
     std::sort(choosen.begin(), choosen.end());
     if (available != choosen) {
@@ -204,6 +212,9 @@ Table::Sql::in_t toDB(const Reports::Report &report) {
 Table::ContentData::Event eventToDB(const Reports::Report::Event &event) {
     auto res = Table::ContentData::Event{};
     res.actions = event.actions;
+    res.beginHour = event.beginTime.h;
+    res.beginMin = event.beginTime.m;
+    res.beginSec = event.beginTime.s;
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
     return res;
@@ -232,6 +243,9 @@ Reports::Report fromDB(const Table::Sql::out_t &report) {
 Reports::Report::Event eventFromDB(const Table::ContentData::Event &event) {
     auto res = Reports::Report::Event{};
     res.actions = event.actions;
+    res.beginTime.h = event.beginHour;
+    res.beginTime.m = event.beginMin;
+    res.beginTime.s = event.beginSec;
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
     return res;

@@ -2,6 +2,7 @@ package com.cnk.ui.questions;
 
 import android.content.Context;
 import android.text.InputType;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
@@ -27,6 +28,10 @@ public class SimpleQuestionView extends QuestionView {
         answer.setAnswer(answerBox.getText().toString());
     }
 
+    @Override
+    public boolean canContinue() {
+        return answer.getAnswer() != null;
+    }
 
     private void setUpAnswerBox(Context context, SimpleQuestion.AnswerType type) {
         answerBox = new EditText(context);

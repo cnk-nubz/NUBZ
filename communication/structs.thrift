@@ -20,8 +20,8 @@ exception DuplicateName {
 /////////////////////////////////////////////////
 
 struct HelloMsg {
-	1: i32 num,
-	2: string msg,
+	1: required i32 num,
+	2: required string msg,
 }
 
 
@@ -30,32 +30,32 @@ struct HelloMsg {
 /////////////////////////////////////////////////
 
 struct Size {
-	1: i32 width,
-	2: i32 height,
+	1: required i32 width,
+	2: required i32 height,
 }
 
 // (x, y) = left upper corner
 struct Frame {
-	1: i32 x,
-	2: i32 y,
-	3: Size size,
+	1: required i32 x,
+	2: required i32 y,
+	3: required Size size,
 }
 
 struct MapFrame {
-	1: Frame frame,
-	2: i32 floor,
+	1: required Frame frame,
+	2: required i32 floor,
 }
 
 struct ZoomLevel {
-	1: Size scaledSize,
-	2: Size tileSize,
-	3: list<list<string>> tilesUrls,
+	1: required Size scaledSize,
+	2: required Size tileSize,
+	3: required list<list<string>> tilesUrls,
 }
 
 struct MapImage {
-	1: i32 floor,
-	2: Size resolution,
-	3: list<ZoomLevel> zoomLevels,
+	1: required i32 floor,
+	2: required Size resolution,
+	3: required list<ZoomLevel> zoomLevels,
 }
 
 struct NewMapImagesRequest {
@@ -63,13 +63,13 @@ struct NewMapImagesRequest {
 }
 
 struct NewMapImagesResponse {
-	1: i32 version,
-	2: map<i32, MapImage> floors,
+	1: required i32 version,
+	2: required map<i32, MapImage> floors,
 }
 
 struct SetMapImageRequest {
-	1: i32 floor,
-	2: string filename,
+	1: required i32 floor,
+	2: required string filename,
 }
 
 
@@ -78,9 +78,9 @@ struct SetMapImageRequest {
 /////////////////////////////////////////////////
 
 struct Exhibit {
-	1: i32 exhibitId,
-	2: string name,
-	3: i32 rgbHex,
+	1: required i32 exhibitId,
+	2: required string name,
+	3: required i32 rgbHex,
 	4: optional MapFrame mapFrame,
 }
 
@@ -89,25 +89,25 @@ struct NewExhibitsRequest {
 }
 
 struct NewExhibitsResponse {
-	1: i32 version,
-	2: map<i32, Exhibit> exhibits,
+	1: required i32 version,
+	2: required map<i32, Exhibit> exhibits,
 }
 
 struct SetExhibitFrameRequest {
-	1: i32 exhibitId,
-	2: Frame frame,
+	1: required i32 exhibitId,
+	2: required Frame frame,
 }
 
 struct CreateExhibitRequest {
-	1: string name,
-	2: i32 rgbHex,
+	1: required string name,
+	2: required i32 rgbHex,
 	3: optional i32 floor,
 	4: optional MapFrame visibleFrame,
 }
 
 struct UpdateExhibitRequest {
-	1: i32 exhibitId,
-	2: i32 rgbHex,
+	1: required i32 exhibitId,
+	2: required i32 rgbHex,
 	3: optional i32 floor,
 	4: optional MapFrame visibleFrame,
 }
@@ -118,12 +118,12 @@ struct UpdateExhibitRequest {
 /////////////////////////////////////////////////
 
 struct Action {
-	1: i32 actionId,
-	2: string text,
+	1: required i32 actionId,
+	2: required string text,
 }
 
 struct CreateActionRequest {
-	1: string text,
+	1: required string text,
 }
 
 
@@ -137,14 +137,14 @@ enum SimpleQuestionAnswerType {
 }
 
 struct SimpleQuestion {
-	1: i32 questionId,
-	2: string name,
-	3: string question,
-	4: SimpleQuestionAnswerType answerType,
+	1: required i32 questionId,
+	2: required string name,
+	3: required string question,
+	4: required SimpleQuestionAnswerType answerType,
 }
 
 struct SimpleQuestionAnswer {
-	1: optional string answer,
+	1: required string answer,
 }
 
 // name is optional, null means name == question
@@ -160,20 +160,20 @@ struct CreateSimpleQuestionRequest {
 /////////////////////////////////////////////////
 
 struct MultipleChoiceQuestionOption {
-	1: i32 optionId,
-	2: string text,
+	1: required i32 optionId,
+	2: required string text,
 }
 
 struct MultipleChoiceQuestion {
-	1: i32 questionId,
-	2: string name,
-	3: string question,
-	4: bool singleAnswer,
-	5: list<MultipleChoiceQuestionOption> options,
+	1: required i32 questionId,
+	2: required string name,
+	3: required string question,
+	4: required bool singleAnswer,
+	5: required list<MultipleChoiceQuestionOption> options,
 }
 
 struct MultipleChoiceQuestionAnswer {
-	1: optional list<i32> choosenOptions,
+	1: required list<i32> choosenOptions,
 }
 
 // name is optional, null means name == question
@@ -190,19 +190,19 @@ struct CreateMultipleChoiceQuestionRequest {
 /////////////////////////////////////////////////
 
 struct SortQuestionOption {
-	1: i32 optionId,
-	2: string text,
+	1: required i32 optionId,
+	2: required string text,
 }
 
 struct SortQuestion {
-	1: i32 questionId,
-	2: string name,
-	3: string question,
-	4: list<SortQuestionOption> options,
+	1: required i32 questionId,
+	2: required string name,
+	3: required string question,
+	4: required list<SortQuestionOption> options,
 }
 
 struct SortQuestionAnswer {
-	1: optional list<i32> choosenOrder,
+	1: required list<i32> choosenOrder,
 }
 
 // name is optional, null means name == question
@@ -224,17 +224,17 @@ enum QuestionType {
 }
 
 struct QuestionsList {
-	1: list<QuestionType> questionsOrder,
-	2: list<SimpleQuestion> simpleQuestions,
-	3: list<MultipleChoiceQuestion> multipleChoiceQuestions,
-	4: list<SortQuestion> sortQuestions,
+	1: required list<QuestionType> questionsOrder,
+	2: required list<SimpleQuestion> simpleQuestions,
+	3: required list<MultipleChoiceQuestion> multipleChoiceQuestions,
+	4: required list<SortQuestion> sortQuestions,
 }
 
 struct QuestionsIdsList {
-	1: list<QuestionType> questionsOrder,
-	2: list<i32> simpleQuestions,
-	3: list<i32> multipleChoiceQuestions,
-	4: list<i32> sortQuestions,
+	1: required list<QuestionType> questionsOrder,
+	2: required list<i32> simpleQuestions,
+	3: required list<i32> multipleChoiceQuestions,
+	4: required list<i32> sortQuestions,
 }
 
 
@@ -243,18 +243,18 @@ struct QuestionsIdsList {
 /////////////////////////////////////////////////
 
 struct Date {
-	1: i32 day,
-	2: i32 month,
-	3: i32 year,
+	1: required i32 day,
+	2: required i32 month,
+	3: required i32 year,
 }
 
 struct Experiment {
-	1: i32 experimentId,
-	2: string name,
-	3: QuestionsList surveyBefore,
-	4: list<Action> exhibitActions,
-	5: list<Action> breakActions,
-	6: QuestionsList surveyAfter,
+	1: required i32 experimentId,
+	2: required string name,
+	3: required QuestionsList surveyBefore,
+	4: required list<Action> exhibitActions,
+	5: required list<Action> breakActions,
+	6: required QuestionsList surveyAfter,
 }
 
 struct CurrentExperimentResponse {
@@ -262,16 +262,16 @@ struct CurrentExperimentResponse {
 }
 
 struct CreateExperimentRequest {
-	1: string name,
-	2: QuestionsIdsList surveyBefore,
-	3: list<i32> exhibitActions,
-	4: list<i32> breakActions,
-	5: QuestionsIdsList surveyAfter,
+	1: required string name,
+	2: required QuestionsIdsList surveyBefore,
+	3: required list<i32> exhibitActions,
+	4: required list<i32> breakActions,
+	5: required QuestionsIdsList surveyAfter,
 }
 
 struct ExperimentInfo {
-	1: i32 id,
-	2: string name,
+	1: required i32 id,
+	2: required string name,
 	3: optional Date startDate,
 	4: optional Date finishDate,
 }
@@ -290,23 +290,31 @@ struct CloneRequest {
 // Reports
 /////////////////////////////////////////////////
 
+// 00:00:00 - 23:59:59
+struct Time {
+	1: required i32 hour,
+	2: required i32 min,
+	3: required i32 sec,
+}
+
 // exhibitID is optional, null means break
 struct RawReportEvent {
 	1: optional i32 exhibitId,
-	2: i32 durationInSecs,
-	3: list<i32> actions,
+	2: required Time beginTime,
+	3: required i32 durationInSecs,
+	4: required list<i32> actions,
 }
 
 struct SurveyAnswers {
-	1: list<SimpleQuestionAnswer> simpleQuestionsAnswers,
-	2: list<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers,
-	3: list<SortQuestionAnswer> sortQuestionsAnswers,
+	1: required list<SimpleQuestionAnswer> simpleQuestionsAnswers,
+	2: required list<MultipleChoiceQuestionAnswer> multipleChoiceQuestionsAnswers,
+	3: required list<SortQuestionAnswer> sortQuestionsAnswers,
 }
 
 struct RawReport {
-	1: i32 experimentId,
-	2: i32 reportId,
-	3: SurveyAnswers answersBefore,
-	4: list<RawReportEvent> history,
-	5: SurveyAnswers answersAfter,
+	1: required i32 experimentId,
+	2: required i32 reportId,
+	3: required SurveyAnswers answersBefore,
+	4: required list<RawReportEvent> history,
+	5: required SurveyAnswers answersAfter,
 }

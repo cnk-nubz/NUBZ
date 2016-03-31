@@ -17,32 +17,28 @@ namespace input {
 
 struct RawReport {
     struct Event {
+        struct Time {
+            Time(const communication::Time &thrift);
+            repository::Report::Event::TimePoint toRepo() const;
+
+            const std::int32_t hour;
+            const std::int32_t min;
+            const std::int32_t sec;
+        };
+
         Event(const communication::RawReportEvent &thrift);
         repository::Report::Event toRepo() const;
 
         boost::optional<std::int32_t> exhibitId;
-        std::int32_t durationInSecs;
-        std::vector<std::int32_t> actions;
+        const Time startTime;
+        const std::int32_t durationInSecs;
+        const std::vector<std::int32_t> actions;
     };
 
     struct SurveyAnswers {
-        struct SimpleQuestionAnswer {
-            SimpleQuestionAnswer(const communication::SimpleQuestionAnswer &thrift);
-
-            boost::optional<std::string> answer;
-        };
-
-        struct MultipleChoiceQuestionAnswer {
-            MultipleChoiceQuestionAnswer(const communication::MultipleChoiceQuestionAnswer &thrift);
-
-            boost::optional<std::vector<std::int32_t>> choosenOptions;
-        };
-
-        struct SortQuestionAnswer {
-            SortQuestionAnswer(const communication::SortQuestionAnswer &thrift);
-
-            boost::optional<std::vector<std::int32_t>> choosenOrder;
-        };
+        using SimpleQuestionAnswer = std::string;
+        using MultipleChoiceQuestionAnswer = std::vector<std::int32_t>;
+        using SortQuestionAnswer = std::vector<std::int32_t>;
 
         SurveyAnswers(const communication::SurveyAnswers &thrift);
         repository::Report::SurveyAns toRepo() const;

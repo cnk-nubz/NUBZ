@@ -57,8 +57,6 @@ root.QuestionDialog = class QuestionDialog
     id: 'saveButtonDialog'
     label: @_data.utils.text.saveButton
     action: (dialog) =>
-      console.log this
-      console.log @_showNameDuplicatedError
       dialog.showNameDuplicatedError = @_showNameDuplicatedError
       if @_validateForm()
         @_saveHandler(@extractData(), dialog)

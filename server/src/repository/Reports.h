@@ -17,9 +17,16 @@ class Reports {
 public:
     struct Report {
         struct Event {
+            struct TimePoint {
+                std::int32_t h;
+                std::int32_t m;
+                std::int32_t s;
+            };
+
             // foreign key
             boost::optional<std::int32_t> exhibitID;
 
+            TimePoint beginTime;
             std::int32_t durationInSecs;
 
             // foreign keys
@@ -27,9 +34,9 @@ public:
         };
 
         struct SurveyAns {
-            using SimpleQAnswer = boost::optional<std::string>;
-            using MultiChoiceQAnswer = boost::optional<std::vector<std::int32_t>>;
-            using SortQAnswer = boost::optional<std::vector<std::int32_t>>;
+            using SimpleQAnswer = std::string;
+            using MultiChoiceQAnswer = std::vector<std::int32_t>;
+            using SortQAnswer = std::vector<std::int32_t>;
 
             std::vector<SimpleQAnswer> simpleQAnswers;
             std::vector<MultiChoiceQAnswer> multiChoiceQAnswers;
@@ -71,7 +78,9 @@ private:
     void checkBreakActions(const Experiment &experiment, const std::vector<Report::Event> &events);
 
     // throws InvalidData in case of value less than 0
-    void checkDurations(const std::vector<Report::Event> &events);
+    void checkDurations(const std::vector<Report::Event> &events) const;
+
+    void checkTimePoint(const Report::Event::TimePoint &timePoint) const;
 
     void checkSurveyAns(const Experiment::Survey &survey, const Report::SurveyAns &surveyAns);
 
