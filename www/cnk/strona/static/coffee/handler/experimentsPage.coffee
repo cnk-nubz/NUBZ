@@ -8,12 +8,17 @@ class Handler
     @_readyExperimentRow = new root.ReadyExperimentRow()
     @_finishedExperimentRow = new root.FinishedExperimentRow()
     @_setHandlers()
+    console.log "halo"
     @_setDefaultState()
+    console.log "koniec"
 
   _setHandlers: =>
     @_setLists()
+    console.log "halo2"
     @_setAddNewExperimentHandler()
+    console.log "halo3"
     @_setActiveExperimentHandlers()
+    console.log "halo4"
 
   _setLists: =>
     readyExperimentsDOM = @_prepareReadyExperiments()
