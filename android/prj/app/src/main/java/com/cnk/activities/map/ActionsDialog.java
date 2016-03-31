@@ -27,7 +27,7 @@ public class ActionsDialog {
 
     private long beginTime;
     private long endTime;
-
+    
     private SelectListAdapter<Action> adapter;
 
     private Dialog dialog;
@@ -118,5 +118,9 @@ public class ActionsDialog {
 
     public long getEndTime() {
         return endTime;
+    }
+
+    public Date getBeginDate() {
+        return new Date(beginTime);
     }
 }

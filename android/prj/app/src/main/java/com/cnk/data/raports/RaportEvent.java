@@ -1,17 +1,20 @@
 package com.cnk.data.raports;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 public class RaportEvent implements Serializable {
     private Integer exhibitId;
     private int durationSeconds;
+    private Date startDate;
     private List<Integer> actions;
 
-    public RaportEvent(Integer exhibitId, int durationSeconds, List<Integer> actions) {
+    public RaportEvent(Integer exhibitId, int durationSeconds, List<Integer> actions, Date startDate) {
         this.exhibitId = exhibitId;
         this.durationSeconds = durationSeconds;
         this.actions = actions;
+        this.startDate = startDate;
     }
 
     public Integer getExhibitId() {
@@ -26,11 +29,16 @@ public class RaportEvent implements Serializable {
         return actions;
     }
 
+    public Date getStartDate() {
+        return startDate;
+    }
+
     @Override
     public String toString() {
         return "RaportEvent{" +
                "exhibitId=" + exhibitId +
                ", durationSeconds=" + durationSeconds +
+               ", startDate=" + startDate +
                ", actions=" + actions +
                '}';
     }

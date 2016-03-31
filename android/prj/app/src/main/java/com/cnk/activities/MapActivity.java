@@ -148,8 +148,9 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void dialogFinished(Integer exhibitId, @NonNull ActionsDialog dialog) {
         List<Integer> actions = dialog.getSelectedActions();
         Log.i(LOG_TAG, "Selected actions: " + actions);
-
-        RaportEvent event = new RaportEvent(exhibitId, dialog.getElapsedTime(), actions);
+        RaportEvent
+                event =
+                new RaportEvent(exhibitId, dialog.getElapsedTime(), actions, dialog.getBeginDate());
         ExperimentData.getInstance().addEventToCurrentRaportInBg(event);
 
         dialogOpened = false;

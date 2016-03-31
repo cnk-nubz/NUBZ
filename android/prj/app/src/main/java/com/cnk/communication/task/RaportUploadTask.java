@@ -10,6 +10,7 @@ import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.SimpleQuestionAnswer;
 import com.cnk.communication.thrift.SortQuestionAnswer;
 import com.cnk.communication.thrift.SurveyAnswers;
+import com.cnk.communication.thrift.Time;
 import com.cnk.data.raports.Raport;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
@@ -17,6 +18,9 @@ import com.cnk.data.raports.ReadyRaports;
 import org.apache.thrift.TException;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +68,23 @@ public class RaportUploadTask extends ServerTask {
             RawReportEvent rawEvent = new RawReportEvent();
             rawEvent.setActions(event.getActions());
             rawEvent.setDurationInSecs(event.getDurationSeconds());
+            rawEvent.setBeginTime(translateDate(event.getStartDate()));
             if (event.getExhibitId() != null) {
                 rawEvent.setExhibitId(event.getExhibitId());
             }
             thriftEvents.add(rawEvent);
         }
         return thriftEvents;
+    }
+
+    private Time translateDate(Date date) {
+        Time startTime = new Time();
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(date);
+        startTime.setHour(calendar.get(Calendar.HOUR_OF_DAY));
+        startTime.setMin(calendar.get(Calendar.MINUTE));
+        startTime.setSec(calendar.get(Calendar.SECOND));
+        return startTime;
     }
 
     private SurveyAnswers translateSurvey(com.cnk.data.experiment.survey.answers.SurveyAnswers answers) {
