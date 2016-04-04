@@ -29,12 +29,16 @@ public class ExperimentDataDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExperimentDownloadTask";
     private ExperimentData.ExperimentUpdateAction action;
+    private Long timeout;
 
     public ExperimentDataDownloadTask(NetworkHandler.FinishAction failure,
                                       NetworkHandler.FinishAction success,
-                                      ExperimentData.ExperimentUpdateAction action) {
-        super(failure, success);
+                                      TimeoutAction timeoutAction,
+                                      ExperimentData.ExperimentUpdateAction action,
+                                      Long timeout) {
+        super(failure, success, timeoutAction);
         this.action = action;
+        this.timeout = timeout;
     }
 
     @Override
@@ -148,5 +152,10 @@ public class ExperimentDataDownloadTask extends ServerTask {
             questions.add(new SortQuestion(quesiton.questionId, quesiton.getQuestion(), options));
         }
         return questions;
+    }
+
+    @Override
+    public long getTimeout() {
+        return timeout;
     }
 }

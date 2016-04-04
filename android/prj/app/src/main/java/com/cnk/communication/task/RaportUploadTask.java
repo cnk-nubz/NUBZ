@@ -14,6 +14,7 @@ import com.cnk.communication.thrift.Time;
 import com.cnk.data.raports.Raport;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
+import com.cnk.utilities.Consts;
 
 import org.apache.thrift.TException;
 
@@ -28,10 +29,11 @@ import java.util.Map;
 public class RaportUploadTask extends ServerTask {
 
     private static final String LOG_TAG = "RaportUploadTask";
+    private static final long TIMEOUT = Consts.MILLIS_IN_SEC * Consts.SEC_IN_MIN;
 
     public RaportUploadTask(NetworkHandler.FinishAction failure,
                             NetworkHandler.FinishAction success) {
-        super(failure, success);
+        super(failure, success, null);
     }
 
     @Override
@@ -153,4 +155,8 @@ public class RaportUploadTask extends ServerTask {
         return thriftAnswers;
     }
 
+    @Override
+    public long getTimeout() {
+        return TIMEOUT;
+    }
 }

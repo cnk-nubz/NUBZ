@@ -26,7 +26,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "StartScreen";
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
-    private ProgressDialog spinner;
+    private ProgressDialog progressBar;
+    private Thread progressDialogUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,8 +74,8 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        setSpinner();
-        MapData.getInstance().downloadMap(this::mapDownloaded);
+        setProgressBar();
+        MapData.getInstance().downloadMap(this::synchronizationFailed, this::mapDownloaded);
     }
 
     private void mapDownloaded() {
@@ -86,12 +87,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
-                spinner.dismiss();
+                progressBar.dismiss();
                 e.printStackTrace();
                 runOnUiThread(this::showAlert);
             }
         }
-        spinner.dismiss();
+        progressBar.dismiss();
     }
 
     private void showAlert() {
@@ -105,12 +106,54 @@ public class StartScreen extends AppCompatActivity implements Observer {
                          negativeAction);
     }
 
-    private void setSpinner() {
-        spinner = new ProgressDialog(this);
-        spinner.setCanceledOnTouchOutside(false);
-        spinner.setTitle("Synchronizacja");
-        spinner.setMessage("Trwa synchronizacja danych z serwerem");
-        spinner.show();
+    private void synchronizationFailed() {
+        runOnUiThread(() -> {
+            progressDialogUpdate.interrupt();
+            progressBar.dismiss();
+
+            DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
+            Utils.showDialog(this,
+                             R.string.synchronizationFailed,
+                             R.string.tryAgain,
+                             R.string.cancel,
+                             positiveAction);
+        });
+    }
+
+    private void setProgressBar() {
+        progressBar = new ProgressDialog(this);
+        progressBar.setCanceledOnTouchOutside(false);
+        progressBar.setCancelable(false);
+        progressBar.setTitle(getString(R.string.synchronizing));
+        progressBar.setMessage(getString(R.string.synchronizingInProgress));
+        progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressBar.setProgressNumberFormat(null);
+        progressBar.setProgress(0);
+        progressBar.setMax(100);
+        progressBar.show();
+
+        final Integer[] progressBarProgress = {0};
+
+        progressDialogUpdate = new Thread(() -> {
+            while (progressBarProgress[0] < 100) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                }
+
+                if (MapData.getInstance().getMapDownloadedTilesCount() != null &&
+                    MapData.getInstance().getMapDownloadingTilesCount() != null) {
+                    progressBarProgress[0] =
+                            100 * MapData.getInstance().getMapDownloadedTilesCount() /
+                            MapData.getInstance().getMapDownloadingTilesCount();
+                }
+
+                runOnUiThread(() -> progressBar.setProgress(progressBarProgress[0]));
+            }
+        });
+        progressDialogUpdate.start();
     }
 }
 

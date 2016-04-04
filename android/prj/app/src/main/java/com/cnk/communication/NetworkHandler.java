@@ -10,6 +10,7 @@ import com.cnk.communication.task.Task;
 import com.cnk.communication.task.WaitTask;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.map.MapData;
+import com.cnk.utilities.Util;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -41,7 +42,8 @@ public class NetworkHandler {
             while (true) {
                 try {
                     Log.i(LOG_TAG, "Starting another task");
-                    queue.take().run(TRIES);
+                    Task currentTask = queue.take();
+                    currentTask.run(TRIES);
                     Log.i(LOG_TAG, "Task finished");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -72,13 +74,29 @@ public class NetworkHandler {
         return instance;
     }
 
-    public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action) {
-        Task task = new ExperimentDataDownloadTask(this::onFailure, this::onSuccess, action);
+    public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action,
+                                                    Task.TimeoutAction timeoutAction,
+                                                    Long timeout) {
+        Task
+                task =
+                new ExperimentDataDownloadTask(this::onFailure,
+                                               this::onSuccess,
+                                               timeoutAction,
+                                               action,
+                                               timeout);
         tasks.add(task);
     }
 
-    public synchronized void downloadMap(MapData.MapUpdateAction action) {
-        Task task = new MapDownloadTask(this::onFailure, this::onSuccess, action);
+    public synchronized void downloadMap(Task.TimeoutAction timeoutAction,
+                                         MapData.MapUpdateAction action,
+                                         Long timeout) {
+        Task
+                task =
+                new MapDownloadTask(this::onFailure,
+                                    this::onSuccess,
+                                    timeoutAction,
+                                    action,
+                                    timeout);
         tasks.add(task);
     }
 
@@ -121,6 +139,13 @@ public class NetworkHandler {
 
     private synchronized void onFailure(Task task) {
         Log.i(LOG_TAG, "Task failed, retrying");
-        tasks.add(task);
+        if (Util.checkIfBeforeTimeout(task.getBeginTime(), task.getTimeout())) {
+            tasks.add(task);
+        } else {
+            Log.i(LOG_TAG, "Task timed out");
+            if (task.getTimeoutAction() != null) {
+                task.getTimeoutAction().onTimeout();
+            }
+        }
     }
 }

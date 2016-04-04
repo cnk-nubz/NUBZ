@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.task.Task;
 import com.cnk.data.Downloader;
 import com.cnk.data.FileHandler;
 import com.cnk.database.DatabaseHelper;
@@ -23,13 +24,26 @@ public class MapData {
     public interface MapUpdateAction {
         void doOnUpdate();
     }
+
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
+    private static final long MAP_DOWNLOAD_TIMEOUT = Consts.MILLIS_IN_SEC * 20;
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
+
+    private Integer mapDownloadingTilesCount;
+    private Integer mapDownloadedTilesCount;
+
+    public Integer getMapDownloadingTilesCount() {
+        return mapDownloadingTilesCount;
+    }
+
+    public Integer getMapDownloadedTilesCount() {
+        return mapDownloadedTilesCount;
+    }
 
     private MapData() {
         floorInfos = new ArrayList<>();
@@ -42,8 +56,8 @@ public class MapData {
         return instance;
     }
 
-    public void downloadMap(MapUpdateAction action) {
-        NetworkHandler.getInstance().downloadMap(action);
+    public void downloadMap(Task.TimeoutAction timeoutAction, MapUpdateAction action) {
+        NetworkHandler.getInstance().downloadMap(timeoutAction, action, MAP_DOWNLOAD_TIMEOUT);
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -82,6 +96,17 @@ public class MapData {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
+        mapDownloadingTilesCount = mapDownloadedTilesCount = 0;
+        for (FloorMap map : maps) {
+            ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
+            for (ZoomLevel level : zoomLevels) {
+                ArrayList<ArrayList<String>> tiles = level.getTilesFiles();
+                for (int i = 0; i < tiles.size(); i++) {
+                    mapDownloadingTilesCount += tiles.get(i).size();
+                }
+            }
+        }
+
         Log.i(LOG_TAG, "Setting new maps");
         for (FloorMap map : maps) {
             downloadAndSaveFloor(map);
@@ -108,15 +133,13 @@ public class MapData {
                     String actualFilename = getPathForTile(map.getFloor(), level, i, j);
                     FileHandler.getInstance().saveInputStream(in, tmpFilename);
                     tiles.get(i).set(j, actualFilename);
+                    mapDownloadedTilesCount++;
                 }
             }
         }
     }
 
-    private String getTemporaryPathForTile(int floorNo,
-                                           int zoomLevel,
-                                           int x,
-                                           int y) {
+    private String getTemporaryPathForTile(int floorNo, int zoomLevel, int x, int y) {
         String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
         return dir + getTileFilename(x, y, floorNo, zoomLevel);
     }

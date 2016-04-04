@@ -1,5 +1,7 @@
 package com.cnk.utilities;
 
+import java.util.Date;
+
 public class Util {
 
     public static void waitDelay(long delay) {
@@ -8,6 +10,10 @@ public class Util {
         } catch (java.lang.InterruptedException e2) {
             e2.printStackTrace();
         }
+    }
+
+    public static boolean checkIfBeforeTimeout(long beginTime, long timeout) {
+        return new Date().getTime() - beginTime < timeout;
     }
 
 }

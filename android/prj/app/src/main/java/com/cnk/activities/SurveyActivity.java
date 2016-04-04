@@ -58,12 +58,18 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
-            setSpinner();
-            ExperimentData.getInstance().downloadExperiment(this::experimentDataDownloaded);
+            startExperimentDataDownload();
         } else {
             Log.i(LOG_TAG, "Survey after");
             init();
         }
+    }
+
+    private void startExperimentDataDownload() {
+        setSpinner();
+        ExperimentData.getInstance()
+                      .downloadExperiment(this::experimentDataDownloaded,
+                                          this::experimetDataDownloadingTimeout);
     }
 
     private void setButtons() {
@@ -114,8 +120,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             return;
         }
         hideKeyboard();
-        DialogInterface.OnClickListener positiveAction =
-                (dialog, which) -> changeToNextActivity();
+        DialogInterface.OnClickListener positiveAction = (dialog, which) -> changeToNextActivity();
         Utils.showDialog(SurveyActivity.this,
                          R.string.confirmation,
                          R.string.confirm,
@@ -145,8 +150,8 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void setSpinner() {
         spinner = new ProgressDialog(this);
-        spinner.setTitle("Ładowanie");
-        spinner.setMessage("Oczekiwanie na pobranie danych");
+        spinner.setTitle(getString(R.string.loading));
+        spinner.setMessage(getString(R.string.waitingForExperimentData));
         spinner.setCancelable(false);
         spinner.show();
     }
@@ -156,6 +161,24 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         if (spinner != null) {
             spinner.dismiss();
         }
+    }
+
+    private void experimetDataDownloadingTimeout() {
+        runOnUiThread(() -> {
+            spinner.dismiss();
+            DialogInterface.OnClickListener
+                    positiveAction =
+                    (dialog, which) -> startExperimentDataDownload();
+            DialogInterface.OnClickListener
+                    negativeAction =
+                    (dialog, which) -> SurveyActivity.this.finish();
+            Utils.showDialog(SurveyActivity.this,
+                             R.string.experimentDataDownloadTimeout,
+                             R.string.confirm,
+                             R.string.cancel,
+                             positiveAction,
+                             negativeAction);
+        });
     }
 
     private void init() {

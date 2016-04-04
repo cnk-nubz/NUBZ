@@ -25,13 +25,16 @@ public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
     private MapData.MapUpdateAction action;
-
+    private Long timeout;
 
     public MapDownloadTask(NetworkHandler.FinishAction failure,
                            NetworkHandler.FinishAction success,
-                           MapData.MapUpdateAction action) {
-        super(failure, success);
+                           Task.TimeoutAction timeoutAction,
+                           MapData.MapUpdateAction action,
+                           Long timeout) {
+        super(failure, success, timeoutAction);
         this.action = action;
+        this.timeout = timeout;
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
@@ -89,5 +92,10 @@ public class MapDownloadTask extends ServerTask {
             copied.add(toAdd);
         }
         return copied;
+    }
+
+    @Override
+    public long getTimeout() {
+        return timeout;
     }
 }
