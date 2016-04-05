@@ -24,24 +24,15 @@ import java.util.Map;
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
-    private MapData.MapUpdateAction action;
-    private Long timeout;
 
-    public MapDownloadTask(NetworkHandler.FinishAction failure,
-                           NetworkHandler.FinishAction success,
-                           Task.TimeoutAction timeoutAction,
-                           MapData.MapUpdateAction action,
-                           Long timeout) {
-        super(failure, success, timeoutAction);
-        this.action = action;
-        this.timeout = timeout;
+    public MapDownloadTask(NetworkHandler.SuccessAction success,
+                           NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
         downloadTilesUpdate(client);
         Log.i(LOG_TAG, "Map update complete");
-        action.doOnUpdate();
-        action = null;
     }
 
     private void downloadTilesUpdate(Server.Client client) throws TException, IOException {
@@ -95,7 +86,7 @@ public class MapDownloadTask extends ServerTask {
     }
 
     @Override
-    public long getTimeout() {
-        return timeout;
+    public String getTaskName() {
+        return LOG_TAG;
     }
 }

@@ -9,7 +9,8 @@ import android.util.Log;
 import android.view.View;
 
 import com.cnk.R;
-import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.task.ServerTask;
+import com.cnk.communication.task.Task;
 import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
@@ -43,7 +44,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
                 ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             }
         } catch (DatabaseLoadException e) {
@@ -75,16 +75,16 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
     private void downloadMap() {
         setProgressBar();
-        MapData.getInstance().downloadMap(this::synchronizationFailed, this::mapDownloaded);
+        MapData.getInstance().downloadMap(this::mapDownloaded, this::synchronizationFailed);
     }
 
-    private void mapDownloaded() {
+    private void mapDownloaded(Task t) {
+        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " finished sucessfully.");
         if (!dataLoaded) {
             try {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
                 ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
                 progressBar.dismiss();
@@ -106,17 +106,28 @@ public class StartScreen extends AppCompatActivity implements Observer {
                          negativeAction);
     }
 
-    private void synchronizationFailed() {
+    private void synchronizationFailed(Task t, ServerTask.FailureReason failureReason) {
+        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + failureReason.toString());
         runOnUiThread(() -> {
             progressDialogUpdate.interrupt();
             progressBar.dismiss();
 
+            Integer
+                    messageId =
+                    failureReason == ServerTask.FailureReason.NOWIFI ?
+                            R.string.synchronizationFailedWifi :
+                            R.string.synchronizationFailedConnection;
+
             DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
+            DialogInterface.OnClickListener
+                    negativeAction =
+                    dataLoaded ? null : (dialog, which) -> finish();
             Utils.showDialog(this,
-                             R.string.synchronizationFailed,
+                             messageId,
                              R.string.tryAgain,
                              R.string.cancel,
-                             positiveAction);
+                             positiveAction,
+                             negativeAction);
         });
     }
 

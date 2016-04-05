@@ -1,70 +1,42 @@
 package com.cnk.communication;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;
 import com.cnk.communication.task.MapDownloadTask;
 import com.cnk.communication.task.RaportUploadTask;
+import com.cnk.communication.task.ServerTask;
 import com.cnk.communication.task.Task;
-import com.cnk.communication.task.WaitTask;
-import com.cnk.data.experiment.ExperimentData;
-import com.cnk.data.map.MapData;
-import com.cnk.utilities.Util;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class NetworkHandler {
 
-    public interface FinishAction {
+    public interface SuccessAction {
         void perform(Task sender);
+    }
+
+    public interface FailureAction {
+        void perform(Task sender, ServerTask.FailureReason reason);
     }
 
     private static final String LOG_TAG = "NetworkHandler";
     private static final long SECONDS_DELAY = 30;
+    private static final long MIN_SECONDS_DELAY = 1;
     private static NetworkHandler instance;
 
-    private BlockingQueue<Task> tasks;
-    private BlockingQueue<Task> bgTasks;
-
-    private boolean downloadInBg;
-
-    private class QueueThread implements Runnable {
-        private static final int TRIES = 3;
-        private BlockingQueue<Task> queue;
-
-        public QueueThread(BlockingQueue<Task> queue) {
-            this.queue = queue;
-        }
-
-        public void run() {
-            while (true) {
-                try {
-                    Log.i(LOG_TAG, "Starting another task");
-                    Task currentTask = queue.take();
-                    currentTask.run(TRIES);
-                    Log.i(LOG_TAG, "Task finished");
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    Log.i(LOG_TAG, "Thread woken");
-                }
-            }
-        }
-    }
+    private ScheduledExecutorService scheduledExecutor;
+    private boolean bgSyncStarted = false;
+    private Context appContext;
 
     private NetworkHandler() {
-        downloadInBg = false;
-        tasks = new LinkedBlockingQueue<>();
-        bgTasks = new LinkedBlockingQueue<>();
-
-        spawnThread(tasks);
-        spawnThread(bgTasks);
-    }
-
-    private void spawnThread(BlockingQueue<Task> tasks) {
-        Thread thread = new Thread(new QueueThread(tasks));
-        thread.start();
+        scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
     }
 
     public static NetworkHandler getInstance() {
@@ -74,78 +46,52 @@ public class NetworkHandler {
         return instance;
     }
 
-    public synchronized void downloadExperimentData(ExperimentData.ExperimentUpdateAction action,
-                                                    Task.TimeoutAction timeoutAction,
-                                                    Long timeout) {
-        Task
-                task =
-                new ExperimentDataDownloadTask(this::onFailure,
-                                               this::onSuccess,
-                                               timeoutAction,
-                                               action,
-                                               timeout);
-        tasks.add(task);
+    public void setAppContext(Context appContext) {
+        this.appContext = appContext;
     }
 
-    public synchronized void downloadMap(Task.TimeoutAction timeoutAction,
-                                         MapData.MapUpdateAction action,
-                                         Long timeout) {
-        Task
-                task =
-                new MapDownloadTask(this::onFailure,
-                                    this::onSuccess,
-                                    timeoutAction,
-                                    action,
-                                    timeout);
-        tasks.add(task);
+    public boolean isConnectedToWifi() {
+        ConnectivityManager
+                connManager =
+                (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+        return mWifi.isConnected();
     }
 
-    public synchronized void uploadRaports() {
-        Task task = new RaportUploadTask(this::onFailure, this::onSuccess);
-        tasks.add(task);
+    public synchronized void downloadExperimentData(SuccessAction success, FailureAction failure) {
+        Task task = new ExperimentDataDownloadTask(success, failure);
+        scheduledExecutor.schedule(task::run, MIN_SECONDS_DELAY, TimeUnit.SECONDS);
     }
 
-    public synchronized void startBgDownload() {
-        if (downloadInBg) {
+    public synchronized void downloadMap(SuccessAction success, FailureAction failure) {
+        Task task = new MapDownloadTask(success, failure);
+        scheduledExecutor.schedule(task::run, MIN_SECONDS_DELAY, TimeUnit.SECONDS);
+    }
+
+    public synchronized void startBgDataSync() {
+        if (bgSyncStarted) {
             return;
         }
-        downloadInBg = true;
-        Task task = new ExhibitDownloadTask(this::onBgFailure, this::onBgSuccess);
-        tasks.add(task);
-    }
+        bgSyncStarted = true;
 
-    public synchronized void stopBgDownload() {
-        downloadInBg = false;
+        Task exhibitsTask = new ExhibitDownloadTask(this::onBgSuccess, this::onBgFailure);
+        Task raportsTask = new RaportUploadTask(this::onBgSuccess, this::onBgFailure);
+        scheduledExecutor.scheduleWithFixedDelay(exhibitsTask::run,
+                                                 SECONDS_DELAY,
+                                                 SECONDS_DELAY,
+                                                 TimeUnit.SECONDS);
+        scheduledExecutor.scheduleWithFixedDelay(raportsTask::run,
+                                                 SECONDS_DELAY,
+                                                 SECONDS_DELAY,
+                                                 TimeUnit.SECONDS);
     }
 
     private synchronized void onBgSuccess(Task t) {
-        Log.i(LOG_TAG, "Bg task finished successfully");
-        if (downloadInBg) {
-            bgTasks.add(new WaitTask(SECONDS_DELAY));
-            bgTasks.add(t);
-        }
+        Log.i(LOG_TAG, "Bg task finished successfully: " + t.getTaskName());
     }
 
-    private synchronized void onBgFailure(Task t) {
-        Log.i(LOG_TAG, "Bg task failed, retrying");
-        if (downloadInBg) {
-            bgTasks.add(t);
-        }
-    }
-
-    private synchronized void onSuccess(Task t) {
-        Log.i(LOG_TAG, "Task finished successfully");
-    }
-
-    private synchronized void onFailure(Task task) {
-        Log.i(LOG_TAG, "Task failed, retrying");
-        if (Util.checkIfBeforeTimeout(task.getBeginTime(), task.getTimeout())) {
-            tasks.add(task);
-        } else {
-            Log.i(LOG_TAG, "Task timed out");
-            if (task.getTimeoutAction() != null) {
-                task.getTimeoutAction().onTimeout();
-            }
-        }
+    private synchronized void onBgFailure(Task t, ServerTask.FailureReason reason) {
+        Log.i(LOG_TAG, "Bg task failed: " + t.getTaskName() + ", reason: " + reason.toString());
     }
 }

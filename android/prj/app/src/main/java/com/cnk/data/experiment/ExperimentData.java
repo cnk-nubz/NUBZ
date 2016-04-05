@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
-import com.cnk.communication.task.Task;
 import com.cnk.data.FileHandler;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.Raport;
@@ -22,10 +21,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ExperimentData {
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
-    }
-
     private class BgRaportSaver implements Runnable {
         private volatile Raport raport;
 
@@ -70,10 +65,10 @@ public class ExperimentData {
     }
 
     private static final String LOG_TAG = "ExperimentData";
+    public static final String TASK_NAME = LOG_TAG;
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";
-    private static final long EXPERIMENT_DATA_DOWNLOAD_TIMEOUT = Consts.MILLIS_IN_SEC * 20;
     private static ExperimentData instance;
     private Lock raportLock;
     private DatabaseHelper dbHelper;
@@ -99,9 +94,9 @@ public class ExperimentData {
         experiment = newData;
     }
 
-    public void downloadExperiment(ExperimentUpdateAction action, Task.TimeoutAction timeoutAction) {
-        NetworkHandler.getInstance()
-                      .downloadExperimentData(action, timeoutAction, EXPERIMENT_DATA_DOWNLOAD_TIMEOUT);
+    public void downloadExperiment(NetworkHandler.SuccessAction success,
+                                   NetworkHandler.FailureAction failure) {
+        NetworkHandler.getInstance().downloadExperimentData(success, failure);
     }
 
     public Survey getSurvey(@NonNull Survey.SurveyType type) {

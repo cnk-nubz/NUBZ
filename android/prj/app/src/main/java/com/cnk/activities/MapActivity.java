@@ -54,7 +54,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
         mapContainer.addObserver(this, this::exhibitClick);
 
-        NetworkHandler.getInstance().startBgDownload();
+        NetworkHandler.getInstance().startBgDataSync();
     }
 
     @Override
@@ -196,7 +196,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        NetworkHandler.getInstance().stopBgDownload();
         ExhibitsData.getInstance().deleteObserver(this);
         mapContainer.destroy();
     }

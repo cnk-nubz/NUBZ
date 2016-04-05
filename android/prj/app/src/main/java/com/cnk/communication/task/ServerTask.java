@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.Server;
-import com.cnk.utilities.Util;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -13,49 +12,47 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 
 import java.io.IOException;
-import java.util.Date;
 
 public abstract class ServerTask extends Task {
+
+    public enum FailureReason {
+        NOWIFI("no wifi"),
+        SOCKET_OPEN_FAILED("socket opening failed"),
+        ACTION_FAILED("action on opened socket failed");
+
+        private String description;
+
+        FailureReason(String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+    }
 
     protected static final String LOG_TAG = "ServerTask";
     private static final String SEND_ADDRESS = "192.168.0.18";
     private static final int SEND_PORT = 9090;
-    private NetworkHandler.FinishAction failure;
-    private NetworkHandler.FinishAction success;
-    private Task.TimeoutAction timeoutAction;
-    protected long delay = 1;
-    protected Long beginTime;
+    private NetworkHandler.SuccessAction success;
+    private NetworkHandler.FailureAction failure;
+    private FailureReason failReason;
 
-    @Override
-    public Long getBeginTime() {
-        return beginTime;
-    }
-
-    public ServerTask(NetworkHandler.FinishAction failure,
-                      NetworkHandler.FinishAction success,
-                      Task.TimeoutAction timeoutAction) {
-        this.failure = failure;
+    public ServerTask(NetworkHandler.SuccessAction success,
+                      NetworkHandler.FailureAction failure) {
         this.success = success;
-        this.timeoutAction = timeoutAction;
-    }
-
-    public Task.TimeoutAction getTimeoutAction() {
-        return timeoutAction;
+        this.failure = failure;
     }
 
     @Override
-    public void run(int tries) {
-        Log.i(LOG_TAG, "Starting run");
-        if (beginTime == null) {
-            beginTime = new Date().getTime();
-        }
+    public void run() {
+        Log.i(LOG_TAG, "Starting run: " + getTaskName());
 
-        TFramedTransport socket = openSocket(tries);
-        Log.i(LOG_TAG,
-              "BEGIN TIME: " + beginTime.toString() + " TIMEOUT: " + Long.toString(getTimeout()));
+        TFramedTransport socket = openSocket();
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
-        while (tries > 0 && socket != null && Util.checkIfBeforeTimeout(beginTime, getTimeout())) {
+        if (socket != null) {
             try {
                 performInSession(client);
                 Log.i(LOG_TAG, "Action successful");
@@ -63,37 +60,35 @@ public abstract class ServerTask extends Task {
                 success.perform(this);
                 return;
             } catch (Exception e) {
-                Log.e(LOG_TAG, "Action failed, remaining tries: " + Integer.toString(tries));
+                Log.e(LOG_TAG, "Action failed");
                 e.printStackTrace();
-                Util.waitDelay(delay);
-                delay += 2;
-                tries--;
+                failReason = FailureReason.ACTION_FAILED;
             }
         }
         if (socket != null) {
             socket.close();
         }
-        failure.perform(this);
+        failure.perform(this, failReason);
     }
 
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
-    private TFramedTransport openSocket(int tries) {
+    private TFramedTransport openSocket() {
+        if (!NetworkHandler.getInstance().isConnectedToWifi()) {
+            failReason = FailureReason.NOWIFI;
+            return null;
+        }
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
         Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
-        while (tries > 0 && Util.checkIfBeforeTimeout(beginTime, getTimeout())) {
-            try {
-                socket.open();
-                Log.i(LOG_TAG, "Opened socket");
-                return socket;
-            } catch (org.apache.thrift.transport.TTransportException transportException) {
-                tries--;
-                Log.e(LOG_TAG, transportException.toString());
-                Log.e(LOG_TAG, "Socket open failed, remaining tries: " + Integer.toString(tries));
-                Util.waitDelay(delay);
-                delay += 2;
-            }
+        try {
+            socket.open();
+            Log.i(LOG_TAG, "Opened socket");
+            return socket;
+        } catch (org.apache.thrift.transport.TTransportException transportException) {
+            Log.e(LOG_TAG, transportException.toString());
+            Log.e(LOG_TAG, "Socket open failed");
         }
+        failReason = FailureReason.SOCKET_OPEN_FAILED;
         return null;
     }
 

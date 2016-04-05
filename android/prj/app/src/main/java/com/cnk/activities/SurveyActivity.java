@@ -15,7 +15,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnk.R;
-import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.task.ServerTask;
+import com.cnk.communication.task.Task;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer;
@@ -69,7 +70,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         setSpinner();
         ExperimentData.getInstance()
                       .downloadExperiment(this::experimentDataDownloaded,
-                                          this::experimetDataDownloadingTimeout);
+                                          this::experimetDataDownloadingFailed);
     }
 
     private void setButtons() {
@@ -133,7 +134,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         if (next == null) {
             finish();
             ExperimentData.getInstance().finishExperiment();
-            NetworkHandler.getInstance().uploadRaports();
         } else {
             Intent i = new Intent(getApplicationContext(), next);
             finish();
@@ -156,14 +156,16 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         spinner.show();
     }
 
-    private void experimentDataDownloaded() {
+    private void experimentDataDownloaded(Task t) {
+        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " finished sucessfully.");
         init();
         if (spinner != null) {
-            spinner.dismiss();
+            runOnUiThread(spinner::dismiss);
         }
     }
 
-    private void experimetDataDownloadingTimeout() {
+    private void experimetDataDownloadingFailed(Task t, ServerTask.FailureReason reason) {
+        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + reason.toString());
         runOnUiThread(() -> {
             spinner.dismiss();
             DialogInterface.OnClickListener
@@ -172,9 +174,14 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             DialogInterface.OnClickListener
                     negativeAction =
                     (dialog, which) -> SurveyActivity.this.finish();
+            Integer
+                    messageId =
+                    reason == ServerTask.FailureReason.NOWIFI ?
+                            R.string.experimentDataDownloadFailureWifi :
+                            R.string.experimentDataDownloadFailureConnection;
             Utils.showDialog(SurveyActivity.this,
-                             R.string.experimentDataDownloadTimeout,
-                             R.string.confirm,
+                             messageId,
+                             R.string.tryAgain,
                              R.string.cancel,
                              positiveAction,
                              negativeAction);

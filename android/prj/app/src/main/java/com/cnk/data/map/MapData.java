@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
-import com.cnk.communication.task.Task;
 import com.cnk.data.Downloader;
 import com.cnk.data.FileHandler;
 import com.cnk.database.DatabaseHelper;
@@ -56,8 +55,9 @@ public class MapData {
         return instance;
     }
 
-    public void downloadMap(Task.TimeoutAction timeoutAction, MapUpdateAction action) {
-        NetworkHandler.getInstance().downloadMap(timeoutAction, action, MAP_DOWNLOAD_TIMEOUT);
+    public void downloadMap(NetworkHandler.SuccessAction success,
+                            NetworkHandler.FailureAction failure) {
+        NetworkHandler.getInstance().downloadMap(success, failure);
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
