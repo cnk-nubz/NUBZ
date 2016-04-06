@@ -56,8 +56,8 @@ private:
 };
 extern template class ActionsSection<true>;
 extern template class ActionsSection<false>;
-using ExhibitActionsColumn = ActionsSection<true>;
-using BreakActionsColumn = ActionsSection<false>;
+using ExhibitActionsColumn = ActionsSection<false>;
+using BreakActionsColumn = ActionsSection<true>;
 
 template <bool isBegin>
 struct TimeColumn : EventBased {
