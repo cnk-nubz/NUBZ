@@ -37,6 +37,14 @@ bool Reports::exist(std::int32_t ID) {
     return (bool)session.getResult(sql);
 }
 
+Reports::Report Reports::getF(std::int32_t ID) {
+    if (auto report = get(ID)) {
+        return report.value();
+    } else {
+        throw InvalidData{"incorrect report ID"};
+    }
+}
+
 boost::optional<Reports::Report> Reports::get(std::int32_t ID) {
     auto sql = Table::Sql::select().where(Table::ID == ID);
     if (auto dbTuple = session.getResult(sql)) {
@@ -135,7 +143,7 @@ void Reports::checkDurations(const std::vector<Report::Event> &events) const {
     }
 }
 
-void Reports::checkTimePoint(const Reports::Report::Event::TimePoint &timePoint) const {
+void Reports::checkTimePoint(const utils::TimePoint &timePoint) const {
     if (timePoint.h < 0 || timePoint.m < 0 || timePoint.s < 0 || timePoint.h > 23 ||
         timePoint.m > 59 || timePoint.s > 59) {
         throw InvalidData{"incorrect time"};
@@ -205,6 +213,7 @@ Table::Sql::in_t toDB(const Reports::Report &report) {
     content.surveyAfter = surveyAnsToDB(report.surveyAfter);
 
     return std::make_tuple(Table::FieldID{report.ID},
+                           Table::FieldReceiveDate{boost::gregorian::day_clock::local_day()},
                            Table::FieldExperimentID{report.experimentID},
                            Table::FieldContent{content});
 }
@@ -231,6 +240,7 @@ Table::ContentData::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &su
 Reports::Report fromDB(const Table::Sql::out_t &report) {
     auto res = Reports::Report{};
     res.ID = std::get<Table::FieldID>(report).value;
+    res.receiveDate = std::get<Table::FieldReceiveDate>(report).value;
     res.experimentID = std::get<Table::FieldExperimentID>(report).value;
 
     auto content = std::get<Table::FieldContent>(report).value;

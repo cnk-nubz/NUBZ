@@ -7,6 +7,7 @@
 /*
  * columns:
  * - id
+ * - receive date
  * - name
  * - state
  * - startDate
@@ -30,6 +31,7 @@ namespace table {
 const std::string Reports::tableName = "reports";
 
 const std::string Reports::FieldID::columnName = "id";
+const std::string Reports::FieldReceiveDate::columnName = "receive_date";
 const std::string Reports::FieldExperimentID::columnName = "experiment_id";
 const std::string Reports::FieldContent::columnName = "content";
 

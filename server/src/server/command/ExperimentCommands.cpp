@@ -75,13 +75,8 @@ std::vector<ExperimentInfo> ExperimentCommands::getAllFinished() {
 }
 
 Experiment ExperimentCommands::get(std::int32_t ID) {
-    auto repoExpr = db.execute([&](db::DatabaseSession &session) {
-        if (auto exp = repository::Experiments{session}.get(ID)) {
-            return exp.value();
-        } else {
-            throw io::InvalidInput{"experiment with given id doesn't exist"};
-        }
-    });
+    auto repoExpr = db.execute(
+        [&](db::DatabaseSession &session) { return repository::Experiments{session}.getF(ID); });
 
     return Experiment{repoExpr};
 }

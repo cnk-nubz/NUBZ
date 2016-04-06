@@ -9,6 +9,8 @@
 
 #include <communication/structs_types.h>
 
+#include <utils/TimePoint.h>
+
 #include <repository/Reports.h>
 
 namespace server {
@@ -19,7 +21,7 @@ struct RawReport {
     struct Event {
         struct Time {
             Time(const communication::Time &thrift);
-            repository::Report::Event::TimePoint toRepo() const;
+            ::utils::TimePoint toRepo() const;
 
             const std::int32_t hour;
             const std::int32_t min;
