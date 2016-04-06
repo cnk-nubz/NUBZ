@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import logging
+import StringIO
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -406,15 +407,38 @@ def _getExperiment(experimentId):
         'breakActions': _parseActions(experiment.breakActions)
     }
 
+def _getRaports(experimentId):
+    raports = thriftCommunicator.getAllRaports(int(experimentId))
+    return raports
+    raportsList = list()
+    for r in raports:
+        raportsList.append({
+            'raportId': r.raportId,
+            'name': r.name,
+            'date': {
+                'day': r.date.day,
+                'month': r.date.month,
+                'year': r.date.year
+            }
+        })
+    return raportsList
 
 def _newExperimentReadonlyPage(request):
     experimentId = request.GET.get("id")
-    result = {
-        'success': True,
-        'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
-        'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
-        'experimentData': _getExperiment(experimentId),
-        'tableList': render_to_string('list/dataList.html')}
+    try:
+        result = {
+            'success': True,
+            'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
+            'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
+            'raportRow': render_to_string('list/row/raportRow.html'),
+            'experimentData': _getExperiment(experimentId),
+            'raportsList': _getRaports(experimentId),
+            'tableList': render_to_string('list/dataList.html')}
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
     template = loader.get_template('readonlyExperiment.html')
     return HttpResponse(template.render(RequestContext(request, result)))
 
@@ -695,4 +719,25 @@ def reportError(request):
     data = json.loads(request.POST.get("jsonData"))
     logger = logging.getLogger('jsLogger')
     logger.error(": {0} in {1}, {2}".format(data['url'], data['lineNumber'], data['errorMsg']))
-    return JsonResponse({'a': 'a'})
+    return JsonResponse()
+
+def getRaport(request):
+    raportId = request.GET.get("id")
+    myfile = StringIO.StringIO()
+    #TODO: write from file
+    myfile.write("Raporcik dla id: {}".format(raportId))
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = "attachment; filename=raport-{}.txt".format(raportId)
+    response['Content-Length'] = myfile.tell()
+    response.write(myfile.getvalue())
+    return response
+
+def getAllRaports(request):
+    myfile = StringIO.StringIO()
+    #TODO: write from file
+    myfile.write("Wszystkie raporty zzipowane")
+    response = HttpResponse(content_type='text/plain')
+    response['Content-Disposition'] = "attachment; filename=rapory-wszystkie.txt"
+    response['Content-Length'] = myfile.tell()
+    response.write(myfile.getvalue())
+    return response

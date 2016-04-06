@@ -245,3 +245,25 @@ class ThriftCommunicator:
             msg = CloneRequest(experimentId, newName.encode('utf-8'))
             return client.cloneExperiment(msg)
         return self._perform_in_single_connection([action])[0]
+
+    def getAllRaports(self, experimentId):
+        return [
+            {
+                'raportId': 1,
+                'name': 'test1',
+                'date': {
+                    'day': 1,
+                    'month': 1,
+                    'year': 2000
+                }
+            },
+            {
+                'raportId': 2,
+                'name': 'test2',
+                'date': {
+                    'day': 12,
+                    'month': 5,
+                    'year': 2015
+                }
+            }
+        ]

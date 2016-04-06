@@ -20,11 +20,11 @@ table.readyExperimentsTable > tbody > tr > td > div:first-child {
   overflow-x: hidden;
 }
 
-table.readyExperimentsTable > tbody > tr > td:not(:first-child) {
+table.readyExperimentsTable > tbody > tr > td + td {
   width: 90px;
 }
 
-table.readyExperimentsTable > tbody > tr > td:not(:first-child) > div:not(.tooltip) {
+table.readyExperimentsTable > tbody > tr > td + td > div:not(.tooltip) {
   background: #ddd;
   border: 1px solid #aaa;
   cursor: default;
@@ -32,7 +32,7 @@ table.readyExperimentsTable > tbody > tr > td:not(:first-child) > div:not(.toolt
   transition: background 120ms linear;
 }
 
-table.readyExperimentsTable > tbody > tr > td:not(:first-child):not(.nonclickable) > div:not(.tooltip):hover {
+table.readyExperimentsTable > tbody > tr > td + td:not(.nonclickable) > div:not(.tooltip):hover {
   cursor: pointer;
 }
 
@@ -41,7 +41,7 @@ table.readyExperimentsTable > tbody > tr > td:first-child:hover {
   background: #fff;
 }
 
-table.readyExperimentsTable > tbody > tr > td:not(:first-child):not(.nonclickable) > div:not(.tooltip):hover {
+table.readyExperimentsTable > tbody > tr > td + td:not(.nonclickable) > div:not(.tooltip):hover {
   background: lightgreen;
 }
 

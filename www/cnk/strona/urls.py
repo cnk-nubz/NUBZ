@@ -33,5 +33,9 @@ urlpatterns = [
     url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment'),
     url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
     url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment'),
-    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment')
+    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment'),
+
+    #raports
+    url(r'getRaport/$', views.getRaport, name='getRaport'),
+    url(r'getAllRaports/$', views.getAllRaports, name='getAllRaports')
 ]
