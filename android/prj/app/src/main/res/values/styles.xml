@@ -17,4 +17,22 @@
         <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
     </style>
 
+    <style name="HugeGradientMenuButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/rounded_rectangle</item>
+        <item name="android:paddingLeft">30dp</item>
+        <item name="android:paddingTop">20dp</item>
+        <item name="android:paddingRight">30dp</item>
+        <item name="android:paddingBottom">20dp</item>
+        <item name="android:layout_marginBottom">20dp</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:typeface">serif</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
+
+    <style name="SplashTheme" parent="AppTheme">
+        <item name="android:windowBackground">@drawable/splash_screen</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
 </resources>
