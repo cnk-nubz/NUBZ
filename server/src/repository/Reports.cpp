@@ -54,6 +54,21 @@ boost::optional<Reports::Report> Reports::get(std::int32_t ID) {
     }
 }
 
+std::vector<Reports::ReportInfo> Reports::getAllInfosForExperiment(std::int32_t experimentID) {
+    auto sql =
+        db::sql::Select<Table::FieldID, Table::FieldReceiveDate, Table::FieldExperimentID>{}.where(
+            Table::ExperimentID == experimentID);
+
+    auto result = std::vector<Reports::ReportInfo>{};
+    for (const auto &dbOut : session.getResults(sql)) {
+        auto info = ReportInfo{};
+        info.ID = std::get<Table::FieldID>(dbOut).value;
+        info.receiveDate = std::get<Table::FieldReceiveDate>(dbOut).value;
+        result.push_back(info);
+    }
+    return result;
+}
+
 std::vector<Reports::Report> Reports::getAllForExperiment(std::int32_t experimentID) {
     auto sql = Table::Sql::select().where(Table::ExperimentID == experimentID);
     auto result = std::vector<Reports::Report>{};

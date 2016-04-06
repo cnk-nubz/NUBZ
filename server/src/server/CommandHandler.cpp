@@ -284,6 +284,47 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::getAllReportsForExperiment(std::vector<communication::ReportInfo> &response,
+                                                const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getAllReportsForExperiment(experimentId);
+        response = io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getExcelReport(communication::Filename &response, const int32_t reportId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << reportId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getExcelReport(reportId);
+        response = output;
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getCombinedExcelReport(communication::Filename &response,
+                                            const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getCombinedExcelReport(experimentId);
+        response = output;
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - ACTIONS
 
 void CommandHandler::createAction(communication::Action &response,

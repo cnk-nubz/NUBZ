@@ -56,6 +56,11 @@ public:
 
     virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
+    virtual void getAllReportsForExperiment(std::vector<communication::ReportInfo> &response,
+                                            const int32_t experimentId) override;
+    virtual void getExcelReport(communication::Filename &response, const int32_t reportId) override;
+    virtual void getCombinedExcelReport(communication::Filename &response,
+                                        const int32_t experimentId) override;
 
     virtual void createAction(communication::Action &response,
                               const communication::CreateActionRequest &request) override;
