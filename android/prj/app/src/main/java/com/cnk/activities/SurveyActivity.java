@@ -114,8 +114,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             return;
         }
         hideKeyboard();
-        DialogInterface.OnClickListener positiveAction =
-                (dialog, which) -> changeToNextActivity();
+        DialogInterface.OnClickListener positiveAction = (dialog, which) -> changeToNextActivity();
         Utils.showDialog(SurveyActivity.this,
                          R.string.confirmation,
                          R.string.confirm,

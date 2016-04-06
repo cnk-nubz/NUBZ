@@ -14,11 +14,11 @@ public class Utils {
     }
 
     public static void showDialog(Activity a,
-                            int messageId,
-                            int positiveId,
-                            Integer negativeId,
-                            DialogInterface.OnClickListener positiveAction,
-                            DialogInterface.OnClickListener negativeAction) {
+                                  int messageId,
+                                  int positiveId,
+                                  Integer negativeId,
+                                  DialogInterface.OnClickListener positiveAction,
+                                  DialogInterface.OnClickListener negativeAction) {
         AlertDialog.Builder alert = new AlertDialog.Builder(a);
         alert.setMessage(messageId);
         alert.setPositiveButton(positiveId, positiveAction);

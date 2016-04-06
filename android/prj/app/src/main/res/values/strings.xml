@@ -9,12 +9,14 @@
     <string name="drawer_open">Wysunięto</string>
     <string name="drawer_close">Zamknięto</string>
     <string name="break_action">Przerwa</string>
+    <string name="change_floor">Zmień piętro</string>
     <string name="pietro">Piętro</string>
     <string name="end_action">Koniec badania</string>
     <string name="confirm">Ok</string>
     <string name="cancel">Anuluj</string>
     <string name="finish">Zakończ</string>
     <string name="error">Błąd</string>
+    <string name="confirm_map_close">Czy na pewno chcesz zakończyć? Później nie będzie można już wrócić do mapy.</string>
     <string name="mapIncompleteMessage">Dane o mapie są niekompletne, pobierz mapę ponownie</string>
     <string name="dataError">Pobrane dane są uszkodzone, spróbuj ponownie lub skontaktuj się z administratorem</string>
     <string name="tryAgain">Spróbuj ponownie</string>
