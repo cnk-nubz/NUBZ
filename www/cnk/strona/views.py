@@ -424,11 +424,7 @@ def _getReports(experimentId):
     for r in reports:
         reportsList.append({
             'reportId': r.reportId,
-            'receiveDate': {
-                'day': r.receiveDate.day,
-                'month': r.receiveDate.month,
-                'year': r.receiveDate.year
-            }
+            'receiveDate': _dateToString(r.receiveDate)
         })
     return reportsList
 
@@ -612,22 +608,18 @@ def saveExperiment(request):
     return JsonResponse(result)
 
 
+def _dateToString(date):
+    repairNum = lambda x: "0{}".format(x) if x < 10 else "{}".format(x)
+    return "{}/{}/{}".format(repairNum(date.day), repairNum(date.month), date.year)
+
 def _parseExperiments(experiments):
     experimentsList = list()
     for e in experiments:
         experimentsList.append({
             'experimentId': e.id,
             'name': e.name,
-            'startDate': {
-                'day': e.startDate.day,
-                'month': e.startDate.month,
-                'year': e.startDate.year
-            } if (not e.startDate is None) else None,
-            'finishDate': {
-                'day': e.finishDate.day,
-                'month': e.finishDate.month,
-                'year': e.finishDate.year
-            } if not (e.finishDate is None) else None
+            'startDate': _dateToString(e.startDate) if not e.startDate is None else None,
+            'finishDate': _dateToString(e.finishDate) if not e.finishDate is None else None
         })
     return experimentsList
 
@@ -742,7 +734,7 @@ def reportError(request):
     return JsonResponse()
 
 
-def _getReportFile(filename):
+def getReport(filename):
     path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
     myStream = StringIO.StringIO()
     myStream.write(open(path, 'rb').read())
@@ -753,20 +745,6 @@ def _getReportFile(filename):
     response['Content-Length'] = myStream.tell()
     response.write(myStream.getvalue())
     return response
-
-
-def getReport(request):
-    reportId = request.GET.get("id")
-    try:
-        filename = thriftCommunicator.getExcelReport(int(reportId))
-        return _getReportFile(filename)
-    except Exception as ex:
-        if type(ex).__name__ == 'InvalidData':
-            message = "{} {}.".format(
-                get_const("NO_SUCH_REPORT_ERROR"), reportId)
-        else:
-            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
-        return HttpResponse(message)
 
 
 def getAllReports(request):
@@ -781,3 +759,16 @@ def getAllReports(request):
         else:
             message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         return HttpResponse(message)
+
+
+def _getReportFile(filename):
+    path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
+    myStream = StringIO.StringIO()
+    myStream.write(open(path, 'rb').read())
+    os.remove(path)
+    response = HttpResponse(content_type='application/x-zip-compressed')
+    response[
+        'Content-Disposition'] = "attachment; filename={}".format(filename)
+    response['Content-Length'] = myStream.tell()
+    response.write(myStream.getvalue())
+    return response
