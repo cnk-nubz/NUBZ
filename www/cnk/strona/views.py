@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import logging
+import StringIO
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -19,12 +20,19 @@ from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
 thriftCommunicator = ThriftCommunicator()
+
+
 class InternalError(Exception):
     pass
+
+
 class InvalidData(Exception):
     pass
+
+
 class DuplicateName(Exception):
     pass
+
 
 def get_const(name):
     return getattr(settings, name, None)
@@ -233,10 +241,10 @@ def _exhibitRequestsUnified(request, funToCall):
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
         if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+            message = get_const("DEFAULT_CONSTANTS")['utils'][
+                'text']['nameDuplicatedError']
         else:
-            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-            str(ex))
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         data['message'] = message
         data['exceptionType'] = type(ex).__name__
         return JsonResponse(data)
@@ -321,6 +329,7 @@ def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
 
+
 def getChangeNameDialog(request):
     return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
 
@@ -338,9 +347,11 @@ HTMLRequests = {
     'changeNameDialog': getChangeNameDialog
 }
 
+
 def getHTML(request):
     name = request.GET.get("name")
     return HTMLRequests[name](request)
+
 
 def _parseQuestions(allQuestions, newId=None, newType=None):
     idxSimple = 0
@@ -407,14 +418,33 @@ def _getExperiment(experimentId):
     }
 
 
+def _getReports(experimentId):
+    reports = thriftCommunicator.getAllReportsForExperiment(int(experimentId))
+    reportsList = list()
+    for r in reports:
+        reportsList.append({
+            'reportId': r.reportId,
+            'receiveDate': _dateToString(r.receiveDate)
+        })
+    return reportsList
+
+
 def _newExperimentReadonlyPage(request):
     experimentId = request.GET.get("id")
-    result = {
-        'success': True,
-        'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
-        'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
-        'experimentData': _getExperiment(experimentId),
-        'tableList': render_to_string('list/dataList.html')}
+    try:
+        result = {
+            'success': True,
+            'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
+            'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
+            'reportRow': render_to_string('list/row/reportRow.html'),
+            'experimentData': _getExperiment(experimentId),
+            'reportsList': _getReports(experimentId),
+            'tableList': render_to_string('list/dataList.html')}
+    except Exception as ex:
+        result = {
+            'success': False,
+            'message': str(ex)
+        }
     template = loader.get_template('readonlyExperiment.html')
     return HttpResponse(template.render(RequestContext(request, result)))
 
@@ -493,7 +523,8 @@ def createSimpleQuestion(request):
 def createMultipleChoiceQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     try:
-        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(data)
+        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(
+            data)
         result = {
             'success': True,
             'questionsList': _parseQuestions(
@@ -565,10 +596,10 @@ def saveExperiment(request):
         }
     except Exception as ex:
         if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+            message = get_const("DEFAULT_CONSTANTS")['utils'][
+                'text']['nameDuplicatedError']
         else:
-            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-            str(ex))
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         result = {
             'success': False,
             'exceptionType': type(ex).__name__,
@@ -577,22 +608,18 @@ def saveExperiment(request):
     return JsonResponse(result)
 
 
+def _dateToString(date):
+    repairNum = lambda x: "0{}".format(x) if x < 10 else "{}".format(x)
+    return "{}/{}/{}".format(repairNum(date.day), repairNum(date.month), date.year)
+
 def _parseExperiments(experiments):
     experimentsList = list()
     for e in experiments:
         experimentsList.append({
             'experimentId': e.id,
             'name': e.name,
-            'startDate': {
-                'day': e.startDate.day,
-                'month': e.startDate.month,
-                'year': e.startDate.year
-            } if (not e.startDate is None) else None,
-            'finishDate': {
-                'day': e.finishDate.day,
-                'month': e.finishDate.month,
-                'year': e.finishDate.year
-            } if not (e.finishDate is None) else None
+            'startDate': _dateToString(e.startDate) if not e.startDate is None else None,
+            'finishDate': _dateToString(e.finishDate) if not e.finishDate is None else None
         })
     return experimentsList
 
@@ -662,10 +689,12 @@ def finishExperiment(request):
         }
     return JsonResponse(result)
 
+
 def cloneExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
     try:
-        thriftCommunicator.cloneExperiment(data['experimentId'], data['newName'])
+        thriftCommunicator.cloneExperiment(
+            data['experimentId'], data['newName'])
         result = {
             'success': True
         }
@@ -677,6 +706,7 @@ def cloneExperiment(request):
         }
     return JsonResponse(result)
 
+
 def getAllExhibits(request):
     try:
         exhibits = _getExhibits()
@@ -687,12 +717,59 @@ def getAllExhibits(request):
     except Exception as ex:
         result = {
             'success': False,
-            'message': 'Nie udało sie pobrać listy eksponatów. ({})'.format(
+            'message': "{} ({})".format(
+                get_const("EXHIBIT_LIST_ERROR"),
                 str(ex))}
     return JsonResponse(result)
+
 
 def reportError(request):
     data = json.loads(request.POST.get("jsonData"))
     logger = logging.getLogger('jsLogger')
-    logger.error(": {0} in {1}, {2}".format(data['url'], data['lineNumber'], data['errorMsg']))
-    return JsonResponse({'a': 'a'})
+    logger.error(
+        ": {0} in {1}, {2}".format(
+            data['url'],
+            data['lineNumber'],
+            data['errorMsg']))
+    return JsonResponse()
+
+
+def getReport(request):
+    reportId = request.GET.get("id")
+    try:
+        filename = thriftCommunicator.getExcelReport(int(reportId))
+        return _getReportFile(filename)
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}.".format(
+                get_const("NO_SUCH_REPORT_ERROR"), reportId)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        return HttpResponse(message)
+
+
+def getAllReports(request):
+    experimentId = request.GET.get("id")
+    try:
+        filename = thriftCommunicator.getCombinedExcelReport(int(experimentId))
+        return _getReportFile(filename)
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}.".format(
+                get_const("NO_SUCH_EXPERIMENT_ERROR"), experimentId)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        return HttpResponse(message)
+
+
+def _getReportFile(filename):
+    path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
+    myStream = StringIO.StringIO()
+    myStream.write(open(path, 'rb').read())
+    os.remove(path)
+    response = HttpResponse(content_type='application/x-zip-compressed')
+    response[
+        'Content-Disposition'] = "attachment; filename={}".format(filename)
+    response['Content-Length'] = myStream.tell()
+    response.write(myStream.getvalue())
+    return response

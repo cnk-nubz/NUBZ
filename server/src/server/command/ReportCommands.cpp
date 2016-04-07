@@ -43,6 +43,9 @@ std::vector<ReportInfo> ReportCommands::getAllReportsForExperiment(std::int32_t 
         return repo.getAllInfosForExperiment(experimentID);
     });
 
+    std::sort(repoInfos.begin(), repoInfos.end(), [](auto &lhs, auto &rhs) {
+        return std::make_pair(lhs.receiveDate, -lhs.ID) > std::make_pair(rhs.receiveDate, -rhs.ID);
+    });
     return std::vector<ReportInfo>{repoInfos.begin(), repoInfos.end()};
 }
 
