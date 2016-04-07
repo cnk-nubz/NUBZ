@@ -4,7 +4,6 @@ import os
 import json
 import logging
 import StringIO
-import zipfile
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -743,20 +742,16 @@ def reportError(request):
     return JsonResponse()
 
 
-def _getZip(filename):
+def _getReportFile(filename):
     path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
-    myZip = zipfile.ZipFile(path, 'r')
     myStream = StringIO.StringIO()
-    with zipfile.ZipFile(myStream, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
-        for fn in myZip.namelist():
-            zf.writestr(fn, myZip.open(fn, 'r').read())
+    myStream.write(open(path, 'rb').read())
     os.remove(path)
     response = HttpResponse(content_type='application/x-zip-compressed')
     response[
         'Content-Disposition'] = "attachment; filename={}".format(filename)
     response['Content-Length'] = myStream.tell()
     response.write(myStream.getvalue())
-    myStream.close()
     return response
 
 
@@ -764,7 +759,7 @@ def getReport(request):
     reportId = request.GET.get("id")
     try:
         filename = thriftCommunicator.getExcelReport(int(reportId))
-        return _getZip(filename)
+        return _getReportFile(filename)
     except Exception as ex:
         if type(ex).__name__ == 'InvalidData':
             message = "{} {}.".format(
@@ -778,7 +773,7 @@ def getAllReports(request):
     experimentId = request.GET.get("id")
     try:
         filename = thriftCommunicator.getCombinedExcelReport(int(experimentId))
-        return _getZip(filename)
+        return _getReportFile(filename)
     except Exception as ex:
         if type(ex).__name__ == 'InvalidData':
             message = "{} {}.".format(
