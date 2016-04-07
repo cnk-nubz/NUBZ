@@ -734,17 +734,18 @@ def reportError(request):
     return JsonResponse()
 
 
-def getReport(filename):
-    path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
-    myStream = StringIO.StringIO()
-    myStream.write(open(path, 'rb').read())
-    os.remove(path)
-    response = HttpResponse(content_type='application/x-zip-compressed')
-    response[
-        'Content-Disposition'] = "attachment; filename={}".format(filename)
-    response['Content-Length'] = myStream.tell()
-    response.write(myStream.getvalue())
-    return response
+def getReport(request):
+    reportId = request.GET.get("id")
+    try:
+        filename = thriftCommunicator.getExcelReport(int(reportId))
+        return _getReportFile(filename)
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}.".format(
+                get_const("NO_SUCH_REPORT_ERROR"), reportId)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        return HttpResponse(message)
 
 
 def getAllReports(request):
