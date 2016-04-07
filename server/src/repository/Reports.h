@@ -18,6 +18,11 @@ namespace repository {
 
 class Reports {
 public:
+    struct ReportInfo {
+        std::int32_t ID;
+        boost::gregorian::date receiveDate;
+    };
+
     struct Report {
         struct Event {
             // foreign key
@@ -61,6 +66,7 @@ public:
     Report getF(std::int32_t ID);
 
     std::vector<Report> getAllForExperiment(std::int32_t experimentID);
+    std::vector<ReportInfo> getAllInfosForExperiment(std::int32_t experimentID);
 
     // throws InvalidData in case of incorrect data
     void insert(const Report &report);
