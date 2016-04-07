@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
     public interface RaportsUpdateAction {
-        void doOnUpdate(Integer raportsQueueSize);
+        void doOnUpdate(int raportsQueueSize);
     }
 
     private static final String LOG_TAG = "ReadyRaports";

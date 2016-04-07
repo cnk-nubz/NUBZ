@@ -72,8 +72,9 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
     }
 
-    private void raportsCountUpdate(Integer newCount) {
-        raportsDisplay.setText(getString(R.string.raports_queue_size) + " " + newCount.toString());
+    private void raportsCountUpdate(int newCount) {
+        runOnUiThread(() -> raportsDisplay.setText(getString(R.string.raports_queue_size) + " " +
+                                                   Integer.toString(newCount)));
     }
 
     public void mapClick(View view) {
