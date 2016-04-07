@@ -76,6 +76,9 @@ public:
 
     Experiments(db::DatabaseSession &session);
 
+    // throws InvalidData in case of invalid id
+    Experiment getF(std::int32_t ID);
+
     boost::optional<Experiment> get(std::int32_t ID);
     boost::optional<LazyExperiment> getLazy(std::int32_t ID);
 

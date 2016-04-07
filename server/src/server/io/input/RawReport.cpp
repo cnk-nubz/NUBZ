@@ -58,8 +58,8 @@ repository::Report::Event RawReport::Event::toRepo() const {
     return res;
 }
 
-repository::Report::Event::TimePoint RawReport::Event::Time::toRepo() const {
-    auto res = repository::Report::Event::TimePoint{};
+::utils::TimePoint RawReport::Event::Time::toRepo() const {
+    auto res = ::utils::TimePoint{};
     res.h = hour;
     res.m = min;
     res.s = sec;
