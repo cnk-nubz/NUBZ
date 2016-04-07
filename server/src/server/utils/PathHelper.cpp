@@ -1,5 +1,7 @@
 #include <cassert>
 
+#include <boost/format.hpp>
+
 #include "PathHelper.h"
 
 namespace server {
@@ -8,6 +10,7 @@ namespace utils {
 PathHelper::Dir PathHelper::tmpDir{};
 PathHelper::Dir PathHelper::publicDir{};
 PathHelper::Dir PathHelper::mapTilesDir{};
+PathHelper::Dir PathHelper::excelReportsDir{};
 
 PathHelper::Url PathHelper::mapsImgUrl;
 PathHelper::Url PathHelper::tilesUrl;
@@ -36,6 +39,17 @@ std::string PathHelper::Url::urlFor(const std::string &filename) const {
 
 boost::filesystem::path PathHelper::pathForFloorTilesDirectory(std::int32_t floor) {
     return mapTilesDir.pathForFile(std::to_string(floor));
+}
+
+boost::filesystem::path PathHelper::pathForExcelZip(std::int32_t experimentID,
+                                                    std::int32_t reportID) {
+    auto filename = boost::format{"badanie%1%_raport%2%"} % experimentID % reportID;
+    return excelReportsDir.pathForFile(filename.str());
+}
+
+boost::filesystem::path PathHelper::pathForExcelZip(std::int32_t experimentID) {
+    auto filename = boost::format{"badanie%1%_wszystko"} % experimentID;
+    return excelReportsDir.pathForFile(filename.str());
 }
 }
 }

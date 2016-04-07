@@ -23,6 +23,7 @@ public:
     std::string publicFolderPath;
     std::string tmpFolderPath;
     std::string mapTilesFolderPath;
+    std::string excelReportsFolderPath;
 
 private:
     static const char *argServerPort;
@@ -38,6 +39,7 @@ private:
     static const char *argPublicFolderPath;
     static const char *argTmpFolderPath;
     static const char *argMapTilesFolderPath;
+    static const char *argExcelReportsFolderPath;
 
     void loadFromFile(const std::string &path);
     void validate() const;

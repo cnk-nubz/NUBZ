@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
 
 #include "Column.h"
@@ -54,6 +55,12 @@ struct Reports {
     };
     static constexpr detail::Column<FieldID> ID{};
 
+    struct FieldReceiveDate : detail::Field<boost::gregorian::date, Reports> {
+        using detail::Field<boost::gregorian::date, Reports>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldReceiveDate> ReceiveDate{};
+
     struct FieldExperimentID : detail::Field<std::int32_t, Reports> {
         using detail::Field<std::int32_t, Reports>::Field;
         static const std::string columnName;
@@ -68,7 +75,7 @@ struct Reports {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCore<FieldID, FieldExperimentID, FieldContent>;
+    using Sql = detail::SqlCore<FieldID, FieldReceiveDate, FieldExperimentID, FieldContent>;
 };
 }
 }
