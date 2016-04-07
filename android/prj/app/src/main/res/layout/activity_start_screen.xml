@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".StartScreen"
-    android:id="@+id/test">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:gravity="center"
+              android:orientation="vertical"
+              tools:context=".StartScreen">
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download Map"
         android:id="@+id/mapButton"
+        style="@style/HugeGradientMenuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="mapClick"
-        android:layout_marginTop="185dp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"/>
+        android:text="@string/download_map"/>
 
     <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reset exhibits"
-        android:id="@+id/bMapActivity"
-        android:onClick="resetClick"
-        android:layout_alignParentBottom="true"
-        android:layout_alignLeft="@+id/mapButton"
-        android:layout_alignStart="@+id/mapButton"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Experiment"
         android:id="@+id/surveyButton"
+        style="@style/HugeGradientMenuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:onClick="surveyClick"
-        android:layout_below="@+id/mapButton"
-        android:layout_centerHorizontal="true"/>
+        android:text="@string/begin_experiment"/>
 
-</RelativeLayout>
+    <TextView
+        android:id="@+id/raportsStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
+
+    <Button
+        android:id="@+id/bMapActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="resetClick"
+        android:text="Reset exhibits"/>
+
+</LinearLayout>
