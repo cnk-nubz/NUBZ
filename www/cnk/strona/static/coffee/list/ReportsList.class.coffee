@@ -1,5 +1,5 @@
 root = exports ? this
-root.RaportsList = class RaportsList extends root.ListView
+root.ReportsList = class ReportsList extends root.ListView
   constructor: ->
     super
 

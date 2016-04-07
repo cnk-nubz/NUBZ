@@ -4,6 +4,7 @@ import os
 import json
 import logging
 import StringIO
+import zipfile
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -20,12 +21,19 @@ from .forms import MapUploadForm
 from ThriftCommunicator import ThriftCommunicator
 
 thriftCommunicator = ThriftCommunicator()
+
+
 class InternalError(Exception):
     pass
+
+
 class InvalidData(Exception):
     pass
+
+
 class DuplicateName(Exception):
     pass
+
 
 def get_const(name):
     return getattr(settings, name, None)
@@ -234,10 +242,10 @@ def _exhibitRequestsUnified(request, funToCall):
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
         if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+            message = get_const("DEFAULT_CONSTANTS")['utils'][
+                'text']['nameDuplicatedError']
         else:
-            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-            str(ex))
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         data['message'] = message
         data['exceptionType'] = type(ex).__name__
         return JsonResponse(data)
@@ -322,6 +330,7 @@ def getChooseQuestionTypeDialog(request):
     html = render_to_string('dialog/chooseQuestionType.html')
     return JsonResponse({'html': html.replace("\n", "")})
 
+
 def getChangeNameDialog(request):
     return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
 
@@ -339,9 +348,11 @@ HTMLRequests = {
     'changeNameDialog': getChangeNameDialog
 }
 
+
 def getHTML(request):
     name = request.GET.get("name")
     return HTMLRequests[name](request)
+
 
 def _parseQuestions(allQuestions, newId=None, newType=None):
     idxSimple = 0
@@ -407,21 +418,21 @@ def _getExperiment(experimentId):
         'breakActions': _parseActions(experiment.breakActions)
     }
 
-def _getRaports(experimentId):
-    raports = thriftCommunicator.getAllRaports(int(experimentId))
-    return raports
-    raportsList = list()
-    for r in raports:
-        raportsList.append({
-            'raportId': r.raportId,
-            'name': r.name,
-            'date': {
-                'day': r.date.day,
-                'month': r.date.month,
-                'year': r.date.year
+
+def _getReports(experimentId):
+    reports = thriftCommunicator.getAllReportsForExperiment(int(experimentId))
+    reportsList = list()
+    for r in reports:
+        reportsList.append({
+            'reportId': r.reportId,
+            'receiveDate': {
+                'day': r.receiveDate.day,
+                'month': r.receiveDate.month,
+                'year': r.receiveDate.year
             }
         })
-    return raportsList
+    return reportsList
+
 
 def _newExperimentReadonlyPage(request):
     experimentId = request.GET.get("id")
@@ -430,9 +441,9 @@ def _newExperimentReadonlyPage(request):
             'success': True,
             'readonlyExperimentActionRow': render_to_string('list/row/readonlyExperimentActionRow.html'),
             'readonlyExperimentQuestionRow': render_to_string('list/row/readonlyExperimentQuestionRow.html'),
-            'raportRow': render_to_string('list/row/raportRow.html'),
+            'reportRow': render_to_string('list/row/reportRow.html'),
             'experimentData': _getExperiment(experimentId),
-            'raportsList': _getRaports(experimentId),
+            'reportsList': _getReports(experimentId),
             'tableList': render_to_string('list/dataList.html')}
     except Exception as ex:
         result = {
@@ -517,7 +528,8 @@ def createSimpleQuestion(request):
 def createMultipleChoiceQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     try:
-        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(data)
+        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(
+            data)
         result = {
             'success': True,
             'questionsList': _parseQuestions(
@@ -589,10 +601,10 @@ def saveExperiment(request):
         }
     except Exception as ex:
         if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils']['text']['nameDuplicatedError']
+            message = get_const("DEFAULT_CONSTANTS")['utils'][
+                'text']['nameDuplicatedError']
         else:
-            message = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę. ({})".format(
-            str(ex))
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         result = {
             'success': False,
             'exceptionType': type(ex).__name__,
@@ -686,10 +698,12 @@ def finishExperiment(request):
         }
     return JsonResponse(result)
 
+
 def cloneExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
     try:
-        thriftCommunicator.cloneExperiment(data['experimentId'], data['newName'])
+        thriftCommunicator.cloneExperiment(
+            data['experimentId'], data['newName'])
         result = {
             'success': True
         }
@@ -701,6 +715,7 @@ def cloneExperiment(request):
         }
     return JsonResponse(result)
 
+
 def getAllExhibits(request):
     try:
         exhibits = _getExhibits()
@@ -711,33 +726,63 @@ def getAllExhibits(request):
     except Exception as ex:
         result = {
             'success': False,
-            'message': 'Nie udało sie pobrać listy eksponatów. ({})'.format(
+            'message': "{} ({})".format(
+                get_const("EXHIBIT_LIST_ERROR"),
                 str(ex))}
     return JsonResponse(result)
+
 
 def reportError(request):
     data = json.loads(request.POST.get("jsonData"))
     logger = logging.getLogger('jsLogger')
-    logger.error(": {0} in {1}, {2}".format(data['url'], data['lineNumber'], data['errorMsg']))
+    logger.error(
+        ": {0} in {1}, {2}".format(
+            data['url'],
+            data['lineNumber'],
+            data['errorMsg']))
     return JsonResponse()
 
-def getRaport(request):
-    raportId = request.GET.get("id")
-    myfile = StringIO.StringIO()
-    #TODO: write from file
-    myfile.write("Raporcik dla id: {}".format(raportId))
-    response = HttpResponse(content_type='text/plain')
-    response['Content-Disposition'] = "attachment; filename=raport-{}.txt".format(raportId)
-    response['Content-Length'] = myfile.tell()
-    response.write(myfile.getvalue())
+
+def _getZip(filename):
+    path = os.path.join(get_const("EXCEL_FILES_ROOT"), filename)
+    myZip = zipfile.ZipFile(path, 'r')
+    myStream = StringIO.StringIO()
+    with zipfile.ZipFile(myStream, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for fn in myZip.namelist():
+            zf.writestr(fn, myZip.open(fn, 'r').read())
+    os.remove(path)
+    response = HttpResponse(content_type='application/x-zip-compressed')
+    response[
+        'Content-Disposition'] = "attachment; filename={}".format(filename)
+    response['Content-Length'] = myStream.tell()
+    response.write(myStream.getvalue())
+    myStream.close()
     return response
 
-def getAllRaports(request):
-    myfile = StringIO.StringIO()
-    #TODO: write from file
-    myfile.write("Wszystkie raporty zzipowane")
-    response = HttpResponse(content_type='text/plain')
-    response['Content-Disposition'] = "attachment; filename=rapory-wszystkie.txt"
-    response['Content-Length'] = myfile.tell()
-    response.write(myfile.getvalue())
-    return response
+
+def getReport(request):
+    reportId = request.GET.get("id")
+    try:
+        filename = thriftCommunicator.getExcelReport(int(reportId))
+        return _getZip(filename)
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}.".format(
+                get_const("NO_SUCH_REPORT_ERROR"), reportId)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        return HttpResponse(message)
+
+
+def getAllReports(request):
+    experimentId = request.GET.get("id")
+    try:
+        filename = thriftCommunicator.getCombinedExcelReport(int(experimentId))
+        return _getZip(filename)
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}.".format(
+                get_const("NO_SUCH_EXPERIMENT_ERROR"), experimentId)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        return HttpResponse(message)

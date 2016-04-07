@@ -6,6 +6,11 @@
 # ALL ROWS MUST SUM UP TO 12 OR LESS
 # ================
 
+INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
+EXHIBIT_LIST_ERROR = "Nie udało sie pobrać listy eksponatów. Spróbuj ponownie za chwilę."
+NO_SUCH_REPORT_ERROR = "Nie istnieje raport o numerze"
+NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o numerze"
+
 DEFAULT_CONSTANTS = {
     "utils": {
         "text": {

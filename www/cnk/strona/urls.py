@@ -35,7 +35,7 @@ urlpatterns = [
     url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment'),
     url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment'),
 
-    #raports
-    url(r'getRaport/$', views.getRaport, name='getRaport'),
-    url(r'getAllRaports/$', views.getAllRaports, name='getAllRaports')
+    #reports
+    url(r'getReport/$', views.getReport, name='getReport'),
+    url(r'getAllReports/$', views.getAllReports, name='getAllReports')
 ]

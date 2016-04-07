@@ -18,7 +18,7 @@
   <link href="{% static "include/css/bootstrap.min.css" %}" rel="stylesheet" />
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/readonlyExperiment.css" %}" rel="stylesheet" />
-  <link href="{% static "css/raportsTable.css" %}" rel="stylesheet" />
+  <link href="{% static "css/reportsTable.css" %}" rel="stylesheet" />
 {% endblock %}
 {% block includes %}
   {% compress js %}
@@ -43,7 +43,7 @@
   <script src="{% static "coffee/experimentData/ExperimentData.class.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/experimentData/Actions.class.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/experimentData/Questions.class.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/experimentData/Raports.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/experimentData/Reports.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/list/ListView.class.coffee" %}" type="text/coffeescript"></script>
@@ -51,12 +51,12 @@
   {% compress js %}
   <script src="{% static "coffee/list/row/ReadonlyExperimentActionRow.class.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/list/row/ReadonlyExperimentQuestionRow.class.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/list/row/RaportRow.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/row/ReportRow.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/list/QuestionsList.class.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/list/ActionsList.class.coffee" %}" type="text/coffeescript"></script>
-  <script src="{% static "coffee/list/RaportsList.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/list/ReportsList.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
 {% endblock %}
 {% block init %}
@@ -74,13 +74,11 @@
           )
         setTimeout(showError, 1000)
       root.experimentData = {{experimentData|jsvar}}
-      root.raportsList = {{raportsList|jsvar}}
-      console.log root.raportsList
-
+      root.reportsList = {{reportsList|jsvar}}
       root.HTML =
         readonlyExperimentQuestionRow: '{{readonlyExperimentQuestionRow}}'
         readonlyExperimentActionRow: '{{readonlyExperimentActionRow}}'
-        raportRow: '{{raportRow}}'
+        reportRow: '{{reportRow}}'
         tableList: '{{tableList}}'
     </script>
   {% endcompress %}
@@ -129,15 +127,15 @@
       </div>
     </div>
   </div>
-  <div class="raportsList">
+  <div class="reportsList">
     <div>
       <div class="myHeader">
-        <span>Raporty</span>
+        <span>Reporty</span>
       </div>
       <div class="middle"></div>
       <div class="myFooter">
         <button class="btn btn-default">
-          Pobierz wszystkie raporty
+          Pobierz wszystkie reporty
         </button>
       </div>
     </div>
