@@ -2,7 +2,6 @@ package com.cnk.ui.questions;
 
 import android.content.Context;
 import android.text.InputType;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
