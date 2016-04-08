@@ -2,6 +2,7 @@
 #define UTILS__LOG__H
 
 #include <iostream>
+#include <map>
 #include <vector>
 
 namespace communication {
@@ -16,6 +17,20 @@ std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec) {
         }
     }
     stream << "]";
+    return stream;
+}
+
+template <class K, class V, class C>
+std::ostream &operator<<(std::ostream &stream, const std::map<K, V, C> &map) {
+    stream << "{";
+    auto it = map.begin();
+    while (it != map.end()) {
+        stream << it->first << ": " << it->second;
+        if (++it != map.end()) {
+            stream << ", ";
+        }
+    }
+    stream << "}";
     return stream;
 }
 }

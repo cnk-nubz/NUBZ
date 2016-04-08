@@ -24,28 +24,29 @@ volatile std::atomic_flag MapCommands::inProgress = ATOMIC_FLAG_INIT;
 MapCommands::MapCommands(db::Database &db) : db(db) {
 }
 
-NewMapImagesResponse MapCommands::getNew(const NewMapImagesRequest &input) {
-    auto mapImages = std::vector<repository::MapImage>{};
-    std::int32_t version;
-    std::tie(version, mapImages) = db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto curVersion = countersRepo.get(repository::Counters::Type::LastMapVersion);
+std::map<std::int32_t, MapImage> MapCommands::getAll() {
+    auto mapImages = db.execute(
+        [&](db::DatabaseSession &session) { return repository::MapImages{session}.getAll(); });
 
-        auto imagesRepo = repository::MapImages{session};
-        if (input.acquiredVersion) {
-            auto usersVersion = input.acquiredVersion.value();
-            return std::make_pair(curVersion, imagesRepo.getAllNewerThan(usersVersion));
-        } else {
-            return std::make_pair(curVersion, imagesRepo.getAll());
-        }
-    });
-
-    auto result = NewMapImagesResponse{};
-    result.version = version;
+    auto result = std::map<std::int32_t, MapImage>{};
     for (const auto &mapImage : mapImages) {
-        result.floors[mapImage.floor] = MapImage{mapImage};
+        result[mapImage.floor] = MapImage{mapImage};
     }
     return result;
+}
+
+void MapCommands::remove(std::int32_t floor) {
+    if (inProgress.test_and_set()) {
+        throw io::InvalidInput{"cannot change two maps at the same time"};
+    }
+
+    try {
+        removeOldData(floor);
+    } catch (...) {
+        inProgress.clear();
+        throw;
+    }
+    inProgress.clear();
 }
 
 MapImage MapCommands::set(const SetMapImageRequest &input) {
@@ -77,13 +78,8 @@ MapImage MapCommands::set(const SetMapImageRequest &input) {
         imgProc.reset();
 
         LOG(INFO) << "Saving data into database";
-        db.execute([&](db::DatabaseSession &session) {
-            auto countersRepo = repository::Counters{session};
-            auto mapImagesRepo = repository::MapImages{session};
-
-            mapImage.version = countersRepo.increment(repository::CounterType::LastMapVersion);
-            mapImagesRepo.set(mapImage);
-        });
+        db.execute(
+            [&](db::DatabaseSession &session) { repository::MapImages{session}.set(mapImage); });
 
         fullImageHandler.release();
         imageDirHandler.release();

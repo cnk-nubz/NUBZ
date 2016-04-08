@@ -18,10 +18,13 @@ service Server {
 // Map
 /////////////////////////////////////////////////
 
-	structs.NewMapImagesResponse getNewMapImages(1: structs.NewMapImagesRequest request)
+	map<structs.FloorNum, structs.MapImage> getMapImages()
 		throws (1: structs.InternalError err),
 
 	structs.MapImage setMapImage(1: structs.SetMapImageRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	void removeFloor(1: structs.FloorNum floor)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 
