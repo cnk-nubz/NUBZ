@@ -26,7 +26,6 @@ cur.execute('''
 		filename VARCHAR NOT NULL,
 		width INT NOT NULL,
 		height INT NOT NULL,
-		version INT NOT NULL UNIQUE,
 		zoom_levels JSONB NOT NULL
 	)
 ''')

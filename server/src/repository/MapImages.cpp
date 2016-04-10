@@ -29,13 +29,6 @@ boost::optional<MapImages::MapImage> MapImages::get(std::int32_t floor) {
     }
 }
 
-std::vector<MapImage> MapImages::getAllNewerThan(std::int32_t version) {
-    auto sql = Table::Sql::select().where(Table::Version > version);
-    auto result = std::vector<MapImage>{};
-    utils::transform(session.getResults(sql), result, fromDB);
-    return result;
-}
-
 std::vector<MapImages::MapImage> MapImages::getAll() {
     auto dbRows = Impl::getAll(session);
     auto result = std::vector<MapImages::MapImage>{};
@@ -48,11 +41,7 @@ void MapImages::removeAll() {
 }
 
 void MapImages::set(const MapImage &mapImage) {
-    auto select = Table::Sql::select().where(Table::Floor == mapImage.floor);
-    if (session.getResult(select)) {
-        remove(mapImage.floor);
-    }
-
+    remove(mapImage.floor);
     Impl::insert(session, toDB(mapImage));
 }
 
@@ -70,7 +59,6 @@ Table::Sql::in_t toDB(const MapImages::MapImage &mapImage) {
                            Table::FieldFilename{mapImage.filename},
                            Table::FieldWidth{mapImage.width},
                            Table::FieldHeight{mapImage.height},
-                           Table::FieldVersion{mapImage.version},
                            Table::FieldZoomLevels{zoomLevelsData});
 }
 
@@ -91,7 +79,6 @@ MapImages::MapImage fromDB(const Table::Sql::out_t &mapImage) {
     res.filename = std::get<Table::FieldFilename>(mapImage).value;
     res.width = std::get<Table::FieldWidth>(mapImage).value;
     res.height = std::get<Table::FieldHeight>(mapImage).value;
-    res.version = std::get<Table::FieldVersion>(mapImage).value;
     return res;
 }
 

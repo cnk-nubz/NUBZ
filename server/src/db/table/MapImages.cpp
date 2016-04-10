@@ -8,7 +8,6 @@
  * - filename
  * - width
  * - height
- * - version
  * - zoom levels
  *
  * zoom levels = [level, level, level, ...]
@@ -26,7 +25,6 @@ const std::string MapImages::FieldFloor::columnName = "floor";
 const std::string MapImages::FieldFilename::columnName = "filename";
 const std::string MapImages::FieldWidth::columnName = "width";
 const std::string MapImages::FieldHeight::columnName = "height";
-const std::string MapImages::FieldVersion::columnName = "version";
 const std::string MapImages::FieldZoomLevels::columnName = "zoom_levels";
 
 namespace {

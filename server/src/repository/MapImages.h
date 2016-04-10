@@ -25,7 +25,6 @@ public:
         std::int32_t floor;
         std::int32_t width;
         std::int32_t height;
-        std::int32_t version;
         std::string filename;
         std::vector<ZoomLevel> zoomLevels;
     };
@@ -33,7 +32,6 @@ public:
     MapImages(db::DatabaseSession &session);
 
     boost::optional<MapImage> get(std::int32_t floor);
-    std::vector<MapImage> getAllNewerThan(std::int32_t version);
     std::vector<MapImage> getAll();
 
     void remove(std::int32_t floor);

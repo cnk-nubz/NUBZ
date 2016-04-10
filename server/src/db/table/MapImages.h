@@ -52,12 +52,6 @@ struct MapImages {
     };
     static constexpr detail::Column<FieldHeight> Height{};
 
-    struct FieldVersion : detail::Field<std::int32_t, MapImages> {
-        using detail::Field<std::int32_t, MapImages>::Field;
-        static const std::string columnName;
-    };
-    static constexpr detail::Column<FieldVersion> Version{};
-
     struct FieldZoomLevels : detail::Field<ZoomLevelsData, MapImages> {
         using detail::Field<ZoomLevelsData, MapImages>::Field;
         static const std::string columnName;
@@ -66,8 +60,8 @@ struct MapImages {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCore<FieldFloor, FieldFilename, FieldWidth, FieldHeight, FieldVersion,
-                                FieldZoomLevels>;
+    using Sql =
+        detail::SqlCore<FieldFloor, FieldFilename, FieldWidth, FieldHeight, FieldZoomLevels>;
 };
 }
 }
