@@ -12,7 +12,7 @@ namespace repository {
 
 class Counters {
 public:
-    enum class Type { LastMapVersion, LastExhibitVersion, LastReportID };
+    enum class Type { LastMapVersion, LastExhibitVersion, LastDeletedExhibitVersion, LastReportID };
 
     Counters(db::DatabaseSession &session);
 

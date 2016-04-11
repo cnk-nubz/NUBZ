@@ -44,6 +44,9 @@ service Server {
 	structs.Exhibit updateExhibit(1: structs.UpdateExhibitRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
+	void removeExhibit(1: i32 exhibitId)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Experiments

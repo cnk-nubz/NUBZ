@@ -17,6 +17,7 @@ struct NewExhibitsResponse {
 
     std::int32_t version;
     std::unordered_map<std::int32_t, Exhibit> exhibits;
+    bool fullRefresh;
 };
 }
 }

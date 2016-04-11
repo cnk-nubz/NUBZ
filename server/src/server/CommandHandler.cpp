@@ -140,6 +140,15 @@ void CommandHandler::updateExhibit(communication::Exhibit &response,
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeExhibit(const int32_t exhibitID) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << exhibitID;
+
+    withExceptionTranslation([&]() { command::ExhibitCommands{db}.remove(exhibitID); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - EXPERIMENTS
 
 void CommandHandler::getCurrentExperiment(communication::CurrentExperimentResponse &response) {

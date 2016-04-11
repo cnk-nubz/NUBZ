@@ -2,6 +2,7 @@
 
 #include <db/table/Exhibits.h>
 
+#include "Counters.h"
 #include "DefaultRepo.h"
 #include "Exhibits.h"
 #include "MapImages.h"
@@ -31,34 +32,76 @@ Exhibits::Exhibit fromDB(const Table::Sql::out_t &exhibit);
 Exhibits::Exhibits(db::DatabaseSession &session) : session(session) {
 }
 
-std::vector<std::int32_t> Exhibits::getAllIDs() {
-    return Impl::getAllIDs(session);
+void Exhibits::incReferenceCount(std::int32_t ID) {
+    updateReferenceCount(ID, 1);
 }
 
-Exhibit Exhibits::getF(std::int32_t ID) {
-    if (auto res = get(ID)) {
-        return res.value();
+void Exhibits::decReferenceCount(std::int32_t ID) {
+    updateReferenceCount(ID, -1);
+}
+
+void Exhibits::updateReferenceCount(std::int32_t ID, std::int32_t diff) {
+    auto get = db::sql::Select<Table::FieldID, Table::FieldRefCount>{}.where(Table::ID == ID);
+    if (auto exhibit = session.getResult(get)) {
+        auto count = std::get<Table::FieldRefCount>(exhibit.value()).value + diff;
+        assert(count >= 0);
+        auto sql = Table::Sql::update().where(Table::ID == ID).set(Table::RefCount, count);
+        session.execute(sql);
     } else {
-        throw InvalidData{"invalid exhibit ID"};
+        throw InvalidData{"incorrect exhibit ID"};
     }
 }
 
-boost::optional<Exhibits::Exhibit> Exhibits::get(std::int32_t ID) {
-    if (auto res = Impl::get(session, ID)) {
+void Exhibits::refresh() {
+    auto sql = Table::Sql::del().where(Table::IsDeleted == true && Table::RefCount == 0);
+    session.execute(sql);
+}
+
+std::vector<std::int32_t> Exhibits::getAllIDs() {
+    auto sql =
+        db::sql::Select<Table::FieldID, Table::FieldIsDeleted>{}.where(Table::IsDeleted == false);
+    auto dbTuples = session.getResults(sql);
+
+    auto result = std::vector<std::int32_t>{};
+    for (auto &dbTuple : dbTuples) {
+        result.push_back(std::get<Table::FieldID>(dbTuple).value);
+    }
+    return result;
+}
+
+Exhibit Exhibits::get(std::int32_t ID) {
+    if (auto res = getOpt(ID)) {
+        return res.value();
+    } else {
+        throw InvalidData{"incorrect exhibit ID"};
+    }
+}
+
+boost::optional<Exhibits::Exhibit> Exhibits::getOpt(std::int32_t ID) {
+    auto sql = Table::Sql::select().where(Table::ID == ID && Table::IsDeleted == false);
+    if (auto res = session.getResult(sql)) {
         return fromDB(res.value());
     } else {
         return {};
     }
 }
 
+// ignores deleted exhibits
 std::vector<Exhibits::Exhibit> Exhibits::getAll() {
+    auto sql = Table::Sql::select().where(Table::IsDeleted == false);
     auto result = std::vector<Exhibits::Exhibit>{};
-    utils::transform(Impl::getAll(session), result, fromDB);
+    utils::transform(session.getResults(sql), result, fromDB);
     return result;
 }
 
+// ignores deleted exhibits
 std::vector<Exhibit> Exhibits::getAllNewerThan(std::int32_t version) {
-    auto sql = Table::Sql::select().where(Table::Version > version);
+    if (version < getLastDeletedVersion()) {
+        assert(false &&
+               "there is no way to include deleted exhibits in an update for this version");
+    }
+
+    auto sql = Table::Sql::select().where(Table::Version > version && Table::IsDeleted == false);
     auto dbTuples = session.getResults(sql);
 
     auto result = std::vector<Exhibit>{};
@@ -67,39 +110,94 @@ std::vector<Exhibit> Exhibits::getAllNewerThan(std::int32_t version) {
 }
 
 void Exhibits::remove(std::int32_t ID) {
-    Impl::remove(session, ID);
-}
+    checkID(ID);
 
-void Exhibits::removeAll() {
-    Impl::removeAll(session);
-}
+    auto sql = Table::Sql::update().where(Table::ID == ID).set(Table::IsDeleted, true);
+    session.execute(sql);
 
-void Exhibits::insert(std::vector<Exhibits::Exhibit> *exhibits) {
-    assert(exhibits);
-    for (auto &exhibit : *exhibits) {
-        insert(&exhibit);
-    }
+    auto curVersion = Counters{session}.increment(CounterType::LastExhibitVersion);
+    Counters{session}.set(CounterType::LastDeletedExhibitVersion, curVersion);
 }
 
 void Exhibits::insert(Exhibits::Exhibit *exhibit) {
     assert(exhibit);
+
     checkName(exhibit->name);
+    checkRgbHex(exhibit->rgbHex);
     if (exhibit->frame) {
         checkFrame(exhibit->frame.value());
     }
-    checkRgbHex(exhibit->rgbHex);
 
+    exhibit->version = Counters{session}.increment(CounterType::LastExhibitVersion);
     exhibit->ID = Impl::insert(session, toDB(*exhibit));
 }
 
 void Exhibits::setRgbHex(std::int32_t ID, std::int32_t newRgbHex) {
-    if (!get(ID)) {
-        throw InvalidData{"incorrect exhibit ID"};
-    }
+    checkID(ID);
     checkRgbHex(newRgbHex);
 
     auto sql = Table::Sql::update().set(Table::RgbHex, newRgbHex).where(Table::ID == ID);
     session.execute(sql);
+}
+
+void Exhibits::setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame) {
+    checkID(ID);
+    if (newFrame) {
+        checkFrame(newFrame.value());
+    }
+
+    auto frame = OptFrame{newFrame};
+    auto version = Counters{session}.increment(CounterType::LastExhibitVersion);
+    auto sql = Table::Sql::update()
+                   .where(Table::ID == ID)
+                   .set(Table::Version, version)
+                   .set(Table::FrameX, frame.x)
+                   .set(Table::FrameY, frame.y)
+                   .set(Table::FrameWidth, frame.width)
+                   .set(Table::FrameHeight, frame.height)
+                   .set(Table::FrameFloor, frame.floor);
+    session.execute(sql);
+}
+
+void Exhibits::resetFrames(std::int32_t floor) {
+    using namespace db::sql;
+    auto version = Counters{session}.increment(CounterType::LastExhibitVersion);
+    auto sql = Table::Sql::update()
+                   .where(Table::FrameFloor == floor)
+                   .set(Table::Version, version)
+                   .set(Table::FrameX, Null)
+                   .set(Table::FrameY, Null)
+                   .set(Table::FrameWidth, Null)
+                   .set(Table::FrameHeight, Null)
+                   .set(Table::FrameFloor, Null);
+    session.execute(sql);
+}
+
+std::int32_t Exhibits::getCurrentVersion() {
+    return Counters{session}.get(repository::CounterType::LastExhibitVersion);
+}
+
+std::int32_t Exhibits::getLastDeletedVersion() {
+    return Counters{session}.get(repository::CounterType::LastDeletedExhibitVersion);
+}
+
+void Exhibits::checkID(std::int32_t ID) {
+    auto sql = db::sql::Select<Table::FieldID, Table::FieldIsDeleted>{}.where(
+        Table::ID == ID && Table::IsDeleted == false);
+    if (!session.getResult(sql)) {
+        throw InvalidData{"incorrect exhibit ID"};
+    }
+}
+
+void Exhibits::checkFrame(const Exhibit::Frame &frame) {
+    if (auto mapImage = MapImages{session}.get(frame.floor)) {
+        if (frame.x + frame.width > mapImage.value().width ||
+            frame.y + frame.height > mapImage.value().height || frame.x < 0 || frame.y < 0) {
+            throw InvalidData{"incorrect exhibit frame - out of bounds"};
+        }
+    } else {
+        throw InvalidData{"incorrect exhibit frame - given floor doesn't exist"};
+    }
 }
 
 void Exhibits::checkName(const std::string &name) {
@@ -117,58 +215,6 @@ void Exhibits::checkRgbHex(std::int32_t rgbHex) {
     if ((rgbHex & 0x00FFFFFF) != rgbHex) {
         throw InvalidData{"incorrect rgbHex value"};
     }
-}
-
-void Exhibits::setVersion(std::int32_t ID, std::int32_t newVersion) {
-    if (!get(ID)) {
-        throw InvalidData{"incorrect exhibit ID"};
-    }
-    auto sql = Table::Sql::update().set(Table::Version, newVersion).where(Table::ID == ID);
-    session.execute(sql);
-}
-
-void Exhibits::setFrame(std::int32_t ID, const boost::optional<Exhibit::Frame> &newFrame) {
-    if (newFrame) {
-        checkFrame(newFrame.value());
-    }
-    if (!get(ID)) {
-        throw InvalidData{"incorrect exhibit ID"};
-    }
-
-    auto frame = OptFrame{newFrame};
-
-    auto sql = Table::Sql::update()
-                   .where(Table::ID == ID)
-                   .set(Table::FrameX, frame.x)
-                   .set(Table::FrameY, frame.y)
-                   .set(Table::FrameWidth, frame.width)
-                   .set(Table::FrameHeight, frame.height)
-                   .set(Table::FrameFloor, frame.floor);
-    session.execute(sql);
-}
-
-void Exhibits::checkFrame(const Exhibit::Frame &frame) {
-    if (auto mapImage = MapImages{session}.get(frame.floor)) {
-        if (frame.x + frame.width > mapImage.value().width ||
-            frame.y + frame.height > mapImage.value().height || frame.x < 0 || frame.y < 0) {
-            throw InvalidData{"incorrect exhibit frame - out of bounds"};
-        }
-    } else {
-        throw InvalidData{"incorrect exhibit frame - given floor doesn't exist"};
-    }
-}
-
-void Exhibits::resetFrames(std::int32_t floor, std::int32_t newVersion) {
-    using namespace db::sql;
-    auto sql = Table::Sql::update()
-                   .where(Table::FrameFloor == floor)
-                   .set(Table::Version, newVersion)
-                   .set(Table::FrameX, Null)
-                   .set(Table::FrameY, Null)
-                   .set(Table::FrameWidth, Null)
-                   .set(Table::FrameHeight, Null)
-                   .set(Table::FrameFloor, Null);
-    session.execute(sql);
 }
 
 namespace {
