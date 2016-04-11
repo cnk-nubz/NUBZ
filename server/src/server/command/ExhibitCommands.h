@@ -36,7 +36,7 @@ public:
     NewExhibitsResponse getNew(const NewExhibitsRequest &input);
 
     void setFrame(const SetExhibitFrameRequest &input);
-    void update(const UpdateExhibitRequest &input);
+    Exhibit update(const UpdateExhibitRequest &input);
 
     void remove(std::int32_t exhibitID);
 

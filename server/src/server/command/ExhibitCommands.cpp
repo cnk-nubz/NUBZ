@@ -77,8 +77,8 @@ void ExhibitCommands::setFrame(const SetExhibitFrameRequest &input) {
     });
 }
 
-void ExhibitCommands::update(const UpdateExhibitRequest &input) {
-    db.execute([&](db::DatabaseSession &session) {
+Exhibit ExhibitCommands::update(const UpdateExhibitRequest &input) {
+    auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Exhibits{session};
         auto oldExhibit = repo.get(input.exhibitId);
 
@@ -87,7 +87,11 @@ void ExhibitCommands::update(const UpdateExhibitRequest &input) {
             input.floor.value() != oldExhibit.frame.value().floor) {
             repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
         }
+
+        return repo.get(input.exhibitId);
     });
+
+    return Exhibit{repoExhibit};
 }
 
 void ExhibitCommands::remove(std::int32_t exhibitID) {
