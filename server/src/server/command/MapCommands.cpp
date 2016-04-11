@@ -98,9 +98,7 @@ MapImage MapCommands::set(const SetMapImageRequest &input) {
 
 void MapCommands::removeOldData(std::int32_t floor) {
     boost::optional<repository::MapImage> mapImage = db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto exhibitsVersion = countersRepo.increment(repository::CounterType::LastExhibitVersion);
-        repository::Exhibits{session}.resetFrames(floor, exhibitsVersion);
+        repository::Exhibits{session}.resetFrames(floor);
 
         auto repo = repository::MapImages{session};
         auto mapImage = repo.get(floor);

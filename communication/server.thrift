@@ -41,7 +41,10 @@ service Server {
 	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.Exhibit updateExhibit(1: structs.UpdateExhibitRequest request)
+	void updateExhibit(1: structs.UpdateExhibitRequest request)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	void removeExhibit(1: i32 exhibitId)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 

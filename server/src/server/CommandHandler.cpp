@@ -125,18 +125,24 @@ void CommandHandler::setExhibitFrame(const communication::SetExhibitFrameRequest
     LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::updateExhibit(communication::Exhibit &response,
-                                   const communication::UpdateExhibitRequest &request) {
+void CommandHandler::updateExhibit(const communication::UpdateExhibitRequest &request) {
     LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
         auto input = io::input::UpdateExhibitRequest{request};
-        auto output = command::ExhibitCommands{db}.update(input);
-        response = output.toThrift();
+        command::ExhibitCommands{db}.update(input);
     });
 
-    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::removeExhibit(const int32_t exhibitID) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << exhibitID;
+
+    withExceptionTranslation([&]() { command::ExhibitCommands{db}.remove(exhibitID); });
+
     LOG(INFO) << __func__ << " end";
 }
 

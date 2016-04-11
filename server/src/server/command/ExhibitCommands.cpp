@@ -1,7 +1,5 @@
 #include <algorithm>
 
-#include <repository/Counters.h>
-
 #include <server/io/InvalidInput.h>
 #include <server/utils/CmpUTF8.h>
 
@@ -20,10 +18,6 @@ Exhibit ExhibitCommands::create(const CreateExhibitRequest &input) {
     exhibit.frame = createFrame(input.floor, input.visibleFrame);
 
     db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
-
-        exhibit.version = version;
         auto exhibitsRepo = repository::Exhibits{session};
         exhibitsRepo.insert(&exhibit);
     });
@@ -42,22 +36,22 @@ std::vector<Exhibit> ExhibitCommands::getAll() {
 }
 
 NewExhibitsResponse ExhibitCommands::getNew(const NewExhibitsRequest &input) {
+    auto response = NewExhibitsResponse{};
     auto exhibits = std::vector<repository::Exhibit>{};
-    auto currentVersion = std::int32_t{};
-    std::tie(currentVersion, exhibits) = db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto version = countersRepo.get(repository::CounterType::LastExhibitVersion);
 
-        auto exhibitsRepo = repository::Exhibits{session};
-        if (auto userVersion = input.acquiredVersion) {
-            return std::make_tuple(version, exhibitsRepo.getAllNewerThan(userVersion.value()));
+    db.execute([&](db::DatabaseSession &session) {
+        auto repo = repository::Exhibits{session};
+        if (!input.acquiredVersion ||
+            input.acquiredVersion.value() < repo.getLastDeletedVersion()) {
+            exhibits = repo.getAll();
+            response.fullRefresh = true;
         } else {
-            return std::make_tuple(version, exhibitsRepo.getAll());
+            exhibits = repo.getAllNewerThan(input.acquiredVersion.value());
+            response.fullRefresh = false;
         }
+        response.version = repo.getCurrentVersion();
     });
 
-    auto response = NewExhibitsResponse{};
-    response.version = currentVersion;
     for (auto &e : exhibits) {
         response.exhibits[e.ID] = Exhibit{e};
     }
@@ -66,11 +60,8 @@ NewExhibitsResponse ExhibitCommands::getNew(const NewExhibitsRequest &input) {
 
 void ExhibitCommands::setFrame(const SetExhibitFrameRequest &input) {
     db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
-
         auto exhibitsRepo = repository::Exhibits{session};
-        auto exhibit = exhibitsRepo.getF(input.exhibitId);
+        auto exhibit = exhibitsRepo.get(input.exhibitId);
 
         if (!exhibit.frame) {
             throw io::InvalidInput{"cannot change frame of exhibit without floor"};
@@ -81,30 +72,27 @@ void ExhibitCommands::setFrame(const SetExhibitFrameRequest &input) {
         repoFrame.y = input.frame.y;
         repoFrame.width = input.frame.size.width;
         repoFrame.height = input.frame.size.height;
-
-        exhibitsRepo.setVersion(exhibit.ID, version);
+        // floor stays the same
         exhibitsRepo.setFrame(exhibit.ID, repoFrame);
     });
 }
 
-Exhibit ExhibitCommands::update(const UpdateExhibitRequest &input) {
-    auto repoExhibit = db.execute([&](db::DatabaseSession &session) {
-        auto countersRepo = repository::Counters{session};
-        auto version = countersRepo.increment(repository::CounterType::LastExhibitVersion);
-
+void ExhibitCommands::update(const UpdateExhibitRequest &input) {
+    db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Exhibits{session};
-        auto oldExhibit = repo.getF(input.exhibitId);
+        auto oldExhibit = repo.get(input.exhibitId);
 
-        repo.setVersion(input.exhibitId, version);
         repo.setRgbHex(input.exhibitId, input.rgbHex);
         if (!input.floor || !oldExhibit.frame ||
             input.floor.value() != oldExhibit.frame.value().floor) {
             repo.setFrame(input.exhibitId, createFrame(input.floor, input.visibleFrame));
         }
-
-        return repo.getF(input.exhibitId);
     });
-    return Exhibit{repoExhibit};
+}
+
+void ExhibitCommands::remove(std::int32_t exhibitID) {
+    db.execute(
+        [&](db::DatabaseSession &session) { repository::Exhibits{session}.remove(exhibitID); });
 }
 
 boost::optional<repository::Exhibit::Frame> ExhibitCommands::createFrame(

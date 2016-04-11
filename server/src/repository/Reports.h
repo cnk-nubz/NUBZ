@@ -75,7 +75,9 @@ private:
     // throws InvalidData in case of greater id than reports id counter
     void checkID(std::int32_t ID);
 
-    void checkExhibits(const std::vector<Report::Event> &events);
+    // throws InvalidData in case of invalid exhibit id
+    void retainExhibits(const std::vector<Report::Event> &events);
+    void releaseExhibits(const std::vector<Report::Event> &events);
 
     void checkEvents(const Experiment &experiment, const std::vector<Report::Event> &events);
 

@@ -36,7 +36,9 @@ public:
     NewExhibitsResponse getNew(const NewExhibitsRequest &input);
 
     void setFrame(const SetExhibitFrameRequest &input);
-    Exhibit update(const UpdateExhibitRequest &input);
+    void update(const UpdateExhibitRequest &input);
+
+    void remove(std::int32_t exhibitID);
 
 private:
     boost::optional<repository::Exhibit::Frame> createFrame(
