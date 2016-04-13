@@ -83,13 +83,10 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @
 
   removeExhibit: (exhibitId) =>
-    arrId = 0
-    for exhibit in @_exhibits
+    for exhibit, index in @_exhibits
       if exhibit.listElement.data.exhibitId is exhibitId
+        @_exhibits.splice(index, 1)
         break
-      arrId += 1
-    if arrId < @_exhibits.length
-      @_exhibits.splice(arrId, 1)
     @
 
   refreshDialogInstance: =>

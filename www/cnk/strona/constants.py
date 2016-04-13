@@ -177,7 +177,7 @@ EXHIBIT_DIALOG = {
         "text": {
             "title": "Tworzenie eksponatu",
             "editTitle": "Edycja eksponatu",
-            "deleteButtonHtml": '<button class="btn btn-default delete-button">Usuń</button>',
+            "deleteButtonHtml": '<button class="btn btn-danger delete-button">Usuń</button>',
         },
     }
 }

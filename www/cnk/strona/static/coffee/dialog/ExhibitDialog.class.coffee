@@ -51,7 +51,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
     jQuery(".bootstrap-dialog-footer-buttons", dialog).prepend(@_data.utils.text.deleteButtonHtml)
-    jQuery(".delete-button", dialog).css("float": "left").click(=>
+    jQuery(".delete-button", dialog).click( =>
         new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
       )
     jQuery("input", dialog).prop("readonly", true)
@@ -61,7 +61,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
 
   setDeleteHandler: (@_successfullDeleteHandler) ->
 
-  _deleteExhibit: () =>
+  _deleteExhibit: =>
     toSend =
       jsonData:
         JSON.stringify(
@@ -75,7 +75,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       dataType: 'json'
       url: '/deleteExhibit/'
       data: toSend
-      success: () =>
+      success: =>
         if @_successfullDeleteHandler
           @_successfullDeleteHandler(@_dialogInfo.id)
         @_dialog.close()
