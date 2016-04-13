@@ -270,6 +270,13 @@ def _exhibitRequestsUnified(request, funToCall):
     return JsonResponse(data)
 
 
+def deleteExhibit(request):
+    jsonData = request.POST.get("jsonData")
+    deleteRequest = json.loads(jsonData)
+    thriftCommunicator.removeExhibit(deleteRequest)
+    return JsonResponse({})
+
+
 def getDialog(dialogName):
     contextDict = {
         'data': get_const(dialogName)['data']
@@ -333,6 +340,9 @@ def getChooseQuestionTypeDialog(request):
 def getChangeNameDialog(request):
     return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
 
+def getExhibitDelConfirmDialog(request):
+    return getDialog("CONFIRM_EXHIBIT_DEL_DIALOG")
+
 HTMLRequests = {
     'simpleQuestionDialog': getSimpleQuestionDialog,
     'sortQuestionDialog': getSortQuestionDialog,
@@ -344,7 +354,8 @@ HTMLRequests = {
     'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
     'exhibitListElement': getExhibitListElement,
-    'changeNameDialog': getChangeNameDialog
+    'changeNameDialog': getChangeNameDialog,
+    'confirmExhibitDelDialog': getExhibitDelConfirmDialog
 }
 
 
@@ -731,7 +742,7 @@ def reportError(request):
             data['url'],
             data['lineNumber'],
             data['errorMsg']))
-    return JsonResponse()
+    return JsonResponse({})
 
 
 def getReport(request):

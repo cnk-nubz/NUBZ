@@ -32,6 +32,10 @@
   z-index: 5000
 }
 
+.delete-button {
+  float: left;
+}
+
 control-button-container {
   position: relative;
 }
