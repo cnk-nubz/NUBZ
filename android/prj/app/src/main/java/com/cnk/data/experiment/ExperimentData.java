@@ -65,7 +65,6 @@ public class ExperimentData {
     }
 
     private static final String LOG_TAG = "ExperimentData";
-    public static final String TASK_NAME = LOG_TAG;
     private static final String RAPORT_DIRECTORY = "raports/";
     private static final String RAPORT_FILE_PREFIX = "raport";
     private static final String TMP = "TMP";

@@ -1,10 +1,18 @@
 package com.cnk;
 
 import android.app.Application;
+import android.content.Context;
 
 import com.cnk.communication.NetworkHandler;
 
 public class Cnk extends Application {
+
+    private static Cnk instance;
+
+    public Cnk() {
+        instance = this;
+    }
+
 
     @Override
     public void onCreate() {
@@ -12,5 +20,9 @@ public class Cnk extends Application {
         NetworkHandler nh = NetworkHandler.getInstance();
         nh.setAppContext(getApplicationContext());
         nh.startBgDataSync();
+    }
+
+    public static Context getAppContext() {
+        return instance;
     }
 }

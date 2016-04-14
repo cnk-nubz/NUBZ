@@ -29,6 +29,7 @@ import com.cnk.notificators.Observer;
 import com.cnk.ui.Utils;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
+import com.cnk.utilities.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -174,15 +175,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             DialogInterface.OnClickListener
                     negativeAction =
                     (dialog, which) -> SurveyActivity.this.finish();
-            Integer
-                    messageId =
-                    reason == ServerTask.FailureReason.NOWIFI ?
-                            R.string.experimentDataDownloadFailureWifi :
-                            R.string.experimentDataDownloadFailureConnection;
+
             Utils.showDialog(SurveyActivity.this,
-                             messageId,
-                             R.string.tryAgain,
-                             R.string.cancel,
+                             Util.downloadErrorMessage(reason),
+                             getString(R.string.tryAgain),
+                             getString(R.string.cancel),
                              positiveAction,
                              negativeAction);
         });

@@ -28,7 +28,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
     private ProgressDialog progressBar;
-    private Thread progressDialogUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,23 +108,16 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private void synchronizationFailed(Task t, ServerTask.FailureReason failureReason) {
         Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + failureReason.toString());
         runOnUiThread(() -> {
-            progressDialogUpdate.interrupt();
             progressBar.dismiss();
-
-            Integer
-                    messageId =
-                    failureReason == ServerTask.FailureReason.NOWIFI ?
-                            R.string.synchronizationFailedWifi :
-                            R.string.synchronizationFailedConnection;
 
             DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
             DialogInterface.OnClickListener
                     negativeAction =
                     dataLoaded ? null : (dialog, which) -> finish();
             Utils.showDialog(this,
-                             messageId,
-                             R.string.tryAgain,
-                             R.string.cancel,
+                             com.cnk.utilities.Util.downloadErrorMessage(failureReason),
+                             getString(R.string.tryAgain),
+                             getString(R.string.cancel),
                              positiveAction,
                              negativeAction);
         });
@@ -143,28 +135,11 @@ public class StartScreen extends AppCompatActivity implements Observer {
         progressBar.setMax(100);
         progressBar.show();
 
-        final Integer[] progressBarProgress = {0};
-
-        progressDialogUpdate = new Thread(() -> {
-            while (progressBarProgress[0] < 100) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                if (MapData.getInstance().getMapDownloadedTilesCount() != null &&
-                    MapData.getInstance().getMapDownloadingTilesCount() != null) {
-                    progressBarProgress[0] =
-                            100 * MapData.getInstance().getMapDownloadedTilesCount() /
-                            MapData.getInstance().getMapDownloadingTilesCount();
-                }
-
-                runOnUiThread(() -> progressBar.setProgress(progressBarProgress[0]));
+        MapData.getInstance().addObserver(this, () -> {
+            if (progressBar.isShowing()) {
+                progressBar.setProgress(progressBar.getProgress() + 1);
             }
         });
-        progressDialogUpdate.start();
     }
 }
 

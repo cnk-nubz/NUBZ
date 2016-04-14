@@ -16,6 +16,7 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     public interface ExhibitsUpdateAction {
         void doOnUpdate(List<Exhibit> changedExhibits);
     }
+
     private static ExhibitsData instance;
     private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;

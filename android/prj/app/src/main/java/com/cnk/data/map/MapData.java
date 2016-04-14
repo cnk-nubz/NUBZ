@@ -11,6 +11,7 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.ZoomLevelResolution;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.Observable;
 import com.cnk.utilities.Consts;
 
 import java.io.FileNotFoundException;
@@ -19,8 +20,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapData {
-    public interface MapUpdateAction {
+public class MapData extends Observable<MapData.MapDownloadPercentUpdateAction> {
+    public interface MapDownloadPercentUpdateAction {
         void doOnUpdate();
     }
 
@@ -28,21 +29,13 @@ public class MapData {
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
-    private static final long MAP_DOWNLOAD_TIMEOUT = Consts.MILLIS_IN_SEC * 20;
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
 
     private Integer mapDownloadingTilesCount;
     private Integer mapDownloadedTilesCount;
-
-    public Integer getMapDownloadingTilesCount() {
-        return mapDownloadingTilesCount;
-    }
-
-    public Integer getMapDownloadedTilesCount() {
-        return mapDownloadedTilesCount;
-    }
+    private Integer percentDownloaded;
 
     private MapData() {
         floorInfos = new ArrayList<>();
@@ -53,6 +46,17 @@ public class MapData {
             instance = new MapData();
         }
         return instance;
+    }
+
+    public void notifyObservers() {
+        List<MapDownloadPercentUpdateAction> actions = new ArrayList<>();
+        for (MapDownloadPercentUpdateAction action : observers.values()) {
+            actions.add(action);
+        }
+
+        for (MapDownloadPercentUpdateAction action : actions) {
+            action.doOnUpdate();
+        }
     }
 
     public void downloadMap(NetworkHandler.SuccessAction success,
@@ -96,13 +100,13 @@ public class MapData {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
-        mapDownloadingTilesCount = mapDownloadedTilesCount = 0;
+        mapDownloadingTilesCount = mapDownloadedTilesCount = percentDownloaded = 0;
         for (FloorMap map : maps) {
             ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
             for (ZoomLevel level : zoomLevels) {
                 ArrayList<ArrayList<String>> tiles = level.getTilesFiles();
-                for (int i = 0; i < tiles.size(); i++) {
-                    mapDownloadingTilesCount += tiles.get(i).size();
+                for (ArrayList<String> tilesRow : tiles) {
+                    mapDownloadingTilesCount += tilesRow.size();
                 }
             }
         }
@@ -134,6 +138,11 @@ public class MapData {
                     FileHandler.getInstance().saveInputStream(in, tmpFilename);
                     tiles.get(i).set(j, actualFilename);
                     mapDownloadedTilesCount++;
+                    if (percentDownloaded <
+                        100 * mapDownloadedTilesCount / mapDownloadingTilesCount) {
+                        percentDownloaded++;
+                        notifyObservers();
+                    }
                 }
             }
         }
