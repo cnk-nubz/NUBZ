@@ -31,6 +31,7 @@ int main(int argc, char *argv[]) {
         server::utils::PathHelper::tmpDir.setPath(config.tmpFolderPath);
         server::utils::PathHelper::publicDir.setPath(config.publicFolderPath);
         server::utils::PathHelper::mapTilesDir.setPath(config.mapTilesFolderPath);
+        server::utils::PathHelper::excelReportsDir.setPath(config.excelReportsFolderPath);
 
         db::Database db(
             config.databaseUser, config.databaseName, config.databaseHost, config.databasePort);

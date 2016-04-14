@@ -5,7 +5,10 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/optional.hpp>
+
+#include <utils/TimePoint.h>
 
 #include <db/DatabaseSession.h>
 
@@ -15,18 +18,17 @@ namespace repository {
 
 class Reports {
 public:
+    struct ReportInfo {
+        std::int32_t ID;
+        boost::gregorian::date receiveDate;
+    };
+
     struct Report {
         struct Event {
-            struct TimePoint {
-                std::int32_t h;
-                std::int32_t m;
-                std::int32_t s;
-            };
-
             // foreign key
             boost::optional<std::int32_t> exhibitID;
 
-            TimePoint beginTime;
+            utils::TimePoint beginTime;
             std::int32_t durationInSecs;
 
             // foreign keys
@@ -44,6 +46,7 @@ public:
         };
 
         std::int32_t ID;
+        boost::gregorian::date receiveDate;
 
         // foreign key
         std::int32_t experimentID;
@@ -58,7 +61,12 @@ public:
     bool exist(std::int32_t ID);
 
     boost::optional<Report> get(std::int32_t ID);
+
+    // throws InvalidData in case of invalid id
+    Report getF(std::int32_t ID);
+
     std::vector<Report> getAllForExperiment(std::int32_t experimentID);
+    std::vector<ReportInfo> getAllInfosForExperiment(std::int32_t experimentID);
 
     // throws InvalidData in case of incorrect data
     void insert(const Report &report);
@@ -67,7 +75,9 @@ private:
     // throws InvalidData in case of greater id than reports id counter
     void checkID(std::int32_t ID);
 
-    void checkExhibits(const std::vector<Report::Event> &events);
+    // throws InvalidData in case of invalid exhibit id
+    void retainExhibits(const std::vector<Report::Event> &events);
+    void releaseExhibits(const std::vector<Report::Event> &events);
 
     void checkEvents(const Experiment &experiment, const std::vector<Report::Event> &events);
 
@@ -80,7 +90,7 @@ private:
     // throws InvalidData in case of value less than 0
     void checkDurations(const std::vector<Report::Event> &events) const;
 
-    void checkTimePoint(const Report::Event::TimePoint &timePoint) const;
+    void checkTimePoint(const utils::TimePoint &timePoint) const;
 
     void checkSurveyAns(const Experiment::Survey &survey, const Report::SurveyAns &surveyAns);
 

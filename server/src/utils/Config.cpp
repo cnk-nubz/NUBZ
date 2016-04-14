@@ -21,6 +21,7 @@ const char *Config::argUrlPrefixForMapImageTiles = "urlPrefixForMapImageTiles";
 const char *Config::argPublicFolderPath = "publicFolderPath";
 const char *Config::argTmpFolderPath = "tmpFolderPath";
 const char *Config::argMapTilesFolderPath = "mapTilesFolderPath";
+const char *Config::argExcelReportsFolderPath = "excelReportsFolderPath";
 
 Config::Config(const std::string &configPath) {
     loadFromFile(configPath);
@@ -44,6 +45,7 @@ void Config::loadFromFile(const std::string &path) {
     opts.add_options()(argPublicFolderPath, po::value(&publicFolderPath)->required());
     opts.add_options()(argTmpFolderPath, po::value(&tmpFolderPath)->required());
     opts.add_options()(argMapTilesFolderPath, po::value(&mapTilesFolderPath)->required());
+    opts.add_options()(argExcelReportsFolderPath, po::value(&excelReportsFolderPath)->required());
 
     po::variables_map vm;
 
@@ -58,6 +60,7 @@ void Config::validate() const {
     validateDirectory(publicFolderPath);
     validateDirectory(tmpFolderPath);
     validateDirectory(mapTilesFolderPath);
+    validateDirectory(excelReportsFolderPath);
 }
 
 void Config::validateDirectory(const std::string &path) const {

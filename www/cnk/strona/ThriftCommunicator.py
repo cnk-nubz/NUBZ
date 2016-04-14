@@ -130,6 +130,11 @@ class ThriftCommunicator:
             return client.updateExhibit(msg)
         return self._perform_in_single_connection([action])[0]
 
+    def removeExhibit(self, request):
+        def action(client):
+            return client.removeExhibit(request['id'])
+        return self._perform_in_single_connection([action])[0]
+
     def createSimpleQuestion(self, request):
         def action(client):
             if request['answerAsNumber'] == 1:
@@ -244,4 +249,19 @@ class ThriftCommunicator:
         def action(client):
             msg = CloneRequest(experimentId, newName.encode('utf-8'))
             return client.cloneExperiment(msg)
+        return self._perform_in_single_connection([action])[0]
+
+    def getAllReportsForExperiment(self, experimentId):
+        def action(client):
+            return client.getAllReportsForExperiment(experimentId)
+        return self._perform_in_single_connection([action])[0]
+
+    def getExcelReport(self, reportId):
+        def action(client):
+            return client.getExcelReport(reportId)
+        return self._perform_in_single_connection([action])[0]
+
+    def getCombinedExcelReport(self, experimentId):
+        def action(client):
+            return client.getCombinedExcelReport(experimentId)
         return self._perform_in_single_connection([action])[0]

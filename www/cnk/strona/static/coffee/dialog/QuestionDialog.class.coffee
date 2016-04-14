@@ -12,13 +12,13 @@ root.QuestionDialog = class QuestionDialog
         buttons: [@_closeButton(), @_saveButton()]
       )
       @_dialog.realize()
-      @_prepareDialog(@_dialog.getModalBody())
+      @_prepareDialog(@_dialog.getModalContent())
     )
 
   bindData: (@_dialogInfo) =>
     @_dialog.setMessage(@_dialogHTML)
     @_dialog.realize()
-    dialogBody = @_dialog.getModalBody()
+    dialogBody = @_dialog.getModalContent()
     @_prepareDialog(dialogBody)
     @_prepareFilledDialog(dialogBody)
     @

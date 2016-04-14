@@ -10,6 +10,7 @@ communication::NewExhibitsResponse NewExhibitsResponse::toThrift() const {
     for (auto &ex : exhibits) {
         res.exhibits[ex.first] = ex.second.toThrift();
     }
+    res.fullRefresh = fullRefresh;
     return res;
 }
 }

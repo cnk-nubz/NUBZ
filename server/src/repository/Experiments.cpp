@@ -27,6 +27,14 @@ Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::ContentData::S
 Experiments::Experiments(db::DatabaseSession &session) : session(session) {
 }
 
+Experiments::Experiment Experiments::getF(std::int32_t ID) {
+    if (auto exp = get(ID)) {
+        return exp.value();
+    } else {
+        throw InvalidData{"there is no experiment with given id"};
+    }
+}
+
 boost::optional<Experiments::Experiment> Experiments::get(std::int32_t ID) {
     if (auto dbExperiment = Impl::get(session, ID)) {
         return fromDB(session, dbExperiment.value());

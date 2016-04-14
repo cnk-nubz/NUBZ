@@ -50,10 +50,36 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
+    jQuery(".bootstrap-dialog-footer-buttons", dialog).prepend(@_data.utils.text.deleteButtonHtml)
+    jQuery(".delete-button", dialog).click( =>
+        new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
+      )
     jQuery("input", dialog).prop("readonly", true)
     if @readonly is true
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
+
+  setDeleteHandler: (@_successfullDeleteHandler) ->
+
+  _deleteExhibit: =>
+    toSend =
+      jsonData:
+        JSON.stringify(
+          id: @_dialogInfo.id
+        )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/deleteExhibit/'
+      data: toSend
+      success: =>
+        if @_successfullDeleteHandler
+          @_successfullDeleteHandler(@_dialogInfo.id)
+        @_dialog.close()
+    )
 
   _inputKeyUp: (obj, e) =>
     text = obj.val()

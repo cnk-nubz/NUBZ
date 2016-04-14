@@ -202,12 +202,10 @@ class Handler
   _setDefaultState: =>
     activeExperimentRow = document.querySelector('#activeExperiment tr')
     if @_activeExperiment?
-      date = @_activeExperiment.startDate
-      fixDate = (x) -> if 0 < x < 10 then "0#{x}" else "#{x}"
-      activeExperimentDate = "(#{fixDate date.day}/#{fixDate date.month}/#{fixDate date.year} - )"
       activeExperimentRow.data = @_activeExperiment.experimentId
       oldHeaderText = jQuery('#activeExperiment > div').text()
-      jQuery('#activeExperiment > div').text("#{oldHeaderText} #{activeExperimentDate}")
+      newHeaderText = "#{oldHeaderText} (#{@_activeExperiment.startDate} - )"
+      jQuery('#activeExperiment > div').text(newHeaderText)
       jQuery("td:first-child > div > span").html("#{@_activeExperiment.name}").shortenText()
     else
       activeExperimentRow.querySelector("td:first-child > div > span").innerHTML = "Brak aktywnego badania"

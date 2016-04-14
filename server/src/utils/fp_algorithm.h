@@ -33,6 +33,11 @@ std::size_t count(const Container &cont, const T &t) {
     return std::count(cont.begin(), cont.end(), t);
 }
 
+template <class Container, class T>
+std::size_t index(const Container &cont, const T &t) {
+    return std::find(cont.begin(), cont.end(), t) - cont.begin();
+}
+
 template <class A, class B, class F>
 void for_each2(const A &as, const B &bs, F &&f) {
     auto aIt = as.begin();

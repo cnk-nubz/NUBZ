@@ -6,6 +6,11 @@
 # ALL ROWS MUST SUM UP TO 12 OR LESS
 # ================
 
+INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
+EXHIBIT_LIST_ERROR = "Nie udało sie pobrać listy eksponatów. Spróbuj ponownie za chwilę."
+NO_SUCH_REPORT_ERROR = "Nie istnieje raport o numerze"
+NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o numerze"
+
 DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
@@ -13,6 +18,7 @@ DEFAULT_CONSTANTS = {
             "nameDuplicatedError": "Taka nazwa już istnieje.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
+            "deleteButton": "Usuń",
         }
     }
 }
@@ -171,6 +177,7 @@ EXHIBIT_DIALOG = {
         "text": {
             "title": "Tworzenie eksponatu",
             "editTitle": "Edycja eksponatu",
+            "deleteButtonHtml": '<button class="btn btn-danger delete-button">Usuń</button>',
         },
     }
 }
@@ -186,6 +193,17 @@ CHANGE_EXPERIMENT_NAME_DIALOG = {
     "utils": {
         "text": {
             "title": "Klonowanie badania",
+        }
+    }
+}
+
+CONFIRM_EXHIBIT_DEL_DIALOG = {
+    "data": [],
+    "utils": {
+        "text": {
+            "title": "Potwierdzenie usuwania eksponatu",
+            "question": "Czy na pewno chcesz usunąć eksponat? Tej akcji nie będzie można cofnąć.",
+            "confirmButton": "Tak",
         }
     }
 }
@@ -209,7 +227,8 @@ to_merge_with_defaults = [
     SORT_QUESTION_DIALOG,
     NEW_ACTION_DIALOG,
     EXHIBIT_DIALOG,
-    CHANGE_EXPERIMENT_NAME_DIALOG
+    CHANGE_EXPERIMENT_NAME_DIALOG,
+    CONFIRM_EXHIBIT_DEL_DIALOG,
 ]
 
 def merge_dicts(a, b, path=None):

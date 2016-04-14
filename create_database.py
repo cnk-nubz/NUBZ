@@ -49,7 +49,10 @@ cur.execute('''
 		map_frame_y INT NULL,
 		map_frame_width INT NULL,
 		map_frame_height INT NULL,
-		map_floor INT NULL
+		map_floor INT NULL,
+
+		is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
+		ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 
@@ -116,6 +119,7 @@ cur.execute('''
 cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
+		receive_date VARCHAR NULL,
 		experiment_id INT NOT NULL REFERENCES experiments(id),
 		content JSONB NOT NULL
 	)
@@ -128,6 +132,7 @@ cur.execute('''
 	INSERT INTO counters VALUES
 		('last_map_version', 0),
 		('last_exhibit_version', 5),
+		('last_deleted_exhibit_version', -1),
 		('last_report_id', 3)
 ''')
 
@@ -240,29 +245,47 @@ cur.execute('''
 # reports
 cur.execute('''
 	INSERT INTO reports VALUES
-		(1, 1, '
+		(1, '2011-Sep-27', 1, '
 			{
 				"history": [
 					{
 						"exhibitId": 2,
+						"beginH": 10,
+						"beginM": 11,
+						"beginS": 12,
 						"secs": 15,
 						"actions": [1, 4, 7]
 					}, {
+						"beginH": 10,
+						"beginM": 11,
+						"beginS": 50,
 						"exhibitId": 1,
 						"secs": 30,
 						"actions": [1]
 					}, {
 						"exhibitID": 2,
+						"beginH": 10,
+						"beginM": 13,
+						"beginS": 12,
 						"secs": 140,
 						"actions": []
 					}, {
+						"beginH": 11,
+						"beginM": 11,
+						"beginS": 12,
 						"secs": 17,
 						"actions": [12, 9]
 					}, {
 						"exhibitId": 1,
+						"beginH": 12,
+						"beginM": 11,
+						"beginS": 12,
 						"secs": 20,
 						"actions": [1, 3]
 					}, {
+						"beginH": 13,
+						"beginM": 14,
+						"beginS": 15,
 						"secs": 14,
 						"actions": [11]
 					}
@@ -272,6 +295,7 @@ cur.execute('''
 						{
 							"ans": "12345"
 						}, {
+							"ans": "brak odpowiedzi"
 						}
 					],
 					"multi": [
@@ -281,7 +305,70 @@ cur.execute('''
 					],
 					"sort": [
 						{
-
+							"ans": [3, 2, 4, 1]
+						}, {
+							"ans": [7, 6, 5, 12, 8, 9, 10, 11]
+						}
+					]
+				},
+				"surveyAfter": {
+					"simple": [
+						{
+							"ans": "smieciowe znaki ; , ."
+						}
+					],
+					"multi": [
+						{
+							"ans": [2]
+						}, {
+							"ans": [6, 5, 9, 12]
+						}
+					],
+					"sort": [
+						{
+							"ans": [5, 6, 8, 12, 7, 9, 10, 11]
+						}, {
+							"ans": [3, 1, 4, 2]
+						}
+					]
+				}
+			}
+		'),
+	(2, '2011-Sep-28', 1, '
+			{
+				"history": [
+					{
+						"exhibitId": 2,
+						"beginH": 10,
+						"beginM": 11,
+						"beginS": 12,
+						"secs": 15,
+						"actions": [1, 4, 7]
+					}, {
+						"beginH": 10,
+						"beginM": 11,
+						"beginS": 50,
+						"exhibitId": 1,
+						"secs": 30,
+						"actions": [4]
+					}
+				],
+				"surveyBefore": {
+					"simple": [
+						{
+							"ans": "12345"
+						}, {
+							"ans": "brak odpowiedzi"
+						}
+					],
+					"multi": [
+						{
+							"ans": [5, 6, 9, 12]
+						}
+					],
+					"sort": [
+						{
+							"ans": [3, 2, 4, 1]
 						}, {
 							"ans": [7, 6, 5, 12, 8, 9, 10, 11]
 						}
@@ -297,10 +384,12 @@ cur.execute('''
 						{
 							"ans": [2]
 						}, {
+							"ans": [6, 5, 9, 12]
 						}
 					],
 					"sort": [
 						{
+							"ans": [5, 6, 7, 12, 8, 9, 10, 11]
 						}, {
 							"ans": [3, 1, 4, 2]
 						}
