@@ -1,5 +1,6 @@
 root = exports ? this
 root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
     radioGroup = @_data.data[2][1].radioGroup
@@ -21,6 +22,8 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
       )
     return
 
+
+  # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
@@ -30,9 +33,17 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
       jQuery("#dialog input", dialogBody).prop("readonly", true)
       jQuery("#dialog .btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
-    @
+    return
 
-  extractData: =>
+  ###
+  # type SimpleQuestionData = {
+  #   name           :: String,
+  #   question       :: String,
+  #   answerAsNumber :: Boolean
+  # }
+  ###
+  # extractData :: () -> SimpleQuestionData
+  extractData: ->
     answerAsNumberInput = jQuery("#dialog input[type=radio]").first()
     answerAsNumberLabel = answerAsNumberInput.parent()
     name = jQuery("#dialog .form-group:eq(0) input").val()

@@ -1,68 +1,92 @@
 root = exports ? this
 class Handlers
+  # constructor :: root.Canvas -> Context
   constructor: (@canvas) ->
     @mapData = new MapDataHandler()
-    @button =
+    @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
-      groundFloor: "#changeFloor button:first-child"
-      firstFloor: "#changeFloor button:last-child"
+      floorButton: "#changeFloor button:first-child"
       labels: "#showLabels button"
-    jQuery(@button.minusZoom).prop "disabled", true
-    if @mapData.floorTilesInfo[0].length is 0 and @mapData.floorTilesInfo[1].length is 0
-      jQuery(@button.plusZoom).prop "disabled", true
+    jQuery(@_DOM.minusZoom).prop "disabled", true
+    if not @mapData.floorTilesInfo[0].length
+      jQuery(@_DOM.plusZoom).prop "disabled", true
     @_setButtonHandlers()
     @_setEvents()
-    if @mapData.activeFloor is 0
-      jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
-    else
-      jQuery("#{@button.labels}, #{@button.firstFloor}").addClass "active"
+    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}")
+      .addClass "active"
 
+
+  # _getNthFloor :: Int -> String
+  _getNthFloor: (n) ->
+    "#{@_DOM.floorButton} #{
+      if n is 0
+        ""
+      else
+        "+ " + "button".repeat(n).match(/.{6}/g).join(" + ")
+    }"
+
+
+  # _setButtonHandlers :: () -> undefined
   _setButtonHandlers: =>
-    jQuery(@button.minusZoom).on('click', @zoomOutHandler())
-    jQuery(@button.plusZoom).on('click', @zoomInHandler())
-    jQuery(@button.groundFloor).on('click', @changeFloorHandler(0))
-    jQuery(@button.firstFloor).on('click', @changeFloorHandler(1))
-    jQuery(@button.labels).on('click', @showLabelsHandler())
+    jQuery(@_DOM.minusZoom).click(canvas: @canvas, @zoomOutHandler)
+    jQuery(@_DOM.plusZoom).click(canvas: @canvas, @zoomInHandler)
+    instance = this
+    floorButtons = @mapData.avaibleFloors.map((n) => jQuery(@_getNthFloor(n)))
+    for button, idx in floorButtons
+      data =
+        instance: this
+        floorButtons: floorButtons
+      button.click(data, @changeFloorHandler(idx))
+    jQuery(@_DOM.labels).click(canvas: @canvas, @showLabelsHandler)
+    return
 
+
+  # _setEvents :: () -> undefined
   _setEvents: =>
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@button.plusZoom).prop("disabled", disablePlus)
-      jQuery(@button.minusZoom).prop("disabled", disableMinus)
+      jQuery(@_DOM.plusZoom).prop("disabled", disablePlus)
+      jQuery(@_DOM.minusZoom).prop("disabled", disableMinus)
     )
+    return
 
-  zoomOutHandler: =>
-    instance = this
-    ->
-      jQuery(this).blur()
-      instance.canvas.zoomOut()
 
-  zoomInHandler: =>
-    instance = this
-    ->
-      jQuery(this).blur()
-      instance.canvas.zoomIn()
+  # zoomOutHandler :: Event -> undefined
+  zoomOutHandler: (e) ->
+    jQuery(this).blur()
+    e.data.canvas.zoomOut()
+    return
 
-  showLabelsHandler: =>
-    canvas = @canvas
-    ->
-      obj = jQuery(this)
-      obj.blur()
-      isActive = obj.hasClass("active")
-      if isActive
-        obj.removeClass("active")
-      else
-        obj.addClass("active")
-      canvas.changeLabelsVisibility(not isActive)
 
-  changeFloorHandler: (floor) =>
-    instance = this
-    floorButtons = [jQuery(@button.groundFloor), jQuery(@button.firstFloor)]
-    ->
-      jQuery(this).blur()
-      jQuery(floorButtons[1 - floor]).removeClass "active"
-      jQuery(floorButtons[floor]).addClass "active"
-      instance.canvas.setFloorLayer(floor)
+  # zoomInHandler :: Event -> undefined
+  zoomInHandler: (e) ->
+    jQuery(this).blur()
+    e.data.canvas.zoomIn()
+    return
+
+
+  # changeFloorHandler :: Int -> Event -> undefined
+  changeFloorHandler: (floor) ->
+    (e) ->
+      activeFloor = e.data.instance.mapData.activeFloor
+      jQuery(e.data.floorButtons[activeFloor]).removeClass("active")
+      jQuery(this).blur().addClass("active")
+      e.data.instance.canvas.setFloorLayer(floor)
+      return
+
+
+  # showLabelsHandler :: Event -> undefined
+  showLabelsHandler: (e) ->
+    obj = jQuery(this)
+    obj.blur()
+    isActive = obj.hasClass("active")
+    if isActive
+      obj.removeClass("active")
+    else
+      obj.addClass("active")
+    e.data.canvas.changeLabelsVisibility(not isActive)
+    return
+
 
 jQuery(document).ready( ->
   canvas = new root.Canvas('#map')

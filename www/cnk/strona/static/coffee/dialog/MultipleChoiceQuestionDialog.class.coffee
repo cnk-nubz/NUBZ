@@ -1,5 +1,6 @@
 root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
     #add dialog info
@@ -12,14 +13,16 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     # prepare inputs with regexes etc
     inputs = jQuery("input[type=text]", dialogBody)
     inputs.each( (idx) ->
-        obj = jQuery(this)
-        jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-      )
+      obj = jQuery(this)
+      jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
+    )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
     return
 
+
+  # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
@@ -36,8 +39,10 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       jQuery("input", dialogBody).last().parents('.input-group').remove()
       jQuery(".btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
-    @
+    return
 
+
+  # _inputKeyUp :: (jQueryObject, Event) -> undefined
   _inputKeyUp: (obj, e) =>
     text = obj.val()
     error = obj.parent().next()
@@ -47,6 +52,8 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       error.html("")
     return
 
+
+  # _validateForm :: () -> Boolean
   _validateForm: =>
     isValid = true
     instance = this
@@ -79,7 +86,16 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       )
     isValid
 
-  extractData: =>
+  ###
+  # type MultipleChoiceQuestionData = {
+  #   name         :: String,
+  #   question     :: String,
+  #   options      :: [String],
+  #   singleAnswer :: Boolean
+  # }
+  ###
+  # extractData :: () -> MultipleChoiceQuestionData
+  extractData: ->
     name = jQuery("#dialog .form-group:eq(0) input").val()
     question = jQuery("#dialog .form-group:eq(1) input").val()
     singleAnswer = jQuery("#dialog input[type=radio]").first().parent().hasClass("active")

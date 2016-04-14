@@ -69,10 +69,9 @@ class ThriftCommunicator:
             return client.getAllExhibits()
         return self._perform_in_single_connection([action])[0]
 
-    def getMapImageTiles(self):
+    def getMapImages(self):
         def action(client):
-            floor_msg = NewMapImagesRequest()
-            return client.getNewMapImages(floor_msg).floors
+            return client.getMapImages()
         return self._perform_in_single_connection([action])[0]
 
     def setExhibitFrame(self, frame):
@@ -259,4 +258,9 @@ class ThriftCommunicator:
     def getCombinedExcelReport(self, experimentId):
         def action(client):
             return client.getCombinedExcelReport(experimentId)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeFloor(self, floor):
+        def action(client):
+            return client.removeFloor(floor)
         return self._perform_in_single_connection([action])[0]

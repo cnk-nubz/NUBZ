@@ -4,6 +4,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     @_isResizingAllowed = false
     super
 
+
+  # updateState :: () -> Context
   updateState: =>
     super
     @_exhibits[@mapData.activeFloor].eachLayer((layer) =>
@@ -12,24 +14,32 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       else
         layer.editing.disable()
     )
+    return
 
-  _exhibitOptions: (options...) =>
-    jQuery.extend(options..., { draggable: true })
 
+  # _exhibitOptions :: [JsObject] -> JsObject
+  _exhibitOptions: (options...) -> jQuery.extend(options..., { draggable: true })
+
+
+  # _prepareExhibit :: Exhibit -> Exhibit
   _prepareExhibit: (exh) =>
     exh.editing.enable() if @_isResizingAllowed
     exh.on('editstart', @_onEditStart)
     exh.on('edit', @_onEditEnd)
     exh.on('dragstart', @_onDragStart)
     exh.on('dragend', @_onDragEnd)
-    return
+    exh
 
+
+  # _onEditStart :: Event -> undefined
   _onEditStart: (e) ->
     exhibit = e.target
     exhibit.hideLabel()
     exhibit.bringToFront()
     return
 
+
+  # _onEditEnd :: Event -> undefined
   _onEditEnd: (e) =>
     exhibit = e.target
     @_fixExhibitPosition(exhibit)
@@ -38,6 +48,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibit.showLabel() if @_areLabelsVisible
     return
 
+
+  # _onDragStart :: Event -> undefined
   _onDragStart: (e) ->
     exhibit = e.target
     exhibit.hideLabel()
@@ -45,14 +57,19 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibit.bringToFront()
     return
 
+
+  # _onDragEnd :: Event -> undefined
   _onDragEnd: (e) =>
-    return unless e.target._dragMoved
+    if not e.target._dragMoved
+      return
     exhibit = e.target
     @_updateExhibitPosition(exhibit)
     exhibit.showLabel() if @_areLabelsVisible
     exhibit.editing.enable() if @_isResizingAllowed
     return
 
+
+  # _updateExhibitPosition :: Exhibit -> undefined
   _updateExhibitPosition: (exhibit) =>
     geoPoints = @_fixExhibitPosition(exhibit)
     scaledPoints = (@_map.project(p, @mapData.maxZoom[@mapData.activeFloor]) for p in geoPoints)
@@ -60,6 +77,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
     return
 
+
+  # _fixExhibitPosition :: Exhibit -> [L.LatLng]
   _fixExhibitPosition: (exhibit) =>
     maxX = @_map.project(@_mapBounds[@mapData.activeFloor].getNorthEast()).x
     maxY = @_map.project(@_mapBounds[@mapData.activeFloor].getSouthWest()).y
@@ -74,6 +93,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     exhibit.setBounds(newGeoPoints)
     return newGeoPoints
 
+
+  # _getExhibitProtrusion :: (L.Point, L.Point, Int, Int) -> [Int]
   _getExhibitProtrusion: (topLeft, bottomRight, maxX, maxY) ->
     if topLeft.x < 0
       dx = -topLeft.x
@@ -85,6 +106,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       dy = maxY - bottomRight.y
     [dx ? 0, dy ? 0]
 
+
+  # _changeExhibitPositionRequest :: (Int, L.Point, L.Point) -> undefined
   _changeExhibitPositionRequest: (id, topLeft, bottomRight) =>
     toSend = {
       jsonData:
@@ -110,6 +133,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     )
     return
 
+
+  # _ajaxSuccessHandler :: (ExhibitData) -> undefined
   _ajaxSuccessHandler: (data) =>
     if data.success is true
       @mapData.exhibits[data.id].frame.x = data.x
@@ -125,16 +150,22 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       )
     return
 
+
+  # _getTopLeft :: [L.Point] -> L.Point
   _getTopLeft: (arr) ->
     top = arr[0]
     (top = p if p.x <= top.x and p.y <= top.y) for p in arr[1..]
     top
 
+
+  # _getBottomRight :: [L.Point] -> L.Point
   _getBottomRight: (arr) ->
     bot = arr[0]
     (bot = p if p.x >= bot.x and p.y >= bot.y) for p in arr[1..]
     bot
 
+
+  # changeExhibitResizing :: Boolean -> undefined
   changeExhibitResizing: (isVisible) =>
     @_isResizingAllowed = isVisible
     @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
@@ -143,3 +174,4 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       else
         layer.editing.disable()
     )
+    return

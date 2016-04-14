@@ -8,8 +8,18 @@
     <div id="exhibitList"></div>
   </div>
   <div id="filterButtons">
-    <button class="btn btn-default">0</button>
-    <button class="btn btn-default">1</button>
-    <button class="btn btn-default">brak</button>
+    <table>
+      <tbody>
+        <tr>
+        {% for floor in avaibleFloors %}
+        <td>
+          <button class="btn btn-default">{{floor}}</button>
+        </td>
+        {% endfor %}
+        <td>
+          <button class="btn btn-default">brak</button>
+        </td>
+      </tbody>
+    </table>
   </div>
 </div>

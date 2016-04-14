@@ -1,35 +1,54 @@
 root = exports ? this
 class Handlers
+  # constructor :: (root.Canvas, root.ExhibitPanel) -> Context
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
     @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
-    @button =
+    @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
-      groundFloor: "#changeFloor button:first-child"
-      firstFloor: "#changeFloor button:last-child"
+      floorButton: "#changeFloor button:first-child"
       labels: "#showLabels button"
       resize: "#changeResizing button"
       changeMap: "#changeMap button"
-    jQuery(@button.minusZoom).prop "disabled", true
-    if @mapData.floorTilesInfo[0].length is 0 and @mapData.floorTilesInfo[1].length is 0
-      jQuery(@button.plusZoom).prop "disabled", true
+
     @_setButtonHandlers()
     @_setEvents()
-    if @mapData.activeFloor is 0
-      jQuery("#{@button.labels}, #{@button.groundFloor}").addClass "active"
-    else
-      jQuery("#{@button.labels}, #{@button.firstFloor}").addClass "active"
 
+    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}").addClass "active"
+    jQuery(@_DOM.minusZoom).prop("disabled", true)
+    if @mapData.floorTilesInfo.length is 1 and @mapData.floorTilesInfo[0].length is 0
+      jQuery(@_DOM.plusZoom).prop("disabled", true)
+
+
+  # _getNthFloor :: Int -> String
+  _getNthFloor: (n) ->
+    "#{@_DOM.floorButton} #{
+      if n is 0
+        ""
+      else
+        "+ " + "button".repeat(n).match(/.{6}/g).join(" + ")
+    }"
+
+
+  # _setButtonHandlers :: () -> undefined
   _setButtonHandlers: =>
-    jQuery(@button.minusZoom).on('click', @zoomOutHandler())
-    jQuery(@button.plusZoom).on('click', @zoomInHandler())
-    jQuery(@button.groundFloor).on('click', @changeFloorHandler(0))
-    jQuery(@button.firstFloor).on('click', @changeFloorHandler(1))
-    jQuery(@button.labels).on('click', @showLabelsHandler())
-    jQuery(@button.resize).on('click', @resizeExhibitsHandler())
-    jQuery(@button.changeMap).on('click', @changeMapHandler())
+    jQuery(@_DOM.minusZoom).click(canvas: @canvas, @zoomOutHandler)
+    jQuery(@_DOM.plusZoom).click(canvas: @canvas, @zoomInHandler)
+    instance = this
+    floorButtons = @mapData.avaibleFloors.map((n) => jQuery(@_getNthFloor(n)))
+    for button, idx in floorButtons
+      data =
+        instance: this
+        floorButtons: floorButtons
+      button.click(data, @changeFloorHandler(idx))
+    jQuery(@_DOM.labels).click(instance: this, @showLabelsHandler)
+    jQuery(@_DOM.resize).click(instance: this, @resizeExhibitsHandler)
+    jQuery(@_DOM.changeMap).click(instance: this, @changeMapHandler)
+    return
 
+
+  # _setEvents :: () -> undefined
   _setEvents: =>
     @panel.on("addExhibit", (data, dialog) =>
       @newExhibitRequest(data, dialog)
@@ -38,12 +57,10 @@ class Handlers
       exhibit = @mapData.exhibits[id]
       exhibitFloor = exhibit.frame.mapLevel
       if exhibitFloor isnt @mapData.activeFloor
-        jQuery("#changeFloor button:eq(#{exhibitFloor})").addClass "active"
-        jQuery("#changeFloor button:eq(#{1 - exhibitFloor})").removeClass "active"
+        jQuery(@_getNthFloor(exhibitFloor)).addClass "active"
+        jQuery(@_getNthFloor(@mapData.activeFloor)).removeClass "active"
       @canvas.flyToExhibit id
       @panel.filterForCurrentFloor()
-      jQuery(@button.plusZoom).prop "disabled", true
-      jQuery(@button.minusZoom).prop "disabled", false
     )
     @panel.on("modifyExhibitWithId", (id, dialog) =>
       exhibit = @mapData.exhibits[id]
@@ -55,45 +72,54 @@ class Handlers
       @exhibitEditDialog.bindData(data).show()
     )
     @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@button.plusZoom).prop("disabled", disablePlus)
-      jQuery(@button.minusZoom).prop("disabled", disableMinus)
+      jQuery(@_DOM.plusZoom).prop("disabled", disablePlus)
+      jQuery(@_DOM.minusZoom).prop("disabled", disableMinus)
     )
+    return
 
-  zoomOutHandler: =>
-    instance = this
-    ->
-      jQuery(this).blur()
-      instance.canvas.zoomOut()
 
-  zoomInHandler: =>
-    instance = this
-    ->
-      jQuery(this).blur()
-      instance.canvas.zoomIn()
+  # zoomOutHandler :: Event -> undefined
+  zoomOutHandler: (e) ->
+    jQuery(this).blur()
+    e.data.canvas.zoomOut()
+    return
 
-  changeFloorHandler: (floor) =>
-    instance = this
-    floorButtons = [jQuery(@button.groundFloor), jQuery(@button.firstFloor)]
-    ->
-      jQuery(this).blur()
-      jQuery(floorButtons[1 - floor]).removeClass "active"
-      jQuery(floorButtons[floor]).addClass "active"
-      instance.canvas.setFloorLayer(floor)
-      instance.panel.refreshDialogInstance()
-      instance.panel.filterForCurrentFloor()
 
-  showLabelsHandler: =>
-    instance = this
-    ->
-      statusNow = instance.changeButtonStatus(jQuery(this))
-      instance.canvas.changeLabelsVisibility(statusNow)
+  # zoomInHandler :: Event -> undefined
+  zoomInHandler: (e) ->
+    jQuery(this).blur()
+    e.data.canvas.zoomIn()
+    return
 
-  resizeExhibitsHandler: =>
-    instance = this
-    ->
-      statusNow = instance.changeButtonStatus(jQuery(this))
-      instance.canvas.changeExhibitResizing(statusNow)
 
+  # changeFloorHandler :: Int -> Event -> undefined
+  changeFloorHandler: (floor) ->
+    (e) ->
+      activeFloor = e.data.instance.mapData.activeFloor
+      jQuery(e.data.floorButtons[activeFloor]).removeClass("active")
+      jQuery(this).blur().addClass("active")
+      e.data.instance.canvas.setFloorLayer(floor)
+      e.data.instance.panel.filterForCurrentFloor()
+      return
+
+
+  # showLabelsHandler :: Event -> undefined
+  showLabelsHandler: (e) ->
+    instance = e.data.instance
+    statusNow = instance.changeButtonStatus(jQuery(this))
+    instance.canvas.changeLabelsVisibility(statusNow)
+    return
+
+
+  # resizeExhibitsHandler :: Event -> undefined
+  resizeExhibitsHandler: (e) ->
+    instance = e.data.instance
+    statusNow = instance.changeButtonStatus(jQuery(this))
+    instance.canvas.changeExhibitResizing(statusNow)
+    return
+
+
+  # changeButtonStatus :: jQueryObject -> Boolean
   changeButtonStatus: (button) ->
     button.blur()
     isActive = button.hasClass("active")
@@ -103,47 +129,21 @@ class Handlers
       button.addClass("active")
     return not isActive
 
-  changeMapHandler: =>
-    =>
-      jQuery.getJSON('getHTML?name=changeMapDialog', floor: @mapData.activeFloor, (data) =>
-        @showChangeMapPopup(data.html)
-      )
 
-  showChangeMapPopup: (html) =>
-    activeFloor = @mapData.activeFloor
-    instance = this
-    dialog = BootstrapDialog.show(
-      message: html
-      title: 'Zmiana mapy'
-      size: BootstrapDialog.SIZE_SMALL
-      closable: false
-      buttons: [
-        instance.changeMapCancelButton()
-        instance.changeMapSaveButton()
-      ]
+  # changeMapHandler :: Event -> undefined
+  changeMapHandler: (e) ->
+    activeFloor = e.data.instance.mapData.activeFloor
+    jQuery.getJSON('getHTML?name=changeMapDialog', floor: activeFloor, (data) ->
+      new root.ChangeMapDialog(data)
+        .on("removeFloor", -> location.reload())
+        .on("addFloor", e.data.instance.changeMapSubmitHandler)
+        .on("changeFloorMap", e.data.instance.changeMapSubmitHandler)
     )
+    return
 
-  changeMapCancelButton: ->
-    label: 'Anuluj'
-    action: (dialog) ->
-      dialog.close()
-
-  changeMapSaveButton: =>
-    return {
-      label: 'Wyślij'
-      action: (dialog) =>
-        if jQuery("#dialogImage").val() is ""
-          return
-        dialog.enableButtons false
-        jQuery("#dialogForm").off "submit"
-        jQuery("#dialogForm").submit(@changeMapSubmitHandler)
-        jQuery("#dialogSubmit").click()
-        dialog.setMessage('<p align="center">Trwa przetwarzanie mapy</p>')
-        dialog.options.buttons = []
-        dialog.updateButtons()
-    }
-
-  changeMapSubmitHandler: (e) =>
+  # changeMapSubmitHandler :: (Event, FormData) -> undefined
+  changeMapSubmitHandler: (e, formData) =>
+    e.preventDefault()
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
@@ -151,57 +151,39 @@ class Handlers
       type: "POST"
       url: "/uploadImage/"
       context: this
-      data: new FormData(jQuery("#dialogForm")[0])
+      data: formData
       processData: false
       contentType: false
       success: (data) ->
         @afterMapUploadMessage(data)
     )
-    e.preventDefault()
     return
 
-  afterMapUploadMessage: (data) =>
-    errorData = [
-      {"message": "Mapa piętra została pomyślnie zmieniona", "type": BootstrapDialog.TYPE_SUCCESS, "title": "Sukces"}
-      {"message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp", "type": BootstrapDialog.TYPE_INFO, "title": "Zły format"}
-      {"message": "Wystąpił wewnętrzny błąd serwera - spróbuj ponownie za chwilę. Sprawdź czy serwer jest włączony", "type": BootstrapDialog.TYPE_DANGER, "title": "Błąd serwera"}
-      {"message": "form error - not POST method", "type": BootstrapDialog.TYPE_DANGER, "title": "not POST method"}
-    ]
-    if data.err == 1
-      data.floorTilesInfo[data.floor] = jQuery.map(data.floorTilesInfo[data.floor], (val) -> [val])
-      data.exhibits = jQuery.map(data.exhibits, (val) -> [val])
-      @mapData.exhibits = {}
-      for e in data.exhibits
-        @mapData.exhibits[e.id] =
-          frame: e.frame
-          name: e.name
-          colorHex: e.colorHex
-      @mapData.floorTilesInfo[data.floor] = data.floorTilesInfo[data.floor]
-      @mapData.floorUrl[data.floor] = data.floorUrl
-      @mapData.maxZoom[data.floor] = data.floorTilesInfo[data.floor].length
-      northEast = [0, data.floorTilesInfo[data.floor][-1..][0].scaledHeight]
-      southWest = [data.floorTilesInfo[data.floor][-1..][0].scaledWidth, 0]
-      @canvas.addMapBounds(data.floor, northEast, southWest)
-      @panel.replaceExhibits((e.id for e in data.exhibits))
 
-    err = data.err - 1
-    #close existing dialog
+  # afterMapUploadMessage :: (DialogData) -> undefined
+  afterMapUploadMessage: (data) ->
+    dialogType =
+      success: BootstrapDialog.TYPE_SUCCESS
+      danger: BootstrapDialog.TYPE_DANGER
+      info: BootstrapDialog.TYPE_INFO
+
     jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
       dialog.close()
     )
     BootstrapDialog.show(
-      message: errorData[err].message
-      title: errorData[err].title
-      type: errorData[err].type
-      closable: false if err is 2
+      message: data.dialog.message
+      title: data.dialog.title ? 'Błąd'
+      type: dialogType[data.dialog.type] ? dialogType.danger
+      closable: false
       buttons: [
         label: 'OK'
         action: -> location.reload()
-      ] if err is 2
+      ]
     )
-    @canvas.refresh()
     return
 
+
+  # newExhibitRequest :: (ExhibitRequest, BootstrapDialog) -> undefined
   newExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
@@ -241,7 +223,10 @@ class Handlers
         @ajaxNewExhibitSuccess(recvData, dialog)
         dialog.close()
     )
+    return
 
+
+  # ajaxNewExhibitSuccess :: Exhibit -> undefined
   ajaxNewExhibitSuccess: (data) =>
     id = data.id
     @mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
@@ -255,7 +240,7 @@ class Handlers
       @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
       @canvas.addExhibits(data.frame.mapLevel, [id])
       if data.frame.mapLevel is @mapData.activeFloor
-        @canvas.updateState()
+        @canvas.changeLabelsVisibility()
 
     jQuery.getJSON('/getAllExhibits', null, (data) =>
       if not data.success
@@ -265,10 +250,13 @@ class Handlers
           title: 'Błąd serwera'
         )
         return
-      @panel.replaceExhibits((e.id for e in data.exhibits))
+      if data.exhibits?
+        @panel.replaceExhibits((e.id for e in data.exhibits))
     )
     return
 
+
+  # updateExhibitRequest :: (ExhibitRequest, BootstrapDialog) -> undefined
   updateExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame()
@@ -308,7 +296,9 @@ class Handlers
         @ajaxUpdateExhibitSuccess(recvData)
         dialog.close()
     )
+    return
 
+  # ajaxUpdateExhibitSuccess :: Exhibit -> undefined
   ajaxUpdateExhibitSuccess: (data) =>
     if not data.success
       BootstrapDialog.alert(
@@ -325,8 +315,9 @@ class Handlers
     }
     if data.frame?
       @canvas.addExhibits(data.frame.mapLevel, [data.id])
-    @canvas.updateState()
+    @canvas.changeLabelsVisibility()
     @panel.refreshExhibitsList()
+    return
 
 jQuery(document).ready( ->
   map = new root.MutableCanvas('#map')

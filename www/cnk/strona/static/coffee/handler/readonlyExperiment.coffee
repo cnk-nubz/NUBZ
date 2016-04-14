@@ -1,5 +1,16 @@
 root = exports ? this
 class Handlers
+  ###
+  # type ExperimentData = {
+  #   breakActions :: [Action],
+  #   exhibitActions :: [Action],
+  #   experimentId :: Int,
+  #   name :: String,
+  #   questionsAfter :: [Question],
+  #   questionsBefore :: [Question]
+  # }
+  ###
+  # constructor :: (ExperimentData, [Report]) -> Context
   constructor: (@_experimentData, @_reportsData) ->
     @_DOM =
       experimentTitle: ".experimentTitle input"
@@ -16,6 +27,8 @@ class Handlers
     @_setDefaultState()
     @_setSaveAllReportsHandler()
 
+
+  # _setLists :: () -> undefined
   _setLists: =>
     questionsBeforeDOM = @_prepareExperimentList(@_experimentQuestionRow, @_questionsBefore)
     questionsAfterDOM = @_prepareExperimentList(@_experimentQuestionRow, @_questionsAfter)
@@ -28,6 +41,8 @@ class Handlers
     @_breakActionsList = new root.ActionsList('.breakActions .middle', null, breakActionsDOM)
     @_reportsList = new root.ReportsList('.reportsList .middle', 'reportsTable', reportsDOM)
 
+
+  # _setDefaultState :: () -> undefined
   _setDefaultState: =>
     jQuery(@_DOM.experimentTitle).val(@_experimentData.name)
     @_questionsBeforeList.show()
@@ -36,9 +51,15 @@ class Handlers
     @_breakActionsList.show()
     @_reportsList.show()
 
-  _prepareExperimentList: (rowFactory, dataList) =>
+  ###
+  # type RowFactory =
+  #   root.ExperimentQuestionRow
+  # | root.ExperimentActionRow
+  ###
+  # _prepareExperimentList :: (RowFactory, root.ListView) -> DocumentFragment
+  _prepareExperimentList: (rowFactory, dataList) ->
     elementsDOM = dataList.getAllElementsAsDOM(rowFactory)
-    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) =>
+    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) ->
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", ->
@@ -47,9 +68,11 @@ class Handlers
     )
     elementsDOM
 
-  _prepareReportsList: (rowFactory, dataList) =>
+
+  # _prepareReportsList :: (root.ReportsRow, root.ListView) -> DocumentFragment
+  _prepareReportsList: (rowFactory, dataList) ->
     elementsDOM = dataList.getAllElementsAsDOM(rowFactory)
-    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) =>
+    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) ->
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener('click', (e) ->
@@ -58,6 +81,8 @@ class Handlers
     )
     elementsDOM
 
+
+  # _setSaveAllReportsHandler :: () -> undefined
   _setSaveAllReportsHandler: =>
     jQuery(@_DOM.getAllReports).click( =>
       location.assign("getAllReports/?id=#{@_experimentData.experimentId}")

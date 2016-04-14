@@ -10,7 +10,6 @@
   <title>NUBZ</title>
   {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
-  <script src="{% static "include/js/d3.v3.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
   <script src="{% static "include/js/csrf.js" %}"></script>
@@ -22,46 +21,27 @@
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/base.css" %}" rel="stylesheet" />
   {% endblock %}
-  {% block includes %}
-    {% compress js %}
-    <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/dialog/QuestionDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/MutableCanvas.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/ExhibitPanel.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-  {% endblock %}
+  {% block includes %}{% endblock %}
   {% block init %}
     {% compress js %}
     <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
     {% endcompress %}
     {% compress js %}
     <script type="text/coffeescript">
-      document.detached = {}
       root = exports ? this
-      floorUrl = [
-        "{{urlFloor0|escape|safe}}"
-        "{{urlFloor1|escape|safe}}"
-      ]
+      floorUrl = "{{urlFloor|escape|safe}}"
+
       if floorUrl[0] is '' or floorUrl[1] is ''
         f = ->
           miss0 = floorUrl[0] is ''
           miss1 = floorUrl[1] is ''
-          missingFloor = "#{if miss0 then 0 else ''} #{if miss0 and miss1 then "oraz" else ''} #{if miss1 then 1 else ''}"
+          if miss0 and miss1
+            missingFloor = "0 oraz 1"
+          else if miss0
+            missingFloor = "0"
+          else
+            missingFloor = "1"
+
           BootstrapDialog.show(
             message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami pietra #{missingFloor}"
             title: 'Zły plik konfiguracyjny'
@@ -72,8 +52,13 @@
       activeFloor = +"{{acitveFloor}}"
       exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
       floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
-      (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
-      mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
+      avaibleFloors = {{avaibleFloors | jsvar}}
+      if Object.keys(floorTilesInfo).length > 0
+        for i in avaibleFloors
+          floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])
+      else
+        floorTilesInfo[0] = []
+      new root.MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo, avaibleFloors)
     </script>
     {% endcompress %}
   {% endblock %}

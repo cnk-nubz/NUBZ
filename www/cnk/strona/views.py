@@ -37,14 +37,8 @@ class DuplicateName(Exception):
 def get_const(name):
     return getattr(settings, name, None)
 
-
-class uploadError(Enum):
-    SUCCESS = 1
-    NOT_AN_IMAGE = 2
-    SERVER_PROBLEM = 3
-    WRONG_REQUEST_METHOD = 4
-    INVALID_DATA = 5
-
+def set_const(name, value):
+    setattr(settings, name, value)
 
 class QuestionType(Enum):
     SIMPLE = 0
@@ -60,14 +54,16 @@ class ActiveLink(Enum):
 
 
 def _pingServer():
-    result = thriftCommunicator.ping(1, 'x')
-    return result == 1
+    thriftCommunicator.ping(1, 'x')
 
 
 def _getMapImageInfo():
-    floorTiles = thriftCommunicator.getMapImageTiles()
+    floorTiles = thriftCommunicator.getMapImages()
+    if not floorTiles.keys():
+        return {}
+
     floorTilesInfo = {}
-    for i in xrange(0, 2):
+    for i in xrange(0, 1 + max(floorTiles.keys())):
         if not (i in floorTiles.keys()):
             floorTilesInfo[i] = {}
             continue
@@ -117,17 +113,21 @@ def getMapPage(request, file, activeLink):
     except Exception as ex:
         return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
+    if not floorTilesInfo:
+        avaibleFloors = [0]
+    else:
+        avaibleFloors = range(0, 1 + max(floorTilesInfo.keys()))
+    set_const("AVAIBLE_FLOORS", avaibleFloors)
     template = loader.get_template(file)
-    urlFloor0 = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
-    urlFloor1 = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
+    urlFloor = getattr(settings, 'FLOOR_TILES_DIRECTORY', '')
 
     context = RequestContext(request, {
         'activeFloor': 0,
         'exhibits': exhibits,
         'floorTilesInfo': floorTilesInfo,
-        'urlFloor0': urlFloor0,
-        'urlFloor1': urlFloor1,
-        'activeLink': activeLink
+        'urlFloor': urlFloor,
+        'activeLink': activeLink,
+        'avaibleFloors': avaibleFloors
     })
     return HttpResponse(template.render(context))
 
@@ -149,46 +149,37 @@ def editMapPage(request):
 
 
 def uploadImage(request):
-    if request.method != 'POST':
-        data = {
-            "err": uploadError.WRONG_REQUEST_METHOD.value,
-        }
-        return JsonResponse(data)
-
     form = MapUploadForm(request.POST, request.FILES)
     if not form.is_valid():
         data = {
-            "err": uploadError.NOT_AN_IMAGE.value,
+            'success': False,
+            'dialog': get_const("NEW_FLOOR_IMAGE_WRONG_FORMAT")
         }
         return JsonResponse(data)
 
-    m = MapUploader(image=form.cleaned_data['image'])
-    m.save()
-    floor = form.cleaned_data['floor']
-    # send information about update
-    filename = m.image.name
-    # extract filename
     try:
+        m = MapUploader(image=form.cleaned_data['image'])
+        m.save()
+        floor = form.cleaned_data['floor']
+        filename = m.image.name
         setResult = thriftCommunicator.setMapImage(
             floor, os.path.basename(filename))
         floorTilesInfo = _getMapImageInfo()
     except Exception as ex:
         data = {
-            "err": uploadError.SERVER_PROBLEM.value,
+            'success': False,
+            'dialog': {
+                'message': get_const("INTERNAL_ERROR")
+            }
         }
         return JsonResponse(data)
 
-    if floor == 0:
-        floorUrl = getattr(settings, 'FLOOR0_TILES_DIRECTORY', '')
-    else:
-        floorUrl = getattr(settings, 'FLOOR1_TILES_DIRECTORY', '')
-
+    dialog = get_const("NEW_FLOOR_IMAGE_SUCCESS")
+    dialog['message'] = "{} {}".format(dialog['message'], floor)
     data = {
-        "err": uploadError.SUCCESS.value,
+        'success': True,
+        'dialog': get_const("NEW_FLOOR_IMAGE_SUCCESS"),
         "floor": floor,
-        "floorTilesInfo": floorTilesInfo,
-        "floorUrl": floorUrl,
-        "exhibits": _getExhibits()
     }
     return JsonResponse(data)
 
@@ -271,12 +262,13 @@ def _exhibitRequestsUnified(request, funToCall):
 
 
 def getDialog(dialogName):
+    dialogStructure = get_const(dialogName)
     contextDict = {
-        'data': get_const(dialogName)['data']
+        'data': dialogStructure['data']
     }
     html = render_to_string('dialog/dialog.html', contextDict)
     retDict = {
-        'data': get_const(dialogName),
+        'data': dialogStructure,
         'html': html.replace("\n", "")
     }
     return JsonResponse(retDict)
@@ -290,7 +282,19 @@ def getColorPickerPopoverContent(request):
 
 
 def getExhibitDialog(request):
-    return getDialog("EXHIBIT_DIALOG")
+    dialogStructure = get_const("EXHIBIT_DIALOG")
+    avaibleFloors = get_const("AVAIBLE_FLOORS")[:]
+    avaibleFloors.append("brak")
+    dialogStructure['data'][1][1]['textList'] = avaibleFloors
+    contextDict = {
+        'data': dialogStructure['data']
+    }
+    html = render_to_string('dialog/dialog.html', contextDict)
+    retDict = {
+        'data': dialogStructure,
+        'html': html.replace("\n", "")
+    }
+    return JsonResponse(retDict)
 
 
 def getSimpleQuestionDialog(request):
@@ -302,7 +306,8 @@ def getMultipleChoiceQuestionDialog(request):
 
 
 def getExhibitPanel(request):
-    html = render_to_string('exhibitPanel/exhibitPanel.html')
+    avaibleFloors = get_const("AVAIBLE_FLOORS")
+    html = render_to_string('exhibitPanel/exhibitPanel.html', {'avaibleFloors': avaibleFloors})
     return JsonResponse({'html': html})
 
 
@@ -321,8 +326,17 @@ def getActionDialog(request):
 
 def getChangeMapDialog(request):
     floor = request.GET.get("floor")
-    html = render_to_string('dialog/changeMap.html', {'floor': floor})
-    return JsonResponse({'html': html.replace("\n", "")})
+    changeImage = render_to_string('dialog/changeMap/changeImage.html', {'floor': floor})
+    chooseMapChangeAction = render_to_string('dialog/changeMap/chooseMapChangeAction.html')
+    addFloor = render_to_string('dialog/changeMap/addFloor.html')
+    removeFloor = render_to_string('dialog/changeMap/removeFloor.html')
+    processingMap = render_to_string('dialog/changeMap/processingMap.html')
+    return JsonResponse({
+            'addFloor': addFloor.replace("\n", ""),
+            'removeFloor': removeFloor.replace("\n", ""),
+            'processingMap': processingMap.replace("\n", ""),
+            'chooseMapChangeAction': chooseMapChangeAction.replace("\n", ""),
+            'changeImage': changeImage.replace("\n", "")})
 
 
 def getChooseQuestionTypeDialog(request):
@@ -731,7 +745,7 @@ def reportError(request):
             data['url'],
             data['lineNumber'],
             data['errorMsg']))
-    return JsonResponse()
+    return JsonResponse({})
 
 
 def getReport(request):
@@ -773,3 +787,22 @@ def _getReportFile(filename):
     response['Content-Length'] = myStream.tell()
     response.write(myStream.getvalue())
     return response
+
+
+def removeFloor(request):
+    floor = int(request.POST.get("floor"))
+    try:
+        thriftCommunicator.removeFloor(floor)
+        result = {
+            'success': True
+        }
+    except Exception as ex:
+        if type(ex).__name__ == 'InvalidData':
+            message = "{} {}".format(get_const("NO_SUCH_FLOOR_ERROR"), floor)
+        else:
+            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
+        result = {
+            'success': False,
+            'message': message
+        }
+    return JsonResponse(result)

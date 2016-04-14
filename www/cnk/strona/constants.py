@@ -10,6 +10,15 @@ INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę.
 EXHIBIT_LIST_ERROR = "Nie udało sie pobrać listy eksponatów. Spróbuj ponownie za chwilę."
 NO_SUCH_REPORT_ERROR = "Nie istnieje raport o numerze"
 NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o numerze"
+NO_SUCH_FLOOR_ERROR = "Nie istnieje piętro o numerze"
+NEW_FLOOR_IMAGE_SUCCESS = {
+    "message": "Pomyślnie zmieniono mapę piętra nr",
+     "title": "Sukces",
+     "type": "success"}
+NEW_FLOOR_IMAGE_WRONG_FORMAT =   {
+    "message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp",
+    "title": "Zły format",
+    "type": "info"}
 
 DEFAULT_CONSTANTS = {
     "utils": {
@@ -160,7 +169,7 @@ EXHIBIT_DIALOG = {
                 "radioGroup": "floorNum",
                 "labelText": "Piętro",
                 "radioSize": "2",
-                "textList": ["0", "1", "brak"]
+                "textList": ["brak"]
             }
         ],
         [
