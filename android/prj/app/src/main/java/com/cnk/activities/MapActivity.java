@@ -96,7 +96,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             abView.findViewById(R.id.finish_button).setOnClickListener(this::endClick);
             ((Chronometer) abView.findViewById(R.id.chrono_experiment_time)).start();
             floorTitle = (TextView) abView.findViewById(R.id.floor_name);
-            floorTitle.setText(R.string.pietro1);
+            floorTitle.setText(getString(R.string.floor) + " 1");
             abView.findViewById(R.id.break_button).setOnClickListener(this::pauseClick);
             abView.findViewById(R.id.change_floor_button)
                   .setOnClickListener((View v) -> setFloor((currentFloor + 1) %
@@ -173,7 +173,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void setFloor(int floor) {
-        floorTitle.setText(getString(R.string.pietro) + " " + floor);
+        floorTitle.setText(getString(R.string.floor) + " " + floor);
         mapContainer.switchToFloor(floor);
         currentFloor = floor;
     }
