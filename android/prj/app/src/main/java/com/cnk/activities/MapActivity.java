@@ -3,16 +3,15 @@ package com.cnk.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.activities.map.ActionsDialog;
@@ -25,6 +24,7 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.database.models.Exhibit;
 import com.cnk.notificators.Observer;
+import com.cnk.ui.Utils;
 import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
@@ -33,12 +33,11 @@ import java.util.List;
 public class MapActivity extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "MapActivity";
 
-    private ActionBarDrawerToggle drawerToggle;
-
     private boolean dialogOpened;
     private ActionsDialog exhibitDialog;
     private ActionsDialog breakDialog;
 
+    private TextView floorTitle;
     private int currentFloor;
     private MapContainer mapContainer;
 
@@ -60,7 +59,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
     }
 
     private void prepareViews() {
@@ -69,7 +67,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         prepareMapContainer(rootLayout);
         prepareActionBar();
-        prepareDrawer();
     }
 
     private void prepareMapContainer(@NonNull RelativeLayout parentLayout) {
@@ -82,30 +79,29 @@ public class MapActivity extends AppCompatActivity implements Observer {
     }
 
     private void prepareActionBar() {
-        DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle =
-                new ActionBarDrawerToggle(this,
-                                          drawerLayout,
-                                          R.string.drawer_open,
-                                          R.string.drawer_close) {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+            View abView = getLayoutInflater().inflate(R.layout.map_activity_bar, null);
+            Toolbar.LayoutParams
+                    abParams =
+                    new Toolbar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                             ViewGroup.LayoutParams.MATCH_PARENT);
+            actionBar.setCustomView(abView, abParams);
+            Toolbar parent = (Toolbar) abView.getParent();
+            parent.setContentInsetsAbsolute(0, 0);
 
-                    public void onDrawerClosed(View view) {
-                        super.onDrawerClosed(view);
-                    }
-
-                    public void onDrawerOpened(View drawerView) {
-                        super.onDrawerOpened(drawerView);
-                    }
-                };
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
+            abView.findViewById(R.id.finish_button).setOnClickListener(this::endClick);
+            ((Chronometer) abView.findViewById(R.id.chrono_experiment_time)).start();
+            floorTitle = (TextView) abView.findViewById(R.id.floor_name);
+            floorTitle.setText(getString(R.string.floor) + " 1");
+            abView.findViewById(R.id.break_button).setOnClickListener(this::pauseClick);
+            abView.findViewById(R.id.change_floor_button)
+                  .setOnClickListener((View v) -> setFloor((currentFloor + 1) %
+                                                           Consts.FLOOR_COUNT));
         }
-        drawerLayout.setDrawerListener(drawerToggle);
-    }
-
-    private void prepareDrawer() {
-        ((Chronometer) findViewById(R.id.chronometer)).start();
     }
 
     private void prepareDialogs() {
@@ -124,7 +120,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
         return ActionsDialog.create(MapActivity.this, dialogView, actions);
     }
 
-    @SuppressWarnings("unused")
     public void pauseClick(View view) {
         Log.i(LOG_TAG, "Break button clicked");
         if (!dialogOpened) {
@@ -160,35 +155,25 @@ public class MapActivity extends AppCompatActivity implements Observer {
         dialogOpened = false;
     }
 
-    @SuppressWarnings("unused")
     public void endClick(View view) {
         Log.i(LOG_TAG, "End button clicked");
-
-        Intent postSurvey = new Intent(getApplicationContext(), SurveyActivity.class);
-        postSurvey.putExtra("type", Survey.SurveyType.AFTER);
-        startActivity(postSurvey);
-        finish();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.map_activity_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        } else if (item.getItemId() == R.id.action_next_floor) {
-            setFloor((currentFloor + 1) % Consts.FLOOR_COUNT);
-        }
-        return super.onOptionsItemSelected(item);
+        Utils.showDialog(this,
+                         R.string.confirm_map_close,
+                         R.string.confirm,
+                         R.string.cancel,
+                         (dialog, which) -> {
+                             Log.i(LOG_TAG, "End map confirmed");
+                             Intent
+                                     postSurvey =
+                                     new Intent(getApplicationContext(), SurveyActivity.class);
+                             postSurvey.putExtra("type", Survey.SurveyType.AFTER);
+                             startActivity(postSurvey);
+                             finish();
+                         });
     }
 
     private void setFloor(int floor) {
-        setTitle(getString(R.string.pietro) + " " + floor);
+        floorTitle.setText(getString(R.string.floor) + " " + floor);
         mapContainer.switchToFloor(floor);
         currentFloor = floor;
     }
