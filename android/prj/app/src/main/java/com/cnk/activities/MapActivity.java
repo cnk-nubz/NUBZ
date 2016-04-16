@@ -17,7 +17,6 @@ import android.widget.RelativeLayout;
 import com.cnk.R;
 import com.cnk.activities.map.ActionsDialog;
 import com.cnk.activities.map.MapContainer;
-import com.cnk.communication.NetworkHandler;
 import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.ExperimentData;
@@ -53,8 +52,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
         mapContainer.addObserver(this, this::exhibitClick);
-
-        NetworkHandler.getInstance().startBgDataSync();
     }
 
     @Override
@@ -83,20 +80,19 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void prepareActionBar() {
         DrawerLayout drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawerToggle =
-                new ActionBarDrawerToggle(this,
-                                          drawerLayout,
-                                          R.string.drawer_open,
-                                          R.string.drawer_close) {
+        drawerToggle = new ActionBarDrawerToggle(this,
+                                                 drawerLayout,
+                                                 R.string.drawer_open,
+                                                 R.string.drawer_close) {
 
-                    public void onDrawerClosed(View view) {
-                        super.onDrawerClosed(view);
-                    }
+            public void onDrawerClosed(View view) {
+                super.onDrawerClosed(view);
+            }
 
-                    public void onDrawerOpened(View drawerView) {
-                        super.onDrawerOpened(drawerView);
-                    }
-                };
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+        };
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setHomeButtonEnabled(true);
@@ -148,8 +144,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void dialogFinished(Integer exhibitId, @NonNull ActionsDialog dialog) {
         List<Integer> actions = dialog.getSelectedActions();
         Log.i(LOG_TAG, "Selected actions: " + actions);
-        RaportEvent
-                event =
+        RaportEvent event =
                 new RaportEvent(exhibitId, dialog.getElapsedTime(), actions, dialog.getBeginDate());
         ExperimentData.getInstance().addEventToCurrentRaportInBg(event);
 

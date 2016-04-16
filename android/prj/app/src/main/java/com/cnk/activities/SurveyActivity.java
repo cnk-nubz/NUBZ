@@ -2,7 +2,6 @@ package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -122,12 +121,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             return;
         }
         hideKeyboard();
-        DialogInterface.OnClickListener positiveAction = (dialog, which) -> changeToNextActivity();
         Utils.showDialog(SurveyActivity.this,
                          R.string.confirmation,
                          R.string.confirm,
                          R.string.cancel,
-                         positiveAction);
+                         (dialog, which) -> changeToNextActivity());
     }
 
     private void changeToNextActivity() {
@@ -169,19 +167,12 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + reason.toString());
         runOnUiThread(() -> {
             spinner.dismiss();
-            DialogInterface.OnClickListener
-                    positiveAction =
-                    (dialog, which) -> startExperimentDataDownload();
-            DialogInterface.OnClickListener
-                    negativeAction =
-                    (dialog, which) -> SurveyActivity.this.finish();
-
             Utils.showDialog(SurveyActivity.this,
                              Util.downloadErrorMessage(reason),
                              getString(R.string.tryAgain),
                              getString(R.string.cancel),
-                             positiveAction,
-                             negativeAction);
+                             (dialog, which) -> startExperimentDataDownload(),
+                             (dialog, which) -> SurveyActivity.this.finish());
         });
     }
 
@@ -215,12 +206,10 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                                                                              simpleAnswer));
                     break;
                 case MULTIPLE_CHOICE:
-                    MultipleChoiceQuestionAnswer
-                            multipleChoiceAnswer =
+                    MultipleChoiceQuestionAnswer multipleChoiceAnswer =
                             new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion
-                            nextMultipleChoiceQuestion =
+                    MultipleChoiceQuestion nextMultipleChoiceQuestion =
                             currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
                                                                              this,
@@ -263,8 +252,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void hideKeyboard() {
-        InputMethodManager
-                mgr =
+        InputMethodManager mgr =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }

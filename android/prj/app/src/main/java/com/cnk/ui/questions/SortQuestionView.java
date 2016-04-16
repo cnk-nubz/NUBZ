@@ -36,8 +36,7 @@ public class SortQuestionView extends QuestionView {
     private void setUpTable(Context c, SortQuestion question) {
         TextView header = new TextView(c);
         header.setText(R.string.sort);
-        LayoutParams
-                headerParams =
+        LayoutParams headerParams =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         headerParams.addRule(RelativeLayout.BELOW, R.id.questionNameLabelId);
         headerParams.setMargins(50, 20, 50, 0);
@@ -47,8 +46,7 @@ public class SortQuestionView extends QuestionView {
         addView(header);
 
         ListView table = new ListView(c);
-        LayoutParams
-                params =
+        LayoutParams params =
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         params.setMargins(50, 10, 50, 30);
         params.addRule(RelativeLayout.BELOW, header.getId());

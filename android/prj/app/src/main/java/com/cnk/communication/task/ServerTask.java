@@ -4,7 +4,6 @@ import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.Server;
-import com.cnk.utilities.Consts;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -36,14 +35,11 @@ public abstract class ServerTask extends Task {
     protected static final String LOG_TAG = "ServerTask";
     private static final String SEND_ADDRESS = "zpp.dns1.us";
     private static final int SEND_PORT = 9090;
-    private static final int MISSING_WIFI_RETRYS = 2;
-    private static final long MISSING_WIFI_WAIT_TIME_SECONDS = 4 * Consts.MILLIS_IN_SEC;
     private NetworkHandler.SuccessAction success;
     private NetworkHandler.FailureAction failure;
     private FailureReason failReason;
 
-    public ServerTask(NetworkHandler.SuccessAction success,
-                      NetworkHandler.FailureAction failure) {
+    public ServerTask(NetworkHandler.SuccessAction success, NetworkHandler.FailureAction failure) {
         this.success = success;
         this.failure = failure;
     }
@@ -59,17 +55,15 @@ public abstract class ServerTask extends Task {
             try {
                 performInSession(client);
                 Log.i(LOG_TAG, "Action successful");
-                socket.close();
                 success.perform(this);
                 return;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Action failed");
                 e.printStackTrace();
                 failReason = FailureReason.ACTION_FAILED;
+            } finally {
+                socket.close();
             }
-        }
-        if (socket != null) {
-            socket.close();
         }
         failure.perform(this, failReason);
     }
@@ -77,17 +71,9 @@ public abstract class ServerTask extends Task {
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
     private TFramedTransport openSocket() {
-        int trys = MISSING_WIFI_RETRYS;
-        while (trys-- > 0 && !NetworkHandler.getInstance().isConnectedToWifi()) {
-            try {
-                Thread.sleep(MISSING_WIFI_WAIT_TIME_SECONDS);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (trys == 0 && !NetworkHandler.getInstance().isConnectedToWifi()) {
-                failReason = FailureReason.NOWIFI;
-                return null;
-            }
+        if (!NetworkHandler.getInstance().isConnectedToWifi()) {
+            failReason = FailureReason.NOWIFI;
+            return null;
         }
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
         Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);

@@ -1,7 +1,6 @@
 package com.cnk.activities;
 
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +27,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
     private ProgressDialog progressBar;
+    private boolean isProgressBarSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,14 +95,12 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void showAlert() {
-        DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
-        DialogInterface.OnClickListener negativeAction = (dialog, which) -> System.exit(1);
         Utils.showDialog(this,
                          R.string.dataError,
                          R.string.tryAgain,
                          R.string.exit,
-                         positiveAction,
-                         negativeAction);
+                         (dialog, which) -> downloadMap(),
+                         (dialog, which) -> System.exit(1));
     }
 
     private void synchronizationFailed(Task t, ServerTask.FailureReason failureReason) {
@@ -110,20 +108,17 @@ public class StartScreen extends AppCompatActivity implements Observer {
         runOnUiThread(() -> {
             progressBar.dismiss();
 
-            DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
-            DialogInterface.OnClickListener
-                    negativeAction =
-                    dataLoaded ? null : (dialog, which) -> finish();
             Utils.showDialog(this,
                              com.cnk.utilities.Util.downloadErrorMessage(failureReason),
                              getString(R.string.tryAgain),
                              getString(R.string.cancel),
-                             positiveAction,
-                             negativeAction);
+                             (dialog, which) -> downloadMap(),
+                             dataLoaded ? null : (dialog, which) -> finish());
         });
     }
 
     private void setProgressBar() {
+        isProgressBarSet = false;
         progressBar = new ProgressDialog(this);
         progressBar.setCanceledOnTouchOutside(false);
         progressBar.setCancelable(false);
@@ -135,10 +130,17 @@ public class StartScreen extends AppCompatActivity implements Observer {
         progressBar.setMax(100);
         progressBar.show();
 
-        MapData.getInstance().addObserver(this, () -> {
-            if (progressBar.isShowing()) {
-                progressBar.setProgress(progressBar.getProgress() + 1);
-            }
+        MapData.getInstance().addObserver(this, (int downloaded, int allToDownload) -> {
+            runOnUiThread(() -> {
+                if (!isProgressBarSet) {
+                    progressBar.setProgressNumberFormat("%1d/%2d");
+                    progressBar.setMax(allToDownload);
+                    isProgressBarSet = true;
+                }
+                if (progressBar.isShowing()) {
+                    progressBar.setProgress(downloaded);
+                }
+            });
         });
     }
 }

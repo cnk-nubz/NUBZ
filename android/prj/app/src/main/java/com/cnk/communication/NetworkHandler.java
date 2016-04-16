@@ -28,7 +28,6 @@ public class NetworkHandler {
 
     private static final String LOG_TAG = "NetworkHandler";
     private static final long SECONDS_DELAY = 30;
-    private static final long MIN_SECONDS_DELAY = 1;
     private static NetworkHandler instance;
 
     private ScheduledExecutorService scheduledExecutor;
@@ -51,8 +50,7 @@ public class NetworkHandler {
     }
 
     public boolean isConnectedToWifi() {
-        ConnectivityManager
-                connManager =
+        ConnectivityManager connManager =
                 (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 
@@ -61,12 +59,12 @@ public class NetworkHandler {
 
     public synchronized void downloadExperimentData(SuccessAction success, FailureAction failure) {
         Task task = new ExperimentDataDownloadTask(success, failure);
-        scheduledExecutor.schedule(task::run, MIN_SECONDS_DELAY, TimeUnit.SECONDS);
+        scheduledExecutor.schedule(task::run, 0, TimeUnit.SECONDS);
     }
 
     public synchronized void downloadMap(SuccessAction success, FailureAction failure) {
         Task task = new MapDownloadTask(success, failure);
-        scheduledExecutor.schedule(task::run, MIN_SECONDS_DELAY, TimeUnit.SECONDS);
+        scheduledExecutor.schedule(task::run, 0, TimeUnit.SECONDS);
     }
 
     public synchronized void startBgDataSync() {

@@ -20,22 +20,23 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapData extends Observable<MapData.MapDownloadPercentUpdateAction> {
-    public interface MapDownloadPercentUpdateAction {
-        void doOnUpdate();
+public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
+    public interface MapDownloadUpdateAction {
+        void doOnUpdate(int downloaded, int allToDownload);
     }
 
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
+    private static final Integer TILE_DOWNLOAD_RETRYS = 3;
+    private static final Integer TILE_DOWNLOAD_FAILURE_WAIT_SECONDS = 3;
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
 
     private Integer mapDownloadingTilesCount;
     private Integer mapDownloadedTilesCount;
-    private Integer percentDownloaded;
 
     private MapData() {
         floorInfos = new ArrayList<>();
@@ -48,14 +49,14 @@ public class MapData extends Observable<MapData.MapDownloadPercentUpdateAction> 
         return instance;
     }
 
-    public void notifyObservers() {
-        List<MapDownloadPercentUpdateAction> actions = new ArrayList<>();
-        for (MapDownloadPercentUpdateAction action : observers.values()) {
+    public void notifyObservers(int downloaded, int allToDownload) {
+        List<MapDownloadUpdateAction> actions = new ArrayList<>();
+        for (MapDownloadUpdateAction action : observers.values()) {
             actions.add(action);
         }
 
-        for (MapDownloadPercentUpdateAction action : actions) {
-            action.doOnUpdate();
+        for (MapDownloadUpdateAction action : actions) {
+            action.doOnUpdate(downloaded, allToDownload);
         }
     }
 
@@ -100,7 +101,7 @@ public class MapData extends Observable<MapData.MapDownloadPercentUpdateAction> 
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
-        mapDownloadingTilesCount = mapDownloadedTilesCount = percentDownloaded = 0;
+        mapDownloadingTilesCount = mapDownloadedTilesCount = 0;
         for (FloorMap map : maps) {
             ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
             for (ZoomLevel level : zoomLevels) {
@@ -132,17 +133,37 @@ public class MapData extends Observable<MapData.MapDownloadPercentUpdateAction> 
             ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
             for (int i = 0; i < tiles.size(); i++) {
                 for (int j = 0; j < tiles.get(i).size(); j++) {
-                    InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
                     String tmpFilename = getTemporaryPathForTile(map.getFloor(), level, i, j);
                     String actualFilename = getPathForTile(map.getFloor(), level, i, j);
-                    FileHandler.getInstance().saveInputStream(in, tmpFilename);
+
+                    int errors = 0;
+                    while (errors++ < TILE_DOWNLOAD_RETRYS) {
+                        try {
+                            InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
+                            FileHandler.getInstance().saveInputStream(in, tmpFilename);
+                            break;
+                        } catch (IOException e) {
+                            Log.i(LOG_TAG,
+                                  "Downloading " + tiles.get(i).get(j) + " failed, retrying.");
+                            if (errors < TILE_DOWNLOAD_RETRYS) {
+                                try {
+                                    Thread.sleep(TILE_DOWNLOAD_FAILURE_WAIT_SECONDS *
+                                                 Consts.MILLIS_IN_SEC);
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                            } else {
+                                Log.e(LOG_TAG,
+                                      "Map tile downloading failed after " +
+                                      TILE_DOWNLOAD_FAILURE_WAIT_SECONDS.toString() + " retrys.");
+                                throw e;
+                            }
+                        }
+                    }
+
                     tiles.get(i).set(j, actualFilename);
                     mapDownloadedTilesCount++;
-                    if (percentDownloaded <
-                        100 * mapDownloadedTilesCount / mapDownloadingTilesCount) {
-                        percentDownloaded++;
-                        notifyObservers();
-                    }
+                    notifyObservers(mapDownloadedTilesCount, mapDownloadingTilesCount);
                 }
             }
         }

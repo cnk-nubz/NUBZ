@@ -113,11 +113,12 @@ public class ExperimentData {
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
-        currentRaport =
-                new Raport(newId,
-                           experiment.getId(),
-                           experiment.getSurvey(Survey.SurveyType.BEFORE).getSurveyAnswers(),
-                           experiment.getSurvey(Survey.SurveyType.AFTER).getSurveyAnswers());
+        currentRaport = new Raport(newId,
+                                   experiment.getId(),
+                                   experiment.getSurvey(Survey.SurveyType.BEFORE)
+                                             .getSurveyAnswers(),
+                                   experiment.getSurvey(Survey.SurveyType.AFTER)
+                                             .getSurveyAnswers());
 
         String path = getCurrentRaportPath();
         new Thread(new BgRaportSaver(currentRaport)).start();
