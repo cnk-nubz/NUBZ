@@ -17,7 +17,7 @@ import java.io.IOException;
 public abstract class ServerTask extends Task {
 
     protected static final String LOG_TAG = "ServerTask";
-    private static final String SEND_ADDRESS = "zpp.dns1.us";
+    private static final String SEND_ADDRESS = "192.168.0.18";
     private static final int SEND_PORT = 9090;
     private NetworkHandler.FinishAction failure;
     private NetworkHandler.FinishAction success;

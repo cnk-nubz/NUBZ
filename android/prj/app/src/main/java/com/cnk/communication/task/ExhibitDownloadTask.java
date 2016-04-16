@@ -44,7 +44,7 @@ public class ExhibitDownloadTask extends ServerTask {
         for (Map.Entry<Integer, Exhibit> entry : exhibits.entrySet()) {
             dbExhibits.add(new com.cnk.database.models.Exhibit(entry.getKey(), entry.getValue()));
         }
-        ExhibitsData.getInstance().setExhibits(dbExhibits, version);
+        ExhibitsData.getInstance().setExhibits(dbExhibits, version, response.isFullRefresh());
     }
 
 }

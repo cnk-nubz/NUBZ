@@ -14,8 +14,9 @@ import java.util.Map;
 
 public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> {
     public interface ExhibitsUpdateAction {
-        void doOnUpdate(List<Exhibit> changedExhibits);
+        void doOnUpdate(List<Exhibit> changedExhibits, boolean fullRefresh);
     }
+
     private static ExhibitsData instance;
     private Integer exhibitsVersion;
     private DatabaseHelper dbHelper;
@@ -33,14 +34,15 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         return instance;
     }
 
-    public void notifyObservers(List<Exhibit> changedExhibits) {
+
+    public void notifyObservers(List<Exhibit> changedExhibits, boolean fullRefresh) {
         List<ExhibitsUpdateAction> actions = new ArrayList<>();
         for (ExhibitsUpdateAction action : observers.values()) {
             actions.add(action);
         }
 
         for (ExhibitsUpdateAction action : actions) {
-            action.doOnUpdate(changedExhibits);
+            action.doOnUpdate(changedExhibits, fullRefresh);
         }
     }
 
@@ -71,14 +73,19 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         return map;
     }
 
-    public void setExhibits(List<Exhibit> exhibits, Integer version) {
+    public void setExhibits(List<Exhibit> exhibits, Integer version, boolean fullRefresh) {
+        if (fullRefresh) {
+            dbHelper.clearAllExhibits();
+        }
+
         if (exhibits.isEmpty()) {
             return;
         }
         dbHelper.addOrUpdateExhibits(version, exhibits);
         exhibitsVersion = version;
+
         updateExhibits(exhibits);
-        notifyObservers(exhibits);
+        notifyObservers(exhibits, fullRefresh);
     }
 
     private void updateExhibits(List<Exhibit> newExhibits) {

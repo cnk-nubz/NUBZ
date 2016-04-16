@@ -31,6 +31,7 @@ public class DatabaseHelper {
     private class Value<T> {
         public T val;
     }
+
     private Context applicationContext;
 
     public DatabaseHelper(Context applicationContext) {
@@ -145,8 +146,11 @@ public class DatabaseHelper {
 
     public int getZoomLevelsCount(Integer floor) {
         Value<Integer> res = new Value<>();
-        inTransaction((realm) -> res.val =
-                (int) realm.where(ZoomLevelResolutionRealm.class).equalTo("floor", floor).count());
+        inTransaction((realm) ->
+                              res.val =
+                                      (int) realm.where(ZoomLevelResolutionRealm.class)
+                                                 .equalTo("floor", floor)
+                                                 .count());
         return res.val;
     }
 
@@ -178,6 +182,10 @@ public class DatabaseHelper {
             }
         });
         return exhibits;
+    }
+
+    public void clearAllExhibits() {
+        inTransaction((realm) -> realm.clear(ExhibitRealm.class));
     }
 
     public void addOrUpdateExhibits(Integer versionNum, Iterable<Exhibit> exhibits) {
