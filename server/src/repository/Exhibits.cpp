@@ -205,7 +205,8 @@ void Exhibits::checkName(const std::string &name) {
         throw InvalidData{"exhibit name cannot be empty"};
     }
 
-    auto sql = db::sql::Select<Table::FieldName>{}.where(Table::Name == name);
+    auto sql = db::sql::Select<Table::FieldName, Table::FieldIsDeleted>{}.where(
+        Table::Name == name && Table::IsDeleted == false);
     if (session.getResult(sql)) {
         throw DuplicateName{};
     }
