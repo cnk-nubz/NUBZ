@@ -18,6 +18,12 @@ public class FloorExhibitsInfo {
         lock = new ReentrantLock(true);
     }
 
+    public void removeAllExhibits() {
+        lock.lock();
+        exhibits.clear();
+        lock.unlock();
+    }
+
     public void removeExhibit(Integer id) {
         lock.lock();
         exhibits.remove(id);

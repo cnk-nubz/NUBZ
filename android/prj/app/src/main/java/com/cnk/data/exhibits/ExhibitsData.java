@@ -76,15 +76,17 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
     public void setExhibits(List<Exhibit> exhibits, Integer version, boolean fullRefresh) {
         if (fullRefresh) {
             dbHelper.clearAllExhibits();
+            for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+                floorInfos.get(floor).removeAllExhibits();
+            }
         }
 
-        if (exhibits.isEmpty()) {
-            return;
+        if (!exhibits.isEmpty()) {
+            dbHelper.addOrUpdateExhibits(version, exhibits);
+            updateExhibits(exhibits);
         }
-        dbHelper.addOrUpdateExhibits(version, exhibits);
+
         exhibitsVersion = version;
-
-        updateExhibits(exhibits);
         notifyObservers(exhibits, fullRefresh);
     }
 

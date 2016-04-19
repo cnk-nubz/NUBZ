@@ -75,7 +75,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(i));
         }
         mapContainer = new MapContainer(MapActivity.this, parentLayout);
-        mapContainer.updateExhibits(exhibits, false);
+        mapContainer.updateExhibits(exhibits, true);
     }
 
     private void prepareActionBar() {
