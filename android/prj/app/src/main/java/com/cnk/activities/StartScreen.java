@@ -27,7 +27,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
     private ProgressDialog progressBar;
-    private boolean isProgressBarSet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +117,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void setProgressBar() {
-        isProgressBarSet = false;
+        final boolean[] isProgressBarSet = {false};
         progressBar = new ProgressDialog(this);
         progressBar.setCanceledOnTouchOutside(false);
         progressBar.setCancelable(false);
@@ -132,10 +131,10 @@ public class StartScreen extends AppCompatActivity implements Observer {
 
         MapData.getInstance().addObserver(this, (int downloaded, int allToDownload) -> {
             runOnUiThread(() -> {
-                if (!isProgressBarSet) {
+                if (!isProgressBarSet[0]) {
                     progressBar.setProgressNumberFormat("%1d/%2d");
                     progressBar.setMax(allToDownload);
-                    isProgressBarSet = true;
+                    isProgressBarSet[0] = true;
                 }
                 if (progressBar.isShowing()) {
                     progressBar.setProgress(downloaded);

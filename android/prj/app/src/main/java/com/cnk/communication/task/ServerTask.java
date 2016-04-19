@@ -56,16 +56,16 @@ public abstract class ServerTask extends Task {
                 performInSession(client);
                 Log.i(LOG_TAG, "Action successful");
                 success.perform(this);
-                return;
             } catch (Exception e) {
                 Log.e(LOG_TAG, "Action failed");
                 e.printStackTrace();
                 failReason = FailureReason.ACTION_FAILED;
+                failure.perform(this, failReason);
             } finally {
                 socket.close();
             }
         }
-        failure.perform(this, failReason);
+
     }
 
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
@@ -80,13 +80,13 @@ public abstract class ServerTask extends Task {
         try {
             socket.open();
             Log.i(LOG_TAG, "Opened socket");
-            return socket;
         } catch (org.apache.thrift.transport.TTransportException transportException) {
             Log.e(LOG_TAG, transportException.toString());
             Log.e(LOG_TAG, "Socket open failed");
+            failReason = FailureReason.SOCKET_OPEN_FAILED;
+            socket = null;
         }
-        failReason = FailureReason.SOCKET_OPEN_FAILED;
-        return null;
+        return socket;
     }
 
 }

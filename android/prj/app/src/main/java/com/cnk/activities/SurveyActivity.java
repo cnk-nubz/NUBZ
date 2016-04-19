@@ -159,14 +159,14 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         Log.i(LOG_TAG, "Task: " + t.getTaskName() + " finished sucessfully.");
         init();
         if (spinner != null) {
-            runOnUiThread(spinner::dismiss);
+            spinner.dismiss();
         }
     }
 
     private void experimetDataDownloadingFailed(Task t, ServerTask.FailureReason reason) {
         Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + reason.toString());
+        spinner.dismiss();
         runOnUiThread(() -> {
-            spinner.dismiss();
             Utils.showDialog(SurveyActivity.this,
                              Util.downloadErrorMessage(reason),
                              getString(R.string.tryAgain),
