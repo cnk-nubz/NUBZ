@@ -5,16 +5,16 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     super
 
 
-  # updateState :: () -> Context
-  updateState: =>
-    super
+  # setFloorLayer :: Int -> Context
+  setFloorLayer: (floor) =>
+    super floor
     @_exhibits[@mapData.activeFloor].eachLayer((layer) =>
       if @_isResizingAllowed
         layer.editing.enable()
       else
         layer.editing.disable()
     )
-    return
+    @
 
 
   # _exhibitOptions :: [JsObject] -> JsObject

@@ -1,21 +1,19 @@
 root = exports ? this
 class Handlers
-  # constructor :: root.Canvas -> Context
-  constructor: (@canvas) ->
+  # constructor :: () -> Context
+  constructor: ->
     @mapData = new MapDataHandler()
     @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
       floorButton: "#changeFloor button:first-child"
       labels: "#showLabels button"
-    jQuery(@_DOM.minusZoom).prop "disabled", true
-    if not @mapData.floorTilesInfo[0].length
-      jQuery(@_DOM.plusZoom).prop "disabled", true
+
+    @canvas = new root.Canvas('#map')
     @_setButtonHandlers()
     @_setEvents()
-    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}")
-      .addClass "active"
-
+    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}").addClass "active"
+    @canvas.setFloorLayer 0
 
   # _getNthFloor :: Int -> String
   _getNthFloor: (n) ->
@@ -84,11 +82,10 @@ class Handlers
       obj.removeClass("active")
     else
       obj.addClass("active")
-    e.data.canvas.changeLabelsVisibility(not isActive)
+    e.data.canvas.updateLabelsVisibility(not isActive)
     return
 
 
 jQuery(document).ready( ->
-  canvas = new root.Canvas('#map')
-  handlers = new Handlers(canvas)
+  handlers = new Handlers()
 )

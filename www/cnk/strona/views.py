@@ -3,6 +3,7 @@ import sys
 import os
 import json
 import logging
+import copy
 import StringIO
 from enum import Enum
 from django.shortcuts import render
@@ -174,11 +175,12 @@ def uploadImage(request):
         }
         return JsonResponse(data)
 
-    dialog = get_const("NEW_FLOOR_IMAGE_SUCCESS")
+
+    dialog = copy.copy(get_const("NEW_FLOOR_IMAGE_SUCCESS"))
     dialog['message'] = "{} {}".format(dialog['message'], floor)
     data = {
         'success': True,
-        'dialog': get_const("NEW_FLOOR_IMAGE_SUCCESS"),
+        'dialog': dialog,
         "floor": floor,
     }
     return JsonResponse(data)
@@ -227,17 +229,20 @@ def _exhibitRequestsUnified(request, funToCall):
         return JsonResponse(data)
     jsonData = request.POST.get("jsonData")
     exhibitRequest = json.loads(jsonData)
-
+    print >>sys.stderr, "%s" % exhibitRequest
     try:
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
-        if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils'][
+        exType = type(ex).__name__
+        if exType == "DuplicateName":
+            data['exceptionType'] = exType
+            data['message'] = get_const("DEFAULT_CONSTANTS")['utils'][
                 'text']['nameDuplicatedError']
+        elif exType == "InvalidData":
+            data['message'] = "{} {}".format(get_const("NO_SUCH_FLOOR_ERROR"),
+                                            exhibitRequest['floor'])
         else:
-            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
-        data['message'] = message
-        data['exceptionType'] = type(ex).__name__
+            data['message'] = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
         return JsonResponse(data)
 
     if newExhibit.mapFrame:

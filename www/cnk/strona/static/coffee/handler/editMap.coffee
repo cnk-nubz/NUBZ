@@ -1,7 +1,7 @@
 root = exports ? this
 class Handlers
-  # constructor :: (root.Canvas, root.ExhibitPanel) -> Context
-  constructor: (@canvas, @panel) ->
+  # constructor :: () -> Context
+  constructor: ->
     @mapData = new root.MapDataHandler()
     @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
     @_DOM =
@@ -12,13 +12,12 @@ class Handlers
       resize: "#changeResizing button"
       changeMap: "#changeMap button"
 
+    @canvas = new root.MutableCanvas('#map')
+    @panel = new root.ExhibitPanel('#exhibit-panel')
     @_setButtonHandlers()
     @_setEvents()
-
     jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}").addClass "active"
-    jQuery(@_DOM.minusZoom).prop("disabled", true)
-    if @mapData.floorTilesInfo.length is 1 and @mapData.floorTilesInfo[0].length is 0
-      jQuery(@_DOM.plusZoom).prop("disabled", true)
+    @canvas.setFloorLayer 0
 
 
   # _getNthFloor :: Int -> String
@@ -27,7 +26,7 @@ class Handlers
       if n is 0
         ""
       else
-        "+ " + "button".repeat(n).match(/.{6}/g).join(" + ")
+        "+ " + "button + ".repeat(n)[..-3]
     }"
 
 
@@ -107,7 +106,7 @@ class Handlers
   showLabelsHandler: (e) ->
     instance = e.data.instance
     statusNow = instance.changeButtonStatus(jQuery(this))
-    instance.canvas.changeLabelsVisibility(statusNow)
+    instance.canvas.updateLabelsVisibility(statusNow)
     return
 
 
@@ -204,25 +203,20 @@ class Handlers
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      url: '/createNewExhibit/'
-      data: toSend
-      success: (recvData) =>
-        if not recvData.success
-          if recvData.exceptionType is "DuplicateName"
-            dialog.showNameDuplicatedError()
-          else
-            BootstrapDialog.alert(
-              message: "#{data.message}"
-              type: BootstrapDialog.TYPE_DANGER
-              title: 'Błąd serwera'
-            )
-          return
-        @ajaxNewExhibitSuccess(recvData, dialog)
-        dialog.close()
-    )
+    jQuery.post('/createNewExhibit/', toSend, (recvData) =>
+      if not recvData.success
+        if recvData.exceptionType is "DuplicateName"
+          dialog.showNameDuplicatedError()
+        else
+          BootstrapDialog.alert(
+            message: "#{recvData.message}"
+            type: BootstrapDialog.TYPE_DANGER
+            title: 'Błąd serwera'
+          )
+        return
+      @ajaxNewExhibitSuccess(recvData, dialog)
+      dialog.close()
+    , 'json')
     return
 
 
@@ -240,7 +234,7 @@ class Handlers
       @mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
       @canvas.addExhibits(data.frame.mapLevel, [id])
       if data.frame.mapLevel is @mapData.activeFloor
-        @canvas.changeLabelsVisibility()
+        @canvas.updateLabelsVisibility()
 
     jQuery.getJSON('/getAllExhibits', null, (data) =>
       if not data.success
@@ -277,25 +271,20 @@ class Handlers
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      url: '/updateExhibit/'
-      data: toSend
-      success: (recvData) =>
-        if not recvData.success
-          if recvData.exceptionType is "DuplicateName"
-            dialog.showNameDuplicatedError()
-          else
-            BootstrapDialog.alert(
-              message: "#{data.message}"
-              type: BootstrapDialog.TYPE_DANGER
-              title: 'Błąd serwera'
-            )
-          return
-        @ajaxUpdateExhibitSuccess(recvData)
-        dialog.close()
-    )
+    jQuery.post('/updateExhibit/', toSend, (recvData) =>
+      if not recvData.success
+        if recvData.exceptionType is "DuplicateName"
+          dialog.showNameDuplicatedError()
+        else
+          BootstrapDialog.alert(
+            message: "#{recvData.message}"
+            type: BootstrapDialog.TYPE_DANGER
+            title: 'Błąd serwera'
+          )
+        return
+      @ajaxUpdateExhibitSuccess(recvData)
+      dialog.close()
+    , 'json')
     return
 
   # ajaxUpdateExhibitSuccess :: Exhibit -> undefined
@@ -315,12 +304,10 @@ class Handlers
     }
     if data.frame?
       @canvas.addExhibits(data.frame.mapLevel, [data.id])
-    @canvas.changeLabelsVisibility()
+    @canvas.updateLabelsVisibility()
     @panel.refreshExhibitsList()
     return
 
 jQuery(document).ready( ->
-  map = new root.MutableCanvas('#map')
-  panel = new root.ExhibitPanel('#exhibit-panel')
-  handlers = new Handlers(map, panel)
+  handlers = new Handlers()
 )

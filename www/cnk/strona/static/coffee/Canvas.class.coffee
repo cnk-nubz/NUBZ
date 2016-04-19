@@ -31,7 +31,6 @@ root.Canvas = class Canvas extends root.View
     for i in @mapData.avaibleFloors[..].reverse()
       if @mapData.floorTilesInfo[i].length > 0
         @loadData i
-
     @
 
 
@@ -40,12 +39,9 @@ root.Canvas = class Canvas extends root.View
     tileInfo = @mapData.floorTilesInfo[floor]
     rand = Math.floor(Math.random() * 1024)
     newUrl = "#{@mapData.getFloorUrl(floor)}?t=#{rand}"
-    @_floorLayer[floor].clearLayers()
-    @_exhibits[floor].clearLayers()
     @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
     @addFloorLayer(floor, tileInfo, newUrl)
-    @addExhibits(floor, (id for id, _ of @mapData.exhibits))
-    @setFloorLayer(floor)
+    @addExhibits(floor, Object.keys(@mapData.exhibits))
     @
 
 
@@ -122,20 +118,13 @@ root.Canvas = class Canvas extends root.View
     @mapData.activeFloor = floor
     @_map.setView([0, 0], @_minZoom, animate: false)
     @_map.fireEvent('zoomend')
-    @updateState(oldFloor)
-    @
-
-
-  # updateState :: Int -> Context
-  updateState: (oldFloor) =>
-    activeFloor = @mapData.activeFloor
     @_map.removeLayer(@_exhibits[oldFloor])
     @_map.removeLayer(@_floorLayer[oldFloor])
-    @_map.addLayer(@_floorLayer[activeFloor])
-    @_map.addLayer(@_exhibits[activeFloor])
-    @changeLabelsVisibility()
-    @_map.setMaxBounds(@_mapBounds[activeFloor])
+    @_map.addLayer(@_floorLayer[floor])
+    @_map.addLayer(@_exhibits[floor])
+    @_map.setMaxBounds(@_mapBounds[floor])
     @_map.invalidateSize()
+    @updateLabelsVisibility()
     @
 
 
@@ -143,8 +132,8 @@ root.Canvas = class Canvas extends root.View
   getVisibleFrame: =>
     bounds = @_map.getBounds()
     maxZoomTileInfo = @mapData.floorTilesInfo[@mapData.activeFloor][-1..][0]
-    maxX = maxZoomTileInfo.scaledWidth
-    maxY = maxZoomTileInfo.scaledHeight
+    maxX = maxZoomTileInfo?.scaledWidth ? 0
+    maxY = maxZoomTileInfo?.scaledHeight ? 0
     maxZoom = @mapData.maxZoom[@mapData.activeFloor]
     castedPixelBounds = [
         @_map.project(bounds.getNorthWest(), maxZoom)
@@ -178,8 +167,8 @@ root.Canvas = class Canvas extends root.View
     @
 
 
-  # changeLabelsVisibility :: Boolean -> Context
-  changeLabelsVisibility: (areVisible = @_areLabelsVisible) =>
+  # updateLabelsVisibility :: Boolean -> Context
+  updateLabelsVisibility: (areVisible = @_areLabelsVisible) =>
     @_areLabelsVisible = areVisible
     @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
       if areVisible
