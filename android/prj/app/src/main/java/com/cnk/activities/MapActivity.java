@@ -75,7 +75,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(i));
         }
         mapContainer = new MapContainer(MapActivity.this, parentLayout);
-        mapContainer.updateExhibits(exhibits);
+        mapContainer.updateExhibits(exhibits, true);
     }
 
     private void prepareActionBar() {
@@ -111,8 +111,8 @@ public class MapActivity extends AppCompatActivity implements Observer {
         breakDialog.setTitle(getString(R.string.break_action));
     }
 
-    private void onExhibitsChange(@NonNull List<Exhibit> changedExhibits) {
-        runOnUiThread(() -> mapContainer.updateExhibits(changedExhibits));
+    private void onExhibitsChange(@NonNull List<Exhibit> changedExhibits, boolean fullRefresh) {
+        runOnUiThread(() -> mapContainer.updateExhibits(changedExhibits, fullRefresh));
     }
 
     private ActionsDialog createActionsDialog(@NonNull List<Action> actions) {
