@@ -59,6 +59,7 @@ public:
     Exhibit get(std::int32_t ID);
     std::vector<std::int32_t> getAllIDs();
     std::vector<Exhibit> getAll();
+    std::vector<Exhibit> getAllWithDeleted();
     std::vector<Exhibit> getAllNewerThan(std::int32_t version);
 
     void insert(Exhibit *exhibit);

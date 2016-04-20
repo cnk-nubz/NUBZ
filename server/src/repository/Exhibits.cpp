@@ -86,6 +86,13 @@ boost::optional<Exhibits::Exhibit> Exhibits::getOpt(std::int32_t ID) {
     }
 }
 
+std::vector<Exhibits::Exhibit> Exhibits::getAllWithDeleted() {
+    auto sql = Table::Sql::select();
+    auto result = std::vector<Exhibits::Exhibit>{};
+    utils::transform(session.getResults(sql), result, fromDB);
+    return result;
+}
+
 // ignores deleted exhibits
 std::vector<Exhibits::Exhibit> Exhibits::getAll() {
     auto sql = Table::Sql::select().where(Table::IsDeleted == false);

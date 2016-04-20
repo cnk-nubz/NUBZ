@@ -28,7 +28,9 @@ ExcelProcessor ExcelProcessor::AllReportsProc(db::DatabaseSession &session,
 ExcelProcessor::ExcelProcessor(db::DatabaseSession &session,
                                const repository::Experiment &experiment,
                                const std::vector<repository::Report> &reports)
-    : experiment(experiment), reports(reports), exhibits(repository::Exhibits{session}.getAll()) {
+    : experiment(experiment),
+      reports(reports),
+      exhibits(repository::Exhibits{session}.getAllWithDeleted()) {
 }
 
 void ExcelProcessor::saveReportToFile(const boost::filesystem::path &output) const {
