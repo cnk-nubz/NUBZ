@@ -14,10 +14,11 @@
  * - finishDate
  * - content (json)
  *
- * content = {events, surveyBefore, surveyAfter}
+ * content = {beginTime, finishTime, events, surveyBefore, surveyAfter}
  * events = [event, ...]
- * event = {optional(exhibitId), beginHour, beginMin, beginSec, durationInSecs, actions}
- * exhibitId, beginHour, beginMin, beginSec, durationInSecs = int
+ * event = {optional(exhibitId), beginTime, durationInSecs, actions}
+ * beginTime, finishTime = {h, m, s}
+ * exhibitId, h, m, s, durationInSecs = int
  * actions = [int, ...]
  * survey = {simpleQuestionsAnswers, multipleChoiceQuestionsAnswers, sortQuestionsAnswers}
  * anyAnswers = [answer, ...]
@@ -37,14 +38,19 @@ const std::string Reports::FieldContent::columnName = "content";
 
 namespace {
 struct RootKeys {
+    static const char *beginTime;
+    static const char *finishTime;
     static const char *history;
     static const char *surveyBefore;
     static const char *surveyAfter;
+    struct TimeKeys {
+        static const char *h;
+        static const char *m;
+        static const char *s;
+    };
     struct EventKeys {
         static const char *exhibitId;
-        static const char *beginH;
-        static const char *beginM;
-        static const char *beginS;
+        static const char *beginTime;
         static const char *duration;
         static const char *actions;
     };
@@ -58,14 +64,18 @@ struct RootKeys {
     };
 };
 
+const char *RootKeys::beginTime = "beginTime";
+const char *RootKeys::finishTime = "finishTime";
 const char *RootKeys::history = "history";
 const char *RootKeys::surveyBefore = "surveyBefore";
 const char *RootKeys::surveyAfter = "surveyAfter";
 
+const char *RootKeys::TimeKeys::h = "h";
+const char *RootKeys::TimeKeys::m = "m";
+const char *RootKeys::TimeKeys::s = "s";
+
 const char *RootKeys::EventKeys::exhibitId = "exhibitId";
-const char *RootKeys::EventKeys::beginH = "beginH";
-const char *RootKeys::EventKeys::beginM = "beginM";
-const char *RootKeys::EventKeys::beginS = "beginS";
+const char *RootKeys::EventKeys::beginTime = "beginTime";
 const char *RootKeys::EventKeys::duration = "secs";
 const char *RootKeys::EventKeys::actions = "actions";
 
@@ -79,6 +89,7 @@ const char *RootKeys::SurveyAnsKeys::AnsKeys::answer = "ans";
 using namespace db::json;
 
 namespace {
+Reports::ContentData::Time parseTime(const rapidjson::Value &json);
 Reports::ContentData::Event parseEvent(const rapidjson::Value &json);
 Reports::ContentData::SurveyAns parseSurveyAns(const rapidjson::Value &json);
 Reports::ContentData::SurveyAns::SimpleQAnswer parseSimpleAns(const rapidjson::Value &json);
@@ -89,6 +100,8 @@ Reports::ContentData::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value
 Reports::ContentData::ContentData(const std::string &jsonStr) {
     using Keys = RootKeys;
     auto json = parseJson(jsonStr);
+    beginTime = parseTime(getNode(json, Keys::beginTime));
+    finishTime = parseTime(getNode(json, Keys::finishTime));
     history = parseArray(getNode(json, Keys::history), parseEvent);
     surveyBefore = parseSurveyAns(getNode(json, Keys::surveyBefore));
     surveyAfter = parseSurveyAns(getNode(json, Keys::surveyAfter));
@@ -99,12 +112,19 @@ Reports::ContentData::Event parseEvent(const rapidjson::Value &json) {
     using Keys = RootKeys::EventKeys;
     auto event = Reports::ContentData::Event{};
     event.exhibitID = parseOpt(json, Keys::exhibitId, parseInt);
-    event.beginHour = parseInt(getNode(json, Keys::beginH));
-    event.beginMin = parseInt(getNode(json, Keys::beginM));
-    event.beginSec = parseInt(getNode(json, Keys::beginS));
+    event.beginTime = parseTime(getNode(json, Keys::beginTime));
     event.durationInSecs = parseInt(getNode(json, Keys::duration));
     event.actions = parseIntArray(getNode(json, Keys::actions));
     return event;
+}
+
+Reports::ContentData::Time parseTime(const rapidjson::Value &json) {
+    using Keys = RootKeys::TimeKeys;
+    auto time = Reports::ContentData::Time{};
+    time.h = parseInt(getNode(json, Keys::h));
+    time.m = parseInt(getNode(json, Keys::m));
+    time.s = parseInt(getNode(json, Keys::s));
+    return time;
 }
 
 Reports::ContentData::SurveyAns parseSurveyAns(const rapidjson::Value &json) {
@@ -133,6 +153,8 @@ Reports::ContentData::SurveyAns::SortQAnswer parseSortAns(const rapidjson::Value
 }
 
 namespace {
+rapidjson::Value createTime(rapidjson::Document::AllocatorType &allocator,
+                            const Reports::ContentData::Time &time);
 rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
                              const Reports::ContentData::Event &event);
 rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,
@@ -153,6 +175,8 @@ Reports::ContentData::operator std::string() const {
 
     auto json = createDictionary(
         allocator,
+        std::make_pair(Keys::beginTime, createTime(allocator, beginTime)),
+        std::make_pair(Keys::finishTime, createTime(allocator, finishTime)),
         std::make_pair(Keys::history, createArray(allocator, history, createEvent)),
         std::make_pair(Keys::surveyBefore, createSurveyAns(allocator, surveyBefore)),
         std::make_pair(Keys::surveyAfter, createSurveyAns(allocator, surveyAfter)));
@@ -164,28 +188,29 @@ rapidjson::Value createEvent(rapidjson::Document::AllocatorType &allocator,
                              const Reports::ContentData::Event &event) {
     using Keys = RootKeys::EventKeys;
 
-    auto beginH = std::make_pair(Keys::beginH, createInt(event.beginHour));
-    auto beginM = std::make_pair(Keys::beginM, createInt(event.beginMin));
-    auto beginS = std::make_pair(Keys::beginS, createInt(event.beginSec));
+    auto beginTime = std::make_pair(Keys::beginTime, createTime(allocator, event.beginTime));
     auto duration = std::make_pair(Keys::duration, createInt(event.durationInSecs));
     auto actions = std::make_pair(Keys::actions, createIntArray(allocator, event.actions));
 
     if (event.exhibitID) {
         return createDictionary(allocator,
                                 std::make_pair(Keys::exhibitId, createInt(event.exhibitID.value())),
-                                std::move(beginH),
-                                std::move(beginM),
-                                std::move(beginS),
+                                std::move(beginTime),
                                 std::move(duration),
                                 std::move(actions));
     } else {
-        return createDictionary(allocator,
-                                std::move(beginH),
-                                std::move(beginM),
-                                std::move(beginS),
-                                std::move(duration),
-                                std::move(actions));
+        return createDictionary(
+            allocator, std::move(beginTime), std::move(duration), std::move(actions));
     }
+}
+
+rapidjson::Value createTime(rapidjson::Document::AllocatorType &allocator,
+                            const Reports::ContentData::Time &time) {
+    using Keys = RootKeys::TimeKeys;
+    return createDictionary(allocator,
+                            std::make_pair(Keys::h, createInt(time.h)),
+                            std::make_pair(Keys::m, createInt(time.m)),
+                            std::make_pair(Keys::s, createInt(time.s)));
 }
 
 rapidjson::Value createSurveyAns(rapidjson::Document::AllocatorType &allocator,

@@ -13,6 +13,7 @@ namespace excel {
  *
  * report id
  * report receive date
+ * report finish time
  * survey before
  * survey after
  */
@@ -35,6 +36,16 @@ struct ReportReceiveDateColumn : ReportBased {
     ReportReceiveDateColumn();
     virtual wrapper_ptr getEntry(const repository::Report &report) const override;
 };
+
+template <bool isBegin>
+struct ReportTimeColumn : ReportBased {
+    ReportTimeColumn();
+    virtual wrapper_ptr getEntry(const repository::Report &report) const override;
+};
+extern template struct ReportTimeColumn<true>;
+extern template struct ReportTimeColumn<false>;
+using ReportBeginTimeColumn = ReportTimeColumn<true>;
+using ReportFinishTimeColumn = ReportTimeColumn<false>;
 }
 }
 

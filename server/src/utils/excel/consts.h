@@ -15,6 +15,8 @@ static const char *finishDate = "Data zakończenia badania";
 namespace report_info {
 static const char *reportID = "ID raportu";
 static const char *receiveDate = "Data odebrania raportu";
+static const char *beginTime = "Czas rozpoczęcia raportu";
+static const char *finishTime = "Czas zakończenia raportu";
 }  // report info
 
 namespace survey {

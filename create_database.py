@@ -247,45 +247,67 @@ cur.execute('''
 	INSERT INTO reports VALUES
 		(1, '2011-Sep-27', 1, '
 			{
+				"beginTime": {
+					"h": 8,
+					"m": 0,
+					"s": 1
+				},
+				"finishTime": {
+					"h": 16,
+					"m": 55,
+					"s": 55
+				},
 				"history": [
 					{
 						"exhibitId": 2,
-						"beginH": 10,
-						"beginM": 11,
-						"beginS": 12,
+						"beginTime": {
+							"h": 10,
+							"m": 11,
+							"s": 12
+						},
 						"secs": 15,
 						"actions": [1, 4, 7]
 					}, {
-						"beginH": 10,
-						"beginM": 11,
-						"beginS": 50,
+						"beginTime": {
+							"h": 10,
+							"m": 11,
+							"s": 50
+						},
 						"exhibitId": 1,
 						"secs": 30,
 						"actions": [1]
 					}, {
 						"exhibitID": 2,
-						"beginH": 10,
-						"beginM": 13,
-						"beginS": 12,
+						"beginTime": {
+							"h": 10,
+							"m": 13,
+							"s": 12
+						},
 						"secs": 140,
 						"actions": []
 					}, {
-						"beginH": 11,
-						"beginM": 11,
-						"beginS": 12,
+						"beginTime": {
+							"h": 11,
+							"m": 11,
+							"s": 12
+						},
 						"secs": 17,
 						"actions": [12, 9]
 					}, {
 						"exhibitId": 1,
-						"beginH": 12,
-						"beginM": 11,
-						"beginS": 12,
+						"beginTime": {
+							"h": 12,
+							"m": 11,
+							"s": 12
+						},
 						"secs": 20,
 						"actions": [1, 3]
 					}, {
-						"beginH": 13,
-						"beginM": 14,
-						"beginS": 15,
+						"beginTime": {
+							"h": 13,
+							"m": 14,
+							"s": 15
+						},
 						"secs": 14,
 						"actions": [11]
 					}
@@ -339,20 +361,34 @@ cur.execute('''
 				"history": [
 					{
 						"exhibitId": 2,
-						"beginH": 10,
-						"beginM": 11,
-						"beginS": 12,
+						"beginTime": {
+							"h": 10,
+							"m": 11,
+							"s": 12
+						},
 						"secs": 15,
 						"actions": [1, 4, 7]
 					}, {
-						"beginH": 10,
-						"beginM": 11,
-						"beginS": 50,
 						"exhibitId": 1,
+						"beginTime": {
+							"h": 10,
+							"m": 11,
+							"s": 50
+						},
 						"secs": 30,
 						"actions": [4]
 					}
 				],
+				"beginTime": {
+					"h": 9,
+					"m": 10,
+					"s": 11
+				},
+				"finishTime": {
+					"h": 12,
+					"m": 13,
+					"s": 14
+				},
 				"surveyBefore": {
 					"simple": [
 						{
