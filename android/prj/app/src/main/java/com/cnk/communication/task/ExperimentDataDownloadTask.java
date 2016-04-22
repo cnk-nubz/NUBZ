@@ -141,9 +141,4 @@ public class ExperimentDataDownloadTask extends ServerTask {
         }
         return questions;
     }
-
-    @Override
-    public String getTaskName() {
-        return LOG_TAG;
-    }
 }

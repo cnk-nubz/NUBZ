@@ -51,21 +51,30 @@ public abstract class ServerTask extends Task {
         TFramedTransport socket = openSocket();
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
-        if (socket != null) {
-            try {
-                performInSession(client);
-                Log.i(LOG_TAG, "Action successful");
-                success.perform(this);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "Action failed");
-                e.printStackTrace();
-                failReason = FailureReason.ACTION_FAILED;
-                failure.perform(this, failReason);
-            } finally {
-                socket.close();
-            }
+        if (socket == null) {
+            logFailure();
+            failure.perform(this, failReason);
+            return;
         }
 
+        try {
+            performInSession(client);
+        } catch (Exception e) {
+            failReason = FailureReason.ACTION_FAILED;
+            logFailure();
+            e.printStackTrace();
+            if (failure != null) {
+                failure.perform(this, FailureReason.ACTION_FAILED);
+                return;
+            }
+        } finally {
+            socket.close();
+        }
+
+        if (success != null) {
+            logSuccess();
+            success.perform(this);
+        }
     }
 
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
@@ -82,11 +91,18 @@ public abstract class ServerTask extends Task {
             Log.i(LOG_TAG, "Opened socket");
         } catch (org.apache.thrift.transport.TTransportException transportException) {
             Log.e(LOG_TAG, transportException.toString());
-            Log.e(LOG_TAG, "Socket open failed");
             failReason = FailureReason.SOCKET_OPEN_FAILED;
             socket = null;
         }
         return socket;
+    }
+
+    private void logFailure() {
+        Log.e(LOG_TAG, "Action failed: " + getTaskName() + ", reason: " + failReason);
+    }
+
+    private void logSuccess() {
+        Log.i(LOG_TAG, "Action succeeded: " + getTaskName());
     }
 
 }

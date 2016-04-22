@@ -46,9 +46,4 @@ public class ExhibitDownloadTask extends ServerTask {
         }
         ExhibitsData.getInstance().setExhibits(dbExhibits, version);
     }
-
-    @Override
-    public String getTaskName() {
-        return LOG_TAG;
-    }
 }

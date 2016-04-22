@@ -77,7 +77,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void mapDownloaded(Task t) {
-        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " finished sucessfully.");
         if (!dataLoaded) {
             try {
                 MapData.getInstance().loadDbData();
@@ -103,7 +102,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void synchronizationFailed(Task t, ServerTask.FailureReason failureReason) {
-        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + failureReason.toString());
         runOnUiThread(() -> {
             progressBar.dismiss();
 

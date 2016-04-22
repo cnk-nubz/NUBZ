@@ -152,9 +152,4 @@ public class RaportUploadTask extends ServerTask {
         }
         return thriftAnswers;
     }
-
-    @Override
-    public String getTaskName() {
-        return LOG_TAG;
-    }
 }

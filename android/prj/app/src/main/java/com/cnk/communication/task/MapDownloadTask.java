@@ -80,9 +80,4 @@ public class MapDownloadTask extends ServerTask {
         }
         return copied;
     }
-
-    @Override
-    public String getTaskName() {
-        return LOG_TAG;
-    }
 }

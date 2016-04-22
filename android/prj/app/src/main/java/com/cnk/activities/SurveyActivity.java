@@ -156,11 +156,8 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimentDataDownloaded(Task t) {
-        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " finished sucessfully.");
         init();
-        if (spinner != null) {
-            spinner.dismiss();
-        }
+        spinner.dismiss();
     }
 
     private void experimetDataDownloadingFailed(Task t, ServerTask.FailureReason reason) {

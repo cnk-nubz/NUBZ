@@ -1,7 +1,9 @@
 package com.cnk.communication.task;
 
 public abstract class Task {
-    public abstract String getTaskName();
+    public String getTaskName() {
+        return this.getClass().getSimpleName();
+    }
 
     public abstract void run();
 }

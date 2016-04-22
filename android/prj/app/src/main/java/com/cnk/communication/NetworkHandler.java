@@ -73,8 +73,8 @@ public class NetworkHandler {
         }
         bgSyncStarted = true;
 
-        Task exhibitsTask = new ExhibitDownloadTask(this::onBgSuccess, this::onBgFailure);
-        Task raportsTask = new RaportUploadTask(this::onBgSuccess, this::onBgFailure);
+        Task exhibitsTask = new ExhibitDownloadTask(null, null);
+        Task raportsTask = new RaportUploadTask(null, null);
         scheduledExecutor.scheduleWithFixedDelay(exhibitsTask::run,
                                                  SECONDS_DELAY,
                                                  SECONDS_DELAY,
@@ -83,13 +83,5 @@ public class NetworkHandler {
                                                  SECONDS_DELAY,
                                                  SECONDS_DELAY,
                                                  TimeUnit.SECONDS);
-    }
-
-    private synchronized void onBgSuccess(Task t) {
-        Log.i(LOG_TAG, "Bg task finished successfully: " + t.getTaskName());
-    }
-
-    private synchronized void onBgFailure(Task t, ServerTask.FailureReason reason) {
-        Log.i(LOG_TAG, "Bg task failed: " + t.getTaskName() + ", reason: " + reason.toString());
     }
 }
