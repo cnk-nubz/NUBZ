@@ -37,7 +37,6 @@ public abstract class ServerTask extends Task {
     private static final int SEND_PORT = 9090;
     private NetworkHandler.SuccessAction success;
     private NetworkHandler.FailureAction failure;
-    private FailureReason failReason;
 
     public ServerTask(NetworkHandler.SuccessAction success, NetworkHandler.FailureAction failure) {
         this.success = success;
@@ -48,20 +47,24 @@ public abstract class ServerTask extends Task {
     public void run() {
         Log.i(LOG_TAG, "Starting run: " + getTaskName());
 
+        if (!NetworkHandler.getInstance().isConnectedToWifi()) {
+            notifyFailure(FailureReason.NOWIFI);
+            return;
+        }
+
         TFramedTransport socket = openSocket();
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
         if (socket == null) {
-            notifyFailure();
+            notifyFailure(FailureReason.SOCKET_OPEN_FAILED);
             return;
         }
 
         try {
             performInSession(client);
         } catch (Exception e) {
-            failReason = FailureReason.ACTION_FAILED;
             e.printStackTrace();
-            notifyFailure();
+            notifyFailure(FailureReason.ACTION_FAILED);
             return;
         } finally {
             socket.close();
@@ -73,10 +76,6 @@ public abstract class ServerTask extends Task {
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
     private TFramedTransport openSocket() {
-        /*if (!NetworkHandler.getInstance().isConnectedToWifi()) {
-            failReason = FailureReason.NOWIFI;
-            return null;
-        }*/
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
         Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
         try {
@@ -84,16 +83,15 @@ public abstract class ServerTask extends Task {
             Log.i(LOG_TAG, "Opened socket");
         } catch (org.apache.thrift.transport.TTransportException transportException) {
             Log.e(LOG_TAG, transportException.toString());
-            failReason = FailureReason.SOCKET_OPEN_FAILED;
             socket = null;
         }
         return socket;
     }
 
-    private void notifyFailure() {
-        Log.e(LOG_TAG, "Task failed: " + getTaskName() + ", reason: " + failReason);
+    private void notifyFailure(FailureReason reason) {
+        Log.e(LOG_TAG, "Task failed: " + getTaskName() + ", reason: " + reason);
         if (failure != null) {
-            failure.perform(this, failReason);
+            failure.perform(this, reason);
         }
     }
 

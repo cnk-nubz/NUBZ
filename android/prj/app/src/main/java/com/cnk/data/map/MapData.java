@@ -98,14 +98,14 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
-        int[] mapDownloadingTilesCount = {0};
-        int[] mapDownloadedTilesCount = {0};
+        int mapDownloadingTilesCount = 0;
+        int mapDownloadedTilesCount = 0;
         for (FloorMap map : maps) {
             ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
             for (ZoomLevel level : zoomLevels) {
                 ArrayList<ArrayList<String>> tiles = level.getTilesFiles();
                 for (ArrayList<String> tilesRow : tiles) {
-                    mapDownloadingTilesCount[0] += tilesRow.size();
+                    mapDownloadingTilesCount += tilesRow.size();
                 }
             }
         }
@@ -126,8 +126,8 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     }
 
     private void downloadAndSaveFloor(FloorMap map,
-                                      int[] mapDownloadingTilesCount,
-                                      int[] mapDownloadedTilesCount) throws IOException {
+                                      int mapDownloadingTilesCount,
+                                      int mapDownloadedTilesCount) throws IOException {
         ArrayList<ZoomLevel> levels = map.getZoomLevels();
         for (int level = 0; level < levels.size(); level++) {
             ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
@@ -154,7 +154,7 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
                                 }
                             } else {
                                 Log.e(LOG_TAG, "Map tile downloading failed after " +
-                                               TILE_DOWNLOAD_FAILURE_WAIT_SECONDS.toString() +
+                                               TILE_DOWNLOAD_RETRYS.toString() +
                                                " retrys.");
                                 throw e;
                             }
@@ -162,8 +162,8 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
                     }
 
                     tiles.get(i).set(j, actualFilename);
-                    mapDownloadedTilesCount[0]++;
-                    notifyObservers(mapDownloadedTilesCount[0], mapDownloadingTilesCount[0]);
+                    mapDownloadedTilesCount++;
+                    notifyObservers(mapDownloadedTilesCount, mapDownloadingTilesCount);
                 }
             }
         }
