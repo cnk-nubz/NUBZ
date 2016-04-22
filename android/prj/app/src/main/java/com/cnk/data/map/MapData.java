@@ -98,21 +98,21 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
-        int mapDownloadingTilesCount = 0;
-        int mapDownloadedTilesCount = 0;
+        int allTilesCount = 0;
+        int downloadedTilesCount = 0;
         for (FloorMap map : maps) {
             ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
             for (ZoomLevel level : zoomLevels) {
                 ArrayList<ArrayList<String>> tiles = level.getTilesFiles();
                 for (ArrayList<String> tilesRow : tiles) {
-                    mapDownloadingTilesCount += tilesRow.size();
+                    allTilesCount += tilesRow.size();
                 }
             }
         }
 
         Log.i(LOG_TAG, "Setting new maps");
         for (FloorMap map : maps) {
-            downloadAndSaveFloor(map, mapDownloadingTilesCount, mapDownloadedTilesCount);
+            downloadedTilesCount += downloadAndSaveFloor(map, allTilesCount, downloadedTilesCount);
         }
 
         FileHandler.getInstance().renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
@@ -125,9 +125,10 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
         Log.i(LOG_TAG, "New maps set");
     }
 
-    private void downloadAndSaveFloor(FloorMap map,
-                                      int mapDownloadingTilesCount,
-                                      int mapDownloadedTilesCount) throws IOException {
+    private int downloadAndSaveFloor(FloorMap map,
+                                     int allTiles,
+                                     int alreadyDownloadedTiles) throws IOException {
+        int tilesCountFromFloor = 0;
         ArrayList<ZoomLevel> levels = map.getZoomLevels();
         for (int level = 0; level < levels.size(); level++) {
             ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
@@ -162,11 +163,12 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
                     }
 
                     tiles.get(i).set(j, actualFilename);
-                    mapDownloadedTilesCount++;
-                    notifyObservers(mapDownloadedTilesCount, mapDownloadingTilesCount);
+                    tilesCountFromFloor++;
+                    notifyObservers(alreadyDownloadedTiles + tilesCountFromFloor, allTiles);
                 }
             }
         }
+        return tilesCountFromFloor;
     }
 
     private String getTemporaryPathForTile(int floorNo, int zoomLevel, int x, int y) {
