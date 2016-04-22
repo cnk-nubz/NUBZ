@@ -143,9 +143,9 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
                             FileHandler.getInstance().saveInputStream(in, tmpFilename);
                             break;
                         } catch (IOException e) {
-                            Log.i(LOG_TAG,
-                                  "Downloading " + tiles.get(i).get(j) + " failed, retrying.");
                             if (errors < TILE_DOWNLOAD_RETRYS) {
+                                Log.i(LOG_TAG,
+                                      "Downloading " + tiles.get(i).get(j) + " failed, retrying.");
                                 try {
                                     Thread.sleep(TILE_DOWNLOAD_FAILURE_WAIT_SECONDS *
                                                  Consts.MILLIS_IN_SEC);

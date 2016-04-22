@@ -161,7 +161,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void experimetDataDownloadingFailed(Task t, ServerTask.FailureReason reason) {
-        Log.i(LOG_TAG, "Task: " + t.getTaskName() + " failed. Reason: " + reason.toString());
         spinner.dismiss();
         runOnUiThread(() -> {
             Utils.showDialog(SurveyActivity.this,

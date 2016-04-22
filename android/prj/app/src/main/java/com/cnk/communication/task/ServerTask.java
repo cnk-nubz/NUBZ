@@ -52,8 +52,7 @@ public abstract class ServerTask extends Task {
         TProtocol protocol = new TBinaryProtocol(socket);
         Server.Client client = new Server.Client(protocol);
         if (socket == null) {
-            logFailure();
-            failure.perform(this, failReason);
+            notifyFailure();
             return;
         }
 
@@ -61,29 +60,23 @@ public abstract class ServerTask extends Task {
             performInSession(client);
         } catch (Exception e) {
             failReason = FailureReason.ACTION_FAILED;
-            logFailure();
             e.printStackTrace();
-            if (failure != null) {
-                failure.perform(this, FailureReason.ACTION_FAILED);
-                return;
-            }
+            notifyFailure();
+            return;
         } finally {
             socket.close();
         }
 
-        if (success != null) {
-            logSuccess();
-            success.perform(this);
-        }
+        notifySuccess();
     }
 
     protected abstract void performInSession(Server.Client client) throws TException, IOException;
 
     private TFramedTransport openSocket() {
-        if (!NetworkHandler.getInstance().isConnectedToWifi()) {
+        /*if (!NetworkHandler.getInstance().isConnectedToWifi()) {
             failReason = FailureReason.NOWIFI;
             return null;
-        }
+        }*/
         TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
         Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
         try {
@@ -97,12 +90,18 @@ public abstract class ServerTask extends Task {
         return socket;
     }
 
-    private void logFailure() {
-        Log.e(LOG_TAG, "Action failed: " + getTaskName() + ", reason: " + failReason);
+    private void notifyFailure() {
+        Log.e(LOG_TAG, "Task failed: " + getTaskName() + ", reason: " + failReason);
+        if (failure != null) {
+            failure.perform(this, failReason);
+        }
     }
 
-    private void logSuccess() {
-        Log.i(LOG_TAG, "Action succeeded: " + getTaskName());
+    private void notifySuccess() {
+        Log.i(LOG_TAG, "Task succeeded: " + getTaskName());
+        if (success != null) {
+            success.perform(this);
+        }
     }
 
 }
