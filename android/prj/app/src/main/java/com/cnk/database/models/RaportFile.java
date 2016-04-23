@@ -9,9 +9,7 @@ public class RaportFile {
     private String fileName;
 
     public RaportFile(RaportFileRealm realmFile) {
-        this(realmFile.getId(),
-             realmFile.getServerId(),
-             realmFile.getFileName());
+        this(realmFile.getId(), realmFile.getServerId(), realmFile.getFileName());
     }
 
     public RaportFile(Integer id, Integer serverId, String fileName) {
