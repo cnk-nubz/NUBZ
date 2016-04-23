@@ -33,6 +33,7 @@
 
 #activeExperiment tr {
   border-bottom: 1px solid #ccc;
+  height: 50px;
 }
 
 #activeExperiment > table td:first-child {

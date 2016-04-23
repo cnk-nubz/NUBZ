@@ -140,6 +140,15 @@ void CommandHandler::updateExhibit(communication::Exhibit &response,
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeExhibit(const int32_t exhibitID) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << exhibitID;
+
+    withExceptionTranslation([&]() { command::ExhibitCommands{db}.remove(exhibitID); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - EXPERIMENTS
 
 void CommandHandler::getCurrentExperiment(communication::CurrentExperimentResponse &response) {
@@ -281,6 +290,47 @@ void CommandHandler::saveReport(const communication::RawReport &report) {
         command::ReportCommands{db}.save(input);
     });
 
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getAllReportsForExperiment(std::vector<communication::ReportInfo> &response,
+                                                const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getAllReportsForExperiment(experimentId);
+        response = io::ioToThrift(output);
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getExcelReport(communication::Filename &response, const int32_t reportId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << reportId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getExcelReport(reportId);
+        response = output;
+    });
+
+    LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::getCombinedExcelReport(communication::Filename &response,
+                                            const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() {
+        auto output = command::ReportCommands{db}.getCombinedExcelReport(experimentId);
+        response = output;
+    });
+
+    LOG(INFO) << "output: " << response;
     LOG(INFO) << __func__ << " end";
 }
 

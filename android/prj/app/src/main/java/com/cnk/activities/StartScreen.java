@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.communication.task.ServerTask;
@@ -27,12 +28,14 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
     private ProgressDialog progressBar;
+    private TextView raportsDisplay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new DatabaseHelper(this.getApplicationContext());
         setContentView(R.layout.activity_start_screen);
+        raportsDisplay = (TextView) findViewById(R.id.raportsStatus);
         ExperimentData.getInstance().setDbHelper(dbHelper);
         MapData.getInstance().setDbHelper(dbHelper);
         ExhibitsData.getInstance().setDbHelper(dbHelper);
@@ -51,8 +54,26 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        raportsCountUpdate(ReadyRaports.getInstance().getAllReadyRaports().size());
+        ReadyRaports.getInstance().addObserver(this, this::raportsCountUpdate);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        ReadyRaports.getInstance().deleteObserver(this);
+    }
+
+    @Override
     public void onBackPressed() {
 
+    }
+
+    private void raportsCountUpdate(int newCount) {
+        runOnUiThread(() -> raportsDisplay.setText(getString(R.string.raports_queue_size) + " " +
+                                                   Integer.toString(newCount)));
     }
 
     public void mapClick(View view) {

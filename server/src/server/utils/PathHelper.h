@@ -35,11 +35,16 @@ struct PathHelper {
     static Dir tmpDir;
     static Dir publicDir;
     static Dir mapTilesDir;
+    static Dir excelReportsDir;
 
     static Url mapsImgUrl;
     static Url tilesUrl;
 
     static boost::filesystem::path pathForFloorTilesDirectory(std::int32_t floor);
+
+    static boost::filesystem::path pathForExcelZip(std::int32_t experimentID,
+                                                   std::int32_t reportID);
+    static boost::filesystem::path pathForExcelZip(std::int32_t experimentID);
 };
 }
 }

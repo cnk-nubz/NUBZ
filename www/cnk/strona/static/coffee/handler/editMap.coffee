@@ -3,6 +3,7 @@ class Handlers
   constructor: (@canvas, @panel) ->
     @mapData = new root.MapDataHandler()
     @exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
+    @exhibitEditDialog.setDeleteHandler(@removeExhibitSuccess)
     @button =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -326,6 +327,11 @@ class Handlers
     if data.frame?
       @canvas.addExhibits(data.frame.mapLevel, [data.id])
     @canvas.updateState()
+    @panel.refreshExhibitsList()
+
+  removeExhibitSuccess: (exhibitId) =>
+    @canvas.removeExhibit(exhibitId)
+    @panel.removeExhibit(exhibitId)
     @panel.refreshExhibitsList()
 
 jQuery(document).ready( ->

@@ -174,6 +174,10 @@ public class DatabaseHelper {
         return exhibits;
     }
 
+    public void clearAllExhibits() {
+        inTransaction((realm) -> realm.clear(ExhibitRealm.class));
+    }
+
     public void addOrUpdateExhibits(Integer versionNum, Iterable<Exhibit> exhibits) {
         inTransaction((realm) -> {
             realm.copyToRealmOrUpdate(RealmFactory.getInstance().toRealmList(exhibits));

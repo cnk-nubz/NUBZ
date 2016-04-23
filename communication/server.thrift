@@ -44,6 +44,9 @@ service Server {
 	structs.Exhibit updateExhibit(1: structs.UpdateExhibitRequest request)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
+	void removeExhibit(1: i32 exhibitId)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Experiments
@@ -88,6 +91,15 @@ service Server {
 		throws (1: structs.InternalError err),
 
 	void saveReport(1: structs.RawReport report)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	list<structs.ReportInfo> getAllReportsForExperiment(1: i32 experimentId)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.Filename getExcelReport(1: i32 reportId)
+		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+	structs.Filename getCombinedExcelReport(1: i32 experimentId)
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 	
 

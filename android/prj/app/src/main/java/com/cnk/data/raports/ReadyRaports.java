@@ -8,13 +8,19 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.RaportFile;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.Observable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ReadyRaports {
+public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
+    public interface RaportsUpdateAction {
+        void doOnUpdate(int raportsQueueSize);
+    }
+
     private static final String LOG_TAG = "ReadyRaports";
     private static ReadyRaports instance;
     private Map<Raport, Integer> readyRaports;
@@ -78,9 +84,22 @@ public class ReadyRaports {
         raport.markAsSent();
         readyRaports.remove(raport);
         dbHelper.changeRaportState(raport.getId(), RaportFileRealm.SENT);
+        notifyObservers(readyRaports.size());
     }
 
     public void addNewReadyRaport(Raport newRaport) {
         readyRaports.put(newRaport, null);
+        notifyObservers(readyRaports.size());
+    }
+
+    public void notifyObservers(Integer newRaportsQueueSize) {
+        List<RaportsUpdateAction> actions = new ArrayList<>();
+        for (RaportsUpdateAction action : observers.values()) {
+            actions.add(action);
+        }
+
+        for (RaportsUpdateAction action : actions) {
+            action.doOnUpdate(newRaportsQueueSize);
+        }
     }
 }

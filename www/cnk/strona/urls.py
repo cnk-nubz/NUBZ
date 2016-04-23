@@ -17,6 +17,7 @@ urlpatterns = [
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
     url(r'getAllExhibits/$', views.getAllExhibits, name='getAllExhibits'),
     url(r'updateExhibit/$', views.updateExhibit, name='updateExhibit'),
+    url(r'deleteExhibit/$', views.deleteExhibit, name='deleteExhibit'),
 
     # get all the html you need
     url(r'getHTML/$', views.getHTML, name='getHTML'),
@@ -33,5 +34,9 @@ urlpatterns = [
     url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment'),
     url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
     url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment'),
-    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment')
+    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment'),
+
+    #reports
+    url(r'getReport/$', views.getReport, name='getReport'),
+    url(r'getAllReports/$', views.getAllReports, name='getAllReports')
 ]

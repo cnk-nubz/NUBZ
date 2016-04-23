@@ -38,6 +38,8 @@ public:
     void setFrame(const SetExhibitFrameRequest &input);
     Exhibit update(const UpdateExhibitRequest &input);
 
+    void remove(std::int32_t exhibitID);
+
 private:
     boost::optional<repository::Exhibit::Frame> createFrame(
         const boost::optional<std::int32_t> &dstFloor,

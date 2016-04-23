@@ -37,6 +37,14 @@ bool Reports::exist(std::int32_t ID) {
     return (bool)session.getResult(sql);
 }
 
+Reports::Report Reports::getF(std::int32_t ID) {
+    if (auto report = get(ID)) {
+        return report.value();
+    } else {
+        throw InvalidData{"incorrect report ID"};
+    }
+}
+
 boost::optional<Reports::Report> Reports::get(std::int32_t ID) {
     auto sql = Table::Sql::select().where(Table::ID == ID);
     if (auto dbTuple = session.getResult(sql)) {
@@ -44,6 +52,21 @@ boost::optional<Reports::Report> Reports::get(std::int32_t ID) {
     } else {
         return {};
     }
+}
+
+std::vector<Reports::ReportInfo> Reports::getAllInfosForExperiment(std::int32_t experimentID) {
+    auto sql =
+        db::sql::Select<Table::FieldID, Table::FieldReceiveDate, Table::FieldExperimentID>{}.where(
+            Table::ExperimentID == experimentID);
+
+    auto result = std::vector<Reports::ReportInfo>{};
+    for (const auto &dbOut : session.getResults(sql)) {
+        auto info = ReportInfo{};
+        info.ID = std::get<Table::FieldID>(dbOut).value;
+        info.receiveDate = std::get<Table::FieldReceiveDate>(dbOut).value;
+        result.push_back(info);
+    }
+    return result;
 }
 
 std::vector<Reports::Report> Reports::getAllForExperiment(std::int32_t experimentID) {
@@ -61,28 +84,17 @@ void Reports::insert(const Report &report) {
     auto experiment = experimentOpt.value();
 
     checkID(report.ID);
-    checkExhibits(report.history);
     checkEvents(experiment, report.history);
     checkSurveyAns(experiment.surveyBefore, report.surveyBefore);
     checkSurveyAns(experiment.surveyAfter, report.surveyAfter);
 
+    retainExhibits(report.history);
     Impl::insert(session, toDB(report));
 }
 
 void Reports::checkID(std::int32_t ID) {
     if (ID < 0 || ID > Counters{session}.get(CounterType::LastReportID)) {
         throw InvalidData{"incorrect report ID"};
-    }
-}
-
-void Reports::checkExhibits(const std::vector<Report::Event> &events) {
-    auto allExhibits = Exhibits{session}.getAllIDs();
-    auto existing = std::unordered_set<std::int32_t>{allExhibits.begin(), allExhibits.end()};
-
-    for (const auto &event : events) {
-        if (event.exhibitID && existing.count(event.exhibitID.value()) == 0) {
-            throw InvalidData{"incorrect exhibit ID"};
-        }
     }
 }
 
@@ -135,7 +147,7 @@ void Reports::checkDurations(const std::vector<Report::Event> &events) const {
     }
 }
 
-void Reports::checkTimePoint(const Reports::Report::Event::TimePoint &timePoint) const {
+void Reports::checkTimePoint(const utils::TimePoint &timePoint) const {
     if (timePoint.h < 0 || timePoint.m < 0 || timePoint.s < 0 || timePoint.h > 23 ||
         timePoint.m > 59 || timePoint.s > 59) {
         throw InvalidData{"incorrect time"};
@@ -197,6 +209,24 @@ void Reports::checkSortAns(const SortQuestion &question,
     }
 }
 
+void Reports::retainExhibits(const std::vector<Report::Event> &events) {
+    auto exhibitsRepo = Exhibits{session};
+    for (const auto &event : events) {
+        if (event.exhibitID) {
+            exhibitsRepo.incReferenceCount(event.exhibitID.value());
+        }
+    }
+}
+
+void Reports::releaseExhibits(const std::vector<Report::Event> &events) {
+    auto exhibitsRepo = Exhibits{session};
+    for (const auto &event : events) {
+        if (event.exhibitID) {
+            exhibitsRepo.decReferenceCount(event.exhibitID.value());
+        }
+    }
+}
+
 namespace {
 Table::Sql::in_t toDB(const Reports::Report &report) {
     auto content = Table::ContentData{};
@@ -205,6 +235,7 @@ Table::Sql::in_t toDB(const Reports::Report &report) {
     content.surveyAfter = surveyAnsToDB(report.surveyAfter);
 
     return std::make_tuple(Table::FieldID{report.ID},
+                           Table::FieldReceiveDate{boost::gregorian::day_clock::local_day()},
                            Table::FieldExperimentID{report.experimentID},
                            Table::FieldContent{content});
 }
@@ -231,6 +262,7 @@ Table::ContentData::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &su
 Reports::Report fromDB(const Table::Sql::out_t &report) {
     auto res = Reports::Report{};
     res.ID = std::get<Table::FieldID>(report).value;
+    res.receiveDate = std::get<Table::FieldReceiveDate>(report).value;
     res.experimentID = std::get<Table::FieldExperimentID>(report).value;
 
     auto content = std::get<Table::FieldContent>(report).value;

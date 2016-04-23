@@ -1,6 +1,8 @@
 namespace cpp communication
 namespace java com.cnk.communication.thrift
 
+typedef string Filename
+
 /////////////////////////////////////////////////
 // Exceptions
 /////////////////////////////////////////////////
@@ -69,7 +71,7 @@ struct NewMapImagesResponse {
 
 struct SetMapImageRequest {
 	1: required i32 floor,
-	2: required string filename,
+	2: required Filename filename,
 }
 
 
@@ -91,6 +93,7 @@ struct NewExhibitsRequest {
 struct NewExhibitsResponse {
 	1: required i32 version,
 	2: required map<i32, Exhibit> exhibits,
+	3: required bool fullRefresh,
 }
 
 struct SetExhibitFrameRequest {
@@ -295,6 +298,11 @@ struct Time {
 	1: required i32 hour,
 	2: required i32 min,
 	3: required i32 sec,
+}
+
+struct ReportInfo {
+	1: required i32 reportId,
+	2: required Date receiveDate,
 }
 
 // exhibitID is optional, null means break
