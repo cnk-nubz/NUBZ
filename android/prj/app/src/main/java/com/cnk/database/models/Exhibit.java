@@ -23,8 +23,7 @@ public class Exhibit implements Realmable {
              er.getHeight(),
              er.getFloor(),
              Color.rgb(er.getColorR(), er.getColorG(), er.getColorB()),
-             er.getName()
-             );
+             er.getName());
     }
 
     public Exhibit(int id,

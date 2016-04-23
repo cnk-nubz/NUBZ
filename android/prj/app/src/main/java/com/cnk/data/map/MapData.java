@@ -11,6 +11,7 @@ import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.MapTileInfo;
 import com.cnk.database.models.ZoomLevelResolution;
 import com.cnk.exceptions.DatabaseLoadException;
+import com.cnk.notificators.Observable;
 import com.cnk.utilities.Consts;
 
 import java.io.FileNotFoundException;
@@ -19,14 +20,17 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapData {
-    public interface MapUpdateAction {
-        void doOnUpdate();
+public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
+    public interface MapDownloadUpdateAction {
+        void doOnUpdate(int downloaded, int allToDownload);
     }
+
     private static final String LOG_TAG = "MapData";
     private static final String MAP_DIRECTORY = "maps";
     private static final String TILE_FILE_PREFIX = "tile";
     private static final String TMP = "TMP";
+    private static final Integer TILE_DOWNLOAD_RETRYS = 3;
+    private static final Integer TILE_DOWNLOAD_FAILURE_WAIT_SECONDS = 3;
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
@@ -42,8 +46,20 @@ public class MapData {
         return instance;
     }
 
-    public void downloadMap(MapUpdateAction action) {
-        NetworkHandler.getInstance().downloadMap(action);
+    public void notifyObservers(int downloaded, int allToDownload) {
+        List<MapDownloadUpdateAction> actions = new ArrayList<>();
+        for (MapDownloadUpdateAction action : observers.values()) {
+            actions.add(action);
+        }
+
+        for (MapDownloadUpdateAction action : actions) {
+            action.doOnUpdate(downloaded, allToDownload);
+        }
+    }
+
+    public void downloadMap(NetworkHandler.SuccessAction success,
+                            NetworkHandler.FailureAction failure) {
+        NetworkHandler.getInstance().downloadMap(success, failure);
     }
 
     public void setDbHelper(DatabaseHelper dbHelper) {
@@ -82,9 +98,21 @@ public class MapData {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
+        int allTilesCount = 0;
+        int downloadedTilesCount = 0;
+        for (FloorMap map : maps) {
+            ArrayList<ZoomLevel> zoomLevels = map.getZoomLevels();
+            for (ZoomLevel level : zoomLevels) {
+                ArrayList<ArrayList<String>> tiles = level.getTilesFiles();
+                for (ArrayList<String> tilesRow : tiles) {
+                    allTilesCount += tilesRow.size();
+                }
+            }
+        }
+
         Log.i(LOG_TAG, "Setting new maps");
         for (FloorMap map : maps) {
-            downloadAndSaveFloor(map);
+            downloadedTilesCount += downloadAndSaveFloor(map, allTilesCount, downloadedTilesCount);
         }
 
         FileHandler.getInstance().renameFile(Consts.DATA_PATH + MAP_DIRECTORY + TMP, MAP_DIRECTORY);
@@ -97,26 +125,53 @@ public class MapData {
         Log.i(LOG_TAG, "New maps set");
     }
 
-    private void downloadAndSaveFloor(FloorMap map) throws IOException {
+    private int downloadAndSaveFloor(FloorMap map,
+                                     int allTiles,
+                                     int alreadyDownloadedTiles) throws IOException {
+        int tilesCountFromFloor = 0;
         ArrayList<ZoomLevel> levels = map.getZoomLevels();
         for (int level = 0; level < levels.size(); level++) {
             ArrayList<ArrayList<String>> tiles = levels.get(level).getTilesFiles();
             for (int i = 0; i < tiles.size(); i++) {
                 for (int j = 0; j < tiles.get(i).size(); j++) {
-                    InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
                     String tmpFilename = getTemporaryPathForTile(map.getFloor(), level, i, j);
                     String actualFilename = getPathForTile(map.getFloor(), level, i, j);
-                    FileHandler.getInstance().saveInputStream(in, tmpFilename);
+
+                    int errors = 0;
+                    while (errors++ < TILE_DOWNLOAD_RETRYS) {
+                        try {
+                            InputStream in = Downloader.getInstance().download(tiles.get(i).get(j));
+                            FileHandler.getInstance().saveInputStream(in, tmpFilename);
+                            break;
+                        } catch (IOException e) {
+                            if (errors < TILE_DOWNLOAD_RETRYS) {
+                                Log.i(LOG_TAG,
+                                      "Downloading " + tiles.get(i).get(j) + " failed, retrying.");
+                                try {
+                                    Thread.sleep(TILE_DOWNLOAD_FAILURE_WAIT_SECONDS *
+                                                 Consts.MILLIS_IN_SEC);
+                                } catch (InterruptedException e1) {
+                                    e1.printStackTrace();
+                                }
+                            } else {
+                                Log.e(LOG_TAG, "Map tile downloading failed after " +
+                                               TILE_DOWNLOAD_RETRYS.toString() +
+                                               " retrys.");
+                                throw e;
+                            }
+                        }
+                    }
+
                     tiles.get(i).set(j, actualFilename);
+                    tilesCountFromFloor++;
+                    notifyObservers(alreadyDownloadedTiles + tilesCountFromFloor, allTiles);
                 }
             }
         }
+        return tilesCountFromFloor;
     }
 
-    private String getTemporaryPathForTile(int floorNo,
-                                           int zoomLevel,
-                                           int x,
-                                           int y) {
+    private String getTemporaryPathForTile(int floorNo, int zoomLevel, int x, int y) {
         String dir = Consts.DATA_PATH + MAP_DIRECTORY + TMP + "/";
         return dir + getTileFilename(x, y, floorNo, zoomLevel);
     }

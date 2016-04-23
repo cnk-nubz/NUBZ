@@ -29,9 +29,9 @@ public class RaportUploadTask extends ServerTask {
 
     private static final String LOG_TAG = "RaportUploadTask";
 
-    public RaportUploadTask(NetworkHandler.FinishAction failure,
-                            NetworkHandler.FinishAction success) {
-        super(failure, success);
+    public RaportUploadTask(NetworkHandler.SuccessAction success,
+                            NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     @Override
@@ -152,5 +152,4 @@ public class RaportUploadTask extends ServerTask {
         }
         return thriftAnswers;
     }
-
 }

@@ -84,28 +84,17 @@ void Reports::insert(const Report &report) {
     auto experiment = experimentOpt.value();
 
     checkID(report.ID);
-    checkExhibits(report.history);
     checkEvents(experiment, report.history);
     checkSurveyAns(experiment.surveyBefore, report.surveyBefore);
     checkSurveyAns(experiment.surveyAfter, report.surveyAfter);
 
+    retainExhibits(report.history);
     Impl::insert(session, toDB(report));
 }
 
 void Reports::checkID(std::int32_t ID) {
     if (ID < 0 || ID > Counters{session}.get(CounterType::LastReportID)) {
         throw InvalidData{"incorrect report ID"};
-    }
-}
-
-void Reports::checkExhibits(const std::vector<Report::Event> &events) {
-    auto allExhibits = Exhibits{session}.getAllIDs();
-    auto existing = std::unordered_set<std::int32_t>{allExhibits.begin(), allExhibits.end()};
-
-    for (const auto &event : events) {
-        if (event.exhibitID && existing.count(event.exhibitID.value()) == 0) {
-            throw InvalidData{"incorrect exhibit ID"};
-        }
     }
 }
 
@@ -217,6 +206,24 @@ void Reports::checkSortAns(const SortQuestion &question,
     std::sort(choosen.begin(), choosen.end());
     if (available != choosen) {
         throw InvalidData{"incorrect answer for sort question"};
+    }
+}
+
+void Reports::retainExhibits(const std::vector<Report::Event> &events) {
+    auto exhibitsRepo = Exhibits{session};
+    for (const auto &event : events) {
+        if (event.exhibitID) {
+            exhibitsRepo.incReferenceCount(event.exhibitID.value());
+        }
+    }
+}
+
+void Reports::releaseExhibits(const std::vector<Report::Event> &events) {
+    auto exhibitsRepo = Exhibits{session};
+    for (const auto &event : events) {
+        if (event.exhibitID) {
+            exhibitsRepo.decReferenceCount(event.exhibitID.value());
+        }
     }
 }
 

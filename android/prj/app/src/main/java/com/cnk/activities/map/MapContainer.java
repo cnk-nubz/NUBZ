@@ -181,9 +181,13 @@ public class MapContainer extends Observable<MapContainer.ExhibitClickListener> 
     }
 
     // quite naive way to update, but it may be enough
-    public void updateExhibits(@NonNull List<Exhibit> updatedExhibits) {
+    public void updateExhibits(@NonNull List<Exhibit> updatedExhibits, boolean fullRefresh) {
         if (mapView != null) {
             removeAllExhibits(mapView);
+        }
+
+        if (fullRefresh) {
+            exhibits.clear();
         }
 
         for (Exhibit e : updatedExhibits) {

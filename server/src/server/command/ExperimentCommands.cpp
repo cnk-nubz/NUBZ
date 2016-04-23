@@ -1,5 +1,7 @@
 #include <algorithm>
 
+#include <repository/Exhibits.h>
+
 #include <server/io/InvalidInput.h>
 #include <server/utils/CmpUTF8.h>
 
@@ -36,8 +38,10 @@ void ExperimentCommands::clone(const CloneRequest &input) {
 }
 
 void ExperimentCommands::finish() {
-    db.execute(
-        [](db::DatabaseSession &session) { repository::Experiments{session}.finishActive(); });
+    db.execute([](db::DatabaseSession &session) {
+        repository::Experiments{session}.finishActive();
+        repository::Exhibits{session}.refresh();
+    });
 }
 
 void ExperimentCommands::start(std::int32_t ID) {

@@ -86,6 +86,7 @@ struct NewExhibitsRequest {
 struct NewExhibitsResponse {
 	1: required i32 version,
 	2: required map<i32, Exhibit> exhibits,
+	3: required bool fullRefresh,
 }
 
 struct SetExhibitFrameRequest {
