@@ -1,10 +1,10 @@
 root = exports ? this
 root.ChangeMapDialog = class ChangeMapDialog extends root.View
   # ========== ATTACHED EVENTS ==========
+  # addFloor       :: (Event, FormData) -> _
   # changeFloorMap :: (Event, FormData) -> _
   # removeFloor    :: () -> _
   # =====================================
-  ###
   # _dialogInfo :: {
   #   addFloor              :: String,
   #   removeFloor           :: String,
@@ -12,19 +12,23 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
   #   chooseMapChangeAction :: String,
   #   changeImage           :: String
   # }
-  ###
-  constructor: (@_dialogInfo) ->
+  #
+  # _canvasInfo :: {
+  #   activeFloor    :: Int,
+  #   numberOfFloors :: Int
+  # }
+  constructor: (@_dialogInfo, @_canvasInfo) ->
     super()
     BootstrapDialog.show(
       message: @_dialogInfo.chooseMapChangeAction
       title: 'Wybór akcji'
       closable: false
       onshown: @_dialogShown
+      size: BootstrapDialog.SIZE_SMALL
       buttons: [
         @_cancelButton()
       ]
     )
-    @mapData = new root.MapDataHandler()
 
 
   # _dialogShown: BootstrapDialog -> undefined
@@ -35,6 +39,7 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
         message: @_dialogInfo.addFloor
         closable: false
         title: 'Mapa nowego piętra'
+        size: BootstrapDialog.SIZE_SMALL
         buttons: [
           @_cancelButton()
           @_addFloorSaveButton()
@@ -46,26 +51,17 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
       BootstrapDialog.show(
         message: @_dialogInfo.changeImage
         closable: false
+        size: BootstrapDialog.SIZE_SMALL
         title: 'Mapa aktualnego piętra'
         buttons: [
           @_cancelButton()
           @_changeMapSaveButton()
-        ]
-      )
-    )
-    jQuery('#changeMapDialog td:last-child button').click( =>
-      dialog.close()
-      BootstrapDialog.show(
-        message: @_dialogInfo.removeFloor
-        closable: false
-        title: 'Usuwanie aktualnego piętra'
-        buttons: [
-          @_cancelButton()
-          @_removeFloorOKButton()
+          @_removeFloorButton() if @_canvasInfo.numberOfFloors is 1 + @_canvasInfo.activeFloor
         ]
       )
     )
     return
+
 
   # _cancelButton :: () -> BootstrapDialogButton
   _cancelButton: ->
@@ -81,14 +77,30 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
       @_processMap(dialog)
       return
 
-  # _removeFloorOKButton :: () -> BootstrapDialogButton
-  _removeFloorOKButton: =>
+
+  # _removeFloorButton: :: () -> BootstrapDialogButton
+  _removeFloorButton: =>
+    label: 'Usuń'
+    cssClass: 'delete-button btn-danger'
+    action: (dialog) =>
+      BootstrapDialog.show(
+        message: @_dialogInfo.removeFloor
+        title: 'Potwierdzenie usunięcia piętra'
+        closable: false
+        buttons: [
+          @_cancelButton()
+          @_removeFloorConfirmationButton()
+        ]
+      )
+
+  # _removeFloorConfirmationButton :: () -> BootstrapDialogButton
+  _removeFloorConfirmationButton: =>
     label: 'OK'
     action: (dialog) =>
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post('removeFloor/', floor: @mapData.activeFloor, (data) =>
+      jQuery.post('removeFloor/', floor: @_canvasInfo.activeFloor, (data) =>
         if data.success
           @fireEvents("removeFloor")
           return
@@ -105,7 +117,7 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
   _addFloorSaveButton: =>
     label: 'Wyślij'
     action: (dialog) =>
-      newFloor = 1 + @mapData.numberOfFloors
+      newFloor = @_canvasInfo.numberOfFloors
       jQuery('#dialogForm input[name=floor]').attr('value', newFloor)
       @_processMap(dialog)
       return

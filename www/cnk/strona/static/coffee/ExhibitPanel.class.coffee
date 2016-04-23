@@ -5,27 +5,20 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   # flyToExhibitWithId  :: Int -> _
   # modifyExhibitWithId :: Int -> _
   # =====================================
-  constructor: (@_containerId) ->
-    # _containerId :: String
+  # constructor :: (String, MapData) -> Context
+  constructor: (@_containerId, @_mapData) ->
     super
-    @mapData = new MapDataHandler()
-    @_NO_FLOOR = 1 + @mapData.numberOfFloors
+    @_NO_FLOOR = @_mapData.numberOfFloors
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
-    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler)
-    @_init()
-
-
-  # _init :: () -> undefined
-  _init: =>
+    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler, @_mapData.activeFloor)
     jQuery.getJSON('getHTML?name=exhibitPanel', null, (data) =>
       jQuery(data.html).appendTo(@_containerId)
       @_setExhibitPanelHandlers()
       @_getExhibitElementHTML()
-      @filterForCurrentFloor()
+      @filterForOneFloor(0)
     )
-    return
 
 
   # addExhibitHandler :: (Exhibit, BootstrapDialog) -> undefined
@@ -38,8 +31,8 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   _setExhibitPanelHandlers: =>
     instance = this
     jQuery("#exhibitPanel #addExhibit").click( =>
-      @_exhibitDialog.show()
       @refreshDialogInstance()
+      @_exhibitDialog.show()
     )
     jQuery("#exhibitPanel > div.input-group span").click( =>
       @_lastSearchedText = jQuery("#exhibitPanel > div.input-group input").val()
@@ -65,25 +58,25 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   _getExhibitElementHTML: =>
     jQuery.getJSON('getHTML?name=exhibitListElement', null, (data) =>
       @_exhibitElementHTML = data.html
-      if @mapData.exhibitsList?
-        @replaceExhibits((e.id for e in @mapData.exhibitsList))
+      @replaceExhibits((e.id for e in @_mapData.exhibitsList))
     )
     return
 
 
-  # filterForCurrentFloor :: () -> Context
-  filterForCurrentFloor: =>
+  # filterForOneFloor :: Int -> Context
+  filterForOneFloor: (floor) =>
     jQuery("#filterButtons button").not(":last").removeClass("active")
-    jQuery("#filterButtons button:eq(#{@mapData.activeFloor})").addClass("active")
+    jQuery("#filterButtons button:eq(#{floor})").addClass("active")
     @refreshExhibitsList()
     @
 
 
   # addExhibits :: [Int] -> Context
   addExhibits: (exhibitIdList) =>
+    baseElement = jQuery(@_exhibitElementHTML)[0]
     for id in exhibitIdList
-      e = @mapData.exhibits[id]
-      exhibitListElement = jQuery(@_exhibitElementHTML)[0]
+      e = @_mapData.exhibits[id]
+      exhibitListElement = baseElement.cloneNode(true)
       exhibitCaption = exhibitListElement.querySelector(".exhibitCaption div")
       exhibitCaption.innerHTML = e.name
       exhibitListElement.data =
@@ -101,10 +94,18 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     @addExhibits(exhibitIdList)
     @
 
+  # removeExhibit :: Int -> Context
+  removeExhibit: (exhibitId) =>
+    for exhibit, index in @_exhibits
+      if exhibit.listElement.data.exhibitId is exhibitId
+        @_exhibits.splice(index, 1)
+        break
+    @
+
 
   # refreshDialogInstance :: () -> Context
   refreshDialogInstance: =>
-    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler)
+    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler, @_mapData.activeFloor)
     @
 
 
@@ -148,7 +149,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
 
   # _getExhibitFloor :: Int -> Int
   _getExhibitFloor: (exhibitId) =>
-    exhibit = @mapData.exhibits[exhibitId]
+    exhibit = @_mapData.exhibits[exhibitId]
     if exhibit.frame?.mapLevel?
       exhibit.frame.mapLevel
     else

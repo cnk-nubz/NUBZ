@@ -29,36 +29,64 @@
     {% compress js %}
     <script type="text/coffeescript">
       root = exports ? this
-      floorUrl = "{{urlFloor|escape|safe}}"
-
-      if floorUrl[0] is '' or floorUrl[1] is ''
+      # floorUrl :: String
+      root.floorUrl = "{{urlFloor|escape|safe}}"
+      if floorUrl is ''
         f = ->
-          miss0 = floorUrl[0] is ''
-          miss1 = floorUrl[1] is ''
-          if miss0 and miss1
-            missingFloor = "0 oraz 1"
-          else if miss0
-            missingFloor = "0"
-          else
-            missingFloor = "1"
-
           BootstrapDialog.show(
-            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami pietra #{missingFloor}"
+            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami"
             title: 'Zły plik konfiguracyjny'
             type: BootstrapDialog.TYPE_DANGER
           )
         setTimeout(f, 1000)
-        throw new Error("zły plik konfiguracyjny")
-      activeFloor = +"{{acitveFloor}}"
-      exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
-      floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
-      avaibleFloors = {{avaibleFloors | jsvar}}
+        throw new Error("Zły plik konfiguracyjny")
+      # activeFloor :: Int
+      root.activeFloor = +"{{acitveFloor}}"
+      #
+      # type ExhibitFrame = {
+      #   height   :: Int,
+      #   width    :: Int,
+      #   x        :: Int,
+      #   y        :: Int,
+      #   mapLevel :: Int
+      # }
+      #
+      #
+      # type Exhibit = {
+      #   colorHex :: String,
+      #   frame    :: Maybe ExhibitFrame,
+      #   name     :: String
+      # }
+      #
+      # exhibitsList :: [Exhibit]
+      root.exhibitsList = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+      # exhibits :: (JsObject :: (Int, Exhibit))
+      root.exhibits = {}
+      if root.exhibitsList.length > 0
+        for e in root.exhibitsList
+          root.exhibits[e.id] =
+            id: e.id
+            frame: e.frame
+            name: e.name
+            colorHex: e.colorHex
+      ###
+      # type TilesInfo = {
+      #   scaledHeight :: Int,
+      #   scaledWidth  :: Int,
+      #   tileHeight   :: Int,
+      #   tileWidth    :: Int
+      # }
+      ###
+      # type SingleFloorTilesInfo = [TileInfo]
+      # floorTilesInfo :: [SingleFloorTilesInfo]
+      root.floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+      # availableFloors :: [Int]
+      root.availableFloors = {{availableFloors | jsvar}}
       if Object.keys(floorTilesInfo).length > 0
-        for i in avaibleFloors
-          floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])
+        for i in root.availableFloors
+          root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])
       else
-        floorTilesInfo[0] = []
-      new root.MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo, avaibleFloors)
+        root.floorTilesInfo[0] = []
     </script>
     {% endcompress %}
   {% endblock %}

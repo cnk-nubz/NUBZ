@@ -1,11 +1,13 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
+  constructor: (url, saveHandler, @_canvasActiveFloor) ->
+    super(url, saveHandler)
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialog) =>
     super
     @_dialog.setTitle(@_data.utils.text.title)
-    @mapData = new MapDataHandler()
-    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})", dialog).addClass("active")
+    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_canvasActiveFloor})", dialog)
+      .addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": "#9DE35A")
     instance = this
     jQuery("input[type=text]", dialog)
@@ -18,7 +20,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         obj = jQuery(this)
         error = obj.parent().next()
       )
-    @_popoverOpened = false
     jQuery.getJSON('getHTML?name=colorPickerPopover', (data) ->
       jQuery(dialog).parents(".modal").click( ->
         jQuery('.popoverButton', dialog).popover('hide')
@@ -48,16 +49,45 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
   # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialog) =>
     @_dialog.setTitle(@_data.utils.text.editTitle)
-    if not @_dialogInfo.floor?
-      @_dialogInfo.floor = 2
     jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
     jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
+    jQuery(".bootstrap-dialog-footer-buttons", dialog).prepend(@_data.utils.text.deleteButtonHtml)
+    jQuery(".delete-button", dialog).click( =>
+      new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
+    )
     jQuery("input", dialog).prop("readonly", true)
     if @readonly is true
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
+    return
+
+
+  # setDeleteHandler :: (->) -> Context
+  setDeleteHandler: (@_successfullDeleteHandler) => @
+
+
+  # _deleteExhibit :: () -> undefined
+  _deleteExhibit: =>
+    toSend =
+      jsonData:
+        JSON.stringify(
+          id: @_dialogInfo.id
+        )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'POST'
+      dataType: 'json'
+      url: '/deleteExhibit/'
+      data: toSend
+      success: =>
+        if @_successfullDeleteHandler
+          @_successfullDeleteHandler(@_dialogInfo.id)
+        @_dialog.close()
+    )
     return
 
 

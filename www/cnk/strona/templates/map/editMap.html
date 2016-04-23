@@ -44,13 +44,11 @@
 
 {% block includes %}
   {% compress js %}
-  <script src="{% static "coffee/MapDataHandler.class.coffee" %}" type="text/coffeescript"></script>
-  {% endcompress %}
-  {% compress js %}
   <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/ConfirmDialog.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
@@ -77,7 +75,7 @@
       <button class="control-button"><div><span><strong>-</strong></span></div></button>
     </div>
     <div class="control-button-group" id="changeFloor">
-      {% for floor in avaibleFloors %}
+      {% for floor in availableFloors %}
       <button class="control-button"><div><span><strong>{{floor}}</strong></span></div></button>
       {% endfor %}
     </div>

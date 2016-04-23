@@ -32,8 +32,14 @@
   z-index: 5000
 }
 
-control-button-container {
+
+.control-button-container {
   position: relative;
+}
+
+
+.delete-button {
+  float: left;
 }
 
 .control-button-group:last-child {
@@ -57,4 +63,8 @@ control-button-container {
 }
 #changeMapDialog p {
   text-align: center;
+}
+
+.delete-button {
+  float: left;
 }

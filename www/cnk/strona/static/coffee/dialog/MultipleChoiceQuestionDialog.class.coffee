@@ -37,7 +37,7 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
       jQuery("input", dialogBody).last().parents('.input-group').remove()
-      jQuery(".btn:not(.active)", dialogBody).remove()
+      jQuery("label .btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
     return
 

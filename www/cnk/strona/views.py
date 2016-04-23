@@ -115,10 +115,10 @@ def getMapPage(request, file, activeLink):
         return HttpResponse('<h1>{}</h1>'.format(str(ex)))
 
     if not floorTilesInfo:
-        avaibleFloors = [0]
+        availableFloors = [0]
     else:
-        avaibleFloors = range(0, 1 + max(floorTilesInfo.keys()))
-    set_const("AVAIBLE_FLOORS", avaibleFloors)
+        availableFloors = range(0, 1 + max(floorTilesInfo.keys()))
+    set_const("AVAIBLE_FLOORS", availableFloors)
     template = loader.get_template(file)
     urlFloor = getattr(settings, 'FLOOR_TILES_DIRECTORY', '')
 
@@ -128,7 +128,7 @@ def getMapPage(request, file, activeLink):
         'floorTilesInfo': floorTilesInfo,
         'urlFloor': urlFloor,
         'activeLink': activeLink,
-        'avaibleFloors': avaibleFloors
+        'availableFloors': availableFloors
     })
     return HttpResponse(template.render(context))
 
@@ -229,7 +229,6 @@ def _exhibitRequestsUnified(request, funToCall):
         return JsonResponse(data)
     jsonData = request.POST.get("jsonData")
     exhibitRequest = json.loads(jsonData)
-    print >>sys.stderr, "%s" % exhibitRequest
     try:
         newExhibit = funToCall(exhibitRequest)
     except Exception as ex:
@@ -266,6 +265,13 @@ def _exhibitRequestsUnified(request, funToCall):
     return JsonResponse(data)
 
 
+def deleteExhibit(request):
+    jsonData = request.POST.get("jsonData")
+    deleteRequest = json.loads(jsonData)
+    thriftCommunicator.removeExhibit(deleteRequest)
+    return JsonResponse({})
+
+
 def getDialog(dialogName):
     dialogStructure = get_const(dialogName)
     contextDict = {
@@ -288,9 +294,9 @@ def getColorPickerPopoverContent(request):
 
 def getExhibitDialog(request):
     dialogStructure = get_const("EXHIBIT_DIALOG")
-    avaibleFloors = get_const("AVAIBLE_FLOORS")[:]
-    avaibleFloors.append("brak")
-    dialogStructure['data'][1][1]['textList'] = avaibleFloors
+    availableFloors = get_const("AVAIBLE_FLOORS")[:]
+    availableFloors.append("brak")
+    dialogStructure['data'][1][1]['textList'] = availableFloors
     contextDict = {
         'data': dialogStructure['data']
     }
@@ -311,8 +317,8 @@ def getMultipleChoiceQuestionDialog(request):
 
 
 def getExhibitPanel(request):
-    avaibleFloors = get_const("AVAIBLE_FLOORS")
-    html = render_to_string('exhibitPanel/exhibitPanel.html', {'avaibleFloors': avaibleFloors})
+    availableFloors = get_const("AVAIBLE_FLOORS")
+    html = render_to_string('exhibitPanel/exhibitPanel.html', {'availableFloors': availableFloors})
     return JsonResponse({'html': html})
 
 
@@ -352,6 +358,9 @@ def getChooseQuestionTypeDialog(request):
 def getChangeNameDialog(request):
     return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
 
+def getExhibitDelConfirmDialog(request):
+    return getDialog("CONFIRM_EXHIBIT_DEL_DIALOG")
+
 HTMLRequests = {
     'simpleQuestionDialog': getSimpleQuestionDialog,
     'sortQuestionDialog': getSortQuestionDialog,
@@ -363,7 +372,8 @@ HTMLRequests = {
     'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
     'exhibitListElement': getExhibitListElement,
-    'changeNameDialog': getChangeNameDialog
+    'changeNameDialog': getChangeNameDialog,
+    'confirmExhibitDelDialog': getExhibitDelConfirmDialog
 }
 
 

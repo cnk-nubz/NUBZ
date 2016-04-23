@@ -40,9 +40,6 @@
 
 {% block includes %}
   {% compress js %}
-  <script src="{% static "coffee/MapDataHandler.class.coffee" %}" type="text/coffeescript"></script>
-  {% endcompress %}
-  {% compress js %}
   <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
@@ -58,7 +55,7 @@
       <button class="control-button"><div><span><strong>-</strong></span></div></button>
     </div>
     <div class="control-button-group" id="changeFloor">
-      {% for floor in avaibleFloors %}
+      {% for floor in availableFloors %}
       <button class="control-button"><div><span><strong>{{floor}}</strong></span></div></button>
       {% endfor %}
     </div>

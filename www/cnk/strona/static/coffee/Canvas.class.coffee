@@ -1,13 +1,23 @@
 root = exports ? this
 root.Canvas = class Canvas extends root.View
-  constructor: (@_containerMap) ->
-    super
-    @mapData = new root.MapDataHandler()
-    @_minZoom = @mapData.minZoom
-    @_maxZoom = @mapData.maxZoom
-    @_mapBounds = (null for i in [0...@mapData.avaibleFloors.length])
-    @_exhibits = (new L.LayerGroup() for i in [0...@mapData.avaibleFloors.length])
-    @_floorLayer = (new L.LayerGroup() for i in [0...@mapData.avaibleFloors.length])
+  # constructor :: (String, MapData) -> Context
+  constructor: (@_containerMap, @_mapData) ->
+    super()
+    @_minZoom = 1
+    if not @_mapData.floorTilesInfo?
+      @_maxZoom = [1]
+    else
+      @_maxZoom = @_mapData.floorTilesInfo.map(
+        (x) =>
+          if x?
+            Object.keys(x).length
+          else
+            @_minZoom
+      )
+    @_mapBounds = []
+    @_exhibits = (new L.LayerGroup for i in @_mapData.availableFloors)
+    @_floorLayer = (new L.LayerGroup for i in @_mapData.availableFloors)
+    @_dataLoaded = (false for i in @_mapData.availableFloors)
     @_map = L.map(@_containerMap[1..], {
       minZoom: @_minZoom
       zoom: @_minZoom
@@ -17,45 +27,44 @@ root.Canvas = class Canvas extends root.View
       zoomControl: false
     })
     @_areLabelsVisible = true
-    @_init()
+    @_setHandlers()
+
+
+  # _setHandlers :: () -> undefined
+  _setHandlers: =>
+    @_map.on('zoomend', =>
+      disableMinus = @_map.getZoom() is @_minZoom or @_minZoom is @_maxZoom[@_mapData.activeFloor]
+      disablePlus = @_map.getZoom() >= @_maxZoom[@_mapData.activeFloor]
+      @fireEvents('zoomend', disableMinus, disablePlus)
+    )
     return
 
 
-  # _init :: () -> Context
-  _init: =>
-    @_map.on('zoomend', =>
-      disableMinus = @_map.getZoom() is @_minZoom or @_minZoom is @_maxZoom[@mapData.activeFloor]
-      disablePlus = @_map.getZoom() >= @_maxZoom[@mapData.activeFloor]
-      @fireEvents('zoomend', disableMinus, disablePlus)
-    )
-    for i in @mapData.avaibleFloors[..].reverse()
-      if @mapData.floorTilesInfo[i].length > 0
-        @loadData i
-    @
+  # _loadData :: Int -> undefined
+  _loadData: (floor) =>
+    tileInfo = @_mapData.floorTilesInfo[floor]
+    if tileInfo.length is 0
+      @_dataLoaded[floor] = true
+      return
+    @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
+    @_addFloorLayer(floor)
+    @addExhibits((e for id, e of @_mapData.exhibits when e.frame?.mapLevel is floor))
+    @_dataLoaded[floor] = true
+    return
 
 
-  # loadData :: Int -> Context
-  loadData: (floor) =>
-    tileInfo = @mapData.floorTilesInfo[floor]
-    rand = Math.floor(Math.random() * 1024)
-    newUrl = "#{@mapData.getFloorUrl(floor)}?t=#{rand}"
-    @addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
-    @addFloorLayer(floor, tileInfo, newUrl)
-    @addExhibits(floor, Object.keys(@mapData.exhibits))
-    @
-
-
-  # addMapBounds :: (Int, LatLng, LatLng) -> Context
-  addMapBounds: (floor, northEast, southWest) =>
+  # _addMapBounds :: (Int, LatLng, LatLng) -> Context
+  _addMapBounds: (floor, northEast, southWest) =>
     @_mapBounds[floor] = new L.LatLngBounds(@_map.unproject(northEast, @_maxZoom[floor]),
                                             @_map.unproject(southWest, @_maxZoom[floor]))
     @
 
 
-  # addFloorLayer :: (Int, [FloorInfo], String) -> Context
-  addFloorLayer: (floor, tileInfo, url) =>
-    len = tileInfo.length
-    for j in [0...len]
+  # _addFloorLayer :: Int -> Context
+  _addFloorLayer: (floor) =>
+    url = "#{@_getFloorUrl(floor)}?t=#{Math.floor(Math.random() * 1021)}"
+    tileInfo = @_mapData.floorTilesInfo[floor]
+    for j in [0...tileInfo.length]
       zoomLayer = L.tileLayer(url.replace('{z}', "#{j + @_minZoom}"), {
         minZoom: j + @_minZoom
         maxZoom: j + @_minZoom
@@ -68,11 +77,15 @@ root.Canvas = class Canvas extends root.View
     @
 
 
-  # addExhibits :: (Int, [Int]) -> Context
-  addExhibits: (floor, exhibitIdList) =>
-    for id in exhibitIdList
-      e = @mapData.exhibits[id]
-      continue unless e.frame?.mapLevel is floor
+  # getFloorUrl :: Int -> String
+  _getFloorUrl: (floor) =>
+    @_mapData.floorUrl.replace("{f}", "#{floor}")
+
+
+  # addExhibits :: [Exhibit] -> Context
+  addExhibits: (exhibits) =>
+    for e in exhibits
+      floor = e.frame.mapLevel
       X = e.frame.x
       Y = e.frame.y
       polygonBounds = new L.LatLngBounds(
@@ -85,7 +98,7 @@ root.Canvas = class Canvas extends root.View
           weight: 1
           strokeColor: '#B4AFD1'
           strokeOpacity: 1
-      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: id }))
+      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: e.id }))
       r.bindLabel(e.name, { direction: 'auto' })
       r = @_prepareExhibit(r)
       @_exhibits[floor].addLayer(r)
@@ -94,7 +107,7 @@ root.Canvas = class Canvas extends root.View
 
   # removeExhibit :: Int -> Context
   removeExhibit: (exhibitId) =>
-    exhibitFrame = @mapData.exhibits[exhibitId].frame
+    exhibitFrame = @_mapData.exhibits[exhibitId].frame
     if not exhibitFrame?
       return
     @_exhibits[exhibitFrame.mapLevel].eachLayer((layer) =>
@@ -112,29 +125,29 @@ root.Canvas = class Canvas extends root.View
   _prepareExhibit: (exh) -> exh
 
 
-  # setFloorLayer :: Int -> Context
-  setFloorLayer: (floor) =>
-    oldFloor = @mapData.activeFloor
-    @mapData.activeFloor = floor
-    @_map.setView([0, 0], @_minZoom, animate: false)
-    @_map.fireEvent('zoomend')
+  # setFloorLayer :: (Int, Int) -> Context
+  setFloorLayer: (newFloor, oldFloor) =>
+    if not @_dataLoaded[newFloor]
+      @_loadData newFloor
     @_map.removeLayer(@_exhibits[oldFloor])
     @_map.removeLayer(@_floorLayer[oldFloor])
-    @_map.addLayer(@_floorLayer[floor])
-    @_map.addLayer(@_exhibits[floor])
-    @_map.setMaxBounds(@_mapBounds[floor])
+    @_map.addLayer(@_floorLayer[newFloor])
+    @_map.addLayer(@_exhibits[newFloor])
+    @_map.setView([0, 0], @_minZoom, animate: false)
+    @_map.fireEvent('zoomend')
+    @_map.setMaxBounds(@_mapBounds[newFloor])
     @_map.invalidateSize()
     @updateLabelsVisibility()
     @
 
 
-  # getVisibleFrame :: () -> (L.Point, Int, Int)
-  getVisibleFrame: =>
+  # getVisibleFrame :: Int -> (L.Point, Int, Int)
+  getVisibleFrame: (activeFloor) =>
     bounds = @_map.getBounds()
-    maxZoomTileInfo = @mapData.floorTilesInfo[@mapData.activeFloor][-1..][0]
+    maxZoomTileInfo = @_mapData.floorTilesInfo[activeFloor][-1..][0]
     maxX = maxZoomTileInfo?.scaledWidth ? 0
     maxY = maxZoomTileInfo?.scaledHeight ? 0
-    maxZoom = @mapData.maxZoom[@mapData.activeFloor]
+    maxZoom = @_maxZoom[activeFloor]
     castedPixelBounds = [
         @_map.project(bounds.getNorthWest(), maxZoom)
         @_map.project(bounds.getSouthEast(), maxZoom)
@@ -148,19 +161,21 @@ root.Canvas = class Canvas extends root.View
 
   # flyToExhibit :: Int -> Context
   flyToExhibit: (exhibitsId) =>
-    floor = @mapData.activeFloor
-    exhibit = @mapData.exhibits[exhibitsId]
+    floor = @_mapData.activeFloor
+    exhibit = @_mapData.exhibits[exhibitsId]
     frame = exhibit.frame
     bounds = new L.LatLngBounds(
       @_map.unproject([frame.x, frame.y], @_maxZoom[floor]),
       @_map.unproject([frame.x + frame.width, frame.y + frame.height], @_maxZoom[floor]),
     )
     if floor isnt frame.mapLevel
+      if not @_dataLoaded[frame.mapLevel]
+        @_loadData frame.mapLevel
       @_floorLayer[frame.mapLevel].getLayers()[0].once("load", =>
         @_map.flyToBounds(bounds, animate: false)
         @_map.fireEvent('zoomend')
       )
-      @setFloorLayer(frame.mapLevel)
+      @setFloorLayer(frame.mapLevel, floor)
     else
       @_map.flyToBounds(bounds, animate: false)
       @_map.fireEvent('zoomend')
@@ -170,7 +185,7 @@ root.Canvas = class Canvas extends root.View
   # updateLabelsVisibility :: Boolean -> Context
   updateLabelsVisibility: (areVisible = @_areLabelsVisible) =>
     @_areLabelsVisible = areVisible
-    @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+    @_exhibits[@_mapData.activeFloor].eachLayer((layer) ->
       if areVisible
         layer.showLabel()
       else

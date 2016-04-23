@@ -1,36 +1,30 @@
 root = exports ? this
+root.cachedData = {}
 class Handlers
-  # constructor :: () -> Context
-  constructor: ->
-    @mapData = new MapDataHandler()
+  # constructor :: MapData -> Context
+  constructor: (@_mapData) ->
     @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
-      floorButton: "#changeFloor button:first-child"
+      floorButton: "#changeFloor button"
       labels: "#showLabels button"
 
-    @canvas = new root.Canvas('#map')
+    @canvas = new root.Canvas('#map', @_mapData)
     @_setButtonHandlers()
     @_setEvents()
-    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@mapData.activeFloor)}").addClass "active"
-    @canvas.setFloorLayer 0
+    jQuery("#{@_DOM.labels}, #{@_getNthFloor(@_mapData.activeFloor)}").addClass "active"
+    @canvas.setFloorLayer 0, 0
 
   # _getNthFloor :: Int -> String
   _getNthFloor: (n) ->
-    "#{@_DOM.floorButton} #{
-      if n is 0
-        ""
-      else
-        "+ " + "button".repeat(n).match(/.{6}/g).join(" + ")
-    }"
+    "#{@_DOM.floorButton}:eq(#{n})"
 
 
   # _setButtonHandlers :: () -> undefined
   _setButtonHandlers: =>
     jQuery(@_DOM.minusZoom).click(canvas: @canvas, @zoomOutHandler)
     jQuery(@_DOM.plusZoom).click(canvas: @canvas, @zoomInHandler)
-    instance = this
-    floorButtons = @mapData.avaibleFloors.map((n) => jQuery(@_getNthFloor(n)))
+    floorButtons = @_mapData.availableFloors.map((n) => jQuery(@_getNthFloor(n)))
     for button, idx in floorButtons
       data =
         instance: this
@@ -64,12 +58,13 @@ class Handlers
 
 
   # changeFloorHandler :: Int -> Event -> undefined
-  changeFloorHandler: (floor) ->
+  changeFloorHandler: (newFloor) ->
     (e) ->
-      activeFloor = e.data.instance.mapData.activeFloor
-      jQuery(e.data.floorButtons[activeFloor]).removeClass("active")
+      oldFloor = e.data.instance._mapData.activeFloor
+      e.data.instance._mapData.activeFloor = newFloor
+      jQuery(e.data.floorButtons[oldFloor]).removeClass("active")
       jQuery(this).blur().addClass("active")
-      e.data.instance.canvas.setFloorLayer(floor)
+      e.data.instance.canvas.setFloorLayer(newFloor, oldFloor)
       return
 
 
@@ -87,5 +82,12 @@ class Handlers
 
 
 jQuery(document).ready( ->
-  handlers = new Handlers()
+  mapData =
+    activeFloor: root.activeFloor
+    floorUrl: root.floorUrl
+    exhibitsList: root.exhibitsList
+    exhibits: root.exhibits
+    floorTilesInfo: root.floorTilesInfo
+    availableFloors: root.availableFloors
+  handlers = new Handlers(mapData)
 )

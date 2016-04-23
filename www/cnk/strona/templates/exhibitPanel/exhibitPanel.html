@@ -11,14 +11,14 @@
     <table>
       <tbody>
         <tr>
-        {% for floor in avaibleFloors %}
+        {% for floor in availableFloors %}
         <td>
           <button class="btn btn-default">{{floor}}</button>
         </td>
         {% endfor %}
         <td>
           <button class="btn btn-default">
-          {% if avaibleFloors|length > 4 %}
+          {% if availableFloors|length > 4 %}
           b
           {% else %}
           brak

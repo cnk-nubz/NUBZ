@@ -1,4 +1,5 @@
 root = exports ? this
+root.cachedData = {}
 class Handler
   ###
   # type ActiveExperiment = {

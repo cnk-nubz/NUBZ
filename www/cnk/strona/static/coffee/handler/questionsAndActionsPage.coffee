@@ -1,4 +1,5 @@
 root = exports ? this
+root.cachedData = {}
 class Handlers
   # constructor :: ([Question], [Action]) -> Context
   constructor: (initQuestionsList, initActionsList) ->

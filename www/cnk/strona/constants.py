@@ -27,6 +27,7 @@ DEFAULT_CONSTANTS = {
             "nameDuplicatedError": "Taka nazwa już istnieje.",
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
+            "deleteButton": "Usuń",
         }
     }
 }
@@ -185,6 +186,7 @@ EXHIBIT_DIALOG = {
         "text": {
             "title": "Tworzenie eksponatu",
             "editTitle": "Edycja eksponatu",
+            "deleteButtonHtml": '<button class="btn btn-danger delete-button">Usuń</button>',
         },
     }
 }
@@ -200,6 +202,17 @@ CHANGE_EXPERIMENT_NAME_DIALOG = {
     "utils": {
         "text": {
             "title": "Klonowanie badania",
+        }
+    }
+}
+
+CONFIRM_EXHIBIT_DEL_DIALOG = {
+    "data": [],
+    "utils": {
+        "text": {
+            "title": "Potwierdzenie usuwania eksponatu",
+            "question": "Czy na pewno chcesz usunąć eksponat? Tej akcji nie będzie można cofnąć.",
+            "confirmButton": "Tak",
         }
     }
 }
@@ -223,7 +236,8 @@ to_merge_with_defaults = [
     SORT_QUESTION_DIALOG,
     NEW_ACTION_DIALOG,
     EXHIBIT_DIALOG,
-    CHANGE_EXPERIMENT_NAME_DIALOG
+    CHANGE_EXPERIMENT_NAME_DIALOG,
+    CONFIRM_EXHIBIT_DEL_DIALOG,
 ]
 
 def merge_dicts(a, b, path=None):

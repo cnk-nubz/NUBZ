@@ -1,14 +1,15 @@
 root = exports ? this
 root.MutableCanvas = class MutableCanvas extends root.Canvas
-  constructor: ->
-    @_isResizingAllowed = false
+  # constructor :: (String, CanvasData) -> Context
+  constructor: (containerId, mapData) ->
     super
+    @_isResizingAllowed = false
 
 
-  # setFloorLayer :: Int -> Context
-  setFloorLayer: (floor) =>
-    super floor
-    @_exhibits[@mapData.activeFloor].eachLayer((layer) =>
+  # setFloorLayer :: (Int, Int) -> Context
+  setFloorLayer: (newFloor, oldFloor) =>
+    super
+    @_exhibits[@_mapData.activeFloor].eachLayer((layer) =>
       if @_isResizingAllowed
         layer.editing.enable()
       else
@@ -72,7 +73,7 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
   # _updateExhibitPosition :: Exhibit -> undefined
   _updateExhibitPosition: (exhibit) =>
     geoPoints = @_fixExhibitPosition(exhibit)
-    scaledPoints = (@_map.project(p, @mapData.maxZoom[@mapData.activeFloor]) for p in geoPoints)
+    scaledPoints = (@_map.project(p, @_maxZoom[@_mapData.activeFloor]) for p in geoPoints)
     [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
     @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
     return
@@ -80,8 +81,8 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
 
   # _fixExhibitPosition :: Exhibit -> [L.LatLng]
   _fixExhibitPosition: (exhibit) =>
-    maxX = @_map.project(@_mapBounds[@mapData.activeFloor].getNorthEast()).x
-    maxY = @_map.project(@_mapBounds[@mapData.activeFloor].getSouthWest()).y
+    maxX = @_map.project(@_mapBounds[@_mapData.activeFloor].getNorthEast()).x
+    maxY = @_map.project(@_mapBounds[@_mapData.activeFloor].getSouthWest()).y
 
     latLng = exhibit.getLatLngs()[0]
     exhibitPoints = (@_map.project(ll) for ll in latLng)
@@ -119,8 +120,6 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
           height: bottomRight.y - topLeft.y
         )
     }
-    instance = @
-    handler = @_ajaxSuccessHandler
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
@@ -129,20 +128,21 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       dataType: 'json'
       url: '/updateExhibitPosition/'
       data: toSend
-      success: handler.bind(instance)
+      context: this
+      success: @_ajaxSuccessHandler
     )
     return
 
 
-  # _ajaxSuccessHandler :: (ExhibitData) -> undefined
+  # _ajaxSuccessHandler :: ExhibitData -> undefined
   _ajaxSuccessHandler: (data) =>
     if data.success is true
-      @mapData.exhibits[data.id].frame.x = data.x
-      @mapData.exhibits[data.id].frame.y = data.y
-      @mapData.exhibits[data.id].frame.width = data.width
-      @mapData.exhibits[data.id].frame.height = data.height
+      @_mapData.exhibits[data.id].frame.x = data.x
+      @_mapData.exhibits[data.id].frame.y = data.y
+      @_mapData.exhibits[data.id].frame.width = data.width
+      @_mapData.exhibits[data.id].frame.height = data.height
     else
-      @refresh()
+      @setFloorLayer(@_mapData.activeFloor, @_mapData.activeFloor)
       BootstrapDialog.alert(
         message: "<p align=\"center\">#{data.message}</p>"
         type: BootstrapDialog.TYPE_DANGER
@@ -165,13 +165,13 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     bot
 
 
-  # changeExhibitResizing :: Boolean -> undefined
-  changeExhibitResizing: (isVisible) =>
+  # updateExhibitResizing :: Boolean -> Context
+  updateExhibitResizing: (isVisible = @_isResizingAllowed) =>
     @_isResizingAllowed = isVisible
-    @_exhibits[@mapData.activeFloor].eachLayer((layer) ->
+    @_exhibits[@_mapData.activeFloor].eachLayer((layer) ->
       if isVisible
         layer.editing.enable()
       else
         layer.editing.disable()
     )
-    return
+    @

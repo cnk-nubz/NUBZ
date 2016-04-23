@@ -15,25 +15,33 @@ root.QuestionDialog = class QuestionDialog
   readonly: false
   # constructor :: (String, (DialogData, BootstrapDialog) -> undefined)
   constructor: (@_url, @_saveHandler = (->)) ->
-    jQuery.getJSON(@_url, null, (data) =>
-      @_data = data.data
-      @_dialogHTML = data.html
-      @_dialog = new BootstrapDialog(
-        message: data.html
-        title: data.data.utils.text.titleNew
-        closable: false
-        buttons: [@_closeButton(), @_saveButton()]
+    if root.cachedData.hasOwnProperty(@_url)
+      @_init(root.cachedData[@_url])
+    else
+      jQuery.getJSON(@_url, null, (data) =>
+        root.cachedData[@_url] = data
+        @_init(data)
       )
-      @_dialog.realize()
-      @_prepareDialog(@_dialog.getModalBody())
+
+
+  _init: (data) =>
+    @_data = data.data
+    @_dialogHTML = data.html
+    @_dialog = new BootstrapDialog(
+      message: data.html
+      title: data.data.utils.text.titleNew
+      closable: false
+      buttons: [@_closeButton(), @_saveButton()]
     )
+    @_dialog.realize()
+    @_prepareDialog(@_dialog.getModalContent())
 
 
   # bindData :: listElement -> Context
   bindData: (@_dialogInfo) =>
     @_dialog.setMessage(@_dialogHTML)
     @_dialog.realize()
-    dialogBody = @_dialog.getModalBody()
+    dialogBody = @_dialog.getModalContent()
     @_prepareDialog(dialogBody)
     @_prepareFilledDialog(dialogBody)
     @
@@ -76,7 +84,6 @@ root.QuestionDialog = class QuestionDialog
 
   # _closeButton :: () -> BootstrapDialogButton
   _closeButton: =>
-    id: 'closeButtonDialog'
     label: @_data.utils.text.cancelButton
     action: (dialog) ->
       dialog.close()

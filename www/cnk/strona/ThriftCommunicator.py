@@ -129,6 +129,11 @@ class ThriftCommunicator:
             return client.updateExhibit(msg)
         return self._perform_in_single_connection([action])[0]
 
+    def removeExhibit(self, request):
+        def action(client):
+            return client.removeExhibit(request['id'])
+        return self._perform_in_single_connection([action])[0]
+
     def createSimpleQuestion(self, request):
         def action(client):
             if request['answerAsNumber'] == 1:
