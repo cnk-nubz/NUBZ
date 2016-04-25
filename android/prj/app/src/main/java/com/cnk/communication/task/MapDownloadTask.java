@@ -24,21 +24,15 @@ import java.util.Map;
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
-    private MapData.MapUpdateAction action;
 
-
-    public MapDownloadTask(NetworkHandler.FinishAction failure,
-                           NetworkHandler.FinishAction success,
-                           MapData.MapUpdateAction action) {
-        super(failure, success);
-        this.action = action;
+    public MapDownloadTask(NetworkHandler.SuccessAction success,
+                           NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
         downloadTilesUpdate(client);
         Log.i(LOG_TAG, "Map update complete");
-        action.doOnUpdate();
-        action = null;
     }
 
     private void downloadTilesUpdate(Server.Client client) throws TException, IOException {
@@ -58,18 +52,14 @@ public class MapDownloadTask extends ServerTask {
     private FloorMap translateFromThrift(Integer floor, MapImage thriftResponse) {
         Size thriftSize = thriftResponse.getResolution();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
-        List<com.cnk.communication.thrift.ZoomLevel>
-                imageTilesThrift =
+        List<com.cnk.communication.thrift.ZoomLevel> imageTilesThrift =
                 thriftResponse.getZoomLevels();
 
         ArrayList<ZoomLevel> zoomLevels = new ArrayList<>();
         for (com.cnk.communication.thrift.ZoomLevel tile : imageTilesThrift) {
-            Resolution
-                    scaledSize =
-                    new Resolution(tile.getScaledSize().getWidth(),
-                                   tile.getScaledSize().getHeight());
-            Resolution
-                    tileSize =
+            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(),
+                                                   tile.getScaledSize().getHeight());
+            Resolution tileSize =
                     new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
             ZoomLevel toAdd = new ZoomLevel(scaledSize, tileSize, copyThriftList(toCopy));

@@ -19,9 +19,9 @@ public class ExhibitDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExhibitDownloadTask";
 
-    public ExhibitDownloadTask(NetworkHandler.FinishAction failure,
-                               NetworkHandler.FinishAction success) {
-        super(failure, success);
+    public ExhibitDownloadTask(NetworkHandler.SuccessAction success,
+                               NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     protected void performInSession(Server.Client client) throws TException {
@@ -44,7 +44,6 @@ public class ExhibitDownloadTask extends ServerTask {
         for (Map.Entry<Integer, Exhibit> entry : exhibits.entrySet()) {
             dbExhibits.add(new com.cnk.database.models.Exhibit(entry.getKey(), entry.getValue()));
         }
-        ExhibitsData.getInstance().setExhibits(dbExhibits, version);
+        ExhibitsData.getInstance().setExhibits(dbExhibits, version, response.isFullRefresh());
     }
-
 }

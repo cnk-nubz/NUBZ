@@ -4,9 +4,10 @@
 #include <cstdint>
 #include <string>
 
+#include <db/sql/sql.h>
+
 #include "Column.h"
 #include "Field.h"
-#include "SqlCore.h"
 
 namespace db {
 namespace table {
@@ -66,11 +67,46 @@ struct Exhibits {
     };
     static constexpr detail::Column<FieldFrameFloor> FrameFloor{};
 
+    // default = false
+    struct FieldIsDeleted : detail::Field<bool, Exhibits> {
+        using detail::Field<bool, Exhibits>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldIsDeleted> IsDeleted{};
+
+    // default = 0
+    struct FieldRefCount : detail::Field<std::int32_t, Exhibits> {
+        using detail::Field<std::int32_t, Exhibits>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldRefCount> RefCount{};
+
     static const std::string tableName;
 
-    using Sql =
-        detail::SqlCoreWithID<FieldID, FieldName, FieldVersion, FieldRgbHex, FieldFrameX,
-                              FieldFrameY, FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
+    template <class... StandardFields>
+    struct SqlCore {
+        using in_t = std::tuple<StandardFields...>;
+        using out_t = std::tuple<FieldID, FieldIsDeleted, StandardFields...>;
+
+        static auto select() {
+            return sql::Select<FieldID, FieldIsDeleted, StandardFields...>{};
+        }
+
+        static auto insert() {
+            return sql::Insert<StandardFields...>{};
+        }
+
+        static auto update() {
+            return sql::Update<FieldID, FieldIsDeleted, FieldRefCount, StandardFields...>{};
+        }
+
+        static auto del() {
+            return sql::Delete<FieldID, FieldIsDeleted, FieldRefCount, StandardFields...>{};
+        }
+    };
+
+    using Sql = SqlCore<FieldName, FieldVersion, FieldRgbHex, FieldFrameX, FieldFrameY,
+                        FieldFrameWidth, FieldFrameHeight, FieldFrameFloor>;
 };
 }
 }

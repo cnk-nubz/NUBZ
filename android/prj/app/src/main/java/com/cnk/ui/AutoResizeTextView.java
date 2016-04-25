@@ -40,6 +40,7 @@ public class AutoResizeTextView extends TextView {
          */
         public int onTestSize(int suggestedSize, RectF availableSpace);
     }
+
     private static final int NO_LINE_LIMIT = -1;
     private RectF mTextRect = new RectF();
     private RectF mAvailableSpaceRect;
@@ -62,15 +63,13 @@ public class AutoResizeTextView extends TextView {
                 mTextRect.bottom = mPaint.getFontSpacing();
                 mTextRect.right = mPaint.measureText(text);
             } else {
-                StaticLayout
-                        layout =
-                        new StaticLayout(text,
-                                         mPaint,
-                                         mWidthLimit,
-                                         Alignment.ALIGN_NORMAL,
-                                         mSpacingMult,
-                                         mSpacingAdd,
-                                         true);
+                StaticLayout layout = new StaticLayout(text,
+                                                       mPaint,
+                                                       mWidthLimit,
+                                                       Alignment.ALIGN_NORMAL,
+                                                       mSpacingMult,
+                                                       mSpacingAdd,
+                                                       true);
                 // return early if we have more lines
                 if (getMaxLines() != NO_LINE_LIMIT && layout.getLineCount() > getMaxLines()) {
                     return 1;
@@ -242,8 +241,7 @@ public class AutoResizeTextView extends TextView {
             return;
         }
         int startSize = (int) mMinTextSize;
-        int
-                heightLimit =
+        int heightLimit =
                 getMeasuredHeight() - getCompoundPaddingBottom() - getCompoundPaddingTop();
         mWidthLimit = getMeasuredWidth() - getCompoundPaddingLeft() - getCompoundPaddingRight();
         mAvailableSpaceRect.right = mWidthLimit;

@@ -23,7 +23,6 @@ root.QuestionDialog = class QuestionDialog
         @_init(data)
       )
 
-
   _init: (data) =>
     @_data = data.data
     @_dialogHTML = data.html

@@ -1,7 +1,6 @@
 package com.cnk.activities;
 
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +9,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.cnk.R;
-import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.task.ServerTask;
+import com.cnk.communication.task.Task;
 import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
@@ -27,7 +27,7 @@ public class StartScreen extends AppCompatActivity implements Observer {
     private static final String LOG_TAG = "StartScreen";
     private static boolean dataLoaded;
     private DatabaseHelper dbHelper;
-    private ProgressDialog spinner;
+    private ProgressDialog progressBar;
     private TextView raportsDisplay;
 
     @Override
@@ -45,7 +45,6 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
                 ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             }
         } catch (DatabaseLoadException e) {
@@ -94,44 +93,73 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void downloadMap() {
-        setSpinner();
-        MapData.getInstance().downloadMap(this::mapDownloaded);
+        setProgressBar();
+        MapData.getInstance().downloadMap(this::mapDownloaded, this::synchronizationFailed);
     }
 
-    private void mapDownloaded() {
+    private void mapDownloaded(Task t) {
         if (!dataLoaded) {
             try {
                 MapData.getInstance().loadDbData();
                 ExhibitsData.getInstance().loadDbData();
                 ReadyRaports.getInstance().loadDbData();
-                NetworkHandler.getInstance().uploadRaports();
                 dataLoaded = true;
             } catch (DatabaseLoadException e) {
-                spinner.dismiss();
+                progressBar.dismiss();
                 e.printStackTrace();
                 runOnUiThread(this::showAlert);
             }
         }
-        spinner.dismiss();
+        progressBar.dismiss();
     }
 
     private void showAlert() {
-        DialogInterface.OnClickListener positiveAction = (dialog, which) -> downloadMap();
-        DialogInterface.OnClickListener negativeAction = (dialog, which) -> System.exit(1);
         Utils.showDialog(this,
                          R.string.dataError,
                          R.string.tryAgain,
                          R.string.exit,
-                         positiveAction,
-                         negativeAction);
+                         (dialog, which) -> downloadMap(),
+                         (dialog, which) -> System.exit(1));
     }
 
-    private void setSpinner() {
-        spinner = new ProgressDialog(this);
-        spinner.setCanceledOnTouchOutside(false);
-        spinner.setTitle("Synchronizacja");
-        spinner.setMessage("Trwa synchronizacja danych z serwerem");
-        spinner.show();
+    private void synchronizationFailed(Task t, ServerTask.FailureReason failureReason) {
+        runOnUiThread(() -> {
+            progressBar.dismiss();
+
+            Utils.showDialog(this,
+                             com.cnk.utilities.Util.downloadErrorMessage(failureReason),
+                             getString(R.string.tryAgain),
+                             getString(R.string.cancel),
+                             (dialog, which) -> downloadMap(),
+                             dataLoaded ? null : (dialog, which) -> finish());
+        });
+    }
+
+    private void setProgressBar() {
+        final boolean[] isProgressBarSet = {false};
+        progressBar = new ProgressDialog(this);
+        progressBar.setCanceledOnTouchOutside(false);
+        progressBar.setCancelable(false);
+        progressBar.setTitle(getString(R.string.synchronizing));
+        progressBar.setMessage(getString(R.string.synchronizingInProgress));
+        progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressBar.setProgressNumberFormat(null);
+        progressBar.setProgress(0);
+        progressBar.setMax(100);
+        progressBar.show();
+
+        MapData.getInstance().addObserver(this, (int downloaded, int allToDownload) -> {
+            runOnUiThread(() -> {
+                if (!isProgressBarSet[0]) {
+                    progressBar.setProgressNumberFormat("%1d/%2d");
+                    progressBar.setMax(allToDownload);
+                    isProgressBarSet[0] = true;
+                }
+                if (progressBar.isShowing()) {
+                    progressBar.setProgress(downloaded);
+                }
+            });
+        });
     }
 }
 

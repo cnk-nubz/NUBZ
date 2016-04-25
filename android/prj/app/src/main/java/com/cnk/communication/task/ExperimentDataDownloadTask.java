@@ -28,13 +28,10 @@ import java.util.Queue;
 public class ExperimentDataDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExperimentDownloadTask";
-    private ExperimentData.ExperimentUpdateAction action;
 
-    public ExperimentDataDownloadTask(NetworkHandler.FinishAction failure,
-                                      NetworkHandler.FinishAction success,
-                                      ExperimentData.ExperimentUpdateAction action) {
-        super(failure, success);
-        this.action = action;
+    public ExperimentDataDownloadTask(NetworkHandler.SuccessAction success,
+                                      NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     @Override
@@ -46,8 +43,6 @@ public class ExperimentDataDownloadTask extends ServerTask {
         }
         Log.i(LOG_TAG, "Downloaded experiment");
         updateDataHandler(thriftData);
-        action.doOnUpdate();
-        action = null;
     }
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {
@@ -58,11 +53,9 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private Experiment translateDataFromThrift(CurrentExperimentResponse thriftData) {
         Integer id = thriftData.getExperiment().getExperimentId();
         String name = thriftData.getExperiment().getName();
-        List<Action>
-                exhibitActions =
+        List<Action> exhibitActions =
                 translateActionsFromThrift(thriftData.getExperiment().getExhibitActions());
-        List<Action>
-                breakActions =
+        List<Action> breakActions =
                 translateActionsFromThrift(thriftData.getExperiment().getBreakActions());
         Survey preSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyBefore());
         Survey postSurvey = translateSurveyFromThrift(thriftData.getExperiment().getSurveyAfter());
@@ -80,8 +73,7 @@ public class ExperimentDataDownloadTask extends ServerTask {
     private Survey translateSurveyFromThrift(QuestionsList survey) {
         Queue<Survey.QuestionType> types = questionOrderFromThrift(survey.getQuestionsOrder());
         Queue<SimpleQuestion> simpleQs = simpleQuestionsFromThrift(survey.getSimpleQuestions());
-        Queue<MultipleChoiceQuestion>
-                multiQs =
+        Queue<MultipleChoiceQuestion> multiQs =
                 multiQuestionsFromThrift(survey.getMultipleChoiceQuestions());
         Queue<SortQuestion> sortQs = sortQuestionsFromThrift(survey.getSortQuestions());
 

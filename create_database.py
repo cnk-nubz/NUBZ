@@ -48,7 +48,10 @@ cur.execute('''
 		map_frame_y INT NULL,
 		map_frame_width INT NULL,
 		map_frame_height INT NULL,
-		map_floor INT NULL
+		map_floor INT NULL,
+
+		is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
+		ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 
@@ -128,6 +131,7 @@ cur.execute('''
 	INSERT INTO counters VALUES
 		('last_map_version', 0),
 		('last_exhibit_version', 5),
+		('last_deleted_exhibit_version', -1),
 		('last_report_id', 3)
 ''')
 

@@ -326,6 +326,11 @@ class Handlers
     @panel.refreshExhibitsList()
     @
 
+  removeExhibitSuccess: (exhibitId) =>
+    @canvas.removeExhibit(exhibitId)
+    @panel.removeExhibit(exhibitId)
+    @panel.refreshExhibitsList()
+
 jQuery(document).ready( ->
   mapData =
     activeFloor: root.activeFloor
