@@ -21,11 +21,13 @@ namespace table {
 
 struct Reports {
     struct ContentData {
+        struct Time {
+            std::int32_t h, m, s;
+        };
+
         struct Event {
             boost::optional<std::int32_t> exhibitID;
-            std::int32_t beginHour;
-            std::int32_t beginMin;
-            std::int32_t beginSec;
+            Time beginTime;
             std::int32_t durationInSecs;
             std::vector<std::int32_t> actions;
         };
@@ -43,6 +45,9 @@ struct Reports {
         ContentData() = default;
         ContentData(const std::string &jsonStr);
         operator std::string() const;
+
+        Time beginTime;
+        Time finishTime;
 
         std::vector<Event> history;
         SurveyAns surveyBefore;

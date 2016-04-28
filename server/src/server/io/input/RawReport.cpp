@@ -7,6 +7,8 @@ namespace input {
 RawReport::RawReport(const communication::RawReport &thrift)
     : experimentId(thrift.experimentId),
       ID(thrift.reportId),
+      beginTime(thrift.beginTime),
+      finishTime(thrift.finishTime),
       answersBefore(thrift.answersBefore),
       answersAfter(thrift.answersAfter) {
     for (const auto &event : thrift.history) {
@@ -19,10 +21,6 @@ RawReport::Event::Event(const communication::RawReportEvent &thrift)
     if (thrift.__isset.exhibitId) {
         exhibitId = thrift.exhibitId;
     }
-}
-
-RawReport::Event::Time::Time(const communication::Time &thrift)
-    : hour(thrift.hour), min(thrift.min), sec(thrift.sec) {
 }
 
 RawReport::SurveyAnswers::SurveyAnswers(const communication::SurveyAnswers &thrift) {
@@ -41,6 +39,8 @@ repository::Report RawReport::toRepo() const {
     auto res = repository::Report{};
     res.ID = ID;
     res.experimentID = experimentId;
+    res.beginTime = beginTime.toRepo();
+    res.finishTime = finishTime.toRepo();
     for (auto &event : history) {
         res.history.push_back(event.toRepo());
     }
@@ -55,14 +55,6 @@ repository::Report::Event RawReport::Event::toRepo() const {
     res.beginTime = startTime.toRepo();
     res.durationInSecs = durationInSecs;
     res.actions = actions;
-    return res;
-}
-
-::utils::TimePoint RawReport::Event::Time::toRepo() const {
-    auto res = ::utils::TimePoint{};
-    res.h = hour;
-    res.m = min;
-    res.s = sec;
     return res;
 }
 

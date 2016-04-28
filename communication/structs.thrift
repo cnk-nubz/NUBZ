@@ -325,4 +325,6 @@ struct RawReport {
 	3: required SurveyAnswers answersBefore,
 	4: required list<RawReportEvent> history,
 	5: required SurveyAnswers answersAfter,
+	6: required Time beginTime,
+	7: required Time finishTime,
 }

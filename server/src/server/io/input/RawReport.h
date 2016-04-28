@@ -13,28 +13,21 @@
 
 #include <repository/Reports.h>
 
+#include "Time.h"
+
 namespace server {
 namespace io {
 namespace input {
 
 struct RawReport {
     struct Event {
-        struct Time {
-            Time(const communication::Time &thrift);
-            ::utils::TimePoint toRepo() const;
-
-            const std::int32_t hour;
-            const std::int32_t min;
-            const std::int32_t sec;
-        };
-
         Event(const communication::RawReportEvent &thrift);
         repository::Report::Event toRepo() const;
 
         boost::optional<std::int32_t> exhibitId;
-        const Time startTime;
-        const std::int32_t durationInSecs;
-        const std::vector<std::int32_t> actions;
+        Time startTime;
+        std::int32_t durationInSecs;
+        std::vector<std::int32_t> actions;
     };
 
     struct SurveyAnswers {
@@ -55,6 +48,9 @@ struct RawReport {
 
     std::int32_t experimentId;
     std::int32_t ID;
+
+    Time beginTime;
+    Time finishTime;
 
     SurveyAnswers answersBefore;
     SurveyAnswers answersAfter;

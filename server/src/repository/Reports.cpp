@@ -21,10 +21,12 @@ using Impl = repository::detail::DefaultRepo<Table>;
 
 namespace {
 Table::Sql::in_t toDB(const Reports::Report &report);
+Table::ContentData::Time timeToDB(const utils::TimePoint &time);
 Table::ContentData::Event eventToDB(const Reports::Report::Event &event);
 Table::ContentData::SurveyAns surveyAnsToDB(const Reports::Report::SurveyAns &surveyAns);
 
 Reports::Report fromDB(const Table::Sql::out_t &report);
+utils::TimePoint timeFromDB(const Table::ContentData::Time &time);
 Reports::Report::Event eventFromDB(const Table::ContentData::Event &event);
 Reports::Report::SurveyAns surveyAnsFromDB(const Table::ContentData::SurveyAns &surveyAns);
 }
@@ -230,6 +232,8 @@ void Reports::releaseExhibits(const std::vector<Report::Event> &events) {
 namespace {
 Table::Sql::in_t toDB(const Reports::Report &report) {
     auto content = Table::ContentData{};
+    content.beginTime = timeToDB(report.beginTime);
+    content.finishTime = timeToDB(report.finishTime);
     utils::transform(report.history, content.history, eventToDB);
     content.surveyBefore = surveyAnsToDB(report.surveyBefore);
     content.surveyAfter = surveyAnsToDB(report.surveyAfter);
@@ -243,11 +247,17 @@ Table::Sql::in_t toDB(const Reports::Report &report) {
 Table::ContentData::Event eventToDB(const Reports::Report::Event &event) {
     auto res = Table::ContentData::Event{};
     res.actions = event.actions;
-    res.beginHour = event.beginTime.h;
-    res.beginMin = event.beginTime.m;
-    res.beginSec = event.beginTime.s;
+    res.beginTime = timeToDB(event.beginTime);
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
+    return res;
+}
+
+Table::ContentData::Time timeToDB(const utils::TimePoint &time) {
+    auto res = Table::ContentData::Time{};
+    res.h = time.h;
+    res.m = time.m;
+    res.s = time.s;
     return res;
 }
 
@@ -266,6 +276,8 @@ Reports::Report fromDB(const Table::Sql::out_t &report) {
     res.experimentID = std::get<Table::FieldExperimentID>(report).value;
 
     auto content = std::get<Table::FieldContent>(report).value;
+    res.beginTime = timeFromDB(content.beginTime);
+    res.finishTime = timeFromDB(content.finishTime);
     utils::transform(content.history, res.history, eventFromDB);
     res.surveyBefore = surveyAnsFromDB(content.surveyBefore);
     res.surveyAfter = surveyAnsFromDB(content.surveyAfter);
@@ -275,11 +287,17 @@ Reports::Report fromDB(const Table::Sql::out_t &report) {
 Reports::Report::Event eventFromDB(const Table::ContentData::Event &event) {
     auto res = Reports::Report::Event{};
     res.actions = event.actions;
-    res.beginTime.h = event.beginHour;
-    res.beginTime.m = event.beginMin;
-    res.beginTime.s = event.beginSec;
+    res.beginTime = timeFromDB(event.beginTime);
     res.durationInSecs = event.durationInSecs;
     res.exhibitID = event.exhibitID;
+    return res;
+}
+
+utils::TimePoint timeFromDB(const Table::ContentData::Time &time) {
+    auto res = utils::TimePoint{};
+    res.h = time.h;
+    res.m = time.m;
+    res.s = time.s;
     return res;
 }
 

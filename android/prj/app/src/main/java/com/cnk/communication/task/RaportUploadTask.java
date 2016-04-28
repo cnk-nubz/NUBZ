@@ -59,6 +59,8 @@ public class RaportUploadTask extends ServerTask {
         rawRaport.setAnswersAfter(translateSurvey(raport.getPostSurveyAnswers()));
         rawRaport.setReportId(serverId);
         rawRaport.setExperimentId(raport.getExperimentId());
+        rawRaport.setBeginTime(translateDate(raport.getStartDate()));
+        rawRaport.setFinishTime(translateDate(raport.getEndDate()));
         return rawRaport;
     }
 
