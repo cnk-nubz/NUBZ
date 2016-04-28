@@ -49,8 +49,7 @@ public class NetworkHandler {
     }
 
     public boolean isConnectedToWifi() {
-        ConnectivityManager
-                connManager =
+        ConnectivityManager connManager =
                 (ConnectivityManager) appContext.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 

@@ -55,9 +55,8 @@ public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
         for (RaportFile file : toLoad) {
             Raport loaded = null;
             try {
-                loaded =
-                        DataTranslator.getRaportFromStream(FileHandler.getInstance()
-                                                                      .getFile(file.getFileName()));
+                loaded = DataTranslator.getRaportFromStream(FileHandler.getInstance()
+                                                                       .getFile(file.getFileName()));
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e(LOG_TAG, "Unable to get raport");

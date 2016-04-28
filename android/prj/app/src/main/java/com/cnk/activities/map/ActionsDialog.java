@@ -39,14 +39,12 @@ public class ActionsDialog {
     public static ActionsDialog create(@NonNull Context context,
                                        @NonNull View view,
                                        @NonNull List<Action> actions) {
-        AlertDialog.Builder
-                dialogBuilder =
+        AlertDialog.Builder dialogBuilder =
                 new AlertDialog.Builder(context, R.style.FullHeightDialog);
         dialogBuilder.setView(view);
         dialogBuilder.setCancelable(false);
 
-        AutoResizeTextView
-                textView =
+        AutoResizeTextView textView =
                 (AutoResizeTextView) view.findViewById(R.id.tvExhibitDialogName);
         textView.setMinTextSize(2f);
         textView.setTextSize(100f);

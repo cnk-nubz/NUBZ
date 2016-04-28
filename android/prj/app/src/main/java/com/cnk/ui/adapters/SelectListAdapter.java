@@ -86,8 +86,7 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
 
     @Override
     public View getView(final int idx, View view, ViewGroup viewGroup) {
-        LayoutInflater
-                inflater =
+        LayoutInflater inflater =
                 (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View optionLabel = inflater.inflate(layout, null);
         TextView text = (TextView) optionLabel.findViewById(viewIds.getTextViewId());

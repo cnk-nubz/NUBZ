@@ -76,8 +76,7 @@ public class DatabaseHelper {
     public Integer getVersion(Version item) {
         Value<Integer> versionNumber = new Value<>();
         inTransaction((realm) -> {
-            VersionRealm
-                    result =
+            VersionRealm result =
                     realm.where(VersionRealm.class).equalTo("item", item.toString()).findFirst();
             versionNumber.val = result == null ? null : result.getCurrentVersion();
         });
@@ -94,12 +93,10 @@ public class DatabaseHelper {
     public ZoomLevelResolution getZoomLevelResolution(Integer floor, Integer zoomLevel) {
         Value<ZoomLevelResolution> res = new Value<>();
         inTransaction((realm) -> {
-            ZoomLevelResolutionRealm
-                    dbRes =
-                    realm.where(ZoomLevelResolutionRealm.class)
-                         .equalTo("floor", floor)
-                         .equalTo("zoomLevel", zoomLevel)
-                         .findFirst();
+            ZoomLevelResolutionRealm dbRes = realm.where(ZoomLevelResolutionRealm.class)
+                                                  .equalTo("floor", floor)
+                                                  .equalTo("zoomLevel", zoomLevel)
+                                                  .findFirst();
             if (dbRes != null) {
                 res.val = new ZoomLevelResolution(dbRes);
             }
@@ -114,12 +111,10 @@ public class DatabaseHelper {
         for (int i = 0; i < map.getZoomLevels().size(); i++) {
             ZoomLevel zoomLevel = map.getZoomLevels().get(i);
 
-            ZoomLevelResolution
-                    res =
-                    new ZoomLevelResolution(map.getFloor(),
-                                            i,
-                                            map.getOriginalSize(),
-                                            zoomLevel.getScaledSize());
+            ZoomLevelResolution res = new ZoomLevelResolution(map.getFloor(),
+                                                              i,
+                                                              map.getOriginalSize(),
+                                                              zoomLevel.getScaledSize());
             resolutions.add(res);
 
             MapTileInfo tilesInfo = new MapTileInfo(map.getFloor(), i, zoomLevel.getTileSize());
@@ -146,23 +141,19 @@ public class DatabaseHelper {
 
     public int getZoomLevelsCount(Integer floor) {
         Value<Integer> res = new Value<>();
-        inTransaction((realm) ->
-                              res.val =
-                                      (int) realm.where(ZoomLevelResolutionRealm.class)
-                                                 .equalTo("floor", floor)
-                                                 .count());
+        inTransaction((realm) -> res.val = (int) realm.where(ZoomLevelResolutionRealm.class)
+                                                      .equalTo("floor", floor)
+                                                      .count());
         return res.val;
     }
 
     public MapTileInfo getMapTileInfo(Integer floorNo, Integer zoomLevel) {
         Value<MapTileInfo> res = new Value<>();
         inTransaction((realm) -> {
-            MapTileInfoRealm
-                    dbRes =
-                    realm.where(MapTileInfoRealm.class)
-                         .equalTo("floor", floorNo)
-                         .equalTo("zoomLevel", zoomLevel)
-                         .findFirst();
+            MapTileInfoRealm dbRes = realm.where(MapTileInfoRealm.class)
+                                          .equalTo("floor", floorNo)
+                                          .equalTo("zoomLevel", zoomLevel)
+                                          .findFirst();
             if (dbRes != null) {
                 res.val = new MapTileInfo(dbRes);
             }
@@ -173,8 +164,7 @@ public class DatabaseHelper {
     public List<Exhibit> getAllExhibitsForFloor(Integer floor) {
         List<Exhibit> exhibits = new ArrayList<>();
         inTransaction((realm) -> {
-            RealmResults<ExhibitRealm>
-                    results =
+            RealmResults<ExhibitRealm> results =
                     realm.where(ExhibitRealm.class).equalTo("floor", floor).findAll();
 
             for (ExhibitRealm er : results) {
@@ -213,11 +203,10 @@ public class DatabaseHelper {
     public List<RaportFile> getAllReadyRaports() {
         List<RaportFile> raports = new ArrayList<>();
         inTransaction((realm) -> {
-            RealmResults<RaportFileRealm>
-                    results =
-                    realm.where(RaportFileRealm.class)
-                         .equalTo("state", RaportFileRealm.READY_TO_SEND)
-                         .findAll();
+            RealmResults<RaportFileRealm> results = realm.where(RaportFileRealm.class)
+                                                         .equalTo("state",
+                                                                  RaportFileRealm.READY_TO_SEND)
+                                                         .findAll();
             for (RaportFileRealm r : results) {
                 raports.add(new RaportFile(r));
             }
@@ -227,8 +216,7 @@ public class DatabaseHelper {
 
     public void changeRaportState(Integer id, String newState) {
         inTransaction((realm) -> {
-            RaportFileRealm
-                    entry =
+            RaportFileRealm entry =
                     realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
             entry.setState(newState);
             realm.copyToRealmOrUpdate(entry);
@@ -237,8 +225,7 @@ public class DatabaseHelper {
 
     public void changeRaportServerId(Integer id, Integer serverId) {
         inTransaction((realm) -> {
-            RaportFileRealm
-                    entry =
+            RaportFileRealm entry =
                     realm.where(RaportFileRealm.class).equalTo("id", id).findFirst();
             entry.setServerId(serverId);
             realm.copyToRealmOrUpdate(entry);

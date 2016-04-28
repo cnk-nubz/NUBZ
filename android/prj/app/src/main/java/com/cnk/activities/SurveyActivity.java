@@ -202,12 +202,10 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
                                                                              simpleAnswer));
                     break;
                 case MULTIPLE_CHOICE:
-                    MultipleChoiceQuestionAnswer
-                            multipleChoiceAnswer =
+                    MultipleChoiceQuestionAnswer multipleChoiceAnswer =
                             new MultipleChoiceQuestionAnswer();
                     answers.addMultipleChoiceAnswer(multipleChoiceAnswer);
-                    MultipleChoiceQuestion
-                            nextMultipleChoiceQuestion =
+                    MultipleChoiceQuestion nextMultipleChoiceQuestion =
                             currentSurvey.popNextMultipleChoiceQuestion();
                     questionViews.add(QuestionViewFactory.createQuestionView(nextMultipleChoiceQuestion,
                                                                              this,
@@ -250,8 +248,7 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
     }
 
     private void hideKeyboard() {
-        InputMethodManager
-                mgr =
+        InputMethodManager mgr =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         mgr.hideSoftInputFromWindow(currentQuestionView.getWindowToken(), 0);
     }

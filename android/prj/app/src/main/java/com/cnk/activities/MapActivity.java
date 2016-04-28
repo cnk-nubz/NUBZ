@@ -82,8 +82,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
             View abView = getLayoutInflater().inflate(R.layout.map_activity_bar, null);
-            Toolbar.LayoutParams
-                    abParams =
+            Toolbar.LayoutParams abParams =
                     new Toolbar.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                                              ViewGroup.LayoutParams.MATCH_PARENT);
             actionBar.setCustomView(abView, abParams);
@@ -140,8 +139,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
     private void dialogFinished(Integer exhibitId, @NonNull ActionsDialog dialog) {
         List<Integer> actions = dialog.getSelectedActions();
         Log.i(LOG_TAG, "Selected actions: " + actions);
-        RaportEvent
-                event =
+        RaportEvent event =
                 new RaportEvent(exhibitId, dialog.getElapsedTime(), actions, dialog.getBeginDate());
         ExperimentData.getInstance().addEventToCurrentRaportInBg(event);
 
@@ -160,8 +158,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
                          R.string.cancel,
                          (dialog, which) -> {
                              Log.i(LOG_TAG, "End map confirmed");
-                             Intent
-                                     postSurvey =
+                             Intent postSurvey =
                                      new Intent(getApplicationContext(), SurveyActivity.class);
                              postSurvey.putExtra("type", Survey.SurveyType.AFTER);
                              startActivity(postSurvey);

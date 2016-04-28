@@ -52,18 +52,14 @@ public class MapDownloadTask extends ServerTask {
     private FloorMap translateFromThrift(Integer floor, MapImage thriftResponse) {
         Size thriftSize = thriftResponse.getResolution();
         Resolution originalSize = new Resolution(thriftSize.getWidth(), thriftSize.getHeight());
-        List<com.cnk.communication.thrift.ZoomLevel>
-                imageTilesThrift =
+        List<com.cnk.communication.thrift.ZoomLevel> imageTilesThrift =
                 thriftResponse.getZoomLevels();
 
         ArrayList<ZoomLevel> zoomLevels = new ArrayList<>();
         for (com.cnk.communication.thrift.ZoomLevel tile : imageTilesThrift) {
-            Resolution
-                    scaledSize =
-                    new Resolution(tile.getScaledSize().getWidth(),
-                                   tile.getScaledSize().getHeight());
-            Resolution
-                    tileSize =
+            Resolution scaledSize = new Resolution(tile.getScaledSize().getWidth(),
+                                                   tile.getScaledSize().getHeight());
+            Resolution tileSize =
                     new Resolution(tile.getTileSize().getWidth(), tile.getTileSize().getHeight());
             List<List<String>> toCopy = tile.getTilesUrls();
             ZoomLevel toAdd = new ZoomLevel(scaledSize, tileSize, copyThriftList(toCopy));
