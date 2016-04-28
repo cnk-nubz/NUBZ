@@ -28,13 +28,10 @@ import java.util.Queue;
 public class ExperimentDataDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "ExperimentDownloadTask";
-    private ExperimentData.ExperimentUpdateAction action;
 
-    public ExperimentDataDownloadTask(NetworkHandler.FinishAction failure,
-                                      NetworkHandler.FinishAction success,
-                                      ExperimentData.ExperimentUpdateAction action) {
-        super(failure, success);
-        this.action = action;
+    public ExperimentDataDownloadTask(NetworkHandler.SuccessAction success,
+                                      NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     @Override
@@ -46,8 +43,6 @@ public class ExperimentDataDownloadTask extends ServerTask {
         }
         Log.i(LOG_TAG, "Downloaded experiment");
         updateDataHandler(thriftData);
-        action.doOnUpdate();
-        action = null;
     }
 
     private void updateDataHandler(CurrentExperimentResponse thriftData) {

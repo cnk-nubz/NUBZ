@@ -27,7 +27,7 @@ public class ActionsDialog {
 
     private long beginTime;
     private long endTime;
-    
+
     private SelectListAdapter<Action> adapter;
 
     private Dialog dialog;

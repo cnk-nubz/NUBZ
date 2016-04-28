@@ -24,21 +24,15 @@ import java.util.Map;
 public class MapDownloadTask extends ServerTask {
 
     private static final String LOG_TAG = "MapDownloadTask";
-    private MapData.MapUpdateAction action;
 
-
-    public MapDownloadTask(NetworkHandler.FinishAction failure,
-                           NetworkHandler.FinishAction success,
-                           MapData.MapUpdateAction action) {
-        super(failure, success);
-        this.action = action;
+    public MapDownloadTask(NetworkHandler.SuccessAction success,
+                           NetworkHandler.FailureAction failure) {
+        super(success, failure);
     }
 
     public void performInSession(Server.Client client) throws TException, IOException {
         downloadTilesUpdate(client);
         Log.i(LOG_TAG, "Map update complete");
-        action.doOnUpdate();
-        action = null;
     }
 
     private void downloadTilesUpdate(Server.Client client) throws TException, IOException {

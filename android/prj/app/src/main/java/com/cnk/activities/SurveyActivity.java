@@ -2,7 +2,6 @@ package com.cnk.activities;
 
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -15,7 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cnk.R;
-import com.cnk.communication.NetworkHandler;
+import com.cnk.communication.task.ServerTask;
+import com.cnk.communication.task.Task;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.experiment.survey.answers.MultipleChoiceQuestionAnswer;
@@ -28,6 +28,7 @@ import com.cnk.notificators.Observer;
 import com.cnk.ui.Utils;
 import com.cnk.ui.questions.QuestionView;
 import com.cnk.ui.questions.QuestionViewFactory;
+import com.cnk.utilities.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,12 +59,18 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         type = (Survey.SurveyType) getIntent().getSerializableExtra("type");
         if (type == Survey.SurveyType.BEFORE) {
             Log.i(LOG_TAG, "Survey before");
-            setSpinner();
-            ExperimentData.getInstance().downloadExperiment(this::experimentDataDownloaded);
+            startExperimentDataDownload();
         } else {
             Log.i(LOG_TAG, "Survey after");
             init();
         }
+    }
+
+    private void startExperimentDataDownload() {
+        setSpinner();
+        ExperimentData.getInstance()
+                      .downloadExperiment(this::experimentDataDownloaded,
+                                          this::experimetDataDownloadingFailed);
     }
 
     private void setButtons() {
@@ -114,12 +121,11 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
             return;
         }
         hideKeyboard();
-        DialogInterface.OnClickListener positiveAction = (dialog, which) -> changeToNextActivity();
         Utils.showDialog(SurveyActivity.this,
                          R.string.confirmation,
                          R.string.confirm,
                          R.string.cancel,
-                         positiveAction);
+                         (dialog, which) -> changeToNextActivity());
     }
 
     private void changeToNextActivity() {
@@ -127,7 +133,6 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
         if (next == null) {
             finish();
             ExperimentData.getInstance().finishExperiment();
-            NetworkHandler.getInstance().uploadRaports();
         } else {
             Intent i = new Intent(getApplicationContext(), next);
             finish();
@@ -144,17 +149,27 @@ public class SurveyActivity extends AppCompatActivity implements Observer {
 
     private void setSpinner() {
         spinner = new ProgressDialog(this);
-        spinner.setTitle("Ładowanie");
-        spinner.setMessage("Oczekiwanie na pobranie danych");
+        spinner.setTitle(getString(R.string.loading));
+        spinner.setMessage(getString(R.string.waitingForExperimentData));
         spinner.setCancelable(false);
         spinner.show();
     }
 
-    private void experimentDataDownloaded() {
+    private void experimentDataDownloaded(Task t) {
         init();
-        if (spinner != null) {
-            spinner.dismiss();
-        }
+        spinner.dismiss();
+    }
+
+    private void experimetDataDownloadingFailed(Task t, ServerTask.FailureReason reason) {
+        spinner.dismiss();
+        runOnUiThread(() -> {
+            Utils.showDialog(SurveyActivity.this,
+                             Util.downloadErrorMessage(reason),
+                             getString(R.string.tryAgain),
+                             getString(R.string.cancel),
+                             (dialog, which) -> startExperimentDataDownload(),
+                             (dialog, which) -> SurveyActivity.this.finish());
+        });
     }
 
     private void init() {

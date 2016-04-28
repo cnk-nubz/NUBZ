@@ -45,6 +45,7 @@ public class SortListAdapter<T extends ListObject> extends BaseAdapter {
             notifyDataSetChanged();
         }
     }
+
     private static final Integer DEFAULT_LAYOUT = R.layout.sort_list_item_default;
     SortViewItemIds viewIds;
     private List<T> options;

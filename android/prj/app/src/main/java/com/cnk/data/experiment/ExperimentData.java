@@ -22,10 +22,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ExperimentData {
-    public interface ExperimentUpdateAction {
-        void doOnUpdate();
-    }
-
     private class BgRaportSaver implements Runnable {
         private volatile Raport raport;
 
@@ -98,8 +94,9 @@ public class ExperimentData {
         experiment = newData;
     }
 
-    public void downloadExperiment(ExperimentUpdateAction action) {
-        NetworkHandler.getInstance().downloadExperimentData(action);
+    public void downloadExperiment(NetworkHandler.SuccessAction success,
+                                   NetworkHandler.FailureAction failure) {
+        NetworkHandler.getInstance().downloadExperimentData(success, failure);
     }
 
     public Survey getSurvey(@NonNull Survey.SurveyType type) {
@@ -117,13 +114,13 @@ public class ExperimentData {
     // only creates new database entry and file for new raport which is not used anywhere else
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
-        currentRaport =
-                new Raport(newId,
-                           new Date(),
-                           experiment.getId(),
-                           experiment.getSurvey(Survey.SurveyType.BEFORE).getSurveyAnswers(),
-                           experiment.getSurvey(Survey.SurveyType.AFTER).getSurveyAnswers());
-
+        currentRaport = new Raport(newId,
+                                   new Date(),
+                                   experiment.getId(),
+                                   experiment.getSurvey(Survey.SurveyType.BEFORE)
+                                             .getSurveyAnswers(),
+                                   experiment.getSurvey(Survey.SurveyType.AFTER)
+                                             .getSurveyAnswers());
         String path = getCurrentRaportPath();
         new Thread(new BgRaportSaver(currentRaport)).start();
 

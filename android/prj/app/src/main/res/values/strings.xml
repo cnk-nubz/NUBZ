@@ -30,4 +30,11 @@
     <string name="chooseOne">Zaznacz jedną odpowiedź</string>
     <string name="chooseMultiple">Zaznacz dowolną liczbę odpowiedzi</string>
     <string name="sort">Posortuj poniższe opcje</string>
+    <string name="dataDownloadFailure">Nie udało się pobrać danych</string>
+    <string name="reasonWifi">brak połączenia z siecią Wi-Fi: połącz się z siecią Wi-Fi a następnie spróbuj ponownie.</string>
+    <string name="reasonConnection">wystapił błąd podczas łączenia z serwerem.</string>
+    <string name="synchronizing">Synchronizacja</string>
+    <string name="synchronizingInProgress">Trwa synchronizacja danych z serwerem</string>
+    <string name="loading">Ładowanie</string>
+    <string name="waitingForExperimentData">Oczekiwanie na pobranie danych</string>
 </resources>

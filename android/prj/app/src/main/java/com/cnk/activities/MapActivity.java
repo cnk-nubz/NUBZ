@@ -16,7 +16,6 @@ import android.widget.TextView;
 import com.cnk.R;
 import com.cnk.activities.map.ActionsDialog;
 import com.cnk.activities.map.MapContainer;
-import com.cnk.communication.NetworkHandler;
 import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.ExperimentData;
@@ -52,8 +51,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
         ExhibitsData.getInstance().addObserver(this, this::onExhibitsChange);
         mapContainer.addObserver(this, this::exhibitClick);
-
-        NetworkHandler.getInstance().startBgDownload();
     }
 
     @Override
@@ -181,7 +178,6 @@ public class MapActivity extends AppCompatActivity implements Observer {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        NetworkHandler.getInstance().stopBgDownload();
         ExhibitsData.getInstance().deleteObserver(this);
         mapContainer.destroy();
     }

@@ -10,7 +10,10 @@ public class RaportEvent implements Serializable {
     private Date startDate;
     private List<Integer> actions;
 
-    public RaportEvent(Integer exhibitId, int durationSeconds, List<Integer> actions, Date startDate) {
+    public RaportEvent(Integer exhibitId,
+                       int durationSeconds,
+                       List<Integer> actions,
+                       Date startDate) {
         this.exhibitId = exhibitId;
         this.durationSeconds = durationSeconds;
         this.actions = actions;

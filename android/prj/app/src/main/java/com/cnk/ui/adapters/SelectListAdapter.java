@@ -34,6 +34,7 @@ public class SelectListAdapter<T extends ListObject> extends BaseAdapter {
             }
         }
     }
+
     private static final Integer ACTIVE_COLOR = Color.GREEN;
     private static final Integer NOT_ACTIVE_COLOR = 0xffd3d3d3;
     private static final Integer DEFAULT_LAYOUT = R.layout.select_list_item_default;
