@@ -1,9 +1,0 @@
-#ZAKTUALIZOWAĆ DJANGO DO 1.8!!!!!
-#zainstalować node.js
-proszę sobie znaleźć xD
-#zainstalować coffee scripta jak już masz node.js
-sudo npm install -g coffee-script
-#zainstalować django-compressor
-sudo pip install django-compressor
-#zainstalować thrifta (plus biblioteki thrifta)
-sudo pip install thrift
