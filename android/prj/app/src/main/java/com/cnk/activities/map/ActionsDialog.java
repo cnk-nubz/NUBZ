@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.cnk.R;
 import com.cnk.data.experiment.Action;
-import com.cnk.ui.AutoResizeTextView;
+import com.cnk.external.AutoResizeTextView;
 import com.cnk.ui.adapters.SelectListAdapter;
 import com.cnk.utilities.Consts;
 

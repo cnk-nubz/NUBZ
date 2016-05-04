@@ -9,3 +9,10 @@ wget -O /tmp/nubz.zip https://github.com/easylogging/easyloggingpp/releases/down
 mkdir -p server/external
 unzip -o /tmp/nubz.zip -d server/external
 
+# android - download
+wget -O /tmp/AutoResizeTextView.zip https://github.com/gawronp/AutoResizeTextView/archive/2.0.zip
+
+# android - unpack
+mkdir -p android/prj/app/src/main/java/com/cnk/external
+unzip -j -o /tmp/AutoResizeTextView.zip -d android/prj/app/src/main/java/com/cnk/external
+

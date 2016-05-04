@@ -17,8 +17,8 @@ import com.cnk.data.map.MapData;
 import com.cnk.data.map.Resolution;
 import com.cnk.data.map.ZoomLevelInfo;
 import com.cnk.database.models.Exhibit;
+import com.cnk.external.AutoResizeTextView;
 import com.cnk.notificators.Observable;
-import com.cnk.ui.AutoResizeTextView;
 import com.cnk.utilities.ColorHelper;
 import com.qozix.tileview.TileView;
 
