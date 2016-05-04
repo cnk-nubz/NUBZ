@@ -11,6 +11,8 @@ class Handlers
   # }
   # constructor :: MapData -> Context
   constructor: (@_mapData) ->
+    @_mapData.minZoom = 1
+    @_mapData.maxZoom = @_mapData.floorTilesInfo.map((x) -> Math.max(Object.keys(x).length, 1))
     @_exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
       .setDeleteHandler(@removeExhibitSuccess)
     @_DOM =
@@ -60,9 +62,8 @@ class Handlers
       exhibitFloor = exhibit.frame.mapLevel
       jQuery(@_getNthFloor(@_mapData.activeFloor)).removeClass "active"
       jQuery(@_getNthFloor(exhibitFloor)).addClass "active"
-      @canvas.flyToExhibit id
+      @canvas.flyToExhibit(id, @_mapData.activeFloor)
       @_mapData.activeFloor = exhibitFloor
-      @canvas.updateLabelsVisibility().updateExhibitResizing()
       @panel.filterForOneFloor(@_mapData.activeFloor)
     )
     @panel.on("modifyExhibitWithId", (id, dialog) =>
@@ -74,9 +75,13 @@ class Handlers
         color: exhibit.colorHex
       @_exhibitEditDialog.bindData(data).show()
     )
-    @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@_DOM.plusZoom).prop("disabled", disablePlus)
-      jQuery(@_DOM.minusZoom).prop("disabled", disableMinus)
+    @canvas.on("zoomChange", (activeZoom) =>
+      maxZoom = @_mapData.maxZoom[@_mapData.activeFloor]
+      minZoom = @_mapData.minZoom
+      jQuery(@_DOM.plusZoom)
+        .prop("disabled", activeZoom >= maxZoom)
+      jQuery(@_DOM.minusZoom)
+        .prop("disabled", activeZoom <= minZoom or minZoom is maxZoom)
     )
     return
 
@@ -110,16 +115,18 @@ class Handlers
   # showLabelsHandler :: Event -> undefined
   showLabelsHandler: (e) ->
     instance = e.data.instance
+    activeFloor = instance._mapData.activeFloor
     statusNow = instance.changeButtonStatus(jQuery(this))
-    instance.canvas.updateLabelsVisibility(statusNow)
+    instance.canvas.setLabelsVisibility(statusNow, activeFloor)
     return
 
 
   # resizeExhibitsHandler :: Event -> undefined
   resizeExhibitsHandler: (e) ->
     instance = e.data.instance
+    activeFloor = instance._mapData.activeFloor
     statusNow = instance.changeButtonStatus(jQuery(this))
-    instance.canvas.updateExhibitResizing(statusNow)
+    instance.canvas.setExhibitResizing(statusNow, activeFloor)
     return
 
 
@@ -222,14 +229,14 @@ class Handlers
             title: 'Błąd serwera'
           )
         return
-      @ajaxNewExhibitSuccess(recvData, dialog)
+      @_newExhibitSuccess(recvData, dialog)
       dialog.close()
     , 'json')
     return
 
 
-  # ajaxNewExhibitSuccess :: Exhibit -> undefined
-  ajaxNewExhibitSuccess: (data) =>
+  # _newExhibitSuccess :: Exhibit -> undefined
+  _newExhibitSuccess: (data) =>
     id = data.id
     @_mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
     @_mapData.exhibits[id].name = data.name
@@ -242,8 +249,6 @@ class Handlers
       @_mapData.exhibits[id].frame.height = data.frame.height
       @_mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
       @canvas.addExhibits([@_mapData.exhibits[id]])
-      if data.frame.mapLevel is @_mapData.activeFloor
-        @canvas.updateLabelsVisibility().updateExhibitResizing()
 
     jQuery.getJSON('/getAllExhibits', null, (data) =>
       if not data.success
@@ -291,20 +296,13 @@ class Handlers
             title: 'Błąd serwera'
           )
         return
-      @ajaxUpdateExhibitSuccess(recvData)
+      @_updateExhibitSuccess(recvData)
       dialog.close()
     , 'json')
     return
 
-  # ajaxUpdateExhibitSuccess :: Exhibit -> undefined
-  ajaxUpdateExhibitSuccess: (data) =>
-    if not data.success
-      BootstrapDialog.alert(
-        message: "<p align=\"center\">#{data.message}</p>"
-        type: BootstrapDialog.TYPE_DANGER
-        title: 'Błąd serwera'
-      )
-      return
+  # _updateExhibitSuccess :: Exhibit -> undefined
+  _updateExhibitSuccess: (data) =>
     @canvas.removeExhibit(data.id)
     @_mapData.exhibits[data.id] = {
       id: data.id
@@ -314,7 +312,6 @@ class Handlers
     }
     if data.frame?
       @canvas.addExhibits([@_mapData.exhibits[data.id]])
-    @canvas.updateLabelsVisibility().updateExhibitResizing()
     @panel.refreshExhibitsList()
     return
 
@@ -323,13 +320,7 @@ class Handlers
   removeExhibitSuccess: (exhibitId) =>
     @canvas.removeExhibit(exhibitId)
     @panel.removeExhibit(exhibitId)
-    @panel.refreshExhibitsList()
     @
-
-  removeExhibitSuccess: (exhibitId) =>
-    @canvas.removeExhibit(exhibitId)
-    @panel.removeExhibit(exhibitId)
-    @panel.refreshExhibitsList()
 
 jQuery(document).ready( ->
   mapData =

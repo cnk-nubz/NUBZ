@@ -3,6 +3,8 @@ root.cachedData = {}
 class Handlers
   # constructor :: MapData -> Context
   constructor: (@_mapData) ->
+    @_mapData.minZoom = 1
+    @_mapData.maxZoom = @_mapData.floorTilesInfo.map((x) -> Math.max(Object.keys(x).length, 1))
     @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -14,6 +16,7 @@ class Handlers
     @_setEvents()
     jQuery("#{@_DOM.labels}, #{@_getNthFloor(@_mapData.activeFloor)}").addClass "active"
     @canvas.setFloorLayer 0, 0
+
 
   # _getNthFloor :: Int -> String
   _getNthFloor: (n) ->
@@ -30,15 +33,17 @@ class Handlers
         instance: this
         floorButtons: floorButtons
       button.click(data, @changeFloorHandler(idx))
-    jQuery(@_DOM.labels).click(canvas: @canvas, @showLabelsHandler)
+    jQuery(@_DOM.labels).click(instance: this, @showLabelsHandler)
     return
 
 
   # _setEvents :: () -> undefined
   _setEvents: =>
-    @canvas.on("zoomend", (disableMinus, disablePlus) =>
-      jQuery(@_DOM.plusZoom).prop("disabled", disablePlus)
-      jQuery(@_DOM.minusZoom).prop("disabled", disableMinus)
+    @canvas.on("zoomChange", (activeZoom) =>
+      jQuery(@_DOM.plusZoom)
+        .prop("disabled", activeZoom is @_mapData.maxZoom[@_mapData.activeFloor])
+      jQuery(@_DOM.minusZoom)
+        .prop("disabled", activeZoom is @_mapData.minZoom)
     )
     return
 
@@ -70,6 +75,7 @@ class Handlers
 
   # showLabelsHandler :: Event -> undefined
   showLabelsHandler: (e) ->
+    instance = e.data.instance
     obj = jQuery(this)
     obj.blur()
     isActive = obj.hasClass("active")
@@ -77,7 +83,9 @@ class Handlers
       obj.removeClass("active")
     else
       obj.addClass("active")
-    e.data.canvas.updateLabelsVisibility(not isActive)
+
+    activeFloor = instance._mapData.activeFloor
+    instance.canvas.setLabelsVisibility(not isActive, activeFloor)
     return
 
 

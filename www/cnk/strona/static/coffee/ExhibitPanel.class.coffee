@@ -100,6 +100,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
       if exhibit.listElement.data.exhibitId is exhibitId
         @_exhibits.splice(index, 1)
         break
+    @refreshExhibitsList()
     @
 
 

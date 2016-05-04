@@ -6,30 +6,26 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     @_isResizingAllowed = false
 
 
-  # setFloorLayer :: (Int, Int) -> Context
-  setFloorLayer: (newFloor, oldFloor) =>
-    super
-    @_exhibits[@_mapData.activeFloor].eachLayer((layer) =>
-      if @_isResizingAllowed
-        layer.editing.enable()
-      else
-        layer.editing.disable()
-    )
-    @
-
-
   # _exhibitOptions :: [JsObject] -> JsObject
-  _exhibitOptions: (options...) -> jQuery.extend(options..., { draggable: true })
+  _exhibitOptions: (options...) -> jQuery.extend(super, { draggable: true })
 
 
-  # _prepareExhibit :: Exhibit -> Exhibit
-  _prepareExhibit: (exh) =>
-    exh.editing.enable() if @_isResizingAllowed
-    exh.on('editstart', @_onEditStart)
-    exh.on('edit', @_onEditEnd)
-    exh.on('dragstart', @_onDragStart)
-    exh.on('dragend', @_onDragEnd)
-    exh
+  # _prepareExhibit :: L.Rectangle -> Exhibit
+  _prepareExhibit: (exhibit) =>
+    exhibit = super exhibit
+    exhibit.editing.enable() if @_isResizingAllowed
+    exhibit.on('editstart', @_onEditStart)
+    exhibit.on('edit', @_onEditEnd)
+    exhibit.on('dragstart', @_onDragStart)
+    exhibit.on('dragend', @_onDragEnd)
+    exhibit
+
+
+  # _updateState :: Int -> undefined
+  _updateState: (floor) ->
+    super
+    @_updateExhibitResizing(floor)
+    return
 
 
   # _onEditStart :: Event -> undefined
@@ -70,19 +66,23 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     return
 
 
-  # _updateExhibitPosition :: Exhibit -> undefined
+  # _updateExhibitPosition :: L.Rectangle -> undefined
   _updateExhibitPosition: (exhibit) =>
     geoPoints = @_fixExhibitPosition(exhibit)
-    scaledPoints = (@_map.project(p, @_maxZoom[@_mapData.activeFloor]) for p in geoPoints)
+    exhibitId = exhibit.options.id
+    exhibitFloor = @_mapData.exhibits[exhibitId].frame.mapLevel
+    scaledPoints = (@_map.project(p, @_mapData.maxZoom[exhibitFloor]) for p in geoPoints)
     [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
     @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
     return
 
 
-  # _fixExhibitPosition :: Exhibit -> [L.LatLng]
+  # _fixExhibitPosition :: L.Rectangle -> [L.LatLng]
   _fixExhibitPosition: (exhibit) =>
-    maxX = @_map.project(@_mapBounds[@_mapData.activeFloor].getNorthEast()).x
-    maxY = @_map.project(@_mapBounds[@_mapData.activeFloor].getSouthWest()).y
+    exhibitId = exhibit.options.id
+    exhibitFloor = @_mapData.exhibits[exhibitId].frame.mapLevel
+    maxX = @_map.project(@_mapBounds[exhibitFloor].getNorthEast()).x
+    maxY = @_map.project(@_mapBounds[exhibitFloor].getSouthWest()).y
 
     latLng = exhibit.getLatLngs()[0]
     exhibitPoints = (@_map.project(ll) for ll in latLng)
@@ -129,20 +129,19 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
       url: '/updateExhibitPosition/'
       data: toSend
       context: this
-      success: @_ajaxSuccessHandler
+      success: @_changeExhibitPositionSuccess
     )
     return
 
 
-  # _ajaxSuccessHandler :: ExhibitData -> undefined
-  _ajaxSuccessHandler: (data) =>
+  # _changeExhibitPositionSuccess :: ExhibitData -> undefined
+  _changeExhibitPositionSuccess: (data) =>
     if data.success is true
       @_mapData.exhibits[data.id].frame.x = data.x
       @_mapData.exhibits[data.id].frame.y = data.y
       @_mapData.exhibits[data.id].frame.width = data.width
       @_mapData.exhibits[data.id].frame.height = data.height
     else
-      @setFloorLayer(@_mapData.activeFloor, @_mapData.activeFloor)
       BootstrapDialog.alert(
         message: "<p align=\"center\">#{data.message}</p>"
         type: BootstrapDialog.TYPE_DANGER
@@ -165,11 +164,16 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
     bot
 
 
-  # updateExhibitResizing :: Boolean -> Context
-  updateExhibitResizing: (isVisible = @_isResizingAllowed) =>
-    @_isResizingAllowed = isVisible
-    @_exhibits[@_mapData.activeFloor].eachLayer((layer) ->
-      if isVisible
+  # setExhibitResizing :: (Boolean, Int) -> Context
+  setExhibitResizing: (@_isResizingAllowed, floor) =>
+    @_updateExhibitResizing(floor)
+    @
+
+
+  # _updateExhibitResizing :: Int -> Context
+  _updateExhibitResizing: (floor) =>
+    @_exhibits[floor].eachLayer((layer) =>
+      if @_isResizingAllowed
         layer.editing.enable()
       else
         layer.editing.disable()
