@@ -1,0 +1,146 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+}
+
+#activeExperiment {
+  position: absolute;
+  top: 55px;
+  height: 100px;
+  right: 75px;
+  left: 75px;
+  border: 1px solid #ccc;
+  background: #eee;
+}
+
+#activeExperiment > div {
+  text-align: center;
+  font-size: 30px;
+  height: 50px;
+  line-height: 50px;
+  font-weight: 600;
+  font-family: 'Open Sans';
+  border-bottom: 1px solid #ccc;
+}
+
+#activeExperiment > table {
+  background: #fff;
+  width: 100%;
+  table-layout: fixed;
+}
+
+#activeExperiment tr {
+  border-bottom: 1px solid #ccc;
+  height: 50px;
+}
+
+#activeExperiment > table td:first-child {
+  font-size: 26px;
+  padding: 6px;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+#activeExperiment > table td:not(:first-child) {
+  width: 120px;
+  padding: 6px;
+}
+
+#activeExperiment > table td:not(:first-child) > div {
+  background: #ddd;
+  border: 1px solid #aaa;
+  text-align: center;
+  transition: background 230ms linear, border 230ms linear;
+}
+
+#activeExperiment > table td:not(:first-child) > div:hover {
+  background: lightgreen;
+  border: 1px solid green;
+  cursor: pointer;
+}
+
+#activeExperiment > table td:not(:first-child) > div > span {
+  font-weight: 550;
+  font-size: 22px;
+  line-height: 32px;
+}
+
+#lists {
+  position: absolute;
+  top: 152px;
+  bottom: 5px;
+  left: 0px;
+  right: 0px;
+}
+
+#readyExperiments,
+#finishedExperiments {
+  position: relative;
+  width: 50%;
+  height: 100%;
+}
+
+#readyExperiments {
+  float: left;
+  padding: 10px 25px 10px 75px;
+}
+
+#finishedExperiments {
+  float: right;
+  padding: 10px 75px 10px 25px;
+}
+
+#readyExperiments .middle,
+#finishedExperiments .middle {
+  position: absolute;
+  top: 56px;
+  bottom: 5px;
+  background: #fff;
+  overflow-y: scroll;
+}
+
+#readyExperiments .middle {
+  right: 25px;
+  left: 75px;
+}
+
+#finishedExperiments .middle {
+  right: 75px;
+  left: 25px;
+}
+
+.myHeader {
+  position: relative;
+  height: 46px;
+  line-height: 46px;
+  border: 1px solid #ddd;
+  font-size: 22px;
+  font-weight: 600;
+  background: #eee;
+  text-align: center;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+.addElement {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  bottom: 0px;
+  font-size: 14px;
+  line-height: 46px;
+  width: 42px;
+  border-left: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.addElement:hover {
+  background: #ccc;
+  border: 1px solid #bbb;
+}

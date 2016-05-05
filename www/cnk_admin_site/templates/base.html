@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% load compress %}
+{% load jsvar %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NUBZ</title>
+  {% block script %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+          integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+  <script async>
+  function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+  </script>
+  {% endblock %}
+  {% block css %}
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+        crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css"
+        rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css"
+        rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  {% endblock %}
+  {% block includes %}
+    {% compress js %}
+    <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/dialog/QuestionDialog.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/dialog/ConfirmDialog.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/MutableCanvas.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script src="{% static "coffee/ExhibitPanel.class.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+  {% endblock %}
+  {% block init %}
+    {% compress js %}
+    <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
+    {% endcompress %}
+    {% compress js %}
+    <script type="text/coffeescript">
+      document.detached = {}
+      root = exports ? this
+      floorUrl = [
+        "{{urlFloor0|escape|safe}}"
+        "{{urlFloor1|escape|safe}}"
+      ]
+      if floorUrl[0] is '' or floorUrl[1] is ''
+        f = ->
+          miss0 = floorUrl[0] is ''
+          miss1 = floorUrl[1] is ''
+          missingFloor = "#{if miss0 then 0 else ''} #{if miss0 and miss1 then "oraz" else ''} #{if miss1 then 1 else ''}"
+          BootstrapDialog.show(
+            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami pietra #{missingFloor}"
+            title: 'Zły plik konfiguracyjny'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+        setTimeout(f, 1000)
+        throw new Error("zły plik konfiguracyjny")
+      activeFloor = +"{{acitveFloor}}"
+      exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+      floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+      (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
+      mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
+    </script>
+    {% endcompress %}
+  {% endblock %}
+</head>
+	<body>
+		{% block body %}{% endblock %}
+	</body>
+</html>

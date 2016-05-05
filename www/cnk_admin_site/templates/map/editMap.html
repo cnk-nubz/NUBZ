@@ -1,0 +1,49 @@
+{% extends "mainPage.html" %}
+{% load staticfiles %}
+{% load compress %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static "include/css/leaflet-all.min.css" %}" rel="stylesheet" />
+  <link href="{% static "css/exhibitPanel.css" %}" rel="stylesheet" />
+  <link href="{% static "css/control-buttons.css" %}" rel="stylesheet" />
+  <link href="{% static "css/editMap.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block script %}
+  {{ block.super }}
+  {% compress js %}
+  <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  <!-- LEAFLET -->
+  <script src="{% static "include/js/leaflet-all.min.js" %}"></script>
+{% endblock %}
+{% block init %}
+ {{ block.super }}
+  {% compress js %}
+    <script src="{% static "coffee/handler/editMap.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+{% block content %}
+<div id="mapSite">
+  <div class="control-button-container">
+    <div class="control-button-group" id="zoomControls">
+      <button class="control-button"><div><span><strong>+</strong></span></div></button>
+      <button class="control-button"><div><span><strong>-</strong></span></div></button>
+    </div>
+    <div class="control-button-group" id="changeFloor">
+      <button class="control-button"><div><span><strong>0</strong></span></div></button>
+      <button class="control-button"><div><span><strong>1</strong></span></div></button>
+    </div>
+    <div class="control-button-group" id="showLabels">
+      <button class="control-button"><div><i class="fa fa-comment-o"></i></div></button>
+    </div>
+    <div class="control-button-group" id="changeResizing">
+      <button class="control-button"><div><i class="fa fa-arrows-alt"></i></div></button>
+    </div>
+    <div class="control-button-group" id="changeMap">
+      <button class="control-button"><div><i class="fa fa-map-o"></i></div></button>
+    </div>
+  </div>
+  <div id="map"></div>
+  <div id="exhibit-panel"></div>
+</div>
+{% endblock %}
