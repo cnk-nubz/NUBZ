@@ -2,8 +2,9 @@ package com.cnk.activities.map;
 
 import android.support.annotation.NonNull;
 
-import com.cnk.ui.AutoResizeTextView;
+import com.cnk.external.AutoResizeTextView;
 import com.qozix.tileview.hotspots.HotSpot;
+
 
 public class ExhibitSpot extends HotSpot {
     private int exhibitId;
