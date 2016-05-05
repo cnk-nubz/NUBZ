@@ -10,7 +10,7 @@ mkdir -p server/external
 unzip -o /tmp/nubz.zip -d server/external
 
 # android - download
-wget -O /tmp/AutoResizeTextView.zip https://github.com/gawronp/AutoResizeTextView/archive/2.0.zip
+wget -O /tmp/AutoResizeTextView.zip https://github.com/gawronp/AutoResizeTextView/archive/2.1.zip
 
 # android - unpack
 mkdir -p android/prj/app/src/main/java/com/cnk/external
