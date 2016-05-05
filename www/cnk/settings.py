@@ -14,7 +14,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(BASE_DIR, 'strona/thrift_structures'))
+sys.path.append(os.path.join(BASE_DIR, 'cnk_admin_site/thrift_structures'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
@@ -37,7 +37,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'strona',
+    'cnk_admin_site',
     'compressor',
     'thrift',
 )
@@ -58,7 +58,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-        BASE_DIR + '/strona/templates'
+        BASE_DIR + '/cnk_admin_site/templates'
     ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -148,7 +148,7 @@ STATIC_ROOT = ''
 
 STATICFILES_DIRS = (
     os.path.join('download'),
-    os.path.join(BASE_DIR + '/strona/', 'static'),
+    os.path.join(BASE_DIR + '/cnk_admin_site/', 'static'),
 )
 MEDIA_URL = os.path.join(BASE_DIR, 'media/')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'download_tmp/')

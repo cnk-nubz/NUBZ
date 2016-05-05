@@ -2,7 +2,7 @@
 
 set -e
 
-cd www/cnk;
+cd www;
 
 mkdir -p download_tmp;
 mkdir -p download;
