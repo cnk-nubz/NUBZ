@@ -16,6 +16,8 @@ exception InvalidData {
 exception DuplicateName {
 }
 
+exception ElementInUse {
+}
 
 /////////////////////////////////////////////////
 // Ping

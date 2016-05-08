@@ -10,6 +10,14 @@
 
 namespace repository {
 
+/*
+ * Validation:
+ * Every method validates `ID`, `name`
+ * and therefore can throw InvalidData or DuplicateName
+ *
+ * Deletion:
+ * `remove` throws InUse if some experiment uses given action (reference count != 0)
+ */
 class Actions {
 public:
     struct Action {
@@ -19,18 +27,19 @@ public:
 
     Actions(db::DatabaseSession &session);
 
+    void incReferenceCount(std::int32_t ID);
+    void decReferenceCount(std::int32_t ID);
+
     std::vector<std::int32_t> getAllIDs();
 
-    boost::optional<Action> get(std::int32_t ID);
+    // non-throwing get
+    boost::optional<Action> getOpt(std::int32_t ID);
+
+    Action get(std::int32_t ID);
     std::vector<Action> getAll();
 
     void remove(std::int32_t ID);
-    void removeAll();
 
-    // ID will be saved in the given struct
-    // throws:
-    // - Duplicate Name
-    // - InvalidData in case of empty name
     void insert(Action *action);
     void insert(std::vector<Action> *actions);
 

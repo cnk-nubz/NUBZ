@@ -23,6 +23,8 @@ public:
     Action create(const CreateActionRequest &input);
     std::vector<Action> getAll();
 
+    void remove(std::int32_t actionID);
+
 private:
     db::Database &db;
 };

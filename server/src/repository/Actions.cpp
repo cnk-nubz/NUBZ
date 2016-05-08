@@ -5,12 +5,13 @@
 #include "Actions.h"
 #include "DefaultRepo.h"
 #include "error/DuplicateName.h"
+#include "error/InUse.h"
 #include "error/InvalidData.h"
 
 namespace repository {
 
 using Table = db::table::Actions;
-using Impl = repository::detail::DefaultRepoWithID<Table>;
+using Impl = repository::detail::DefaultRepoIDRefCount<Table>;
 
 namespace {
 Table::Sql::in_t toDB(const Actions::Action &action);
@@ -20,11 +21,27 @@ Actions::Action fromDB(const Table::Sql::out_t &actionTuple);
 Actions::Actions(db::DatabaseSession &session) : session(session) {
 }
 
+void Actions::incReferenceCount(std::int32_t ID) {
+    Impl::incRefCount(session, ID);
+}
+
+void Actions::decReferenceCount(std::int32_t ID) {
+    Impl::decRefCount(session, ID);
+}
+
 std::vector<std::int32_t> Actions::getAllIDs() {
     return Impl::getAllIDs(session);
 }
 
-boost::optional<Actions::Action> Actions::get(std::int32_t ID) {
+Actions::Action Actions::get(std::int32_t ID) {
+    if (auto res = getOpt(ID)) {
+        return res.value();
+    } else {
+        throw InvalidData{"incorrect action ID"};
+    }
+}
+
+boost::optional<Actions::Action> Actions::getOpt(std::int32_t ID) {
     if (auto res = Impl::get(session, ID)) {
         return fromDB(res.value());
     } else {
@@ -39,11 +56,16 @@ std::vector<Actions::Action> Actions::getAll() {
 }
 
 void Actions::remove(std::int32_t ID) {
-    Impl::remove(session, ID);
-}
+    auto sql = Table::Sql::select().where(Table::ID == ID);
+    auto dbTuple = session.getResult(sql);
 
-void Actions::removeAll() {
-    Impl::removeAll(session);
+    if (!dbTuple) {
+        throw InvalidData{"incorrect action ID"};
+    }
+    if (std::get<Table::FieldRefCount>(dbTuple.value()).value != 0) {
+        throw InUse{"action in use"};
+    }
+    Impl::remove(session, ID);
 }
 
 void Actions::insert(std::vector<Actions::Action> *actions) {

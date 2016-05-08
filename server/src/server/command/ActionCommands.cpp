@@ -2,7 +2,6 @@
 
 #include <repository/Actions.h>
 
-#include <server/io/InvalidInput.h>
 #include <server/utils/CmpUTF8.h>
 
 #include "ActionCommands.h"
@@ -31,6 +30,12 @@ std::vector<Action> ActionCommands::getAll() {
         return utils::cmpUTF8(lhs.text, rhs.text);
     });
     return std::vector<Action>(repoActions.begin(), repoActions.end());
+}
+
+void ActionCommands::remove(std::int32_t actionID) {
+    db.execute([&](db::DatabaseSession &session) {
+        return repository::Actions{session}.remove(actionID);
+    });
 }
 }
 }

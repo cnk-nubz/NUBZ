@@ -5,12 +5,13 @@
 #include "DefaultRepo.h"
 #include "SimpleQuestions.h"
 #include "error/DuplicateName.h"
+#include "error/InUse.h"
 #include "error/InvalidData.h"
 
 namespace repository {
 
 using Table = db::table::SimpleQuestions;
-using Impl = repository::detail::DefaultRepoWithID<Table>;
+using Impl = repository::detail::DefaultRepoIDRefCount<Table>;
 
 namespace {
 Table::Sql::in_t toDB(const SimpleQuestions::Question &question);
@@ -20,7 +21,23 @@ SimpleQuestions::Question fromDB(const Table::Sql::out_t &question);
 SimpleQuestions::SimpleQuestions(db::DatabaseSession &session) : session(session) {
 }
 
-boost::optional<SimpleQuestions::Question> SimpleQuestions::get(std::int32_t ID) {
+void SimpleQuestions::incReferenceCount(std::int32_t ID) {
+    Impl::incRefCount(session, ID);
+}
+
+void SimpleQuestions::decReferenceCount(std::int32_t ID) {
+    Impl::decRefCount(session, ID);
+}
+
+SimpleQuestions::Question SimpleQuestions::get(std::int32_t ID) {
+    if (auto res = getOpt(ID)) {
+        return res.value();
+    } else {
+        throw InvalidData{"incorrect question ID"};
+    }
+}
+
+boost::optional<SimpleQuestions::Question> SimpleQuestions::getOpt(std::int32_t ID) {
     if (auto res = Impl::get(session, ID)) {
         return fromDB(res.value());
     } else {
@@ -35,11 +52,16 @@ std::vector<SimpleQuestions::Question> SimpleQuestions::getAll() {
 }
 
 void SimpleQuestions::remove(std::int32_t ID) {
-    Impl::remove(session, ID);
-}
+    auto sql = Table::Sql::select().where(Table::ID == ID);
+    auto dbTuple = session.getResult(sql);
 
-void SimpleQuestions::removeAll() {
-    Impl::removeAll(session);
+    if (!dbTuple) {
+        throw InvalidData{"incorrect question ID"};
+    }
+    if (std::get<Table::FieldRefCount>(dbTuple.value()).value != 0) {
+        throw InUse{"question in use"};
+    }
+    Impl::remove(session, ID);
 }
 
 void SimpleQuestions::insert(std::vector<SimpleQuestions::Question> *questions) {

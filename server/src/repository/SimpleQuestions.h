@@ -11,6 +11,14 @@
 
 namespace repository {
 
+/*
+ * Validation:
+ * Every method validates `ID`, `name`
+ * and therefore can throw InvalidData or DuplicateName
+ *
+ * Deletion:
+ * `remove` throws InUse if some experiment uses given question (reference count != 0)
+ */
 class SimpleQuestions {
 public:
     struct Question {
@@ -22,16 +30,17 @@ public:
 
     SimpleQuestions(db::DatabaseSession &session);
 
-    boost::optional<Question> get(std::int32_t ID);
+    void incReferenceCount(std::int32_t ID);
+    void decReferenceCount(std::int32_t ID);
+
+    // non-throwing get
+    boost::optional<Question> getOpt(std::int32_t ID);
+
+    Question get(std::int32_t ID);
     std::vector<Question> getAll();
 
     void remove(std::int32_t ID);
-    void removeAll();
 
-    // ID will be saved in the given struct
-    // throws
-    // - DuplicateName
-    // - InvalidData in case of empty name
     void insert(Question *simpleQuestion);
     void insert(std::vector<Question> *simpleQuestion);
 

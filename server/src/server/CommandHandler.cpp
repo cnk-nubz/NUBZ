@@ -267,6 +267,15 @@ void CommandHandler::finishExperiment() {
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeExperiment(const int32_t experimentId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << experimentId;
+
+    withExceptionTranslation([&]() { command::ExperimentCommands{db}.remove(experimentId); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - REPORTS
 
 std::int32_t CommandHandler::getIdForNewReport() {
@@ -363,6 +372,15 @@ void CommandHandler::getAllActions(std::vector<communication::Action> &response)
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeAction(const int32_t actionId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << actionId;
+
+    withExceptionTranslation([&]() { command::ActionCommands{db}.remove(actionId); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - QUESTIONS
 
 void CommandHandler::getAllQuestions(communication::QuestionsList &response) {
@@ -407,6 +425,15 @@ void CommandHandler::getAllSimpleQuestions(std::vector<communication::SimpleQues
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeSimpleQuestion(const int32_t questionId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << questionId;
+
+    withExceptionTranslation([&]() { command::QuestionCommands{db}.removeSimple(questionId); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - MULTIPLE CHOICE QUESTIONS
 
 void CommandHandler::createMultipleChoiceQuestion(
@@ -438,6 +465,16 @@ void CommandHandler::getAllMultipleChoiceQuestions(
     LOG(INFO) << __func__ << " end";
 }
 
+void CommandHandler::removeMultipleChoiceQuestion(const int32_t questionId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << questionId;
+
+    withExceptionTranslation(
+        [&]() { command::QuestionCommands{db}.removeMultipleChoice(questionId); });
+
+    LOG(INFO) << __func__ << " end";
+}
+
 #pragma mark - SORT QUESTIONS
 
 void CommandHandler::createSortQuestion(communication::SortQuestion &response,
@@ -464,6 +501,15 @@ void CommandHandler::getAllSortQuestions(std::vector<communication::SortQuestion
     });
 
     LOG(INFO) << "output: " << response;
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::removeSortQuestion(const int32_t questionId) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << questionId;
+
+    withExceptionTranslation([&]() { command::QuestionCommands{db}.removeSort(questionId); });
+
     LOG(INFO) << __func__ << " end";
 }
 }

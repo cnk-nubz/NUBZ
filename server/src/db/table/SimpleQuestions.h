@@ -36,9 +36,17 @@ struct SimpleQuestions {
     };
     static constexpr detail::Column<FieldNumberAnswer> NumberAnswer{};
 
+    // default = 0
+    struct FieldRefCount : detail::Field<std::int32_t, SimpleQuestions> {
+        using detail::Field<std::int32_t, SimpleQuestions>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldRefCount> RefCount{};
+
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldQuestion, FieldNumberAnswer>;
+    using Sql = detail::SqlCoreIDRefCount<FieldID, FieldRefCount, FieldName, FieldQuestion,
+                                          FieldNumberAnswer>;
 };
 }
 }

@@ -12,7 +12,7 @@
 namespace repository {
 
 using Table = db::table::Experiments;
-using Impl = repository::detail::DefaultRepoWithID<Table>;
+using Impl = repository::detail::DefaultRepoID<Table>;
 
 namespace {
 Table::Sql::in_t toDB(const Experiments::LazyExperiment &experiment, std::int32_t state);
@@ -27,15 +27,15 @@ Experiments::LazyExperiment::Survey lazySurveyFromDB(const Table::ContentData::S
 Experiments::Experiments(db::DatabaseSession &session) : session(session) {
 }
 
-Experiments::Experiment Experiments::getF(std::int32_t ID) {
-    if (auto exp = get(ID)) {
+Experiments::Experiment Experiments::get(std::int32_t ID) {
+    if (auto exp = getOpt(ID)) {
         return exp.value();
     } else {
         throw InvalidData{"there is no experiment with given id"};
     }
 }
 
-boost::optional<Experiments::Experiment> Experiments::get(std::int32_t ID) {
+boost::optional<Experiments::Experiment> Experiments::getOpt(std::int32_t ID) {
     if (auto dbExperiment = Impl::get(session, ID)) {
         return fromDB(session, dbExperiment.value());
     } else {
@@ -141,6 +141,7 @@ void Experiments::insertCheck(const LazyExperiment &experiment) {
 void Experiments::insertExec(LazyExperiment *experiment) {
     experiment->startDate = boost::none;
     experiment->finishDate = boost::none;
+    retainData(*experiment);
     experiment->ID = Impl::insert(session, toDB(*experiment, State::Ready));
 }
 
@@ -155,13 +156,16 @@ void Experiments::updateCheck(const LazyExperiment &experiment) {
         throw InvalidData{"you can only update ready experiments"};
     }
     // name updated? need to check for duplicates
-    if (get(experiment.ID).value().name != experiment.name) {
+    if (get(experiment.ID).name != experiment.name) {
         checkName(experiment.name);
     }
     checkExperiment(experiment);
 }
 
 void Experiments::updateExec(const LazyExperiment &experiment) {
+    releaseData(getLazy(experiment.ID).value());
+    retainData(experiment);
+
     auto dbContent = std::get<Table::FieldContent>(toDB(experiment, State::Ready)).value;
     auto sql = Table::Sql::update()
                    .where(Table::ID == experiment.ID)
@@ -170,10 +174,91 @@ void Experiments::updateExec(const LazyExperiment &experiment) {
     session.execute(sql);
 }
 
+void Experiments::remove(std::int32_t ID) {
+    checkID(ID);
+    if (getState(ID) == Experiments::State::Active) {
+        throw InvalidData{"cannot remove active experiment"};
+    }
+    releaseData(getLazy(ID).value());
+    Impl::remove(session, ID);
+}
+
 Experiments::State Experiments::getState(std::int32_t ID) {
     auto sql = db::sql::Select<Table::FieldID, Table::FieldState>{}.where(Table::ID == ID);
     auto stateNum = std::get<Table::FieldState>(session.getResult(sql).value()).value;
     return static_cast<State>(stateNum);
+}
+
+void Experiments::retainData(const repository::Experiments::LazyExperiment &experiment) {
+    retainActions(experiment);
+    retainQuestions(experiment.surveyBefore);
+    retainQuestions(experiment.surveyAfter);
+}
+
+void Experiments::releaseData(const repository::Experiments::LazyExperiment &experiment) {
+    releaseActions(experiment);
+    releaseQuestions(experiment.surveyBefore);
+    releaseQuestions(experiment.surveyAfter);
+}
+
+void Experiments::retainActions(const Experiments::LazyExperiment &experiment) {
+    auto repo = Actions{session};
+    for (const auto actions : {experiment.actions, experiment.breakActions}) {
+        for (auto action : actions) {
+            repo.incReferenceCount(action);
+        }
+    }
+}
+
+void Experiments::releaseActions(const Experiments::LazyExperiment &experiment) {
+    auto repo = Actions{session};
+    for (const auto actions : {experiment.actions, experiment.breakActions}) {
+        for (auto action : actions) {
+            repo.decReferenceCount(action);
+        }
+    }
+}
+
+void Experiments::retainQuestions(const LazyExperiment::Survey &survey) {
+    {
+        auto repo = SimpleQuestions{session};
+        for (auto q : survey.simpleQuestions) {
+            repo.incReferenceCount(q);
+        }
+    }
+    {
+        auto repo = MultipleChoiceQuestions{session};
+        for (auto q : survey.multipleChoiceQuestions) {
+            repo.incReferenceCount(q);
+        }
+    }
+    {
+        auto repo = SortQuestions{session};
+        for (auto q : survey.sortQuestions) {
+            repo.incReferenceCount(q);
+        }
+    }
+}
+
+void Experiments::releaseQuestions(const LazyExperiment::Survey &survey) {
+    {
+        auto repo = SimpleQuestions{session};
+        for (auto q : survey.simpleQuestions) {
+            repo.decReferenceCount(q);
+        }
+    }
+    {
+        auto repo = MultipleChoiceQuestions{session};
+        for (auto q : survey.multipleChoiceQuestions) {
+            repo.decReferenceCount(q);
+        }
+    }
+    {
+        auto repo = SortQuestions{session};
+        for (auto q : survey.sortQuestions) {
+            repo.decReferenceCount(q);
+        }
+    }
 }
 
 void Experiments::checkID(std::int32_t ID) {
@@ -196,17 +281,8 @@ void Experiments::checkName(const std::string &name) {
 }
 
 void Experiments::checkExperiment(const LazyExperiment &experiment) {
-    checkActions(experiment);
     checkSurvey(experiment.surveyBefore);
     checkSurvey(experiment.surveyAfter);
-}
-
-void Experiments::checkActions(const Experiments::LazyExperiment &experiment) {
-    auto allActionsIds = Actions{session}.getAllIDs();
-    auto existing = std::unordered_set<std::int32_t>{allActionsIds.begin(), allActionsIds.end()};
-
-    checkIds(existing, experiment.actions);
-    checkIds(existing, experiment.breakActions);
 }
 
 void Experiments::checkSurvey(const LazyExperiment::Survey &survey) {
@@ -217,30 +293,6 @@ void Experiments::checkSurvey(const LazyExperiment::Survey &survey) {
         utils::count(survey.typesOrder, QuestionType::MultipleChoice) !=
             survey.multipleChoiceQuestions.size()) {
         throw InvalidData("survey's types order doesn't match questions");
-    }
-
-    using set = std::unordered_set<std::int32_t>;
-    auto allSimple = set{survey.simpleQuestions.begin(), survey.simpleQuestions.end()};
-    auto allMul = set{survey.multipleChoiceQuestions.begin(), survey.multipleChoiceQuestions.end()};
-    auto allSort = set{survey.sortQuestions.begin(), survey.sortQuestions.end()};
-    checkIds(allSimple, survey.simpleQuestions);
-    checkIds(allMul, survey.multipleChoiceQuestions);
-    checkIds(allSort, survey.sortQuestions);
-}
-
-void Experiments::checkIds(const std::unordered_set<std::int32_t> &existing,
-                           const std::vector<std::int32_t> &choosen) const {
-    checkForDuplicates(choosen);
-    if (!utils::all_of(choosen,
-                       std::bind(&std::unordered_set<std::int32_t>::count, &existing, _1))) {
-        throw InvalidData("given id doesn't exist");
-    }
-}
-
-void Experiments::checkForDuplicates(std::vector<std::int32_t> ids) const {
-    std::sort(ids.begin(), ids.end());
-    if (std::unique(ids.begin(), ids.end()) != ids.end()) {
-        throw InvalidData("duplicated ids");
     }
 }
 
@@ -279,7 +331,7 @@ Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::o
     // actions
     {
         auto actionsRepo = Actions{session};
-        auto getAction = [&](auto actionId) { return actionsRepo.get(actionId).value(); };
+        auto getAction = [&](auto actionId) { return actionsRepo.get(actionId); };
         utils::transform(lazy.actions, res.actions, getAction);
         utils::transform(lazy.breakActions, res.breakActions, getAction);
     }
@@ -294,14 +346,14 @@ Experiments::Experiment fromDB(db::DatabaseSession &session, const Table::Sql::o
             auto res = Experiment::Survey{};
             res.typesOrder = survey.typesOrder;
             utils::transform(survey.simpleQuestions, res.simpleQuestions, [&](auto qId) {
-                return simpleQRepo.get(qId).value();
+                return simpleQRepo.get(qId);
             });
             utils::transform(survey.sortQuestions, res.sortQuestions, [&](auto qId) {
-                return sortQRepo.get(qId).value();
+                return sortQRepo.get(qId);
             });
             utils::transform(survey.multipleChoiceQuestions,
                              res.multipleChoiceQuestions,
-                             [&](auto qId) { return multiChoiceQRepo.get(qId).value(); });
+                             [&](auto qId) { return multiChoiceQRepo.get(qId); });
             return res;
         };
 

@@ -46,7 +46,8 @@ cur.execute('''
 cur.execute('''
 	CREATE TABLE actions (
 		id SERIAL PRIMARY KEY,
-		text VARCHAR NOT NULL
+		text VARCHAR NOT NULL,
+        ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 
@@ -55,7 +56,8 @@ cur.execute('''
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
 		question VARCHAR NOT NULL,
-		number_answer BOOLEAN NOT NULL
+		number_answer BOOLEAN NOT NULL,
+        ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 
@@ -64,7 +66,8 @@ cur.execute('''
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
 		question VARCHAR NOT NULL,
-		single_answer BOOLEAN NOT NULL
+		single_answer BOOLEAN NOT NULL,
+        ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 
@@ -80,7 +83,8 @@ cur.execute('''
 	CREATE TABLE sort_questions (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR NOT NULL,
-		question VARCHAR NOT NULL
+		question VARCHAR NOT NULL,
+        ref_count INT DEFAULT 0 NOT NULL
 	)
 ''')
 

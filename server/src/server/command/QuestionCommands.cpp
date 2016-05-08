@@ -126,5 +126,21 @@ std::vector<SortQuestion> QuestionCommands::getAllSort() {
     std::sort(result.begin(), result.end());
     return result;
 }
+
+void QuestionCommands::removeSimple(std::int32_t ID) {
+    db.execute(
+        [&](db::DatabaseSession &session) { repository::SimpleQuestions{session}.remove(ID); });
+}
+
+void QuestionCommands::removeMultipleChoice(std::int32_t ID) {
+    db.execute([&](db::DatabaseSession &session) {
+        repository::MultipleChoiceQuestions{session}.remove(ID);
+    });
+}
+
+void QuestionCommands::removeSort(std::int32_t ID) {
+    db.execute(
+        [&](db::DatabaseSession &session) { repository::SortQuestions{session}.remove(ID); });
+}
 }
 }

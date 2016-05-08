@@ -82,6 +82,9 @@ service Server {
 	void finishExperiment()
 		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
+    void removeExperiment(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Reports
@@ -113,6 +116,9 @@ service Server {
 	list<structs.Action> getAllActions()
 		throws (1: structs.InternalError err),
 
+    void removeAction(1: i32 actionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Questions
@@ -132,6 +138,9 @@ service Server {
 	list<structs.SimpleQuestion> getAllSimpleQuestions()
 		throws (1: structs.InternalError err),
 
+    void removeSimpleQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Multiple Choice Question
@@ -143,6 +152,9 @@ service Server {
 	list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
 		throws (1: structs.InternalError err),
 
+    void removeMultipleChoiceQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
+
 
 /////////////////////////////////////////////////
 // Sort Question
@@ -153,4 +165,7 @@ service Server {
 
 	list<structs.SortQuestion> getAllSortQuestions()
 		throws (1: structs.InternalError err),
+
+    void removeSortQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
 }

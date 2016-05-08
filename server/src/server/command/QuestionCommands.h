@@ -37,6 +37,10 @@ public:
     std::vector<MultipleChoiceQuestion> getAllMultipleChoice();
     std::vector<SortQuestion> getAllSort();
 
+    void removeSimple(std::int32_t ID);
+    void removeMultipleChoice(std::int32_t ID);
+    void removeSort(std::int32_t ID);
+
 private:
     db::Database &db;
 };
