@@ -1,5 +1,6 @@
 root = exports ? this
 root.ActionDialog = class ActionDialog extends root.QuestionDialog
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
     instance = this
@@ -15,18 +16,25 @@ root.ActionDialog = class ActionDialog extends root.QuestionDialog
             error.html("")
         )
       )
-
     return
 
+
+  # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.text)
     if @readonly
       jQuery("input", dialogBody).prop("readonly", true)
       @_dialog.getButton('saveButtonDialog').hide()
-    @
+    return
 
-  extractData: =>
+  ###
+  # type ActionData = {
+  #   text :: String
+  # }
+  ###
+  # extractData :: () -> ActionData
+  extractData: ->
     text = jQuery("#dialog input").val()
     data =
       text: text

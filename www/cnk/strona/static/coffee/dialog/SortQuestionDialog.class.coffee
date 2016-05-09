@@ -1,5 +1,6 @@
 root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
     inputOffset = @_data.utils.default.labelSize
@@ -7,14 +8,16 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
 
     inputs = jQuery("input[type=text]", dialogBody)
     inputs.each( (idx) ->
-        obj = jQuery(this)
-        jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-      )
+      obj = jQuery(this)
+      jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
+    )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
     return
 
+
+  # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
@@ -26,8 +29,10 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       # remove last "add answer" entry
       jQuery("input", dialogBody).last().parents('.input-group').remove()
       @_dialog.getButton('saveButtonDialog').hide()
-    @
+    return
 
+
+  # _inputKeyUp :: (jQueryObject, Event) -> undefined
   _inputKeyUp: (obj, e) =>
     text = obj.val()
     error = obj.parent().next()
@@ -37,6 +42,8 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       error.html("")
     return
 
+
+  # _validateForm :: () -> Boolean
   _validateForm: =>
     isValid = true
     instance = this
@@ -69,7 +76,15 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       )
     isValid
 
-  extractData: =>
+  ###
+  # type SortQuestionData = {
+  #   name     :: String,
+  #   question :: String,
+  #   options  :: [String]
+  # }
+  ###
+  # extractData :: () -> SortQuestionData
+  extractData: ->
     name = jQuery("#dialog .form-group:eq(0) input").val()
     question = jQuery("#dialog .form-group:eq(1) input").val()
     options = []

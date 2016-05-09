@@ -1,12 +1,32 @@
 root = exports ? this
 root.ExperimentData = class ExperimentData
-  # functions to implement by subclasses:
-  # _getViewId(index)
-  # _elementListFormat(viewId)
+  # ======== ABSTRACT FUNCTIONS ========
+  # _getViewId         :: Int -> String
+  # _elementListFormat :: String -> ListElement
+  # ====================================
+  ###
+  # ListData =
+  #     Action
+  #   | Question
+  #   | FinishedExperiment
+  #   | ReadyExperiment
+  #   | Report
+  ###
+  ###
+  # ListElement =
+  #   ActionListElement
+  # | QuestionListElement
+  # | FinishedExperimentListElement
+  # | ReadyExperimentListElement
+  # | ReportListElement
+  ###
   constructor: (_list) ->
+    # _list :: [ListData]
     @setElements(_list)
     @_newElements = {}
 
+
+  # setElements :: [ListElement] -> Context
   setElements: (elements) =>
     @_orderedList = elements
     @_elementsDict = {}
@@ -14,10 +34,13 @@ root.ExperimentData = class ExperimentData
       @_elementsDict[@_getViewId(index)] = element
     @
 
+
+  # getAllElementsAsDOM :: TableRow -> DocumentFragment
   getAllElementsAsDOM: (rowFactory) =>
     fragment = document.createDocumentFragment()
     for key in Object.keys(@_orderedList)
       viewId = @_getViewId(key)
+      # listElement :: ListElement
       listFormat = @_elementListFormat(viewId)
       row = rowFactory.generateRow(listFormat)
       row.data = viewId
@@ -33,6 +56,8 @@ root.ExperimentData = class ExperimentData
       fragment.appendChild(row)
     fragment
 
+
+  # getElementAsDOM :: (String, TableRow) -> DocumentFragment
   getElementAsDOM: (viewId, rowFactory) =>
     fragment = document.createDocumentFragment()
     row = rowFactory.generateRow(@_elementListFormat(viewId))
@@ -40,5 +65,7 @@ root.ExperimentData = class ExperimentData
     fragment.appendChild(row)
     fragment
 
+
+  # escapeText :: String -> String
   escapeText: (text) ->
     jQuery("<div>").text(text).html()

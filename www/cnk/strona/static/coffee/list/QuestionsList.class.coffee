@@ -1,8 +1,14 @@
 root = exports ? this
 root.QuestionsList = class QuestionsList extends root.ListView
-  constructor: ->
-    super
-
+  ###
+  # type QuestionsThriftFormat = {
+  #   questionsOrder          :: [Int],
+  #   simpleQuestions         :: [Int],
+  #   multipleChoiceQuestions :: [Int],
+  #   sortQuestions           :: [Int]
+  # }
+  ###
+  # getAllElements :: () -> QuestionsThriftFormat
   getAllElements: =>
     elements = (JSON.parse(el) for el in @_elementsOnList)
     result =

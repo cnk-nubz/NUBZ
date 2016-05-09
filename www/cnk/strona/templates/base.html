@@ -10,7 +10,6 @@
   <title>NUBZ</title>
   {% block script %}
   <script src="{% static "include/js/jquery.min.js" %}"></script>
-  <script src="{% static "include/js/d3.v3.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap.min.js" %}"></script>
   <script src="{% static "include/js/bootstrap-dialog.js" %}"></script>
   <script src="{% static "include/js/csrf.js" %}"></script>
@@ -22,61 +21,72 @@
   <link href="{% static "include/css/bootstrap-dialog.css" %}" rel="stylesheet" />
   <link href="{% static "css/base.css" %}" rel="stylesheet" />
   {% endblock %}
-  {% block includes %}
-    {% compress js %}
-    <script src="{% static "coffee/MapDataHandler.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/dialog/QuestionDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/dialog/ConfirmDialog.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/View.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/Canvas.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/MutableCanvas.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-    {% compress js %}
-    <script src="{% static "coffee/ExhibitPanel.class.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
-  {% endblock %}
+  {% block includes %}{% endblock %}
   {% block init %}
     {% compress js %}
     <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
     {% endcompress %}
     {% compress js %}
     <script type="text/coffeescript">
-      document.detached = {}
       root = exports ? this
-      floorUrl = [
-        "{{urlFloor0|escape|safe}}"
-        "{{urlFloor1|escape|safe}}"
-      ]
-      if floorUrl[0] is '' or floorUrl[1] is ''
+      # floorUrl :: String
+      root.floorUrl = "{{urlFloor|escape|safe}}"
+      if floorUrl is ''
         f = ->
-          miss0 = floorUrl[0] is ''
-          miss1 = floorUrl[1] is ''
-          missingFloor = "#{if miss0 then 0 else ''} #{if miss0 and miss1 then "oraz" else ''} #{if miss1 then 1 else ''}"
           BootstrapDialog.show(
-            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami pietra #{missingFloor}"
+            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami"
             title: 'Zły plik konfiguracyjny'
             type: BootstrapDialog.TYPE_DANGER
           )
         setTimeout(f, 1000)
-        throw new Error("zły plik konfiguracyjny")
-      activeFloor = +"{{acitveFloor}}"
-      exhibits = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
-      floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
-      (floorTilesInfo[i] = jQuery.map(floorTilesInfo[i], (val) -> [val])) for i in [0..1]
-      mapData = new MapDataHandler(activeFloor, floorUrl, exhibits, floorTilesInfo)
+        throw new Error("Zły plik konfiguracyjny")
+      # activeFloor :: Int
+      root.activeFloor = +"{{acitveFloor}}"
+      #
+      # type ExhibitFrame = {
+      #   height   :: Int,
+      #   width    :: Int,
+      #   x        :: Int,
+      #   y        :: Int,
+      #   mapLevel :: Int
+      # }
+      #
+      #
+      # type Exhibit = {
+      #   colorHex :: String,
+      #   frame    :: Maybe ExhibitFrame,
+      #   name     :: String
+      # }
+      #
+      # exhibitsList :: [Exhibit]
+      root.exhibitsList = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+      # exhibits :: (JsObject :: (Int, Exhibit))
+      root.exhibits = {}
+      if root.exhibitsList.length > 0
+        for e in root.exhibitsList
+          root.exhibits[e.id] =
+            id: e.id
+            frame: e.frame
+            name: e.name
+            colorHex: e.colorHex
+      ###
+      # type TilesInfo = {
+      #   scaledHeight :: Int,
+      #   scaledWidth  :: Int,
+      #   tileHeight   :: Int,
+      #   tileWidth    :: Int
+      # }
+      ###
+      # type SingleFloorTilesInfo = [TileInfo]
+      # floorTilesInfo :: [SingleFloorTilesInfo]
+      root.floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+      # availableFloors :: [Int]
+      root.availableFloors = {{availableFloors | jsvar}}
+      if Object.keys(floorTilesInfo).length > 0
+        for i in root.availableFloors
+          root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])
+      else
+        root.floorTilesInfo[0] = []
     </script>
     {% endcompress %}
   {% endblock %}

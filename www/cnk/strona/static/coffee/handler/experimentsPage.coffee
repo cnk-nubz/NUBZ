@@ -1,5 +1,14 @@
 root = exports ? this
+root.cachedData = {}
 class Handler
+  ###
+  # type ActiveExperiment = {
+  #   startDate    :: Date,
+  #   name         :: String,
+  #   experimentId :: Int
+  # }
+  ###
+  # constructor :: ([ReadyExperiment], [FinishedExperiment], ActiveExperiment)
   constructor: (_readyExperiments, _finishedExperiments, @_activeExperiment) ->
     @_DOM =
       addNewExperiment: '#readyExperiments .addElement'
@@ -10,11 +19,16 @@ class Handler
     @_setHandlers()
     @_setDefaultState()
 
+
+  # _setHandler :: () -> undefined
   _setHandlers: =>
     @_setLists()
     @_setAddNewExperimentHandler()
     @_setActiveExperimentHandlers()
+    return
 
+
+  # _setLists :: () -> undefined
   _setLists: =>
     readyExperimentsDOM = @_prepareReadyExperiments()
     finishedExperimentsDOM = @_prepareFinishedExperiments()
@@ -22,12 +36,14 @@ class Handler
     @_finishedExperimentsList = new root.ExperimentsList('#finishedExperiments .middle', 'finishedExperimentsTable', finishedExperimentsDOM)
     return
 
+
+  # _prepareReadyExperiments :: () -> DocumentFragment
   _prepareReadyExperiments: =>
     experimentsDOM = @_readyExperiments.getAllElementsAsDOM(@_readyExperimentRow)
     [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) =>
       viewId = element.data
       element.querySelector("td:first-child + td > div")
-        .addEventListener("click", =>
+        .addEventListener("click", ->
           location.href = "/badanie?id=#{JSON.parse(viewId).id}"
         )
       element.querySelector("td:first-child + td + td > div")
@@ -54,12 +70,14 @@ class Handler
     )
     experimentsDOM
 
+
+  # _activateExperiment :: Int -> () -> undefined
   _activateExperiment: (experimentId) ->
     ->
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post("startExperiment/", id: experimentId, (data) =>
+      jQuery.post("startExperiment/", id: experimentId, (data) ->
         if data.success
           location.reload()
         else
@@ -71,6 +89,8 @@ class Handler
       , 'json')
       return
 
+
+  # _prepareFinishedExperiments :: () -> DocumentFragment
   _prepareFinishedExperiments: =>
     experimentsDOM = @_finishedExperiments.getAllElementsAsDOM(@_finishedExperimentRow)
     [].forEach.call(experimentsDOM.querySelectorAll("tr"), (element) =>
@@ -86,6 +106,8 @@ class Handler
     )
     experimentsDOM
 
+
+  # _proceedCloningExperiment :: Int -> undefined
   _proceedCloningExperiment: (experimentId) =>
     dialogData = root.changeNameDialog.data
     dialogMessage = root.changeNameDialog.html
@@ -95,49 +117,56 @@ class Handler
       closable: false
       buttons: [
         @_changeNameDialogCancelButton()
-        @_changeNameDialogSaveButton(experimentId)
+        @_changeNameDialogSaveButton(@_tryCloningExperiment(experimentId))
       ]
-    )
-
-  _changeNameDialogCancelButton: ->
-    dialogData = root.changeNameDialog.data
-    label: dialogData.utils.text.cancelButton
-    action: (dialog) ->
-      dialog.close()
-
-  _changeNameDialogSaveButton: (experimentId) =>
-    dialogData = root.changeNameDialog.data
-    label: dialogData.utils.text.saveButton
-    action: (dialog) =>
-      jQuery('.inputError').html('')
-      newName = jQuery('#dialog input').val()
-      jQuery("#dialog input").val(jQuery.trim(newName))
-      @_tryCloningExperiment(experimentId, jQuery.trim(newName))
-
-  _tryCloningExperiment: (experimentId, newName) =>
-    dialogData = root.changeNameDialog.data
-    if newName.length is 0
-      jQuery('.inputError').text(dialogData.utils.text.emptyInputError)
-      return
-    toSend =
-      jsonData: JSON.stringify(
-        experimentId: experimentId
-        newName: newName
-      )
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.post('cloneExperiment/', toSend, (data) =>
-      if data.success is true
-        location.reload()
-      else
-        if data.exceptionType is 'DuplicateName'
-          jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
-        else
-          @_showError(data.exceptionType, data.message)
     )
     return
 
+
+  # _changeNameDialogCancelButton :: () -> BootstrapDialogButton
+  _changeNameDialogCancelButton: ->
+    label: root.changeNameDialog.data.utils.text.cancelButton
+    action: (dialog) ->
+      dialog.close()
+
+
+  # _changeNameDialogSaveButton :: Int -> BootstrapDialogButton
+  _changeNameDialogSaveButton: (handler) ->
+    label: root.changeNameDialog.data.utils.text.saveButton
+    action: (dialog) -> handler()
+
+
+  # _tryCloningExperiment :: Int -> () -> undefined
+  _tryCloningExperiment: (experimentId) =>
+    =>
+      jQuery('.inputError').html('')
+      newName = jQuery.trim(jQuery('#dialog input').val())
+      jQuery("#dialog input").val(newName)
+      dialogData = root.changeNameDialog.data
+      if newName.length is 0
+        jQuery('.inputError').text(dialogData.utils.text.emptyInputError)
+        return
+      toSend =
+        jsonData: JSON.stringify(
+          experimentId: experimentId
+          newName: newName
+        )
+      jQuery.ajaxSetup(
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+      )
+      jQuery.post('cloneExperiment/', toSend, (data) =>
+        if data.success is true
+          location.reload()
+        else
+          if data.exceptionType is 'DuplicateName'
+            jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
+          else
+            @_showError(data.exceptionType, data.message)
+      )
+      return
+
+
+  # _showError :: (String, String) -> undefined
   _showError: (exceptionType, message) ->
     BootstrapDialog.show(
       message: message
@@ -146,11 +175,16 @@ class Handler
     )
     return
 
+
+  # _setAddNewExperimentHandler :: () -> undefined
   _setAddNewExperimentHandler: =>
     jQuery(@_DOM.addNewExperiment).click( ->
       location.href = "/badanie"
     )
+    return
 
+
+  # _setActiveExperimentHandlers :: () -> undefined
   _setActiveExperimentHandlers: =>
     if not @_activeExperiment?
       return
@@ -174,19 +208,25 @@ class Handler
     )
     return
 
+
+  # _confirmationCancelButton :: () -> BootstrapDialogButton
   _confirmationCancelButton: ->
     label: root.confirmationMessages.cancelButton
     action: (dialog) ->
       dialog.close()
 
+
+  # _confirmationConfirmButton :: (() -> undefined) -> BootstrapDialogButton
   _confirmationConfirmButton: (handler) ->
     label: root.confirmationMessages.confirmButton
     action: -> handler()
 
+
+  # _finishExperiment :: () -> undefined
   _finishExperiment: ->
     jQuery.ajaxSetup(
-        headers: { "X-CSRFToken": getCookie("csrftoken") }
-      )
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
     jQuery.post("finishExperiment/", null, (data) ->
       if data.success
         location.reload()
@@ -199,6 +239,8 @@ class Handler
     , 'json')
     return
 
+
+  # _setDefaultState :: () -> undefined
   _setDefaultState: =>
     activeExperimentRow = document.querySelector('#activeExperiment tr')
     if @_activeExperiment?
@@ -211,6 +253,7 @@ class Handler
       activeExperimentRow.querySelector("td:first-child > div > span").innerHTML = "Brak aktywnego badania"
     @_readyExperimentsList.show()
     @_finishedExperimentsList.show()
+    return
 
 jQuery(document).ready( ->
   new Handler(root.readyExperiments, root.finishedExperiments, root.activeExperiment)

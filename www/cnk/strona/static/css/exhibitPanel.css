@@ -97,10 +97,17 @@
   left: 2px;
 }
 
-#filterButtons > button {
-  width: 32%;
+#filterButtons > table {
+  table-layout: fixed;
+  height: 100%;
+  width: 100%;
 }
 
-#filterButtons > button:not(:last-child) {
-  margin-right: 0.5%;
+#filterButtons > table > tbody > tr > td {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+#filterButtons > table > tbody > tr > td > button {
+  width: 100%;
 }

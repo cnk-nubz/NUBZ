@@ -1,10 +1,13 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
+  constructor: (url, saveHandler, @_canvasActiveFloor) ->
+    super(url, saveHandler)
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialog) =>
     super
     @_dialog.setTitle(@_data.utils.text.title)
-    @mapData = new MapDataHandler()
-    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@mapData.activeFloor})", dialog).addClass("active")
+    jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_canvasActiveFloor})", dialog)
+      .addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": "#9DE35A")
     instance = this
     jQuery("input[type=text]", dialog)
@@ -17,8 +20,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         obj = jQuery(this)
         error = obj.parent().next()
       )
-    @_popoverOpened = false
-    jQuery.getJSON('getHTML?name=colorPickerPopover', (data) =>
+    jQuery.getJSON('getHTML?name=colorPickerPopover', (data) ->
       jQuery(dialog).parents(".modal").click( ->
         jQuery('.popoverButton', dialog).popover('hide')
       )
@@ -41,26 +43,32 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
         )
       ))
     )
+    return
 
+
+  # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialog) =>
     @_dialog.setTitle(@_data.utils.text.editTitle)
-    if not @_dialogInfo.floor?
-      @_dialogInfo.floor = 2
     jQuery(".form-group:eq(0) input", dialog).val(@_dialogInfo.name)
     jQuery(".form-group .btn-group .floorNum", dialog).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialog).addClass("active")
     jQuery(".popoverButton", dialog).css("background-color": @_dialogInfo.color)
     jQuery(".bootstrap-dialog-footer-buttons", dialog).prepend(@_data.utils.text.deleteButtonHtml)
     jQuery(".delete-button", dialog).click( =>
-        new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
-      )
+      new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
+    )
     jQuery("input", dialog).prop("readonly", true)
     if @readonly is true
       jQuery("label.floorNum.btn:not(.active)", dialog).remove()
       jQuery(".popoverButton", dialog).prop("disabled", true)
+    return
 
-  setDeleteHandler: (@_successfullDeleteHandler) ->
 
+  # setDeleteHandler :: (->) -> Context
+  setDeleteHandler: (@_successfullDeleteHandler) => @
+
+
+  # _deleteExhibit :: () -> undefined
   _deleteExhibit: =>
     toSend =
       jsonData:
@@ -80,7 +88,10 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
           @_successfullDeleteHandler(@_dialogInfo.id)
         @_dialog.close()
     )
+    return
 
+
+  # _inputKeyUp :: (jQueryObject, Event) -> undefined
   _inputKeyUp: (obj, e) =>
     text = obj.val()
     error = obj.parent().next()
@@ -90,11 +101,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       error.html("")
     return
 
-  _closeButton: =>
-    label: super.label
-    action: (dialog) =>
-      super.action(dialog)
 
+  # _saveButton :: () -> BootstrapDialogButton
   _saveButton: =>
     label: super.label
     action: (dialog) =>
@@ -103,6 +111,16 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       else
         dialog.close()
 
+
+  ###
+  # type ExhibitData = {
+  #   id     :: Int,
+  #   name   :: String,
+  #   rgbHex :: Int,
+  #   floor  :: Int
+  # }
+  ###
+  # extractData :: () -> ExhibitData
   extractData: =>
     editedName = jQuery("#dialog input[type=text]").val()
     floorText = jQuery("#dialog .floorNum.active").text()
@@ -118,6 +136,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       floor: floor
     changedData
 
+
+  # _validateForm :: () -> Boolean
   _validateForm: =>
     isValid = true
     instance = this
@@ -132,6 +152,8 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       )
     isValid
 
+
+  # _rgb2hex :: String -> String
   _rgb2hex: (rgb) ->
     hex = (x) -> "0#{parseInt(x).toString(16)}"[-2..]
     if /^#[0-9A-F]{6}$/i.test(rgb)
