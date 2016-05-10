@@ -1,5 +1,6 @@
 package com.cnk.data.exhibits;
 
+import com.cnk.data.map.MapData;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
 import com.cnk.database.models.Version;
@@ -54,7 +55,7 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         exhibitsVersion = dbHelper.getVersion(Version.EXHIBITS);
         try {
             floorInfos.clear();
-            for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+            for (int floor = 0; floor < MapData.getInstance().getFloors(); floor++) {
                 FloorExhibitsInfo currentFloor = new FloorExhibitsInfo();
                 currentFloor.setExhibits(exhibitListToMap(dbHelper.getAllExhibitsForFloor(floor)));
                 floorInfos.add(currentFloor);
