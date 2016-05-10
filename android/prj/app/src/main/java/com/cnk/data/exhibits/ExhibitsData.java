@@ -55,7 +55,7 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         exhibitsVersion = dbHelper.getVersion(Version.EXHIBITS);
         try {
             floorInfos.clear();
-            for (int floor = 0; floor < MapData.getInstance().getFloors(); floor++) {
+            for (int floor = 0; floor < MapData.getInstance().getFloorsCount(); floor++) {
                 FloorExhibitsInfo currentFloor = new FloorExhibitsInfo();
                 currentFloor.setExhibits(exhibitListToMap(dbHelper.getAllExhibitsForFloor(floor)));
                 floorInfos.add(currentFloor);

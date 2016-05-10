@@ -34,7 +34,7 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
-    private Integer floors;
+    private int floorsCount;
 
     private MapData() {
         floorInfos = new ArrayList<>();
@@ -78,11 +78,13 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
 
     private void loadMapFromDb() throws DatabaseLoadException {
         floorInfos.clear();
-        floors = dbHelper.getFloorCount();
-        if (floors == null) {
+        Integer fromDb = dbHelper.getFloorCount();
+        if (fromDb == null) {
             throw new DatabaseLoadException();
+        } else {
+            floorsCount = fromDb;
         }
-        for (int floor = 0; floor < floors; floor++) {
+        for (int floor = 0; floor < floorsCount; floor++) {
             int zoomLevelsCount = dbHelper.getZoomLevelsCount(floor);
             ArrayList<ZoomLevelResolution> zoomLevelsResolutions = new ArrayList<>();
             ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
@@ -206,9 +208,8 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
         return bmp;
     }
 
-    public Integer getFloors() {
-        Log.i(LOG_TAG, floors.toString());
-        return floors;
+    public int getFloorsCount() {
+        return floorsCount;
     }
 
     private String getTileFilename(int x, int y, int floorNo, int zoomLevel) {
