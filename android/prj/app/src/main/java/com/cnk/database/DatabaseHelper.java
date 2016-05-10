@@ -104,6 +104,13 @@ public class DatabaseHelper {
         return res.val;
     }
 
+    public void clearMaps() {
+        inTransaction((realm) -> {
+            realm.clear(MapTileInfoRealm.class);
+            realm.clear(ZoomLevelResolutionRealm.class);
+        });
+    }
+
     public void setMap(FloorMap map) {
         List<ZoomLevelResolution> resolutions = new ArrayList<>();
         List<MapTileInfo> tilesInfos = new ArrayList<>();
@@ -137,6 +144,19 @@ public class DatabaseHelper {
     private void setMapTilesInfos(Realm realm, Integer floor, List<MapTileInfo> tilesInfos) {
         realm.where(MapTileInfoRealm.class).equalTo("floor", floor).findAll().clear();
         realm.copyToRealm(RealmFactory.getInstance().toRealmList(tilesInfos));
+    }
+
+    public Integer getFloorCount() {
+        Value<Integer> res = new Value<>();
+        inTransaction((realm) -> {
+            Number val = realm.where(MapTileInfoRealm.class).max("floor");
+            if (val == null) {
+                res.val = null;
+            } else {
+                res.val = val.intValue() + 1;
+            }
+        });
+        return res.val;
     }
 
     public int getZoomLevelsCount(Integer floor) {

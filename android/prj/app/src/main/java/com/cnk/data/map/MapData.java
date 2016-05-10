@@ -34,6 +34,7 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     private static MapData instance;
     private DatabaseHelper dbHelper;
     private List<FloorMapInfo> floorInfos;
+    private int floorsCount;
 
     private MapData() {
         floorInfos = new ArrayList<>();
@@ -77,12 +78,14 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
 
     private void loadMapFromDb() throws DatabaseLoadException {
         floorInfos.clear();
-        for (int floor = 0; floor < Consts.FLOOR_COUNT; floor++) {
+        Integer fromDb = dbHelper.getFloorCount();
+        if (fromDb == null) {
+            throw new DatabaseLoadException();
+        } else {
+            floorsCount = fromDb;
+        }
+        for (int floor = 0; floor < floorsCount; floor++) {
             int zoomLevelsCount = dbHelper.getZoomLevelsCount(floor);
-            if (zoomLevelsCount == 0) {
-                throw new DatabaseLoadException();
-            }
-
             ArrayList<ZoomLevelResolution> zoomLevelsResolutions = new ArrayList<>();
             ArrayList<MapTileInfo> mapTileInfos = new ArrayList<>();
             for (int zoomLevel = 0; zoomLevel < zoomLevelsCount; zoomLevel++) {
@@ -98,6 +101,7 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
     }
 
     public void setMaps(List<FloorMap> maps) throws IOException {
+        dbHelper.clearMaps();
         int allTilesCount = 0;
         int downloadedTilesCount = 0;
         for (FloorMap map : maps) {
@@ -202,6 +206,10 @@ public class MapData extends Observable<MapData.MapDownloadUpdateAction> {
             }
         }
         return bmp;
+    }
+
+    public int getFloorsCount() {
+        return floorsCount;
     }
 
     private String getTileFilename(int x, int y, int floorNo, int zoomLevel) {
