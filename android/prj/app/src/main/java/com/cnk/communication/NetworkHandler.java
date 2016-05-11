@@ -3,7 +3,6 @@ package com.cnk.communication;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 import com.cnk.communication.task.ExhibitDownloadTask;
 import com.cnk.communication.task.ExperimentDataDownloadTask;

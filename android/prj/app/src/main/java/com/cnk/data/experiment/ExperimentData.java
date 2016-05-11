@@ -16,6 +16,7 @@ import com.cnk.utilities.Util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -114,12 +115,12 @@ public class ExperimentData {
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId,
+                                   new Date(),
                                    experiment.getId(),
                                    experiment.getSurvey(Survey.SurveyType.BEFORE)
                                              .getSurveyAnswers(),
                                    experiment.getSurvey(Survey.SurveyType.AFTER)
                                              .getSurveyAnswers());
-
         String path = getCurrentRaportPath();
         new Thread(new BgRaportSaver(currentRaport)).start();
 
@@ -143,6 +144,7 @@ public class ExperimentData {
 
     private void markRaportAsReady() {
         raportLock.lock();
+        currentRaport.setEndDate(new Date());
         currentRaport.markAsReady();
         ReadyRaports.getInstance().addNewReadyRaport(currentRaport);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);

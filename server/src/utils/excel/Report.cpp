@@ -11,6 +11,8 @@ using namespace consts::header;
 ReportInfoSection::ReportInfoSection(const repository::Experiment &experiment) {
     columns.push_back(std::make_unique<ReportIDColumn>());
     columns.push_back(std::make_unique<ReportReceiveDateColumn>());
+    // columns.push_back(std::make_unique<ReportBeginTimeColumn>());
+    columns.push_back(std::make_unique<ReportFinishTimeColumn>());
     columns.push_back(std::make_unique<SurveyBefore>(experiment));
     columns.push_back(std::make_unique<SurveyAfter>(experiment));
 }
@@ -44,5 +46,18 @@ ReportReceiveDateColumn::ReportReceiveDateColumn() : ReportBased(report_info::re
 wrapper_ptr ReportReceiveDateColumn::getEntry(const repository::Report &report) const {
     return DataWrapperFactory::dateWrapper(report.receiveDate);
 }
+
+template <bool isBegin>
+ReportTimeColumn<isBegin>::ReportTimeColumn()
+    : ReportBased(isBegin ? report_info::beginTime : report_info::finishTime) {
+}
+
+template <bool isBegin>
+wrapper_ptr ReportTimeColumn<isBegin>::getEntry(const repository::Report &report) const {
+    return DataWrapperFactory::timeWrapper(isBegin ? report.beginTime : report.finishTime);
+}
+
+template struct ReportTimeColumn<true>;
+template struct ReportTimeColumn<false>;
 }
 }

@@ -4,6 +4,7 @@ import com.cnk.data.experiment.survey.answers.SurveyAnswers;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Raport implements Serializable {
@@ -19,12 +20,16 @@ public class Raport implements Serializable {
     private SurveyAnswers preSurveyAnswers;
     private SurveyAnswers postSurveyAnswers;
     private State state;
+    private Date endDate;
+    private Date startDate;
 
     public Raport(Integer id,
+                  Date startDate,
                   Integer experimentId,
                   SurveyAnswers preSurveyAnswers,
                   SurveyAnswers postSurveyAnswers) {
         this.id = id;
+        this.startDate = startDate;
         this.experimentId = experimentId;
         this.preSurveyAnswers = preSurveyAnswers;
         this.postSurveyAnswers = postSurveyAnswers;
@@ -70,6 +75,18 @@ public class Raport implements Serializable {
 
     public void markAsSent() {
         state = State.SENT;
+    }
+
+    public void setEndDate(Date d) {
+        endDate = d;
+    }
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+    public Date getStartDate() {
+        return startDate;
     }
 
     @Override

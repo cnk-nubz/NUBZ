@@ -51,6 +51,9 @@ public:
         // foreign key
         std::int32_t experimentID;
 
+        utils::TimePoint beginTime;
+        utils::TimePoint finishTime;
+
         std::vector<Event> history;
         SurveyAns surveyBefore;
         SurveyAns surveyAfter;
