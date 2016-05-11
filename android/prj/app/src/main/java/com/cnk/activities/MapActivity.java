@@ -20,11 +20,11 @@ import com.cnk.data.exhibits.ExhibitsData;
 import com.cnk.data.experiment.Action;
 import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
+import com.cnk.data.map.MapData;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.database.models.Exhibit;
 import com.cnk.notificators.Observer;
 import com.cnk.ui.Utils;
-import com.cnk.utilities.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,7 +68,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
 
     private void prepareMapContainer(@NonNull RelativeLayout parentLayout) {
         List<Exhibit> exhibits = new ArrayList<>();
-        for (int i = 0; i < Consts.FLOOR_COUNT; i++) {
+        for (int i = 0; i < MapData.getInstance().getFloorsCount(); i++) {
             exhibits.addAll(ExhibitsData.getInstance().getExhibitsOfFloor(i));
         }
         mapContainer = new MapContainer(MapActivity.this, parentLayout);
@@ -96,7 +96,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
             abView.findViewById(R.id.break_button).setOnClickListener(this::pauseClick);
             abView.findViewById(R.id.change_floor_button)
                   .setOnClickListener((View v) -> setFloor((currentFloor + 1) %
-                                                           Consts.FLOOR_COUNT));
+                                                           MapData.getInstance().getFloorsCount()));
         }
     }
 

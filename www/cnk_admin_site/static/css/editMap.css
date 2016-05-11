@@ -32,12 +32,13 @@
   z-index: 5000
 }
 
-.delete-button {
-  float: left;
+.control-button-container {
+  position: relative;
 }
 
-control-button-container {
-  position: relative;
+
+.delete-button {
+  float: left;
 }
 
 .control-button-group:last-child {
@@ -45,4 +46,24 @@ control-button-container {
   bottom: 0px;
   left: 8px;
   right: 8px;
+}
+
+#changeMapDialog {
+  width: 100%;
+  table-layout: fixed;
+}
+#changeMapDialog td {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+#changeMapDialog button {
+  width: 100%;
+  height: 50px;
+}
+#changeMapDialog p {
+  text-align: center;
+}
+
+.delete-button {
+  float: left;
 }

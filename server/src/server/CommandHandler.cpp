@@ -40,15 +40,15 @@ std::int32_t CommandHandler::ping(const communication::HelloMsg &msg) {
 
 #pragma mark - MAP
 
-void CommandHandler::getNewMapImages(communication::NewMapImagesResponse &response,
-                                     const communication::NewMapImagesRequest &request) {
+void CommandHandler::getMapImages(
+    std::map<communication::FloorNum, communication::MapImage> &response) {
     LOG(INFO) << __func__ << " start";
-    LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        auto input = io::input::NewMapImagesRequest{request};
-        auto output = command::MapCommands{db}.getNew(input);
-        response = output.toThrift();
+        auto output = command::MapCommands{db}.getAll();
+        for (auto &entry : output) {
+            response[entry.first] = entry.second.toThrift();
+        }
     });
 
     LOG(INFO) << "output: " << response;
@@ -65,6 +65,15 @@ void CommandHandler::setMapImage(communication::MapImage &response,
         auto output = command::MapCommands{db}.set(input);
         response = output.toThrift();
     });
+
+    LOG(INFO) << __func__ << " end";
+}
+
+void CommandHandler::removeFloor(const std::int32_t floor) {
+    LOG(INFO) << __func__ << " start";
+    LOG(INFO) << "input: " << floor;
+
+    withExceptionTranslation([&]() { command::MapCommands{db}.remove(floor); });
 
     LOG(INFO) << __func__ << " end";
 }

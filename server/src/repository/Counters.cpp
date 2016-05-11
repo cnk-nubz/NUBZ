@@ -43,8 +43,6 @@ std::string toDbType(Counters::Type type) {
             return "last_exhibit_version";
         case Counters::Type::LastDeletedExhibitVersion:
             return "last_deleted_exhibit_version";
-        case Counters::Type::LastMapVersion:
-            return "last_map_version";
     }
 }
 }

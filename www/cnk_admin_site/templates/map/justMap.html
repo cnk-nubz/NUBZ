@@ -18,6 +18,16 @@
     <script src="{% static "coffee/handler/justMap.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
 {% endblock %}
+
+{% block includes %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/Canvas.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+
 {% block content %}
 <div id="mapSite">
   <div class="control-button-container">
@@ -26,8 +36,9 @@
       <button class="control-button"><div><span><strong>-</strong></span></div></button>
     </div>
     <div class="control-button-group" id="changeFloor">
-      <button class="control-button"><div><span><strong>0</strong></span></div></button>
-      <button class="control-button"><div><span><strong>1</strong></span></div></button>
+      {% for floor in availableFloors %}
+      <button class="control-button"><div><span><strong>{{floor}}</strong></span></div></button>
+      {% endfor %}
     </div>
     <div class="control-button-group" id="showLabels">
       <button class="control-button"><div><i class="fa fa-comment-o"></i></div></button>
