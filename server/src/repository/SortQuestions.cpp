@@ -47,7 +47,9 @@ SortQuestions::Question SortQuestions::get(std::int32_t ID) {
 
 boost::optional<SortQuestions::Question> SortQuestions::getOpt(std::int32_t ID) {
     if (auto res = MainImpl::get(session, ID)) {
-        return fromDB(res.value());
+        auto question = fromDB(res.value());
+        question.options = getOptions(ID);
+        return question;
     } else {
         return {};
     }

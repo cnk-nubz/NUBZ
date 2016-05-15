@@ -48,7 +48,9 @@ MultipleChoiceQuestions::Question MultipleChoiceQuestions::get(std::int32_t ID) 
 boost::optional<MultipleChoiceQuestions::Question> MultipleChoiceQuestions::getOpt(
     std::int32_t ID) {
     if (auto res = MainImpl::get(session, ID)) {
-        return fromDB(res.value());
+        auto question = fromDB(res.value());
+        question.options = getOptions(ID);
+        return question;
     } else {
         return {};
     }
