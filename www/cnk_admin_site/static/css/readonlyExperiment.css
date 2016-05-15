@@ -71,6 +71,12 @@
   border-top: none;
 }
 
+.myFooter {
+  height: 46px;
+  line-height: 46px;
+  font-size: 22px;
+}
+
 .questionsBefore {
   padding: 10px 5%;
   margin-bottom: 50px;
@@ -100,6 +106,16 @@
   font-family: 'Open Sans';
   font-weight: 600;
   border-radius: 0px;
+}
+
+.manageExperiment {
+  padding: 15px 5%;
+}
+
+.manageExperiment button {
+  width: 100%;
+  height: 46px;
+  font-size: 18px;
 }
 
 .experimentActions .myHeader > div {

@@ -29,7 +29,12 @@ class Handlers
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", =>
-          @_questions.showDialog(viewId, true)
+          @_questions.getFilledDialog(viewId,
+            readonly: true
+            deletable: true
+          ).off('delete')
+          .on('delete', @_deleteQuestion)
+          .show()
         )
     )
     questionsDOM
@@ -42,7 +47,12 @@ class Handlers
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", =>
-          @_actions.showDialog(viewId, true)
+          @_actions.getFilledDialog(viewId,
+            readonly: true
+            deletable: true
+          ).off('delete')
+          .on('delete', @_deleteAction)
+          .show()
         )
     )
     actionsDOM
@@ -51,10 +61,11 @@ class Handlers
   # _setHandler :: () -> undefined
   _setHandlers: =>
     jQuery("#questionList .addElement").on('click', @_addNewQuestion)
-    actionSave = @_newEntryRequest("/createAction/", @_createNewAction)
-    actionDialog = new root.ActionDialog('getHTML?name=actionDialog', actionSave)
-    jQuery("#actionList .addElement").click( ->
-      new root.ActionDialog('getHTML?name=actionDialog', actionSave).show()
+    new root.ActionDialog() #to load to cache TODO
+    jQuery("#actionList .addElement").click( =>
+      new root.ActionDialog()
+        .on('save', @_newEntryRequest("/action/", @_actionsChanged))
+        .show()
     )
     return
 
@@ -72,12 +83,6 @@ class Handlers
     BootstrapDialog.show(
       message: html
       title: 'Wybierz typ pytania'
-      closable: false
-      buttons: [
-        label: 'Anuluj'
-        action: (dialog) ->
-          dialog.close()
-      ]
       onshown: (dialog) =>
         @_setQuestionsHandlers(dialog)
     )
@@ -86,17 +91,17 @@ class Handlers
 
   # _setQuestionsHandlers :: BootstrapDialog -> undefined
   _setQuestionsHandlers: (dialog) =>
-    simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
-    simpleQuestionDialog = new root.SimpleQuestionDialog('getHTML?name=simpleQuestionDialog', simpleQuestionSave)
-    sortQuestionSave = @_newEntryRequest("/createSortQuestion/", @_createNewQuestion)
-    sortQuestionDialog = new root.SortQuestionDialog('getHTML?name=sortQuestionDialog', sortQuestionSave)
-    multipleChoiceSave = @_newEntryRequest("/createMultipleChoiceQuestion/", @_createNewQuestion)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getHTML?name=multipleChoiceQuestionDialog', multipleChoiceSave)
+    saveHandler = @_newEntryRequest("/question/", @_questionsChanged)
+    simpleQuestionDialog = new root.SimpleQuestionDialog()
+      .on('save', saveHandler)
+    sortQuestionDialog = new root.SortQuestionDialog()
+      .on('save', saveHandler)
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
+      .on('save', saveHandler)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
     jQuery("#sortQuestion").click( -> sortQuestionDialog.show())
     jQuery("#multipleChoiceQuestion").click( -> multipleChoiceQuestionDialog.show())
-    jQuery("#dialog button").click( -> dialog.close())
     return
 
 
@@ -108,17 +113,11 @@ class Handlers
   ###
   # type ResponseData = {
   #   questionsList :: [Question],
-  #   success       :: Boolean
   # }
   # | {
   #   actionsList   :: [Action],
-  #   success       :: Boolean
   # }
-  # | {
-  #   success       :: Boolean,
-  #   exceptionType :: String,
-  #   message       :: String
-  # }
+  # | jqXHR
   ###
   # _newEntryRequest :: (String, (ResponseData -> undefined))
   #                     -> (RequestData, BootstrapDialog) -> undefined
@@ -132,40 +131,73 @@ class Handlers
         dataType: 'json'
         data: (jsonData: JSON.stringify(data))
         url: url
-        success: (recvData) =>
-          if not recvData.success
-            if recvData.exceptionType is 'DuplicateName'
-              dialog.showNameDuplicatedError()
-            else
-              @_displayError(recvData.message)
-          else
-            callback(recvData)
-            dialog.close()
+        statusCode:
+          403: -> dialog.showNameDuplicatedError()
+          500: @_displayError
+        success: (recvData) ->
+          callback(recvData)
+          dialog.close()
       )
       return
 
 
-  # _createNewQuestion :: {questionsList :: [Question], success :: Boolean} -> undefined
-  _createNewQuestion: (data) =>
+  # _deleteAction :: Int -> undefined
+  _deleteAction: (actionId) =>
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      method: 'DELETE'
+      dataType: 'json'
+      data: (jsonData: JSON.stringify(id: actionId))
+      url: '/action/'
+      error: @_displayError
+      success: @_actionsChanged
+    )
+    return
+
+
+  # _deleteQuestion :: Int -> undefined
+  _deleteQuestion: (questionId, type) =>
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    toSend =
+      jsonData: JSON.stringify(
+        questionId: questionId
+        type: type
+      )
+    jQuery.ajax(
+      method: 'DELETE'
+      dataType: 'json'
+      data: toSend
+      url: '/question/'
+      error: @_displayError
+      success: @_questionsChanged
+    )
+    return
+
+  # _questionsChanged :: ({questionsList :: [Question]}) -> undefined
+  _questionsChanged: (data) =>
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)
     return
 
 
-  # _createNewAction :: ({actionsList :: [Action], success :: Boolean}) -> undefined
-  _createNewAction: (data) =>
+  # _actionsChanged :: ({actionsList :: [Action]}) -> undefined
+  _actionsChanged: (data) =>
     @_actions.setElements(data.actionsList)
     toAdd = @_prepareActionsList()
     @_actionsList.replaceElements(toAdd)
     return
 
 
-  # _displayError :: String -> undefined
-  _displayError: (message) ->
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
     BootstrapDialog.show(
-      message: message
-      title: 'Wystąpił błąd'
+      message: obj.responseText
+      title: obj.statusText
       type: BootstrapDialog.TYPE_DANGER
     )
     return

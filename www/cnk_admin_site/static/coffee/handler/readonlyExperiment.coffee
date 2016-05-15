@@ -12,10 +12,12 @@ class Handlers
   # }
   ###
   # constructor :: (ExperimentData, [Report]) -> Context
-  constructor: (@_experimentData, @_reportsData) ->
+  constructor: (@_experimentData, @_reportsData, @_activeExperiment) ->
     @_DOM =
       experimentTitle: ".experimentTitle input"
       getAllReports: ".reportsList .myFooter button"
+      removeExperiment: ".manageExperiment button"
+      manageExperiment: ".manageExperiment"
     @_questionsBefore = new root.Questions(@_experimentData?.questionsBefore)
     @_questionsAfter = new root.Questions(@_experimentData?.questionsAfter)
     @_exhibitActions = new root.Actions(@_experimentData?.exhibitActions)
@@ -27,6 +29,7 @@ class Handlers
     @_setLists()
     @_setDefaultState()
     @_setSaveAllReportsHandler()
+    @_setRemoveExperimentHandler()
 
 
   # _setLists :: () -> undefined
@@ -45,6 +48,8 @@ class Handlers
 
   # _setDefaultState :: () -> undefined
   _setDefaultState: =>
+    if @_activeExperiment?.experimentId is @_experimentData.experimentId
+      jQuery(@_DOM.manageExperiment).remove()
     jQuery(@_DOM.experimentTitle).val(@_experimentData.name)
     @_questionsBeforeList.show()
     @_questionsAfterList.show()
@@ -64,7 +69,7 @@ class Handlers
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", ->
-          dataList.showDialog(viewId, true)
+          dataList.getFilledDialog(viewId, readonly: true).show()
         )
     )
     elementsDOM
@@ -90,6 +95,38 @@ class Handlers
     )
     return
 
+
+  # _setRemoveExperimentHandler :: () -> undefined
+  _setRemoveExperimentHandler: =>
+    jQuery(@_DOM.removeExperiment).click( =>
+      (new root.ConfirmationDialog(root.removeExperimentConfirmation))
+        .on('confirm', =>
+          experimentId = @_experimentData.experimentId
+          jQuery.ajaxSetup(
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
+          )
+          jQuery.ajax(
+            method: "POST"
+            data: (jsonData: JSON.stringify(experimentId: experimentId))
+            url: '/removeExperiment/'
+            success: (data) -> location.href = data.redirect
+            error: @_displayError
+          )
+        )
+    )
+    return
+
+
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+    )
+    return
+
+
 jQuery(document).ready( ->
-  new Handlers(root.experimentData, root.reportsList)
+  new Handlers(root.experimentData, root.reportsList, root.activeExperiment)
 )

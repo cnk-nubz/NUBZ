@@ -21,3 +21,7 @@ body, html {
 .inputError {
   color: #D8000C;
 }
+
+.delete-button {
+  float: left;
+}

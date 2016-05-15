@@ -1,5 +1,8 @@
 root = exports ? this
 root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
+  constructor: (url = 'getHTML?name=simpleQuestionDialog', options = {}) ->
+    super(url, options)
+    @_questionType = 0
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
@@ -23,13 +26,25 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
     return
 
 
+  # _deleteButton :: () -> BootstrapDialogButton
+  _deleteButton: =>
+    jQuery.extend(super,
+      action: (dialog) =>
+        (new root.ConfirmationDialog(@_data))
+          .on('confirm', =>
+            @fireEvents('delete', @_dialogInfo.questionId, @_dialogInfo.type)
+            dialog.close()
+          )
+    )
+
+
   # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
     jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
     jQuery(".form-group:eq(2) .btn-group label:eq(#{@_dialogInfo.answerType})", dialogBody).addClass("active")
-    if @readonly
+    if @options.readonly
       jQuery("#dialog input", dialogBody).prop("readonly", true)
       jQuery("#dialog .btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
@@ -39,7 +54,8 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
   # type SimpleQuestionData = {
   #   name           :: String,
   #   question       :: String,
-  #   answerAsNumber :: Boolean
+  #   answerAsNumber :: Boolean,
+  #   type           :: Int
   # }
   ###
   # extractData :: () -> SimpleQuestionData
@@ -53,4 +69,5 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
       name: name
       question: question
       answerAsNumber: answerAsNumber
+      type: @_questionType
     data

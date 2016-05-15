@@ -13,8 +13,12 @@ class Handlers
   constructor: (@_mapData) ->
     @_mapData.minZoom = @_mapData.floorTilesInfo.map( -> 1)
     @_mapData.maxZoom = @_mapData.floorTilesInfo.map((x) -> Math.max(Object.keys(x).length, 1))
-    @_exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @updateExhibitRequest)
-      .setDeleteHandler(@removeExhibitSuccess)
+    @_exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog',
+      readonly: false
+      deletable: true
+    , @_mapData.activeFloor)
+    .on('save', @updateExhibitRequest)
+    .on('delete', @removeExhibitRequest)
     @_DOM =
       plusZoom: "#zoomControls button:first-child"
       minusZoom: "#zoomControls button:last-child"
@@ -54,9 +58,7 @@ class Handlers
 
   # _setEvents :: () -> undefined
   _setEvents: =>
-    @panel.on("addExhibit", (data, dialog) =>
-      @newExhibitRequest(data, dialog)
-    )
+    @panel.on("addExhibit", @newExhibitRequest)
     @panel.on("flyToExhibitWithId", (id) =>
       exhibit = @_mapData.exhibits[id]
       exhibitFloor = exhibit.frame.mapLevel
@@ -218,20 +220,16 @@ class Handlers
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.post('/createNewExhibit/', toSend, (recvData) =>
-      if not recvData.success
-        if recvData.exceptionType is "DuplicateName"
-          dialog.showNameDuplicatedError()
-        else
-          BootstrapDialog.alert(
-            message: "#{recvData.message}"
-            type: BootstrapDialog.TYPE_DANGER
-            title: 'Błąd serwera'
-          )
-        return
-      @_newExhibitSuccess(recvData, dialog)
-      dialog.close()
-    , 'json')
+    jQuery.ajax(
+      method: 'POST'
+      data: toSend
+      dataType: 'json'
+      url: '/exhibit/'
+      error: @_displayError
+      success: (recvData) =>
+        @_newExhibitSuccess(recvData, dialog)
+        dialog.close()
+    )
     return
 
 
@@ -250,15 +248,12 @@ class Handlers
       @_mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
       @canvas.addExhibits([@_mapData.exhibits[id]])
 
-    jQuery.getJSON('/getAllExhibits', null, (data) =>
-      if not data.success
-        BootstrapDialog.alert(
-          message: data.message
-          type: BootstrapDialog.TYPE_DANGER
-          title: 'Błąd serwera'
-        )
-        return
-      if data.exhibits?
+    jQuery.ajax(
+      method: "GET"
+      dataType: 'json'
+      url: '/exhibit/'
+      error: @_displayError
+      success: (data) =>
         @panel.replaceExhibits((e.id for e in data.exhibits))
     )
     return
@@ -285,20 +280,16 @@ class Handlers
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.post('/updateExhibit/', toSend, (recvData) =>
-      if not recvData.success
-        if recvData.exceptionType is "DuplicateName"
-          dialog.showNameDuplicatedError()
-        else
-          BootstrapDialog.alert(
-            message: "#{recvData.message}"
-            type: BootstrapDialog.TYPE_DANGER
-            title: 'Błąd serwera'
-          )
-        return
-      @_updateExhibitSuccess(recvData)
-      dialog.close()
-    , 'json')
+    jQuery.ajax(
+      method: "PUT"
+      data: toSend
+      url: '/exhibit/'
+      dataType: 'json'
+      error: @_displayError
+      success: (recvData) =>
+        @_updateExhibitSuccess(recvData)
+        dialog.close()
+    )
     return
 
   # _updateExhibitSuccess :: Exhibit -> undefined
@@ -316,11 +307,37 @@ class Handlers
     return
 
 
-  # removeExhibitSuccess :: Int -> Context
-  removeExhibitSuccess: (exhibitId) =>
-    @canvas.removeExhibit(exhibitId)
-    @panel.removeExhibit(exhibitId)
+  # removeExhibitRequest :: Int -> Context
+  removeExhibitRequest: (exhibitId) =>
+    toSend =
+      jsonData:
+        JSON.stringify(
+          exhibitId: exhibitId
+        )
+    jQuery.ajaxSetup(
+      headers: { "X-CSRFToken": getCookie("csrftoken") }
+    )
+    jQuery.ajax(
+      type: 'DELETE'
+      url: '/exhibit/'
+      data: toSend
+      error: @_displayError
+      success: =>
+        @canvas.removeExhibit(exhibitId)
+        @panel.removeExhibit(exhibitId)
+    )
     @
+
+
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+    )
+    return
+
 
 jQuery(document).ready( ->
   mapData =

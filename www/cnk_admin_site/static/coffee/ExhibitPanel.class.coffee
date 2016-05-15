@@ -7,24 +7,18 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   # =====================================
   # constructor :: (String, MapData) -> Context
   constructor: (@_containerId, @_mapData) ->
-    super
+    super()
     @_NO_FLOOR = @_mapData.numberOfFloors
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
-    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler, @_mapData.activeFloor)
+
     jQuery.getJSON('getHTML?name=exhibitPanel', null, (data) =>
       jQuery(data.html).appendTo(@_containerId)
       @_setExhibitPanelHandlers()
       @_getExhibitElementHTML()
       @filterForOneFloor(0)
     )
-
-
-  # addExhibitHandler :: (Exhibit, BootstrapDialog) -> undefined
-  addExhibitHandler: (data, dialog) =>
-    @fireEvents("addExhibit", data, dialog)
-    return
 
 
   # _setExhibitPanelHandlers :: () -> undefined
@@ -106,7 +100,11 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
 
   # refreshDialogInstance :: () -> Context
   refreshDialogInstance: =>
-    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog', @addExhibitHandler, @_mapData.activeFloor)
+    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog',
+      readonly: true
+      deletable: false
+    , @_mapData.activeFloor)
+      .on('save', (data, dialog) => @fireEvents("addExhibit", data, dialog))
     @
 
 

@@ -22,7 +22,8 @@ class Handlers
       attachToExperimentContainerSign: "td:last-child > i"
       addElementToList: ".chooseList .addElement"
       experimentTitle: ".experimentTitle input"
-      saveExperiment: ".saveExperiment button"
+      saveExperiment: ".manageExperiment button:first-child"
+      removeExperiment: ".manageExperiment button:last-child"
 
     @_questions = new root.Questions(initQuestionsList)
     @_questionsBefore = new root.Questions(@_experimentData?.questionsBefore)
@@ -35,7 +36,6 @@ class Handlers
     @_chooseActionRow = new root.ChooseActionRow()
     @_experimentQuestionRow = new root.ExperimentQuestionRow()
     @_experimentActionRow = new root.ExperimentActionRow()
-
     @_setHandlers()
 
   _setHandlers: =>
@@ -43,6 +43,7 @@ class Handlers
     @_setActionButtonClickHandler()
     @_setQuestionButtonClickHandler()
     @_setSaveExperimentHandler()
+    @_setRemoveExperimentHandler()
     @_setDefaultState()
 
   _setLists: =>
@@ -79,7 +80,7 @@ class Handlers
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", ->
-          dataList.showDialog(viewId, true)
+          dataList.getFilledDialog(viewId, readonly: true).show()
         )
       element.querySelector("td:last-child")
         .addEventListener("click", ->
@@ -103,7 +104,7 @@ class Handlers
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", =>
-          @_questions.showDialog(viewId, true)
+          @_questions.getFilledDialog(viewId, readonly: true).show()
         )
       # contextList has entries corresponding to each popover button
       contextList = [
@@ -124,7 +125,7 @@ class Handlers
       viewId = element.data
       element.querySelector("div")
         .addEventListener("click", =>
-          @_actions.showDialog(viewId, true)
+          @_actions.getFilledDialog(viewId, readonly: true).show()
         )
       contextList = [
         @_exhibitActionsList,
@@ -170,7 +171,7 @@ class Handlers
                 jQuery(this).parents("tr").remove()
               )
               jQuery("td:first-child", newElement).click( ->
-                dataList.showDialog(id, true)
+                dataList.getFilledDialog(id, readonly: true).show()
               )
               contextList[index].addElement(newElement)
             )
@@ -192,6 +193,8 @@ class Handlers
   _setDefaultState: =>
     if @_experimentData?
       jQuery(@_DOM.experimentTitle).val(@_experimentData.name)
+    else
+      jQuery(@_DOM.removeExperiment).remove()
     @_questionsList.show()
     jQuery(@_DOM.chooseListTitle).text("Pytania")
     jQuery(@_DOM.questionButton).addClass("active")
@@ -234,17 +237,18 @@ class Handlers
       jQuery(instance._DOM.chooseListTitle).text("Akcje")
       instance._questionsList.hide()
       instance._actionsList.show()
-      actionSave = instance._newEntryRequest("/createAction/", instance._createNewAction)
-      actionDialog = new root.ActionDialog("getHTML?name=actionDialog", actionSave)
+      new root.ActionDialog()
       jQuery(instance._DOM.addElementToList).off("click").click( ->
-        new root.ActionDialog("getHTML?name=actionDialog", actionSave).show()
+        (new root.ActionDialog())
+          .on('save', instance._newEntryRequest("/action/", instance._actionsChanged))
+          .show()
       )
     )
     return
 
 
-  # _createNewAction :: ({actionsList :: [Action], success :: Boolean}) -> undefined
-  _createNewAction: (data) =>
+  # _actionsChanged :: ({actionsList :: [Action]}) -> undefined
+  _actionsChanged: (data) =>
     @_actions.setElements(data.actionsList)
     toAdd = @_prepareActionsList()
     @_actionsList.replaceElements(toAdd)
@@ -259,6 +263,26 @@ class Handlers
     )
     return
 
+
+  # _setRemoveExperimentHandler :: () -> undefined
+  _setRemoveExperimentHandler: =>
+    jQuery(@_DOM.removeExperiment).click( =>
+      (new root.ConfirmationDialog(root.removeExperimentConfirmation))
+        .on('confirm', =>
+          experimentId = @_experimentData.experimentId
+          jQuery.ajaxSetup(
+            headers: { "X-CSRFToken": getCookie("csrftoken") }
+          )
+          jQuery.ajax(
+            method: "POST"
+            data: (jsonData: JSON.stringify(experimentId: experimentId))
+            url: '/removeExperiment/'
+            success: (data) -> location.href = data.redirect
+            error: @_displayError
+          )
+        )
+    )
+    return
 
   # _isExperimentReady :: () -> Boolean
   _isExperimentReady: =>
@@ -291,25 +315,22 @@ class Handlers
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
     jQuery.ajax(
-      type: 'POST'
+      type: if @_experimentData? then "PUT" else "POST"
       dataType: 'json'
       context: this
       data: (jsonData: JSON.stringify(dataToSend))
-      url: '/saveExperiment/'
-      success: (data) ->
-        if not data.success
-          if data.exceptionType is 'DuplicateName'
-            @_showNameDuplicatedError(data.message)
-          else
-            @_displayError(data.message)
-        else
-          location.href = '/badania'
+      url: '/experiment/'
+      statusCode:
+        403: @_showNameDuplicatedError
+        500: @_displayError
+      success: (data) -> location.href = data.redirect
     )
     return
 
 
-  # _showNameDuplicatedError :: String -> undefined
-  _showNameDuplicatedError: (message) =>
+  # _showNameDuplicatedError :: jqXHR -> undefined
+  _showNameDuplicatedError: (obj) =>
+    message = obj.responseText
     experimentTitle = jQuery(@_DOM.experimentTitle)
     oldTitle = experimentTitle.attr("title")
     experimentTitle
@@ -338,25 +359,21 @@ class Handlers
     BootstrapDialog.show(
       message: html
       title: 'Wybierz typ pytania'
-      closable: false
-      buttons: [
-        label: 'Anuluj'
-        action: (dialog) -> dialog.close()
-      ]
-      onshown: (dialog) => @_setChooseQuestionTypeHandlers(dialog)
+      onshown: (dialog) =>
+        @_setChooseQuestionTypeHandlers(dialog)
     )
     return
 
 
   # _setChooseQuestionTypeHandlers :: BootstrapDialog -> undefined
   _setChooseQuestionTypeHandlers: (dialog) =>
-    # Long names are long. Are you gazing into the abyss? Because it's gazing back at us.
-    simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
-    simpleQuestionDialog = new root.SimpleQuestionDialog('getHTML?name=simpleQuestionDialog', simpleQuestionSave)
-    sortQuestionSave = @_newEntryRequest("/createSortQuestion/", @_createNewQuestion)
-    sortQuestionDialog = new root.SortQuestionDialog('getHTML?name=sortQuestionDialog', sortQuestionSave)
-    multipleChoiceSave = @_newEntryRequest("/createMultipleChoiceQuestion/", @_createNewQuestion)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getHTML?name=multipleChoiceQuestionDialog', multipleChoiceSave)
+    saveHandler = @_newEntryRequest("/question/", @_questionsChanged)
+    simpleQuestionDialog = new root.SimpleQuestionDialog()
+      .on('save', saveHandler)
+    sortQuestionDialog = new root.SortQuestionDialog()
+      .on('save', saveHandler)
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
+      .on('save', saveHandler)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
     jQuery("#sortQuestion").click( -> sortQuestionDialog.show())
@@ -372,17 +389,11 @@ class Handlers
   ###
   # type ResponseData = {
   #   questionsList :: [Question],
-  #   success       :: Boolean
   # }
   # | {
   #   actionsList   :: [Action],
-  #   success       :: Boolean
   # }
-  # | {
-  #   success       :: Boolean,
-  #   exceptionType :: String,
-  #   message       :: String
-  # }
+  # | jqXHR
   ###
   # _newEntryRequest :: (String, (ResponseData -> undefined))
   #                     -> (RequestData, BootstrapDialog) -> undefined
@@ -396,34 +407,32 @@ class Handlers
         dataType: 'json'
         data: (jsonData: JSON.stringify(data))
         url: url
-        success: (recvData) =>
-          if not recvData.success
-            if recvData.exceptionType is 'DuplicateName'
-              dialog.showNameDuplicatedError()
-            else
-              @_displayError(recvData.message)
-          else
-            callback(recvData)
-            dialog.close()
+        statusCode:
+          403: -> dialog.showNameDuplicatedError()
+          500: @_displayError
+        success: (recvData) ->
+          callback(recvData)
+          dialog.close()
       )
       return
 
 
-  # _createNewQuestion :: {questionsList :: [Question], success :: Boolean} -> undefined
-  _createNewQuestion: (data) =>
+  # _questionsChanged :: ({questionsList :: [Question]}) -> undefined
+  _questionsChanged: (data) =>
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)
     return
 
 
-  # _displayError :: String -> undefined
-  _displayError: (message) ->
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
     BootstrapDialog.show(
-      message: message
-      title: 'Wystąpił błąd'
+      message: obj.responseText
+      title: obj.statusText
       type: BootstrapDialog.TYPE_DANGER
     )
+    return
 
 jQuery(document).ready( ->
   new Handlers(root.questionsList, root.actionsList, root.experimentData)

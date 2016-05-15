@@ -36,11 +36,6 @@
   position: relative;
 }
 
-
-.delete-button {
-  float: left;
-}
-
 .control-button-group:last-child {
   position: absolute;
   bottom: 0px;

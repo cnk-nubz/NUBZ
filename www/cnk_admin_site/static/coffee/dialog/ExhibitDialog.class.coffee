@@ -1,7 +1,7 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
-  constructor: (url, saveHandler, @_canvasActiveFloor) ->
-    super(url, saveHandler)
+  constructor: (url, options = {}, @_canvasActiveFloor) ->
+    super(url, options)
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
@@ -53,42 +53,10 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     jQuery(".form-group .btn-group .floorNum", dialogBody).removeClass("active")
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_dialogInfo.floor})", dialogBody).addClass("active")
     jQuery(".popoverButton", dialogBody).css("background-color": @_dialogInfo.color)
-    Pdialog = dialogBody.parent()
-    jQuery(".bootstrap-dialog-footer-buttons", Pdialog).prepend(@_data.utils.text.deleteButtonHtml)
-    jQuery(".delete-button", Pdialog).click( =>
-      new root.ConfirmDialog('getHTML?name=confirmExhibitDelDialog', @_deleteExhibit)
-    )
     jQuery("input", dialogBody).prop("readonly", true)
-    if @readonly is true
+    if @options.readonly is true
       jQuery("label.floorNum.btn:not(.active)", dialogBody).remove()
       jQuery(".popoverButton", dialogBody).prop("disabled", true)
-    return
-
-
-  # setDeleteHandler :: (->) -> Context
-  setDeleteHandler: (@_successfullDeleteHandler) => @
-
-
-  # _deleteExhibit :: () -> undefined
-  _deleteExhibit: =>
-    toSend =
-      jsonData:
-        JSON.stringify(
-          id: @_dialogInfo.id
-        )
-    jQuery.ajaxSetup(
-      headers: { "X-CSRFToken": getCookie("csrftoken") }
-    )
-    jQuery.ajax(
-      type: 'POST'
-      dataType: 'json'
-      url: '/deleteExhibit/'
-      data: toSend
-      success: =>
-        if @_successfullDeleteHandler
-          @_successfullDeleteHandler(@_dialogInfo.id)
-        @_dialog.close()
-    )
     return
 
 
@@ -103,14 +71,16 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     return
 
 
-  # _saveButton :: () -> BootstrapDialogButton
-  _saveButton: =>
-    label: super.label
-    action: (dialog) =>
-      if @readonly is false
-        super.action(dialog)
-      else
-        dialog.close()
+  # _deleteButton :: () -> BootstrapDialogButton
+  _deleteButton: =>
+    jQuery.extend(super,
+      action: (dialog) =>
+        (new root.ConfirmationDialog(@_data))
+          .on('confirm', =>
+            @fireEvents('delete', @_dialogInfo.id)
+            dialog.close()
+          )
+    )
 
 
   ###

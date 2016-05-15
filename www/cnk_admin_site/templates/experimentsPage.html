@@ -14,6 +14,9 @@
 {% block includes %}
   {% compress js %}
   <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/ConfirmationDialog.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/CloneExperimentDialog.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/experimentData/ExperimentData.class.coffee" %}" type="text/coffeescript"></script>
@@ -56,14 +59,13 @@
       root.readyExperiments = {{readyExperiments | jsvar}}
       root.finishedExperiments = {{finishedExperiments | jsvar}}
       root.activeExperiment = {{activeExperiment | jsvar}}
-      root.confirmationMessages = {{confirmationMessages | jsvar}}
-      jQuery.getJSON('getHTML?name=changeNameDialog', null, (data) ->
-        root.changeNameDialog = data
-      )
+      root.startExperimentConfirmation = {{startExperimentConfirmation | jsvar}}
+      root.finishExperimentConfirmation = {{finishExperimentConfirmation | jsvar}}
       root.HTML =
         finishedExperimentRow: '{{finishedExperimentRow}}'
         readyExperimentRow: '{{readyExperimentRow}}'
         tableList: '{{tableList}}'
+      new root.CloneExperimentDialog() # cache data from url
     </script>
   {% endcompress %}
 {% endblock %}

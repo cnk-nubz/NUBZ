@@ -1,8 +1,9 @@
 root = exports ? this
-root.QuestionDialog = class QuestionDialog
+root.QuestionDialog = class QuestionDialog extends root.View
   # ======== ABSTRACT FUNCTIONS ========
   # _prepareFilledDialog :: DOMNode -> undefined
   # extractData          :: () -> DialogData
+  # _deleteButton        :: () -> BootstrapDialogButton
   # ====================================
   ###
   # DialogData =
@@ -11,10 +12,16 @@ root.QuestionDialog = class QuestionDialog
   # | MultipleChoiceQuestionData
   # | SimpleQuestionData
   # | SortQuestionData
+  # | CloneExperimentData
   ###
-  readonly: false
-  # constructor :: (String, (DialogData, BootstrapDialog) -> undefined)
-  constructor: (@_url, @_saveHandler = (->)) ->
+  # options = {
+  #   Readonly :: Boolean
+  # , Deletable :: Boolean
+  # }
+  # constructor :: (String, JsObject) -> Context
+  constructor: (@_url, @options = {}) ->
+    super()
+    @_setDefaultOptions()
     if root.cachedData.hasOwnProperty(@_url)
       @_init(root.cachedData[@_url])
     else
@@ -23,6 +30,7 @@ root.QuestionDialog = class QuestionDialog
         @_init(data)
       )
 
+
   _init: (data) =>
     @_data = data.data
     @_dialogHTML = data.html
@@ -30,10 +38,21 @@ root.QuestionDialog = class QuestionDialog
       message: data.html
       title: data.data.utils.text.titleNew
       closable: false
-      buttons: [@_closeButton(), @_saveButton()]
+      buttons:
+        [ @_deleteButton()
+        , @_closeButton()
+        , @_saveButton()
+        ]
     )
     @_dialog.realize()
     @_prepareDialog(@_dialog.getModalBody())
+
+
+  # _setDefaultOptions :: () -> undefined
+  _setDefaultOptions: =>
+    @options.readonly ?= false
+    @options.deletable ?= false
+    return
 
 
   # bindData :: listElement -> Context
@@ -62,6 +81,8 @@ root.QuestionDialog = class QuestionDialog
       if not obj.val().length
         instance._showInputError(error, instance._getEmptyInputError())
       )
+    if not @options.deletable
+      @_dialog.getButton('deleteButtonDialog').hide()
     return
 
 
@@ -96,7 +117,16 @@ root.QuestionDialog = class QuestionDialog
     action: (dialog) =>
       dialog.showNameDuplicatedError = @_showNameDuplicatedError
       if @_validateForm()
-        @_saveHandler(@extractData(), dialog)
+        @fireEvents('save', @extractData(), dialog)
+
+
+  # _deleteButton :: () -> BootstrapDialogButton
+  _deleteButton: =>
+    id: 'deleteButtonDialog'
+    label: @_data.utils.text.deleteButton
+    cssClass: 'btn-danger delete-button'
+    action: (dialog) ->
+      dialog.close()
 
 
   # _showNameDuplicatedError :: () -> undefined

@@ -40,9 +40,9 @@ root.Questions = class Questions extends root.ExperimentData
   # constructor :: [Question] -> Context
   constructor: (_list = []) ->
     super _list
-    @_simpleQuestionDialog = new root.SimpleQuestionDialog('getHTML?name=simpleQuestionDialog')
-    @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog('getHTML?name=multipleChoiceQuestionDialog')
-    @_sortQuestionDialog = new root.SortQuestionDialog('getHTML?name=sortQuestionDialog')
+    @_simpleQuestionDialog = new root.SimpleQuestionDialog()
+    @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
+    @_sortQuestionDialog = new root.SortQuestionDialog()
     ###
     # _questionType :: (JsObject :: (Int, {name :: String, dialog :: BootstrapDialog}))
     ###
@@ -75,12 +75,12 @@ root.Questions = class Questions extends root.ExperimentData
     type: @_elementsDict[viewId].type
 
 
-  # showDialog :: (String, Boolean) -> Context
-  showDialog: (viewId, readonly = false) =>
+  # getFilledDialog :: (String, jsObject) -> BootstrapDialog
+  getFilledDialog: (viewId, options = {}) =>
     dialog = @_questionType[@_elementsDict[viewId].type].dialog
-    dialog.readonly = readonly
-    @_questionType[@_elementsDict[viewId].type].dialog.bindData(@_elementsDict[viewId]).show()
-    @
+    jQuery.extend(dialog.options, options)
+    dialog.bindData(@_elementsDict[viewId])
+    dialog
 
 
   # _getViewId :: Int -> String
