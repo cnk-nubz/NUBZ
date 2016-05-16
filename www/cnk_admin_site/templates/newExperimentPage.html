@@ -19,6 +19,10 @@
 {% endblock %}
 {% block includes %}
   {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/ConfirmationDialog.class.coffee" %}" type="text/coffeescript"></script>
   <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
@@ -32,9 +36,6 @@
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/dialog/ActionDialog.class.coffee" %}" type="text/coffeescript"></script>
-  {% endcompress %}
-  {% compress js %}
-  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
   {% endcompress %}
   {% compress js %}
   <script src="{% static "coffee/experimentData/ExperimentData.class.coffee" %}" type="text/coffeescript"></script>
@@ -78,7 +79,7 @@
       root.questionsList = {{questionsList|jsvar}}
       root.actionsList = {{actionsList|jsvar}}
       root.experimentData = {{experimentData|jsvar}}
-
+      root.removeExperimentConfirmation = {{removeExperimentConfirmation | jsvar}}
       root.HTML =
         chooseQuestionRow: '{{chooseQuestionRow}}'
         experimentQuestionRow: '{{experimentQuestionRow}}'
@@ -131,9 +132,10 @@
         <div class="middle"></div>
       </div>
     </div>
-    <div class="saveExperiment">
+    <div class="manageExperiment">
       <div class="myFooter">
         <button class="btn btn-success">Zapisz badanie</button>
+        <button class="btn btn-danger">Usuń badanie</button>
       </div>
     </div>
   </div>

@@ -7,10 +7,13 @@
 # ================
 
 INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
-EXHIBIT_LIST_ERROR = "Nie udało sie pobrać listy eksponatów. Spróbuj ponownie za chwilę."
-NO_SUCH_REPORT_ERROR = "Nie istnieje raport o numerze"
-NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o numerze"
-NO_SUCH_FLOOR_ERROR = "Nie istnieje piętro o numerze"
+NO_SUCH_REPORT_ERROR = "Nie istnieje raport o danym numerze"
+NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o danym numerze"
+NO_SUCH_FLOOR_ERROR = "Nie istnieje piętro o danym numerze"
+QUESTION_IN_USE_ERROR = "Pytanie jest przypisane do przynajmniej jednego badania."
+ACTION_IN_USE_ERROR = "Akcja jest przypisana do przynajmniej jednego badania."
+DUPLICATE_NAME_ERROR = "Taka nazwa już istnieje."
+INVALID_DATA_ERROR = "Krytyczny błąd twórców strony. Prosimy o kontakt."
 NEW_FLOOR_IMAGE_SUCCESS = {
     "message": "Pomyślnie zmieniono mapę piętra nr",
      "title": "Sukces",
@@ -24,10 +27,12 @@ DEFAULT_CONSTANTS = {
     "utils": {
         "text": {
             "emptyInputError": "Napis nie może być pusty",
-            "nameDuplicatedError": "Taka nazwa już istnieje.",
+            "nameDuplicatedError": DUPLICATE_NAME_ERROR,
             "saveButton": "Zapisz",
             "cancelButton": "Anuluj",
             "deleteButton": "Usuń",
+            "confirmationButton": "OK",
+            "confirmationTitle": "Potwierdzenie"
         }
     }
 }
@@ -58,7 +63,8 @@ SIMPLE_QUESTION_DIALOG = {
     "utils": {
         "text": {
             "titleNew": "Tworzenie pytania otwartego",
-            "title": "Pytanie otwarte"
+            "title": "Pytanie otwarte",
+            "confirmationMessage": "Czy chcesz usunąć dane pytanie? Tej operacji nie można cofnąć"
         },
     }
 }
@@ -97,7 +103,8 @@ MULTIPLE_CHOICE_QUESTION_DIALOG = {
             "titleNew": "Tworzenie pytania zamkniętego",
             "title": "Pytanie zamknięte",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
-            "optionDuplicatedError": "Ta opcja już się pojawiła na liście."
+            "optionDuplicatedError": "Ta opcja już się pojawiła na liście.",
+            "confirmationMessage": "Czy chcesz usunąć dane pytanie? Tej operacji nie można cofnąć"
         },
         "default": {
             "radioGroup": "ansType",
@@ -132,7 +139,8 @@ SORT_QUESTION_DIALOG = {
             "titleNew": "Tworzenie pytania z sortowaniem",
             "title": "Pytanie z sortowaniem",
             "needMultipleAnswerError": "Potrzebne są co najmniej 2 odpowiedzi.",
-            "optionDuplicatedError": "Ta opcja już się pojawiła na liście."
+            "optionDuplicatedError": "Ta opcja już się pojawiła na liście.",
+            "confirmationMessage": "Czy chcesz usunąć dane pytanie? Tej operacji nie można cofnąć"
         },
         "default": {
             "labelSize": "3"
@@ -152,7 +160,8 @@ NEW_ACTION_DIALOG = {
     "utils": {
         "text": {
             "titleNew": "Tworzenie nowej akcji",
-            "title": "Akcja"
+            "title": "Akcja",
+            "confirmationMessage": "Czy chcesz usunąć daną akcję? Tej operacji nie można cofnąć."
         }
     }
 }
@@ -186,12 +195,12 @@ EXHIBIT_DIALOG = {
         "text": {
             "title": "Tworzenie eksponatu",
             "editTitle": "Edycja eksponatu",
-            "deleteButtonHtml": '<button class="btn btn-danger delete-button">Usuń</button>',
+            "confirmationMessage": "Czy chcesz usunąć dany eksponat? Tej operacji nie da się cofnąć."
         },
     }
 }
 
-CHANGE_EXPERIMENT_NAME_DIALOG = {
+CLONE_EXPERIMENT_DIALOG = {
     "data": [
         [
             "dialog/input.html", {
@@ -206,23 +215,31 @@ CHANGE_EXPERIMENT_NAME_DIALOG = {
     }
 }
 
-CONFIRM_EXHIBIT_DEL_DIALOG = {
-    "data": [],
+
+START_EXPERIMENT_CONFIRMATION = {
     "utils": {
         "text": {
-            "title": "Potwierdzenie usuwania eksponatu",
-            "question": "Czy na pewno chcesz usunąć eksponat? Tej akcji nie będzie można cofnąć.",
-            "confirmButton": "Tak",
+            'confirmationMessage': 'Czy chcesz aktywować dane badanie? Nie będzie ono już edytowalne. Tej operacji nie da się cofnąć.'
         }
     }
 }
 
-EXPERIMENT_CONFIRMATION_MESSAGES = {
-    'finishExperiment': 'Czy chcesz zakończyć dane badanie? Na żadnym tablecie nie będzie można rozpocząć tego badania. Tej operacji nie da się cofnąć.',
-    'activateExperiment': 'Czy chcesz aktywować dane badanie? Nie będzie ono już edytowalne. Tej operacji nie da się cofnąć.',
-    'cancelButton': 'Anuluj',
-    'confirmButton': 'OK',
-    'title': 'Potwierdzenie'
+
+FINISH_EXPERIMENT_CONFIRMATION = {
+    "utils": {
+        "text": {
+            'confirmationMessage': 'Czy chcesz zakończyć dane badanie? Na żadnym tablecie nie będzie można rozpocząć tego badania. Tej operacji nie da się cofnąć.'
+        }
+    }
+}
+
+
+REMOVE_EXPERIMENT_CONFIRMATION = {
+    "utils": {
+        "text": {
+            'confirmationMessage': 'Czy chcesz usunąć dane badanie? Wszystkie raporty dotyczące tego badania zostaną usunięte. Pytania oraz akcje z danego badania nie zostaną usunięte. Tej operacji nie można cofnąć'
+        }
+    }
 }
 
 POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
@@ -236,8 +253,10 @@ to_merge_with_defaults = [
     SORT_QUESTION_DIALOG,
     NEW_ACTION_DIALOG,
     EXHIBIT_DIALOG,
-    CHANGE_EXPERIMENT_NAME_DIALOG,
-    CONFIRM_EXHIBIT_DEL_DIALOG,
+    CLONE_EXPERIMENT_DIALOG,
+    START_EXPERIMENT_CONFIRMATION,
+    FINISH_EXPERIMENT_CONFIRMATION,
+    REMOVE_EXPERIMENT_CONFIRMATION
 ]
 
 def merge_dicts(a, b, path=None):

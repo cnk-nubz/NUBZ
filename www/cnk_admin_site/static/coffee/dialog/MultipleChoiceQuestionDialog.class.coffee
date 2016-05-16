@@ -1,5 +1,8 @@
 root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
+  constructor: (url = 'getHTML?name=multipleChoiceQuestionDialog', options = {}) ->
+    super(url, options)
+    @_questionType = 1
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
@@ -22,6 +25,18 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     return
 
 
+  # _deleteButton :: () -> BootstrapDialogButton
+  _deleteButton: =>
+    jQuery.extend(super,
+      action: (dialog) =>
+        (new root.ConfirmationDialog(@_data))
+          .on('confirm', =>
+            @fireEvents('delete', @_dialogInfo.questionId, @_dialogInfo.type)
+            dialog.close()
+          )
+    )
+
+
   # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
@@ -33,11 +48,11 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       obj = jQuery(".form-group:last-child > div input:last", dialogBody)
       obj.val(answer).keyup()
 
-    if @readonly
+    if @options.readonly
       jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
       jQuery("input", dialogBody).last().parents('.input-group').remove()
-      jQuery("label .btn:not(.active)", dialogBody).remove()
+      jQuery("label.btn:not(.active)", dialogBody).remove()
       @_dialog.getButton('saveButtonDialog').hide()
     return
 
@@ -91,7 +106,8 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
   #   name         :: String,
   #   question     :: String,
   #   options      :: [String],
-  #   singleAnswer :: Boolean
+  #   singleAnswer :: Boolean,
+  #   type         :: Int
   # }
   ###
   # extractData :: () -> MultipleChoiceQuestionData
@@ -108,4 +124,5 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
       question: question
       options: options
       singleAnswer: singleAnswer
+      type: @_questionType
     data

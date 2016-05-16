@@ -48,7 +48,10 @@ class Handler
         )
       element.querySelector("td:first-child + td + td > div")
         .addEventListener("click", =>
-          @_proceedCloningExperiment(JSON.parse(viewId).id)
+          experimentId = JSON.parse(viewId).id
+          (new CloneExperimentDialog())
+            .on('save', @_tryCloningExperiment(experimentId))
+            .show()
         )
 
       if @_activeExperiment?
@@ -56,37 +59,27 @@ class Handler
         jQuery("td:last-child > div", element).tooltip()
       else
         element.querySelector("td:last-child > div")
-        .addEventListener("click", =>
-          BootstrapDialog.show(
-            message: root.confirmationMessages.activateExperiment
-            title: root.confirmationMessages.title
-            closable: false
-            buttons: [
-              @_confirmationCancelButton()
-              @_confirmationConfirmButton(@_activateExperiment(JSON.parse(viewId).id))
-            ]
+          .addEventListener("click", =>
+            (new ConfirmationDialog(root.startExperimentConfirmation))
+              .on('confirm', @_startExperiment(JSON.parse(viewId).id))
           )
-        )
     )
     experimentsDOM
 
 
-  # _activateExperiment :: Int -> () -> undefined
-  _activateExperiment: (experimentId) ->
-    ->
+  # _startExperiment :: Int -> () -> undefined
+  _startExperiment: (experimentId) =>
+    =>
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post("startExperiment/", id: experimentId, (data) ->
-        if data.success
-          location.reload()
-        else
-          BootstrapDialog.show(
-            message: data.message
-            title: 'Nie mozna rozpoczac badania'
-            type: BootstrapDialog.TYPE_DANGER
-          )
-      , 'json')
+      jQuery.ajax(
+        method: "POST"
+        data: (jsonData: JSON.stringify(experimentId: experimentId))
+        url: "/activeExperiment/"
+        success: -> location.reload()
+        error: @_displayError
+      )
       return
 
 
@@ -101,76 +94,44 @@ class Handler
         )
       element.querySelector('td:first-child + td + td + td > div')
         .addEventListener('click', =>
-          @_proceedCloningExperiment(JSON.parse(viewId).id)
+          experimentId = JSON.parse(viewId).id
+          (new CloneExperimentDialog())
+            .on('save', @_tryCloningExperiment(experimentId))
+            .show()
         )
     )
     experimentsDOM
 
 
-  # _proceedCloningExperiment :: Int -> undefined
-  _proceedCloningExperiment: (experimentId) =>
-    dialogData = root.changeNameDialog.data
-    dialogMessage = root.changeNameDialog.html
-    BootstrapDialog.show(
-      message: dialogMessage
-      title: dialogData.utils.text.title
-      closable: false
-      buttons: [
-        @_changeNameDialogCancelButton()
-        @_changeNameDialogSaveButton(@_tryCloningExperiment(experimentId))
-      ]
-    )
-    return
-
-
-  # _changeNameDialogCancelButton :: () -> BootstrapDialogButton
-  _changeNameDialogCancelButton: ->
-    label: root.changeNameDialog.data.utils.text.cancelButton
-    action: (dialog) ->
-      dialog.close()
-
-
-  # _changeNameDialogSaveButton :: Int -> BootstrapDialogButton
-  _changeNameDialogSaveButton: (handler) ->
-    label: root.changeNameDialog.data.utils.text.saveButton
-    action: (dialog) -> handler()
-
-
-  # _tryCloningExperiment :: Int -> () -> undefined
+  # _tryCloningExperiment :: Int -> (CloneExperimentData, BootstrapDialog) -> undefined
   _tryCloningExperiment: (experimentId) =>
-    =>
-      jQuery('.inputError').html('')
-      newName = jQuery.trim(jQuery('#dialog input').val())
-      jQuery("#dialog input").val(newName)
-      dialogData = root.changeNameDialog.data
-      if newName.length is 0
-        jQuery('.inputError').text(dialogData.utils.text.emptyInputError)
-        return
+    (data, dialog) =>
+      jQuery('.inputError', dialog.getModalBody()).html('')
       toSend =
         jsonData: JSON.stringify(
           experimentId: experimentId
-          newName: newName
+          newName: data.name
         )
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post('cloneExperiment/', toSend, (data) =>
-        if data.success is true
-          location.reload()
-        else
-          if data.exceptionType is 'DuplicateName'
-            jQuery('.inputError').html(dialogData.utils.text.nameDuplicatedError)
-          else
-            @_showError(data.exceptionType, data.message)
+      jQuery.ajax(
+        method: "POST"
+        data: toSend
+        url: '/cloneExperiment/'
+        statusCode:
+          403: -> dialog.showNameDuplicatedError()
+          500: @_displayError
+        success: -> location.reload()
       )
       return
 
 
-  # _showError :: (String, String) -> undefined
-  _showError: (exceptionType, message) ->
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
     BootstrapDialog.show(
-      message: message
-      title: exceptionType
+      message: obj.responseText
+      title: obj.statusText
       type: BootstrapDialog.TYPE_DANGER
     )
     return
@@ -191,21 +152,15 @@ class Handler
     jQuery("td:not(:first-child) > div").addClass("noselect")
     activeExperimentRow = document.querySelector('#activeExperiment tr')
     activeExperimentId = @_activeExperiment.experimentId
-    activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)").addEventListener("click", ->
-      location.href = "/badanie?readonly&id=#{activeExperimentId}"
-    )
-    activeExperimentRow.querySelector("td:last-child > div").addEventListener("click", =>
-      BootstrapDialog.show(
-        message: root.confirmationMessages.finishExperiment
-        title: root.confirmationMessages.title
-        closable: false
-        buttons: [
-          @_confirmationCancelButton()
-          @_confirmationConfirmButton(@_finishExperiment)
-        ]
+    activeExperimentRow.querySelector("td:not(:first-child):not(:last-child)")
+      .addEventListener("click", ->
+        location.href = "/badanie?readonly&id=#{activeExperimentId}"
       )
-
-    )
+    activeExperimentRow.querySelector("td:last-child > div")
+      .addEventListener("click", =>
+        (new root.ConfirmationDialog(root.finishExperimentConfirmation))
+          .on('confirm', @_finishExperiment)
+      )
     return
 
 
@@ -218,25 +173,21 @@ class Handler
 
   # _confirmationConfirmButton :: (() -> undefined) -> BootstrapDialogButton
   _confirmationConfirmButton: (handler) ->
-    label: root.confirmationMessages.confirmButton
+    label: root.confirmationMessages.confirmationButton
     action: -> handler()
 
 
   # _finishExperiment :: () -> undefined
-  _finishExperiment: ->
+  _finishExperiment: =>
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
-    jQuery.post("finishExperiment/", null, (data) ->
-      if data.success
-        location.reload()
-      else
-        BootstrapDialog.show(
-          message: data.message
-          title: 'Nie mozna zakonczyc badania'
-          type: BootstrapDialog.TYPE_DANGER
-        )
-    , 'json')
+    jQuery.ajax(
+      method: "DELETE"
+      url: "/activeExperiment/"
+      success: -> location.reload()
+      error: @_displayError
+    )
     return
 
 

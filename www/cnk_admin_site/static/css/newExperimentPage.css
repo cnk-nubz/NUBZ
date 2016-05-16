@@ -86,11 +86,12 @@
   border-radius: 0px;
 }
 
-.saveExperiment {
+.manageExperiment {
   padding: 15px 5%;
+  margin-bottom: 50px;
 }
 
-.saveExperiment button {
+.manageExperiment button {
   width: 100%;
   height: 46px;
   font-size: 18px;

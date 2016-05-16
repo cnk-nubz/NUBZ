@@ -50,6 +50,10 @@ class ThriftCommunicator:
             message = errorTemplate.format(type(ex).__name__, ex.args)
             print message
             raise DuplicateName(message)
+        except ElementInUse as ex:
+            message = errorTemplate.format(type(ex).__name__, ex.args)
+            print message
+            raise ElementInUse(message)
         return ret
 
     def ping(self, number, text):
@@ -129,9 +133,9 @@ class ThriftCommunicator:
             return client.updateExhibit(msg)
         return self._perform_in_single_connection([action])[0]
 
-    def removeExhibit(self, request):
+    def removeExhibit(self, exhibitId):
         def action(client):
-            return client.removeExhibit(request['id'])
+            return client.removeExhibit(exhibitId)
         return self._perform_in_single_connection([action])[0]
 
     def createSimpleQuestion(self, request):
@@ -268,4 +272,29 @@ class ThriftCommunicator:
     def removeFloor(self, floor):
         def action(client):
             return client.removeFloor(floor)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeAction(self, actionId):
+        def action(client):
+            return client.removeAction(actionId)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeSimpleQuestion(self, questionId):
+        def action(client):
+            return client.removeSimpleQuestion(questionId)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeMultipleChoiceQuestion(self, questionId):
+        def action(client):
+            return client.removeMultipleChoiceQuestion(questionId)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeSortQuestion(self, questionId):
+        def action(client):
+            return client.removeSortQuestion(questionId)
+        return self._perform_in_single_connection([action])[0]
+
+    def removeExperiment(self, experimentId):
+        def action(client):
+            return client.removeExperiment(experimentId)
         return self._perform_in_single_connection([action])[0]

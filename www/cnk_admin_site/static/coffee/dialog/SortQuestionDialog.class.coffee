@@ -1,5 +1,8 @@
 root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
+  constructor: (url = 'getHTML?name=sortQuestionDialog', options = {}) ->
+    super(url, options)
+    @_questionType = 2
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
@@ -17,6 +20,18 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     return
 
 
+  # _deleteButton :: () -> BootstrapDialogButton
+  _deleteButton: =>
+    jQuery.extend(super,
+      action: (dialog) =>
+        (new root.ConfirmationDialog(@_data))
+          .on('confirm', =>
+            @fireEvents('delete', @_dialogInfo.questionId, @_dialogInfo.type)
+            dialog.close()
+          )
+    )
+
+
   # _prepareFilledDialog :: DOMNode -> undefined
   _prepareFilledDialog: (dialogBody) =>
     @_dialog.setTitle(@_data.utils.text.title)
@@ -24,7 +39,7 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
     for answer, index in @_dialogInfo.options
       jQuery(".form-group:last-child > div input:last", dialogBody).val(answer).keyup()
-    if @readonly
+    if @options.readonly
       jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
       jQuery("input", dialogBody).last().parents('.input-group').remove()
@@ -80,7 +95,8 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
   # type SortQuestionData = {
   #   name     :: String,
   #   question :: String,
-  #   options  :: [String]
+  #   options  :: [String],
+  #   type     :: Int
   # }
   ###
   # extractData :: () -> SortQuestionData
@@ -95,4 +111,5 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       name: name
       question: question
       options: options
+      type: @_questionType
     data

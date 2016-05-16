@@ -8,7 +8,7 @@ import StringIO
 from enum import Enum
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, QueryDict, HttpResponseForbidden, HttpResponseServerError
 from django.template import RequestContext, loader
 from django.template.loader import render_to_string
 from django.core.urlresolvers import reverse
@@ -118,7 +118,7 @@ def getMapPage(request, file, activeLink):
         availableFloors = [0]
     else:
         availableFloors = range(0, 1 + max(floorTilesInfo.keys()))
-    set_const("AVAIBLE_FLOORS", availableFloors)
+    set_const("AVAILABLE_FLOORS", availableFloors)
     template = loader.get_template(file)
     urlFloor = getattr(settings, 'FLOOR_TILES_DIRECTORY', '')
 
@@ -212,38 +212,38 @@ def updateExhibitPosition(request):
     return JsonResponse(data)
 
 
+def exhibit(request):
+    try:
+        if request.method == "POST":
+            return createNewExhibit(request)
+        elif request.method == "PUT":
+            return updateExhibit(request)
+        elif request.method == "DELETE":
+            return removeExhibit(request)
+        elif request.method == "GET":
+            return getAllExhibits(request)
+    except Exception as ex:
+        exceptionType = type(ex).__name__
+        if exceptionType == "DuplicateName":
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
+        elif exceptionType == "InvalidData":
+            return HttpResponseForbidden(get_const("NO_SUCH_FLOOR_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
+
+
 def createNewExhibit(request):
-    return _exhibitRequestsUnified(
-        request, thriftCommunicator.createNewExhibit)
+    data = json.loads(request.POST.get("jsonData"))
+    return responseNewExhibit(thriftCommunicator.createNewExhibit(data))
 
 
 def updateExhibit(request):
-    return _exhibitRequestsUnified(request, thriftCommunicator.updateExhibit)
+    PUT = QueryDict(request.body)
+    data = json.loads(PUT.get("jsonData"))
+    return responseNewExhibit(thriftCommunicator.updateExhibit(data))
 
 
-def _exhibitRequestsUnified(request, funToCall):
-    data = {
-        "success": False
-    }
-    if request.method != 'POST':
-        return JsonResponse(data)
-    jsonData = request.POST.get("jsonData")
-    exhibitRequest = json.loads(jsonData)
-    try:
-        newExhibit = funToCall(exhibitRequest)
-    except Exception as ex:
-        exType = type(ex).__name__
-        if exType == "DuplicateName":
-            data['exceptionType'] = exType
-            data['message'] = get_const("DEFAULT_CONSTANTS")['utils'][
-                'text']['nameDuplicatedError']
-        elif exType == "InvalidData":
-            data['message'] = "{} {}".format(get_const("NO_SUCH_FLOOR_ERROR"),
-                                            exhibitRequest['floor'])
-        else:
-            data['message'] = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
-        return JsonResponse(data)
-
+def responseNewExhibit(newExhibit):
     if newExhibit.mapFrame:
         frame = newExhibit.mapFrame
         exhibitFrame = {
@@ -265,11 +265,18 @@ def _exhibitRequestsUnified(request, funToCall):
     return JsonResponse(data)
 
 
-def deleteExhibit(request):
-    jsonData = request.POST.get("jsonData")
-    deleteRequest = json.loads(jsonData)
-    thriftCommunicator.removeExhibit(deleteRequest)
-    return JsonResponse({})
+def removeExhibit(request):
+    DELETE = QueryDict(request.body)
+    data = json.loads(DELETE.get("jsonData"))
+    exhibitId = data.get('exhibitId')
+    thriftCommunicator.removeExhibit(exhibitId)
+    return HttpResponse()
+
+
+def getAllExhibits(request):
+    return JsonResponse({
+        'exhibits': _getExhibits()
+    })
 
 
 def getDialog(dialogName):
@@ -294,7 +301,7 @@ def getColorPickerPopoverContent(request):
 
 def getExhibitDialog(request):
     dialogStructure = get_const("EXHIBIT_DIALOG")
-    availableFloors = get_const("AVAIBLE_FLOORS")[:]
+    availableFloors = get_const("AVAILABLE_FLOORS")[:]
     availableFloors.append("brak")
     dialogStructure['data'][1][1]['textList'] = availableFloors
     contextDict = {
@@ -317,7 +324,7 @@ def getMultipleChoiceQuestionDialog(request):
 
 
 def getExhibitPanel(request):
-    availableFloors = get_const("AVAIBLE_FLOORS")
+    availableFloors = get_const("AVAILABLE_FLOORS")
     html = render_to_string('exhibitPanel/exhibitPanel.html', {'availableFloors': availableFloors})
     return JsonResponse({'html': html})
 
@@ -355,11 +362,9 @@ def getChooseQuestionTypeDialog(request):
     return JsonResponse({'html': html.replace("\n", "")})
 
 
-def getChangeNameDialog(request):
-    return getDialog("CHANGE_EXPERIMENT_NAME_DIALOG")
+def cloneExperimentDialog(request):
+    return getDialog("CLONE_EXPERIMENT_DIALOG")
 
-def getExhibitDelConfirmDialog(request):
-    return getDialog("CONFIRM_EXHIBIT_DEL_DIALOG")
 
 HTMLRequests = {
     'simpleQuestionDialog': getSimpleQuestionDialog,
@@ -372,8 +377,7 @@ HTMLRequests = {
     'colorPickerPopover': getColorPickerPopoverContent,
     'exhibitPanel': getExhibitPanel,
     'exhibitListElement': getExhibitListElement,
-    'changeNameDialog': getChangeNameDialog,
-    'confirmExhibitDelDialog': getExhibitDelConfirmDialog
+    'cloneExperimentDialog': cloneExperimentDialog
 }
 
 
@@ -468,6 +472,8 @@ def _newExperimentReadonlyPage(request):
             'reportRow': render_to_string('list/row/reportRow.html'),
             'experimentData': _getExperiment(experimentId),
             'reportsList': _getReports(experimentId),
+            'activeExperiment': _getActiveExperiment(),
+            'removeExperimentConfirmation': get_const("REMOVE_EXPERIMENT_CONFIRMATION"),
             'tableList': render_to_string('list/dataList.html')}
     except Exception as ex:
         result = {
@@ -495,6 +501,7 @@ def newExperimentPage(request):
             'chooseActionRow': render_to_string('list/row/chooseActionRow.html'),
             'experimentActionRow': render_to_string('list/row/experimentActionRow.html'),
             'experimentQuestionRow': render_to_string('list/row/experimentQuestionRow.html'),
+            'removeExperimentConfirmation': get_const("REMOVE_EXPERIMENT_CONFIRMATION"),
             'tableList': render_to_string('list/dataList.html')}
     except Exception as ex:
         result = {
@@ -528,118 +535,132 @@ def questionsAndActionsPage(request):
     return HttpResponse(template.render(RequestContext(request, result)))
 
 
-def createSimpleQuestion(request):
-    data = json.loads(request.POST.get("jsonData"))
+def question(request):
     try:
-        simpleQuestion = thriftCommunicator.createSimpleQuestion(data)
-        result = {
-            'success': True,
-            'questionsList': _parseQuestions(
-                thriftCommunicator.getAllQuestions(),
-                simpleQuestion.questionId,
-                QuestionType.SIMPLE.value
-            )
-        }
+        if request.method == "POST":
+            return createQuestion(request)
+        elif request.method == "DELETE":
+            return removeQuestion(request)
     except Exception as ex:
-        result = {
-            'success': False,
-            'exceptionType': type(ex).__name__,
-            'message': str(ex)
-        }
+        exceptionType = type(ex).__name__
+        if exceptionType == "DuplicateName":
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
+        elif exceptionType == "InvalidData":
+            return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
+        elif exceptionType == "ElementInUse":
+            return HttpResponseForbidden(get_const("QUESTION_IN_USE_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
+
+
+def createQuestion(request):
+    data = json.loads(request.POST.get("jsonData"))
+    questionType = data.get('type')
+    if questionType == QuestionType.SIMPLE.value:
+        question = thriftCommunicator.createSimpleQuestion(data)
+    elif questionType == QuestionType.SORT.value:
+        question = thriftCommunicator.createSortQuestion(data)
+    elif questionType == QuestionType.MULTIPLE.value:
+        question = thriftCommunicator.createMultipleChoiceQuestion(data)
+    return JsonResponse({
+        'questionsList': _parseQuestions(
+            thriftCommunicator.getAllQuestions(),
+            question.questionId,
+            questionType
+        )
+    })
+
+
+def removeQuestion(request):
+    DELETE = QueryDict(request.body)
+    data = json.loads(DELETE.get("jsonData"))
+    questionType = data.get('type')
+    questionId = data.get('questionId')
+    if questionType == QuestionType.SIMPLE.value:
+        thriftCommunicator.removeSimpleQuestion(questionId)
+    elif questionType == QuestionType.SORT.value:
+        thriftCommunicator.removeSortQuestion(questionId)
+    elif questionType == QuestionType.MULTIPLE.value:
+        thriftCommunicator.removeMultipleChoiceQuestion(questionId)
+    result = {
+        'questionsList': _parseQuestions(thriftCommunicator.getAllQuestions())
+    }
     return JsonResponse(result)
 
 
-def createMultipleChoiceQuestion(request):
-    data = json.loads(request.POST.get("jsonData"))
-    try:
-        multipleChoiceQuestion = thriftCommunicator.createMultipleChoiceQuestion(
-            data)
-        result = {
-            'success': True,
-            'questionsList': _parseQuestions(
-                thriftCommunicator.getAllQuestions(),
-                multipleChoiceQuestion.questionId,
-                QuestionType.MULTIPLE.value
-            )
-        }
-    except Exception as ex:
-        result = {
-            'success': False,
-            'exceptionType': type(ex).__name__,
-            'message': str(ex)
-        }
-    return JsonResponse(result)
 
-
-def createSortQuestion(request):
-    data = json.loads(request.POST.get("jsonData"))
+def action(request):
     try:
-        sortQuestion = thriftCommunicator.createSortQuestion(data)
-        result = {
-            'success': True,
-            'questionsList': _parseQuestions(
-                thriftCommunicator.getAllQuestions(),
-                sortQuestion.questionId,
-                QuestionType.SORT.value
-            )
-        }
+        if request.method == "POST":
+            return createAction(request)
+        else:
+            return removeAction(request)
     except Exception as ex:
-        result = {
-            'success': False,
-            'exceptionType': type(ex).__name__,
-            'message': str(ex)
-        }
-    return JsonResponse(result)
+        exceptionType = type(ex).__name__
+        if exceptionType == "DuplicateName":
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
+        elif exceptionType == "InvalidData":
+            return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
+        elif exceptionType == "ElementInUse":
+            return HttpResponseForbidden(get_const("ACTION_IN_USE_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
 
 
 def createAction(request):
     data = json.loads(request.POST.get("jsonData"))
+    action = thriftCommunicator.createAction(data)
+    return JsonResponse({
+        'actionsList': _parseActions(
+            thriftCommunicator.getAllActions(),
+            action.actionId
+        )
+    })
+
+
+def removeAction(request):
+    DELETE = QueryDict(request.body)
+    actionId = json.loads(DELETE.get('jsonData'))['id']
+    thriftCommunicator.removeAction(actionId)
+    return JsonResponse({
+        'actionsList': _parseActions(thriftCommunicator.getAllActions())
+    })
+
+
+def experiment(request):
     try:
-        action = thriftCommunicator.createAction(data)
-        result = {
-            'success': True,
-            'actionsList': _parseActions(
-                thriftCommunicator.getAllActions(),
-                action.actionId
-            )
-        }
-
-    except Exception as ex:
-        result = {
-            'success': False,
-            'exceptionType': type(ex).__name__,
-            'message': str(ex)
-        }
-    return JsonResponse(result)
-
-
-def saveExperiment(request):
-    data = json.loads(request.POST.get("jsonData"))
-    try:
-        if "experimentId" in data.keys():
-            thriftCommunicator.updateExperiment(data)
-        else:
-            thriftCommunicator.createExperiment(data)
-        result = {
-            'success': True,
-        }
+        if request.method == "POST":
+            return createExperiment(request)
+        elif request.method == "PUT":
+            return updateExperiment(request)
     except Exception as ex:
         if type(ex).__name__ == "DuplicateName":
-            message = get_const("DEFAULT_CONSTANTS")['utils'][
-                'text']['nameDuplicatedError']
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
         else:
-            message = "{} ({})".format(get_const("INTERNAL_ERROR"), str(ex))
-        result = {
-            'success': False,
-            'exceptionType': type(ex).__name__,
-            'message': message
-        }
-    return JsonResponse(result)
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
+
+
+def createExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    thriftCommunicator.createExperiment(data)
+    return JsonResponse({
+        "redirect": '/badania'
+    })
+
+
+def updateExperiment(request):
+    PUT = QueryDict(request.body)
+    data = json.loads(PUT.get("jsonData"))
+    thriftCommunicator.updateExperiment(data)
+    return JsonResponse({
+        "redirect": '/badania'
+    })
 
 
 def _dateToString(date):
     repairNum = lambda x: "0{}".format(x) if x < 10 else "{}".format(x)
     return "{}/{}/{}".format(repairNum(date.day), repairNum(date.month), date.year)
+
 
 def _parseExperiments(experiments):
     experimentsList = list()
@@ -680,7 +701,8 @@ def experimentsPage(request):
             'activeExperiment': _getActiveExperiment(),
             'finishedExperimentRow': render_to_string('list/row/finishedExperimentRow.html'),
             'readyExperimentRow': render_to_string('list/row/readyExperimentRow.html'),
-            'confirmationMessages': get_const("EXPERIMENT_CONFIRMATION_MESSAGES"),
+            'startExperimentConfirmation': get_const("START_EXPERIMENT_CONFIRMATION"),
+            'finishExperimentConfirmation': get_const("FINISH_EXPERIMENT_CONFIRMATION"),
             'tableList': render_to_string('list/dataList.html')}
     except Exception as ex:
         context = {
@@ -690,33 +712,30 @@ def experimentsPage(request):
     return HttpResponse(template.render(context))
 
 
-def startExperiment(request):
-    experimentId = int(request.POST.get("id"))
+def activeExperiment(request):
     try:
-        thriftCommunicator.startExperiment(experimentId)
-        result = {
-            'success': True
-        }
+        if request.method == "POST":
+            return startExperiment(request)
+        elif request.method == "DELETE":
+            return finishExperiment(request)
     except Exception as ex:
-        result = {
-            'success': False,
-            'message': str(ex)
-        }
-    return JsonResponse(result)
+        exceptionType = type(ex).__name__
+        if exceptionType == "InvalidData":
+            return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
+
+
+def startExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    experimentId = data.get('experimentId')
+    thriftCommunicator.startExperiment(experimentId)
+    return HttpResponse()
 
 
 def finishExperiment(request):
-    try:
-        thriftCommunicator.finishExperiment()
-        result = {
-            'success': True
-        }
-    except Exception as ex:
-        result = {
-            'success': False,
-            'message': str(ex)
-        }
-    return JsonResponse(result)
+    thriftCommunicator.finishExperiment()
+    return HttpResponse()
 
 
 def cloneExperiment(request):
@@ -724,32 +743,15 @@ def cloneExperiment(request):
     try:
         thriftCommunicator.cloneExperiment(
             data['experimentId'], data['newName'])
-        result = {
-            'success': True
-        }
+        return HttpResponse()
     except Exception as ex:
-        result = {
-            'success': False,
-            'exceptionType': "{}".format(type(ex).__name__),
-            'message': str(ex)
-        }
-    return JsonResponse(result)
-
-
-def getAllExhibits(request):
-    try:
-        exhibits = _getExhibits()
-        result = {
-            'success': True,
-            'exhibits': exhibits
-        }
-    except Exception as ex:
-        result = {
-            'success': False,
-            'message': "{} ({})".format(
-                get_const("EXHIBIT_LIST_ERROR"),
-                str(ex))}
-    return JsonResponse(result)
+        exceptionType = type(ex).__name__
+        if exceptionType == 'DuplicateName':
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
+        elif exceptionType == "InvalidData":
+            return HttpResponseServerError(get_const("INVALID_DATA_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
 
 
 def reportError(request):
@@ -821,3 +823,19 @@ def removeFloor(request):
             'message': message
         }
     return JsonResponse(result)
+
+
+def removeExperiment(request):
+    data = json.loads(request.POST.get("jsonData"))
+    experimentId = data.get('experimentId')
+    try:
+        thriftCommunicator.removeExperiment(experimentId)
+        return JsonResponse({
+            "redirect": "/badania/"
+        })
+    except Exception as ex:
+        exceptionType = type(ex).__name__
+        if exceptionType == "InvalidData":
+            return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
+        else:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))

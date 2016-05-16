@@ -16,27 +16,22 @@ urlpatterns = [
     url(r'removeFloor/$', views.removeFloor, name='removeFloor'),
 
     url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
-    url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),
-    url(r'getAllExhibits/$', views.getAllExhibits, name='getAllExhibits'),
-    url(r'updateExhibit/$', views.updateExhibit, name='updateExhibit'),
-    url(r'deleteExhibit/$', views.deleteExhibit, name='deleteExhibit'),
+    url(r'exhibit/$', views.exhibit, name='exhibit'),
 
     # get all the html you need
     url(r'getHTML/$', views.getHTML, name='getHTML'),
     # dialogs
-    url(r'createSimpleQuestion/$', views.createSimpleQuestion, name='createSimpleQuestion'),
-    url(r'createMultipleChoiceQuestion/$', views.createMultipleChoiceQuestion, name='createMultipleChoiceQuestion'),
-    url(r'createSortQuestion/$', views.createSortQuestion, name='createSortQuestion'),
-    url(r'createAction/$', views.createAction, name='createAction'),
+    url(r'question/$', views.question, name='question'),
+    url(r'action/$', views.action, name='action'),
 
     #errors_reporting
     url(r'errorReporting/$', views.reportError, name='reportError'),
 
     #experiment
-    url(r'saveExperiment/$', views.saveExperiment, name='saveExperiment'),
-    url(r'startExperiment/$', views.startExperiment, name='startExperiment'),
-    url(r'finishExperiment/$', views.finishExperiment, name='finishExperiment'),
+    url(r'experiment/$', views.experiment, name='experiment'),
+    url(r'activeExperiment/$', views.activeExperiment, name='activeExperiment'),
     url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment'),
+    url(r'removeExperiment/$', views.removeExperiment, name='removeExperiment'),
 
     #reports
     url(r'getReport/$', views.getReport, name='getReport'),

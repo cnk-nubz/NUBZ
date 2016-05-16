@@ -10,7 +10,7 @@ root.Actions = class Actions extends root.ExperimentData
   # constructor :: [Action] -> Context
   constructor: (_list = []) ->
     super _list
-    @_actionDialog = new root.ActionDialog('getHTML?name=actionDialog')
+    new root.ActionDialog()
 
 
   ###
@@ -27,11 +27,11 @@ root.Actions = class Actions extends root.ExperimentData
     isNew: @_elementsDict[viewId].isNew
 
 
-  # showDialog :: (String, Boolean) -> Context
-  showDialog: (viewId, readonly = false) =>
-    @_actionDialog.readonly = readonly
-    @_actionDialog.bindData(@_elementsDict[viewId]).show()
-    @
+  # getFilledDialog :: (String, jsObject) -> BootstrapDialog
+  getFilledDialog: (viewId, options = {}) =>
+    dialog = new root.ActionDialog('getHTML?name=actionDialog', options)
+    dialog.bindData(@_elementsDict[viewId])
+    dialog
 
 
   # _getViewId :: Int -> String
