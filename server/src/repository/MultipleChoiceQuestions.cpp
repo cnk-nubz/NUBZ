@@ -6,6 +6,7 @@
 #include "DefaultRepo.h"
 #include "MultipleChoiceQuestions.h"
 #include "error/DuplicateName.h"
+#include "error/InUse.h"
 #include "error/InvalidData.h"
 
 namespace repository {
@@ -13,8 +14,8 @@ namespace repository {
 using MainTable = db::table::MultipleChoiceQuestions;
 using OptionsTable = db::table::MultipleChoiceQuestionOptions;
 
-using MainImpl = repository::detail::DefaultRepoWithID<MainTable>;
-using OptionsImpl = repository::detail::DefaultRepoWithID<OptionsTable>;
+using MainImpl = repository::detail::DefaultRepoIDRefCount<MainTable>;
+using OptionsImpl = repository::detail::DefaultRepoID<OptionsTable>;
 
 namespace {
 MainTable::Sql::in_t toDB(const MultipleChoiceQuestions::Question &question);
@@ -28,10 +29,27 @@ MultipleChoiceQuestions::Question::Option optionFromDB(const OptionsTable::Sql::
 MultipleChoiceQuestions::MultipleChoiceQuestions(db::DatabaseSession &session) : session(session) {
 }
 
-boost::optional<MultipleChoiceQuestions::Question> MultipleChoiceQuestions::get(std::int32_t ID) {
+void MultipleChoiceQuestions::incReferenceCount(std::int32_t ID) {
+    MainImpl::incRefCount(session, ID);
+}
+
+void MultipleChoiceQuestions::decReferenceCount(std::int32_t ID) {
+    MainImpl::decRefCount(session, ID);
+}
+
+MultipleChoiceQuestions::Question MultipleChoiceQuestions::get(std::int32_t ID) {
+    if (auto res = getOpt(ID)) {
+        return res.value();
+    } else {
+        throw InvalidData{"incorrect question ID"};
+    }
+}
+
+boost::optional<MultipleChoiceQuestions::Question> MultipleChoiceQuestions::getOpt(
+    std::int32_t ID) {
     if (auto res = MainImpl::get(session, ID)) {
         auto question = fromDB(res.value());
-        question.options = getOptions(question.ID);
+        question.options = getOptions(ID);
         return question;
     } else {
         return {};
@@ -57,11 +75,16 @@ std::vector<MultipleChoiceQuestions::Question::Option> MultipleChoiceQuestions::
 }
 
 void MultipleChoiceQuestions::remove(std::int32_t ID) {
-    MainImpl::remove(session, ID);
-}
+    auto sql = MainTable::Sql::select().where(MainTable::ID == ID);
+    auto dbTuple = session.getResult(sql);
 
-void MultipleChoiceQuestions::removeAll() {
-    MainImpl::removeAll(session);
+    if (!dbTuple) {
+        throw InvalidData{"incorrect question ID"};
+    }
+    if (std::get<MainTable::FieldRefCount>(dbTuple.value()).value != 0) {
+        throw InUse{"question in use"};
+    }
+    MainImpl::remove(session, ID);
 }
 
 void MultipleChoiceQuestions::insert(std::vector<MultipleChoiceQuestions::Question> *questions) {

@@ -48,6 +48,10 @@ void ExperimentCommands::start(std::int32_t ID) {
     db.execute([&](db::DatabaseSession &session) { repository::Experiments{session}.start(ID); });
 }
 
+void ExperimentCommands::remove(std::int32_t ID) {
+    db.execute([&](db::DatabaseSession &session) { repository::Experiments{session}.remove(ID); });
+}
+
 SingleExperimentInfo ExperimentCommands::getActive() {
     auto repoExp = db.execute([](db::DatabaseSession &session) {
         return repository::Experiments{session}.getLazyActive();
@@ -80,7 +84,7 @@ std::vector<ExperimentInfo> ExperimentCommands::getAllFinished() {
 
 Experiment ExperimentCommands::get(std::int32_t ID) {
     auto repoExpr = db.execute(
-        [&](db::DatabaseSession &session) { return repository::Experiments{session}.getF(ID); });
+        [&](db::DatabaseSession &session) { return repository::Experiments{session}.get(ID); });
 
     return Experiment{repoExpr};
 }

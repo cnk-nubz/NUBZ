@@ -4,156 +4,171 @@ namespace cpp communication
 namespace java com.cnk.communication.thrift
 
 service Server {
-	void shutdown(),
+    void shutdown(),
 
 
 /////////////////////////////////////////////////
 // Ping
 /////////////////////////////////////////////////
 
-	i32 ping(1: structs.HelloMsg msg),
+    i32 ping(1: structs.HelloMsg msg),
 
 
 /////////////////////////////////////////////////
 // Map
 /////////////////////////////////////////////////
 
-	map<structs.FloorNum, structs.MapImage> getMapImages()
-		throws (1: structs.InternalError err),
+    map<structs.FloorNum, structs.MapImage> getMapImages()
+        throws (1: structs.InternalError err),
 
-	structs.MapImage setMapImage(1: structs.SetMapImageRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    structs.MapImage setMapImage(1: structs.SetMapImageRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	void removeFloor(1: structs.FloorNum floor)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    void removeFloor(1: structs.FloorNum floor)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Exhibits
 /////////////////////////////////////////////////
 
-	structs.NewExhibitsResponse getNewExhibits(1: structs.NewExhibitsRequest request)
-		throws (1: structs.InternalError err),
+    structs.NewExhibitsResponse getNewExhibits(1: structs.NewExhibitsRequest request)
+        throws (1: structs.InternalError err),
 
-	structs.Exhibit createExhibit(1: structs.CreateExhibitRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    structs.Exhibit createExhibit(1: structs.CreateExhibitRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.Exhibit> getAllExhibits()
-		throws (1: structs.InternalError err),
+    list<structs.Exhibit> getAllExhibits()
+        throws (1: structs.InternalError err),
 
-	void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    void setExhibitFrame(1: structs.SetExhibitFrameRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.Exhibit updateExhibit(1: structs.UpdateExhibitRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    structs.Exhibit updateExhibit(1: structs.UpdateExhibitRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	void removeExhibit(1: i32 exhibitId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    void removeExhibit(1: i32 exhibitId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Experiments
 /////////////////////////////////////////////////
 
-	structs.CurrentExperimentResponse getCurrentExperiment()
-		throws (1: structs.InternalError err),
+    structs.CurrentExperimentResponse getCurrentExperiment()
+        throws (1: structs.InternalError err),
 
-	void createExperiment(1: structs.CreateExperimentRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    void createExperiment(1: structs.CreateExperimentRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	void updateExperiment(1: i32 experimentId, 2: structs.CreateExperimentRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    void updateExperiment(1: i32 experimentId, 2: structs.CreateExperimentRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	void cloneExperiment(1: structs.CloneRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    void cloneExperiment(1: structs.CloneRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.ExperimentInfo> getReadyExperiments()
-		throws (1: structs.InternalError err),
+    list<structs.ExperimentInfo> getReadyExperiments()
+        throws (1: structs.InternalError err),
 
-	list<structs.ExperimentInfo> getFinishedExperiments()
-		throws (1: structs.InternalError err),
+    list<structs.ExperimentInfo> getFinishedExperiments()
+        throws (1: structs.InternalError err),
 
-	structs.SingleExperimentInfo getActiveExperiment()
-		throws (1: structs.InternalError err),
+    structs.SingleExperimentInfo getActiveExperiment()
+        throws (1: structs.InternalError err),
 
-	structs.Experiment getExperiment(1: i32 experimentId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    structs.Experiment getExperiment(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	void startExperiment(1: i32 experimentId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),		
+    void startExperiment(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),        
 
-	void finishExperiment()
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    void finishExperiment()
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+
+    void removeExperiment(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Reports
 /////////////////////////////////////////////////
 
-	i32 getIdForNewReport()
-		throws (1: structs.InternalError err),
+    i32 getIdForNewReport()
+        throws (1: structs.InternalError err),
 
-	void saveReport(1: structs.RawReport report)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    void saveReport(1: structs.RawReport report)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	list<structs.ReportInfo> getAllReportsForExperiment(1: i32 experimentId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    list<structs.ReportInfo> getAllReportsForExperiment(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.Filename getExcelReport(1: i32 reportId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    structs.Filename getExcelReport(1: i32 reportId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
 
-	structs.Filename getCombinedExcelReport(1: i32 experimentId)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
-	
+    structs.Filename getCombinedExcelReport(1: i32 experimentId)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr),
+    
 
 /////////////////////////////////////////////////
 // Actions
 /////////////////////////////////////////////////
 
-	structs.Action createAction(1: structs.CreateActionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    structs.Action createAction(1: structs.CreateActionRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.Action> getAllActions()
-		throws (1: structs.InternalError err),
+    list<structs.Action> getAllActions()
+        throws (1: structs.InternalError err),
+
+    void removeAction(1: i32 actionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Questions
 /////////////////////////////////////////////////
 
-	structs.QuestionsList getAllQuestions()
-		throws (1: structs.InternalError err),
+    structs.QuestionsList getAllQuestions()
+        throws (1: structs.InternalError err),
 
 
 /////////////////////////////////////////////////
 // Simple Question
 /////////////////////////////////////////////////
 
-	structs.SimpleQuestion createSimpleQuestion(1: structs.CreateSimpleQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    structs.SimpleQuestion createSimpleQuestion(1: structs.CreateSimpleQuestionRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.SimpleQuestion> getAllSimpleQuestions()
-		throws (1: structs.InternalError err),
+    list<structs.SimpleQuestion> getAllSimpleQuestions()
+        throws (1: structs.InternalError err),
+
+    void removeSimpleQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Multiple Choice Question
 /////////////////////////////////////////////////
 
-	structs.MultipleChoiceQuestion createMultipleChoiceQuestion(1: structs.CreateMultipleChoiceQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    structs.MultipleChoiceQuestion createMultipleChoiceQuestion(1: structs.CreateMultipleChoiceQuestionRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
-		throws (1: structs.InternalError err),
+    list<structs.MultipleChoiceQuestion> getAllMultipleChoiceQuestions()
+        throws (1: structs.InternalError err),
+
+    void removeMultipleChoiceQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
 
 
 /////////////////////////////////////////////////
 // Sort Question
 /////////////////////////////////////////////////
 
-	structs.SortQuestion createSortQuestion(1: structs.CreateSortQuestionRequest request)
-		throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
+    structs.SortQuestion createSortQuestion(1: structs.CreateSortQuestionRequest request)
+        throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-	list<structs.SortQuestion> getAllSortQuestions()
-		throws (1: structs.InternalError err),
+    list<structs.SortQuestion> getAllSortQuestions()
+        throws (1: structs.InternalError err),
+
+    void removeSortQuestion(1: i32 questionId)
+        throws (1: structs.InternalError intErr, 2: structs.ElementInUse useErr, 3: structs.InvalidData dataErr),
 }

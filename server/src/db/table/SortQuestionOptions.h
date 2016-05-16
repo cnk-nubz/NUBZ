@@ -35,7 +35,7 @@ struct SortQuestionOptions {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldQuestionID, FieldText>;
+    using Sql = detail::SqlCoreID<FieldID, FieldQuestionID, FieldText>;
 };
 }
 }

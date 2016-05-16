@@ -12,7 +12,7 @@
 namespace repository {
 
 using Table = db::table::Exhibits;
-using Impl = repository::detail::DefaultRepoWithID<Table>;
+using Impl = repository::detail::DefaultRepoID<Table>;
 
 namespace {
 struct OptFrame {

@@ -44,7 +44,7 @@ struct DefaultRepo : _DefaultRepo<DBTable> {
 };
 
 template <class DBTable>
-struct DefaultRepoWithID : _DefaultRepo<DBTable> {
+struct DefaultRepoID : _DefaultRepo<DBTable> {
     using typename _DefaultRepo<DBTable>::in_t;
     using typename _DefaultRepo<DBTable>::out_t;
     using field_id_t = typename DBTable::FieldID;
@@ -89,6 +89,28 @@ struct DefaultRepoWithID : _DefaultRepo<DBTable> {
             result.push_back(std::get<field_id_t>(insertedId).value);
         }
         return result;
+    }
+};
+
+template <class DBTable>
+struct DefaultRepoIDRefCount : DefaultRepoID<DBTable> {
+    using field_ref_count_t = typename DBTable::FieldRefCount;
+    using typename DefaultRepoID<DBTable>::id_t;
+
+    static void incRefCount(db::DatabaseSession &session, id_t ID) {
+        auto sqlGet = DBTable::Sql::select().where(DBTable::ID == ID);
+        auto refCount = std::get<field_ref_count_t>(session.getResult(sqlGet).value()).value;
+        auto sqlSet =
+            DBTable::Sql::update().set(DBTable::RefCount, refCount + 1).where(DBTable::ID == ID);
+        session.execute(sqlSet);
+    }
+
+    static void decRefCount(db::DatabaseSession &session, id_t ID) {
+        auto sqlGet = DBTable::Sql::select().where(DBTable::ID == ID);
+        auto refCount = std::get<field_ref_count_t>(session.getResult(sqlGet).value()).value;
+        auto sqlSet =
+            DBTable::Sql::update().set(DBTable::RefCount, refCount - 1).where(DBTable::ID == ID);
+        session.execute(sqlSet);
     }
 };
 }

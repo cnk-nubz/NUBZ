@@ -35,6 +35,8 @@ public:
     void finish();
     void start(std::int32_t ID);
 
+    void remove(std::int32_t ID);
+
     // get for www
     SingleExperimentInfo getActive();
     std::vector<ExperimentInfo> getAllReady();

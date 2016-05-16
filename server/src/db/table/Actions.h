@@ -24,9 +24,16 @@ struct Actions {
     };
     static constexpr detail::Column<FieldText> Text{};
 
+    // default = 0
+    struct FieldRefCount : detail::Field<std::int32_t, Actions> {
+        using detail::Field<std::int32_t, Actions>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldRefCount> RefCount{};
+
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldText>;
+    using Sql = detail::SqlCoreIDRefCount<FieldID, FieldRefCount, FieldText>;
 };
 }
 }
