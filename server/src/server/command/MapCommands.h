@@ -14,10 +14,8 @@
 
 #include <repository/MapImages.h>
 
-#include <server/io/input/NewMapImagesRequest.h>
 #include <server/io/input/SetMapImageRequest.h>
 #include <server/io/output/MapImage.h>
-#include <server/io/output/NewMapImagesResponse.h>
 
 #include "Command.h"
 
@@ -31,8 +29,9 @@ class MapCommands : public Command {
 public:
     MapCommands(db::Database &db);
 
-    NewMapImagesResponse getNew(const NewMapImagesRequest &input);
+    std::map<std::int32_t, MapImage> getAll();
     MapImage set(const SetMapImageRequest &input);
+    void remove(std::int32_t floor);
 
 private:
     struct ZoomLevelInfo {

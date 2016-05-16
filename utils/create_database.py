@@ -13,7 +13,6 @@ cur.execute('''
 		filename VARCHAR NOT NULL,
 		width INT NOT NULL,
 		height INT NOT NULL,
-		version INT NOT NULL UNIQUE,
 		zoom_levels JSONB NOT NULL
 	)
 ''')
@@ -121,7 +120,6 @@ cur.execute('''
 # counters
 cur.execute('''
 	INSERT INTO counters VALUES
-		('last_map_version', 0),
 		('last_exhibit_version', 0),
 		('last_deleted_exhibit_version', 0),
 		('last_report_id', 0)

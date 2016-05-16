@@ -38,12 +38,11 @@ public class MapDownloadTask extends ServerTask {
     private void downloadTilesUpdate(Server.Client client) throws TException, IOException {
         Log.i(LOG_TAG, "Downloading map tiles addresses");
 
-        NewMapImagesRequest request = new NewMapImagesRequest();
-        NewMapImagesResponse response = client.getNewMapImages(request);
+        Map<Integer, MapImage> response = client.getMapImages();
         Log.i(LOG_TAG, "Map tiles addresses downloaded");
 
         List<FloorMap> maps = new ArrayList<>();
-        for (Map.Entry<Integer, MapImage> e : response.getFloors().entrySet()) {
+        for (Map.Entry<Integer, MapImage> e : response.entrySet()) {
             maps.add(translateFromThrift(e.getKey(), e.getValue()));
         }
         MapData.getInstance().setMaps(maps);

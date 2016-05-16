@@ -1,58 +1,95 @@
 root = exports ? this
 root.QuestionDialog = class QuestionDialog
+  # ======== ABSTRACT FUNCTIONS ========
+  # _prepareFilledDialog :: DOMNode -> undefined
+  # extractData          :: () -> DialogData
+  # ====================================
+  ###
+  # DialogData =
+  #   ActionData
+  # | ExhibitData
+  # | MultipleChoiceQuestionData
+  # | SimpleQuestionData
+  # | SortQuestionData
+  ###
   readonly: false
+  # constructor :: (String, (DialogData, BootstrapDialog) -> undefined)
   constructor: (@_url, @_saveHandler = (->)) ->
-    jQuery.getJSON(@_url, null, (data) =>
-      @_data = data.data
-      @_dialogHTML = data.html
-      @_dialog = new BootstrapDialog(
-        message: data.html
-        title: data.data.utils.text.titleNew
-        closable: false
-        buttons: [@_closeButton(), @_saveButton()]
+    if root.cachedData.hasOwnProperty(@_url)
+      @_init(root.cachedData[@_url])
+    else
+      jQuery.getJSON(@_url, null, (data) =>
+        root.cachedData[@_url] = data
+        @_init(data)
       )
-      @_dialog.realize()
-      @_prepareDialog(@_dialog.getModalContent())
-    )
 
+  _init: (data) =>
+    @_data = data.data
+    @_dialogHTML = data.html
+    @_dialog = new BootstrapDialog(
+      message: data.html
+      title: data.data.utils.text.titleNew
+      closable: false
+      buttons: [@_closeButton(), @_saveButton()]
+    )
+    @_dialog.realize()
+    @_prepareDialog(@_dialog.getModalBody())
+
+
+  # bindData :: listElement -> Context
   bindData: (@_dialogInfo) =>
     @_dialog.setMessage(@_dialogHTML)
     @_dialog.realize()
-    dialogBody = @_dialog.getModalContent()
+    dialogBody = @_dialog.getModalBody()
     @_prepareDialog(dialogBody)
     @_prepareFilledDialog(dialogBody)
     @
 
+
+  # show :: () -> Context
   show: =>
     @_dialog.open()
+    @
 
+
+  # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     instance = this
     jQuery("input[type=text]", dialogBody).blur( ->
-        obj = jQuery(this)
-        error = obj.parent().next()
-        obj.val(jQuery.trim(obj.val()))
-        if not obj.val().length
-          instance._showInputError(error, instance._getEmptyInputError())
+      obj = jQuery(this)
+      error = obj.parent().next()
+      obj.val(jQuery.trim(obj.val()))
+      if not obj.val().length
+        instance._showInputError(error, instance._getEmptyInputError())
       )
     return
 
-  _showInputError: (obj, message) =>
+
+  # _showInputError :: (jQueryObject, String) -> undefined
+  _showInputError: (obj, message) ->
     obj.html message
     return
 
+
+  # _getEmptyInputError :: () -> String
   _getEmptyInputError: =>
     @_data.utils.text.emptyInputError
 
+
+  # _getInputError :: () -> String
   _getInputError: =>
     @_data.utils.text.inputError
 
+
+  # _closeButton :: () -> BootstrapDialogButton
   _closeButton: =>
-    id: 'closeButtonDialog'
+    id: 'cancelButtonDialog'
     label: @_data.utils.text.cancelButton
     action: (dialog) ->
       dialog.close()
 
+
+  # _saveButton :: () -> BootstrapDialogButton
   _saveButton: =>
     id: 'saveButtonDialog'
     label: @_data.utils.text.saveButton
@@ -61,10 +98,14 @@ root.QuestionDialog = class QuestionDialog
       if @_validateForm()
         @_saveHandler(@extractData(), dialog)
 
+
+  # _showNameDuplicatedError :: () -> undefined
   _showNameDuplicatedError: =>
     jQuery('#dialog .form-group:first-child div:last-child').html(@_data.utils.text.nameDuplicatedError)
     return
 
+
+  # _validateForm :: () -> Boolean
   _validateForm: =>
     isValid = true
     instance = this

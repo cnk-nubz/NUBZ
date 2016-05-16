@@ -1,6 +1,18 @@
 root = exports ? this
+root.cachedData = {}
 class Handlers
-  constructor: (initQuestionsList, initActionsList, @_experimentData, @_isExperimentReadonly) ->
+  ###
+  # type ExperimentData = {
+  #   breakActions :: [Action],
+  #   exhibitActions :: [Action],
+  #   experimentId :: Int,
+  #   name :: String,
+  #   questionsAfter :: [Question],
+  #   questionsBefore :: [Question]
+  # }
+  ###
+  # constructor :: ([Question], [Action], ExperimentData) -> Context
+  constructor: (initQuestionsList, initActionsList, @_experimentData) ->
     @_DOM =
       chooseListTitle: ".chooseList .myHeader span"
       chooseListContainer: ".chooseList .middle"
@@ -60,8 +72,10 @@ class Handlers
     @_actionsList = new root.ActionsList(".chooseList .middle", 'questionsActionsTable', actionsDOM)
     return
 
-  _prepareExperimentList: (elementsDOM, dataList, contextList) =>
-    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) =>
+
+  # _prepareExperimentList :: (DocumentFragment, root.ExperimentData, root.ListView) -> DocumentFragment
+  _prepareExperimentList: (elementsDOM, dataList, contextList) ->
+    [].forEach.call(elementsDOM.querySelectorAll("tr"), (element) ->
       viewId = element.data
       element.querySelector("td:first-child")
         .addEventListener("click", ->
@@ -75,6 +89,8 @@ class Handlers
     )
     elementsDOM
 
+
+  # _prepareQuestionsList :: () -> DocumentFragment
   _prepareQuestionsList: =>
     # tl;dr:
     # get all questions as DOM elements
@@ -98,6 +114,8 @@ class Handlers
     )
     questionsDOM
 
+
+  # _prepareActionsList :: () -> DocumentFragment
   _prepareActionsList: =>
     # tl;dr look at _createQuestionsList, it's similiar
     actionsDOM = @_actions.getAllElementsAsDOM(@_chooseActionRow)
@@ -116,6 +134,13 @@ class Handlers
     )
     actionsDOM
 
+  ###
+  # type RowFactory =
+  #   root.ExperimentActionRow
+  # | root.ExperimentQuestionRow
+  ###
+  # _setAddToExperimentHandler ::
+  #   (jQueryObject, String, [root.ListView], root.ExperimentData, RowFactory) -> undefined
   _setAddToExperimentHandler: (obj, id, contextList, dataList, newElementRowFactory) =>
     # Attach listeners when popover is shown :
     # 1 and 2)
@@ -162,6 +187,8 @@ class Handlers
       .attr("data-content", "#{dataContentButtons[0].outerHTML}#{dataContentButtons[1].outerHTML}")
     return
 
+
+  # _setDefaultState :: () -> undefined
   _setDefaultState: =>
     if @_experimentData?
       jQuery(@_DOM.experimentTitle).val(@_experimentData.name)
@@ -175,6 +202,8 @@ class Handlers
     @_breakActionsList.show()
     return
 
+
+  # _setQuestionButtonClickHandler :: () -> undefined
   _setQuestionButtonClickHandler: =>
     instance = this
     jQuery(@_DOM.questionButton).click( ->
@@ -192,6 +221,8 @@ class Handlers
     )
     return
 
+
+  # _setActionButtonClickHandler :: () -> undefined
   _setActionButtonClickHandler: =>
     instance = this
     jQuery(@_DOM.actionButton).click( ->
@@ -206,23 +237,30 @@ class Handlers
       actionSave = instance._newEntryRequest("/createAction/", instance._createNewAction)
       actionDialog = new root.ActionDialog("getHTML?name=actionDialog", actionSave)
       jQuery(instance._DOM.addElementToList).off("click").click( ->
-        actionDialog.show()
+        new root.ActionDialog("getHTML?name=actionDialog", actionSave).show()
       )
     )
     return
 
+
+  # _createNewAction :: ({actionsList :: [Action], success :: Boolean}) -> undefined
   _createNewAction: (data) =>
     @_actions.setElements(data.actionsList)
     toAdd = @_prepareActionsList()
     @_actionsList.replaceElements(toAdd)
     return
 
+
+  # _setSaveExperimentHandler :: () -> undefined
   _setSaveExperimentHandler: =>
     jQuery(@_DOM.saveExperiment).click( =>
       if @_isExperimentReady()
         @_saveExperimentRequest()
     )
+    return
 
+
+  # _isExperimentReady :: () -> Boolean
   _isExperimentReady: =>
     experimentTitle = jQuery(@_DOM.experimentTitle)
     titleText = jQuery.trim(experimentTitle.val())
@@ -238,6 +276,8 @@ class Handlers
       return false
     true
 
+
+  # _saveExperimentRequest :: () -> undefined
   _saveExperimentRequest: =>
     dataToSend = {
       experimentId: @_experimentData.experimentId if @_experimentData?
@@ -267,6 +307,8 @@ class Handlers
     )
     return
 
+
+  # _showNameDuplicatedError :: String -> undefined
   _showNameDuplicatedError: (message) =>
     experimentTitle = jQuery(@_DOM.experimentTitle)
     oldTitle = experimentTitle.attr("title")
@@ -282,12 +324,16 @@ class Handlers
     jQuery('#experiment').scrollTop(0)
     return
 
+
+  # _addNewQuestion :: () -> undefined
   _addNewQuestion: =>
     jQuery.getJSON('getHTML?name=chooseQuestionTypeDialog', null, (data) =>
       @_showChooseQuestionTypeDialog(data.html)
     )
     return
 
+
+  # _showChooseQuestionTypeDialog :: String -> undefined
   _showChooseQuestionTypeDialog: (html) =>
     BootstrapDialog.show(
       message: html
@@ -301,6 +347,8 @@ class Handlers
     )
     return
 
+
+  # _setChooseQuestionTypeHandlers :: BootstrapDialog -> undefined
   _setChooseQuestionTypeHandlers: (dialog) =>
     # Long names are long. Are you gazing into the abyss? Because it's gazing back at us.
     simpleQuestionSave = @_newEntryRequest("/createSimpleQuestion/", @_createNewQuestion)
@@ -315,6 +363,29 @@ class Handlers
     jQuery("#multipleChoiceQuestion").click( -> multipleChoiceQuestionDialog.show())
     return
 
+
+  ###
+  # type RequestData =
+  #   QuestionData
+  # | ActionData
+  ###
+  ###
+  # type ResponseData = {
+  #   questionsList :: [Question],
+  #   success       :: Boolean
+  # }
+  # | {
+  #   actionsList   :: [Action],
+  #   success       :: Boolean
+  # }
+  # | {
+  #   success       :: Boolean,
+  #   exceptionType :: String,
+  #   message       :: String
+  # }
+  ###
+  # _newEntryRequest :: (String, (ResponseData -> undefined))
+  #                     -> (RequestData, BootstrapDialog) -> undefined
   _newEntryRequest: (url, callback) =>
     (data, dialog) =>
       jQuery.ajaxSetup(
@@ -337,13 +408,17 @@ class Handlers
       )
       return
 
+
+  # _createNewQuestion :: {questionsList :: [Question], success :: Boolean} -> undefined
   _createNewQuestion: (data) =>
     @_questions.setElements(data.questionsList)
     toAdd = @_prepareQuestionsList()
     @_questionsList.replaceElements(toAdd)
     return
 
-  _displayError: (message) =>
+
+  # _displayError :: String -> undefined
+  _displayError: (message) ->
     BootstrapDialog.show(
       message: message
       title: 'Wystąpił błąd'

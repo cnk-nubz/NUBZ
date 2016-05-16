@@ -27,10 +27,11 @@ public:
 
     virtual int32_t ping(const communication::HelloMsg &msg) override;
 
-    virtual void getNewMapImages(communication::NewMapImagesResponse &response,
-                                 const communication::NewMapImagesRequest &request) override;
+    virtual void getMapImages(
+        std::map<communication::FloorNum, communication::MapImage> &response) override;
     virtual void setMapImage(communication::MapImage &response,
                              const communication::SetMapImageRequest &request) override;
+    virtual void removeFloor(const communication::FloorNum floor) override;
 
     virtual void getNewExhibits(communication::NewExhibitsResponse &response,
                                 const communication::NewExhibitsRequest &request) override;

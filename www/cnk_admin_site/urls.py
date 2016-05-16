@@ -11,7 +11,9 @@ urlpatterns = [
     url(r'badania/$', views.experimentsPage, name='experimentsPage'),
     url(r'android/$', views.androidApp, name='androidApp'),
 
+    # map control
     url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
+    url(r'removeFloor/$', views.removeFloor, name='removeFloor'),
 
     url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
     url(r'createNewExhibit/$', views.createNewExhibit, name='createNewExhibit'),

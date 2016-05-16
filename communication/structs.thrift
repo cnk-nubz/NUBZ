@@ -33,6 +33,8 @@ struct HelloMsg {
 // Map
 /////////////////////////////////////////////////
 
+typedef i32 FloorNum
+
 struct Size {
     1: required i32 width,
     2: required i32 height,
@@ -47,7 +49,7 @@ struct Frame {
 
 struct MapFrame {
     1: required Frame frame,
-    2: required i32 floor,
+    2: required FloorNum floor,
 }
 
 struct ZoomLevel {
@@ -57,22 +59,13 @@ struct ZoomLevel {
 }
 
 struct MapImage {
-    1: required i32 floor,
+    1: required FloorNum floor,
     2: required Size resolution,
     3: required list<ZoomLevel> zoomLevels,
 }
 
-struct NewMapImagesRequest {
-    1: optional i32 acquiredVersion,
-}
-
-struct NewMapImagesResponse {
-    1: required i32 version,
-    2: required map<i32, MapImage> floors,
-}
-
 struct SetMapImageRequest {
-    1: required i32 floor,
+    1: required FloorNum floor,
     2: required Filename filename,
 }
 
