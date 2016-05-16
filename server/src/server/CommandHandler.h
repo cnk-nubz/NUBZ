@@ -8,6 +8,7 @@
 #include <db/Database.h>
 
 #include <repository/error/DuplicateName.h>
+#include <repository/error/InUse.h>
 #include <repository/error/InvalidData.h>
 
 #include <communication/Server.h>
@@ -55,6 +56,7 @@ public:
                                const int32_t experimentId) override;
     virtual void startExperiment(const int32_t experimentId) override;
     virtual void finishExperiment() override;
+    virtual void removeExperiment(const int32_t experimentId) override;
 
     virtual int32_t getIdForNewReport() override;
     virtual void saveReport(const communication::RawReport &report) override;
@@ -67,6 +69,7 @@ public:
     virtual void createAction(communication::Action &response,
                               const communication::CreateActionRequest &request) override;
     virtual void getAllActions(std::vector<communication::Action> &response) override;
+    virtual void removeAction(const int32_t actionId) override;
 
     virtual void getAllQuestions(communication::QuestionsList &response) override;
 
@@ -75,17 +78,20 @@ public:
         const communication::CreateSimpleQuestionRequest &request) override;
     virtual void getAllSimpleQuestions(
         std::vector<communication::SimpleQuestion> &response) override;
+    virtual void removeSimpleQuestion(const int32_t questionId) override;
 
     virtual void createMultipleChoiceQuestion(
         communication::MultipleChoiceQuestion &response,
         const communication::CreateMultipleChoiceQuestionRequest &request) override;
     virtual void getAllMultipleChoiceQuestions(
         std::vector<communication::MultipleChoiceQuestion> &response) override;
+    virtual void removeMultipleChoiceQuestion(const int32_t questionId) override;
 
     virtual void createSortQuestion(
         communication::SortQuestion &response,
         const communication::CreateSortQuestionRequest &request) override;
     virtual void getAllSortQuestions(std::vector<communication::SortQuestion> &response) override;
+    virtual void removeSortQuestion(const int32_t questionId) override;
 
 private:
     db::Database &db;
@@ -111,6 +117,10 @@ std::result_of_t<F()> CommandHandler::withExceptionTranslation(F &&f) {
         LOG(INFO) << "DuplicateName: " << e.what();
         LOG(INFO) << "Command aborted";
         throw communication::DuplicateName{};
+    } catch (repository::InUse &e) {
+        LOG(INFO) << "InUse: " << e.what();
+        LOG(INFO) << "Command aborted";
+        throw communication::ElementInUse{};
     } catch (std::exception &e) {
         LOG(INFO) << "InternalError: " << e.what();
         LOG(INFO) << "Command aborted";

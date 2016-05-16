@@ -14,13 +14,13 @@ using namespace std::placeholders;
 ExcelProcessor ExcelProcessor::SingleReportProc(db::DatabaseSession &session,
                                                 std::int32_t reportID) {
     auto report = repository::Reports{session}.getF(reportID);
-    auto experiment = repository::Experiments{session}.get(report.experimentID).value();
+    auto experiment = repository::Experiments{session}.get(report.experimentID);
     return ExcelProcessor{session, experiment, {report}};
 }
 
 ExcelProcessor ExcelProcessor::AllReportsProc(db::DatabaseSession &session,
                                               std::int32_t experimentID) {
-    auto experiment = repository::Experiments{session}.getF(experimentID);
+    auto experiment = repository::Experiments{session}.get(experimentID);
     auto reports = repository::Reports{session}.getAllForExperiment(experimentID);
     return ExcelProcessor{session, experiment, reports};
 }

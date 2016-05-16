@@ -71,8 +71,8 @@ struct Experiments {
 
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldState, FieldStartDate,
-                                      FieldFinishDate, FieldContent>;
+    using Sql = detail::SqlCoreID<FieldID, FieldName, FieldState, FieldStartDate, FieldFinishDate,
+                                  FieldContent>;
 };
 }
 }

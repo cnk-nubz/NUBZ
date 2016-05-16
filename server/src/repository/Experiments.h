@@ -77,9 +77,9 @@ public:
     Experiments(db::DatabaseSession &session);
 
     // throws InvalidData in case of invalid id
-    Experiment getF(std::int32_t ID);
+    Experiment get(std::int32_t ID);
 
-    boost::optional<Experiment> get(std::int32_t ID);
+    boost::optional<Experiment> getOpt(std::int32_t ID);
     boost::optional<LazyExperiment> getLazy(std::int32_t ID);
 
     // throws InvalidData for several reasons:
@@ -111,6 +111,11 @@ public:
     // - DuplicateName
     void clone(std::int32_t ID, const std::string &name);
 
+    // throws InvalidData for several reasons:
+    // - nonexisting ID
+    // - active experiment
+    void remove(std::int32_t ID);
+
 private:
     enum State : std::int32_t { Ready = 0, Active = 1, Finished = 2 };
 
@@ -126,14 +131,18 @@ private:
     State getState(std::int32_t ID);
     std::vector<LazyExperiment> getAllWithState(State state);
 
+    void retainData(const LazyExperiment &experiment);
+    void retainActions(const LazyExperiment &experiment);
+    void retainQuestions(const LazyExperiment::Survey &survey);
+
+    void releaseData(const LazyExperiment &experiment);
+    void releaseActions(const LazyExperiment &experiment);
+    void releaseQuestions(const LazyExperiment::Survey &survey);
+
     void checkID(std::int32_t ID);
     void checkName(const std::string &name);
     void checkExperiment(const LazyExperiment &experiment);
-    void checkActions(const LazyExperiment &experiment);
     void checkSurvey(const LazyExperiment::Survey &survey);
-    void checkIds(const std::unordered_set<std::int32_t> &existing,
-                  const std::vector<std::int32_t> &choosen) const;
-    void checkForDuplicates(std::vector<std::int32_t> ids) const;
 
     db::DatabaseSession &session;
 };

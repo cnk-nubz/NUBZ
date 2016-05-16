@@ -32,7 +32,7 @@ DEFAULT_CONSTANTS = {
             "cancelButton": "Anuluj",
             "deleteButton": "Usuń",
             "confirmationButton": "OK",
-            "confirmationTitle": "Potwierdzienie"
+            "confirmationTitle": "Potwierdzenie"
         }
     }
 }

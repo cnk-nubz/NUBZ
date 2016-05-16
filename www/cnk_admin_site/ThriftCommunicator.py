@@ -73,9 +73,9 @@ class ThriftCommunicator:
             return client.getAllExhibits()
         return self._perform_in_single_connection([action])[0]
 
-    def getNewMapImages(self):
+    def getMapImages(self):
         def action(client):
-            return client.getNewMapImages(NewMapImagesRequest()).floors
+            return client.getMapImages()
         return self._perform_in_single_connection([action])[0]
 
     def setExhibitFrame(self, frame):

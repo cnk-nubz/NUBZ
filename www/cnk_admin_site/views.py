@@ -59,7 +59,7 @@ def _pingServer():
 
 
 def _getMapImageInfo():
-    floorTiles = thriftCommunicator.getNewMapImages()
+    floorTiles = thriftCommunicator.getMapImages()
     if not floorTiles.keys():
         return {}
 

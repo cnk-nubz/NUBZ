@@ -36,9 +36,17 @@ struct MultipleChoiceQuestions {
     };
     static constexpr detail::Column<FieldSingleAnswer> SingleAnswer{};
 
+    // default = 0
+    struct FieldRefCount : detail::Field<std::int32_t, MultipleChoiceQuestions> {
+        using detail::Field<std::int32_t, MultipleChoiceQuestions>::Field;
+        static const std::string columnName;
+    };
+    static constexpr detail::Column<FieldRefCount> RefCount{};
+
     static const std::string tableName;
 
-    using Sql = detail::SqlCoreWithID<FieldID, FieldName, FieldQuestion, FieldSingleAnswer>;
+    using Sql = detail::SqlCoreIDRefCount<FieldID, FieldRefCount, FieldName, FieldQuestion,
+                                          FieldSingleAnswer>;
 };
 }
 }

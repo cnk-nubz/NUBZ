@@ -118,7 +118,6 @@ class Handler
       jQuery.ajax(
         method: "POST"
         data: toSend
-        dataType: 'json'
         url: '/cloneExperiment/'
         statusCode:
           403: -> dialog.showNameDuplicatedError()
