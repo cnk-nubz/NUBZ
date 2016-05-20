@@ -1,54 +1,46 @@
 import json, os, copy
-from utils import handleException, get_const, getMapImageInfo
-from django.http import HttpResponseBadRequest, HttpResponse, JsonResponse, QueryDict, HttpResponseForbidden
+from utils                  import standardAjaxCall, get_const
+from django.http            import HttpResponse, JsonResponse, QueryDict, HttpResponseForbidden, HttpResponseServerError, HttpResponseBadRequest
 from ..thrift_communication import ThriftCommunicator, toThrift, fromThrift
-from ..models import MapUploader
-from ..forms import MapUploadForm
+from ..models               import MapUploader
+from ..forms                import MapUploadForm
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
 
+
+@standardAjaxCall
 def uploadImage(request):
     form = MapUploadForm(request.POST, request.FILES)
     if not form.is_valid():
         return HttpResponseBadRequest(get_const("NEW_FLOOR_IMAGE_WRONG_FORMAT"))
-    try:
-        m = MapUploader(image=form.cleaned_data['image'])
-        m.save()
-        floor = form.cleaned_data['floor']
-        filename = m.image.name
-        thriftCommunicator.setMapImage(toThrift.setMapImageRequest({
-            'floor': floor,
-            'filename': os.path.basename(filename)}))
-
-        floorTilesInfo = getMapImageInfo()
-        dialog = copy.copy(get_const("NEW_FLOOR_IMAGE_SUCCESS"))
-        dialog['message'] = "{} {}".format(dialog['message'], floor)
-        return JsonResponse(dialog)
-    except Exception as ex:
-        return handleException(ex)
+    m = MapUploader(image=form.cleaned_data['image'])
+    m.save()
+    filename = m.image.name
+    thriftCommunicator.setMapImage(toThrift.setMapImageRequest({
+        'floor': form.cleaned_data['floor'],
+        'filename': os.path.basename(filename)}))
+    dialog = copy.copy(get_const("NEW_FLOOR_IMAGE_SUCCESS"))
+    dialog['message'] = "{} {}".format(dialog['message'], floor)
+    return JsonResponse(dialog)
 
 
+@standardAjaxCall
 def updateExhibitPosition(request):
     jsonData = request.POST.get("jsonData")
     frame = json.loads(jsonData)
-    try:
-        thriftCommunicator.setExhibitFrame(toThrift.setExhibitFrameRequest(frame))
-        return HttpResponse()
-    except Exception as ex:
-        return handleException(ex)
+    thriftCommunicator.setExhibitFrame(toThrift.setExhibitFrameRequest(frame))
+    return HttpResponse()
 
 
+@standardAjaxCall
 def exhibit(request):
-    try:
-        if request.method == "POST":
-            return createNewExhibit(request)
-        elif request.method == "PUT":
-            return updateExhibit(request)
-        elif request.method == "DELETE":
-            return removeExhibit(request)
-        elif request.method == "GET":
-            return getAllExhibits(request)
-    except Exception as ex:
-        return handleException(ex)
+    if request.method == "POST":
+        return createNewExhibit(request)
+    elif request.method == "PUT":
+        return updateExhibit(request)
+    elif request.method == "DELETE":
+        return removeExhibit(request)
+    elif request.method == "GET":
+        return getAllExhibits(request)
 
 
 def createNewExhibit(request):
@@ -90,4 +82,4 @@ def removeFloor(request):
             return HttpResponseForbidden(
                 "{} {}".format(get_const("NO_SUCH_FLOOR_ERROR"), floor))
         else:
-            return handleException(ex)
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))

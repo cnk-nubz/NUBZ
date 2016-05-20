@@ -6,6 +6,7 @@
 # ALL ROWS MUST SUM UP TO 12 OR LESS
 # ================
 
+STARTING_PAGE_ERROR = "Błąd wewnętrzny serwera. Nie można załadować strony. Spróbuj ponownie za chwilę."
 INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
 NO_SUCH_FLOOR_ERROR = "Nie istnieje piętro o danym numerze"
 ELEMENT_IN_USE_ERROR = "Usuwany element jest przypisany przynajmniej do jednego badania."

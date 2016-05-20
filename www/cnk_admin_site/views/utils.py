@@ -1,17 +1,21 @@
 import os
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
-from django.conf import settings
+from django.conf            import settings
 from django.template.loader import render_to_string
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, QueryDict, HttpResponseForbidden, HttpResponseServerError
+from django.http            import HttpResponse, HttpResponseForbidden, HttpResponseServerError
 from ..thrift_communication import ThriftCommunicator, fromThrift
-from enums import QuestionType
+from structs.ttypes         import *
+from enums                  import QuestionType
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
+
 
 def get_const(name):
     return getattr(settings, name, None)
 
+
 def set_const(name, value):
     setattr(settings, name, value)
+
 
 def maybe(f, t):
     if t is None:
@@ -19,36 +23,35 @@ def maybe(f, t):
     else:
         return f(t)
 
-def compose(f, g): return lambda x: f(g(x))
 
-def handleException(ex):
-    exceptionType = type(ex).__name__
-    if exceptionType == "InternalError":
-        return HttpResponseServerError(get_const("INTERNAL_ERROR"))
-    elif exceptionType == "InvalidData":
-        return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
-    elif exceptionType == "DuplicateName":
-        return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
-    elif exceptionType == "ElementInUse":
-        return HttpResponseForbidden(get_const("ELEMENT_IN_USE_ERROR"))
-    else:
-        return HttpResponseServerError(str(ex))
+def compose(f, g):
+    return lambda x: f(g(x))
 
 
-def getMapImageInfo():
-    floorTiles = thriftCommunicator.getMapImages()
-    if not floorTiles.keys():
-        return {}
+def standardAjaxCall(f):
+    def dec(*args):
+        try:
+            return f(*args)
+        except InternalError:
+            return HttpResponseServerError(get_const("INTERNAL_ERROR"))
+        except InvalidData:
+            return HttpResponseForbidden(get_const("INVALID_DATA_ERROR"))
+        except DuplicateName:
+            return HttpResponseForbidden(get_const("DUPLICATE_NAME_ERROR"))
+        except ElementInUse:
+            return HttpResponseForbidden(get_const("ELEMENT_IN_USE_ERROR"))
+        except Exception as ex:
+            return HttpResponseServerError(str(ex))
+    return dec
 
-    floorTilesInfo = {}
-    for i in xrange(0, 1 + max(floorTiles.keys())):
-        if not (i in floorTiles.keys()):
-            floorTilesInfo[i] = {}
-            continue
-        # just keep the zoomLevels, no need for more
-        floorTilesInfo[i] = fromThrift.mapImage(floorTiles[i])['zoomLevels']
-    return floorTilesInfo
 
+def startingPage(f):
+    def dec(*args):
+        try:
+            return f(*args)
+        except:
+            return HttpResponseServerError(get_const("STARTING_PAGE_ERROR"))
+    return dec
 
 def mergeQuestions(questionsList):
     questions = list()

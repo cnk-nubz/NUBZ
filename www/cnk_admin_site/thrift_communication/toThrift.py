@@ -1,22 +1,20 @@
 from structs.ttypes import *
-# All functions take dictonaries structured as thrift structs
-# and convert them to... thrift structures! yay
+from ..views.utils  import maybe
 
-def maybe(f, t):
-    if t is None:
-        return None
-    else:
-        return f(t)
+
 #################################################
 ## Ping
 #################################################
 
+
 def helloMsg(d):
     return HelloMsg(d['num'], d['msg'])
+
 
 #################################################
 ## Map
 #################################################
+
 
 def size(d):
     return Size(d['width'], d['height'])
@@ -92,7 +90,7 @@ def createSimpleQuestionRequest(d):
 def createMultipleChoiceQuestionRequest(d):
     encodedOptions = [o.encode('utf-8') for o in d['options']]
     return CreateMultipleChoiceQuestionRequest(
-        d['name'],
+        d['name'].encode('utf-8'),
         d['question'],
         d['singleAnswer'],
         encodedOptions)
@@ -105,7 +103,9 @@ def createMultipleChoiceQuestionRequest(d):
 
 def createSortQuestionRequest(d):
     encodedOptions = [o.encode('utf-8') for o in d['options']]
-    return CreateSortQuestionRequest(d['name'], d['question'], encodedOptions)
+    return CreateSortQuestionRequest(
+        d['name'].encode('utf-8'),
+        d['question'], encodedOptions)
 
 
 #################################################

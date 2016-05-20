@@ -59,16 +59,6 @@
   {% compress js %}
     <script type="text/coffeescript">
       root = exports ? this
-      success = {{success|jsvar}}
-      if not success
-        # just in case it will probably never happen
-        showError = ->
-          BootstrapDialog.show(
-            message: '{{message}}'
-            title: 'Wystąpił błąd'
-            type: BootstrapDialog.TYPE_DANGER
-          )
-        setTimeout(showError, 1000)
       root.experimentData = {{experimentData|jsvar}}
       root.reportsList = {{reportsList|jsvar}}
       root.removeExperimentConfirmation = {{removeExperimentConfirmation | jsvar}}

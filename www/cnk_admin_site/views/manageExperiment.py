@@ -1,18 +1,16 @@
 import json, os
-from utils import handleException, mergeQuestions
-from django.http import HttpResponse, JsonResponse, QueryDict
+from utils                  import standardAjaxCall, mergeQuestions
+from django.http            import HttpResponse, JsonResponse, QueryDict
 from ..thrift_communication import ThriftCommunicator, toThrift, fromThrift
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
 
 
+@standardAjaxCall
 def experiment(request):
-    try:
-        if request.method == "POST":
-            return createExperiment(request)
-        elif request.method == "PUT":
-            return updateExperiment(request)
-    except Exception as ex:
-        return handleException(ex)
+    if request.method == "POST":
+        return createExperiment(request)
+    elif request.method == "PUT":
+        return updateExperiment(request)
 
 
 def createExperiment(request):
@@ -34,14 +32,12 @@ def updateExperiment(request):
     })
 
 
+@standardAjaxCall
 def activeExperiment(request):
-    try:
-        if request.method == "POST":
-            return startExperiment(request)
-        elif request.method == "DELETE":
-            return finishExperiment(request)
-    except Exception as ex:
-        return handleException(ex)
+    if request.method == "POST":
+        return startExperiment(request)
+    elif request.method == "DELETE":
+        return finishExperiment(request)
 
 
 def startExperiment(request):
@@ -56,23 +52,19 @@ def finishExperiment(request):
     return HttpResponse()
 
 
+@standardAjaxCall
 def cloneExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
     tData = toThrift.cloneRequest(data)
-    try:
-        thriftCommunicator.cloneExperiment(tData)
-        return HttpResponse()
-    except Exception as ex:
-        return handleException(ex)
+    thriftCommunicator.cloneExperiment(tData)
+    return HttpResponse()
 
 
+@standardAjaxCall
 def removeExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
     experimentId = data.get('experimentId')
-    try:
-        thriftCommunicator.removeExperiment(experimentId)
-        return JsonResponse({
-            "redirect": "/badania/"
-        })
-    except Exception as ex:
-        return handleException(ex)
+    thriftCommunicator.removeExperiment(experimentId)
+    return JsonResponse({
+        "redirect": "/badania/"
+    })

@@ -1,19 +1,17 @@
 import json, os
-from utils import handleException, mergeQuestions, markQuestionAsNew, markActionAsNew
-from django.http import JsonResponse, QueryDict
+from utils                  import standardAjaxCall, mergeQuestions, markQuestionAsNew, markActionAsNew
+from django.http            import JsonResponse, QueryDict
 from ..thrift_communication import ThriftCommunicator, toThrift, fromThrift
-from enums import QuestionType
+from enums                  import QuestionType
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
 
 
+@standardAjaxCall
 def question(request):
-    try:
-        if request.method == "POST":
-            return createQuestion(request)
-        elif request.method == "DELETE":
-            return removeQuestion(request)
-    except Exception as ex:
-        return handleException(ex)
+    if request.method == "POST":
+        return createQuestion(request)
+    elif request.method == "DELETE":
+        return removeQuestion(request)
 
 
 def createQuestion(request):
@@ -58,14 +56,12 @@ def removeQuestion(request):
     })
 
 
+@standardAjaxCall
 def action(request):
-    try:
-        if request.method == "POST":
-            return createAction(request)
-        else:
-            return removeAction(request)
-    except Exception as ex:
-        return handleException(ex)
+    if request.method == "POST":
+        return createAction(request)
+    else:
+        return removeAction(request)
 
 
 def createAction(request):

@@ -143,6 +143,7 @@ def questionsList(t):
 ## Experiment
 #################################################
 
+
 def date(t):
     return {
         'day': t.day,
@@ -169,9 +170,8 @@ def experimentInfo(t):
 
 
 def _dateToString(date):
-    # rn - repair num
-    rn = lambda x: "0{}".format(x) if x < 10 else "{}".format(x)
-    return "{}/{}/{}".format(rn(date['day']), rn(date['month']), date['year'])
+    repairNum = lambda x: "0{}".format(x) if x < 10 else "{}".format(x)
+    return "{}/{}/{}".format(repairNum(date['day']), repairNum(date['month']), date['year'])
 
 
 def singleExperimentInfo(t):
