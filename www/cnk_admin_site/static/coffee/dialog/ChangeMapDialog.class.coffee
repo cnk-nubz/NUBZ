@@ -74,6 +74,7 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
   _changeMapSaveButton: =>
     label: 'Wyślij'
     action: (dialog) =>
+      jQuery("#dialogForm input[name=floor]").attr('value', @_canvasInfo.floor)
       @_processMap(dialog)
       return
 
@@ -100,15 +101,12 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
       )
-      jQuery.post('removeFloor/', floor: @_canvasInfo.activeFloor, (data) =>
-        if data.success
-          @fireEvents("removeFloor")
-          return
-        BootstrapDialog.show(
-          message: data.message
-          type: BootstrapDialog.TYPE_DANGER
-          title: "Wystąpił błąd"
-        )
+      jQuery.ajax(
+        method: "POST"
+        data: (floor: @_canvasInfo.activeFloor)
+        url: '/removeFloor/'
+        success: => @fireEvents("removeFloor")
+        error: @_displayError
       )
       return
 
@@ -135,4 +133,14 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
     dialog.setMessage(@_dialogInfo.processingMap)
     dialog.options.buttons = []
     dialog.updateButtons()
+    return
+
+
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+    )
     return

@@ -1,7 +1,7 @@
 root = exports ? this
 root.CloneExperimentDialog = class CloneExperimentDialog extends root.QuestionDialog
-  constructor: (url = 'getHTML?name=cloneExperimentDialog', options = {}) ->
-    super(url, options)
+  constructor: (dataDialog, options = {}) ->
+    super(dataDialog, options)
 
 
   # type CloneExperimentData = {

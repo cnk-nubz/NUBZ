@@ -237,9 +237,8 @@ class Handlers
       jQuery(instance._DOM.chooseListTitle).text("Akcje")
       instance._questionsList.hide()
       instance._actionsList.show()
-      new root.ActionDialog()
       jQuery(instance._DOM.addElementToList).off("click").click( ->
-        (new root.ActionDialog())
+        (new root.ActionDialog(root.structures.dialog.action))
           .on('save', instance._newEntryRequest("/action/", instance._actionsChanged))
           .show()
       )
@@ -267,7 +266,7 @@ class Handlers
   # _setRemoveExperimentHandler :: () -> undefined
   _setRemoveExperimentHandler: =>
     jQuery(@_DOM.removeExperiment).click( =>
-      (new root.ConfirmationDialog(root.removeExperimentConfirmation))
+      (new root.ConfirmationDialog(root.structures.dialog.removeExperimentConfirmation))
         .on('confirm', =>
           experimentId = @_experimentData.experimentId
           jQuery.ajaxSetup(
@@ -348,31 +347,25 @@ class Handlers
 
   # _addNewQuestion :: () -> undefined
   _addNewQuestion: =>
-    jQuery.getJSON('getHTML?name=chooseQuestionTypeDialog', null, (data) =>
-      @_showChooseQuestionTypeDialog(data.html)
-    )
-    return
-
-
-  # _showChooseQuestionTypeDialog :: String -> undefined
-  _showChooseQuestionTypeDialog: (html) =>
     BootstrapDialog.show(
-      message: html
+      message: root.structures.HTML.chooseQuestionType
       title: 'Wybierz typ pytania'
-      onshown: (dialog) =>
-        @_setChooseQuestionTypeHandlers(dialog)
+      onshown: @_setQuestionsHandlers
     )
     return
 
 
-  # _setChooseQuestionTypeHandlers :: BootstrapDialog -> undefined
-  _setChooseQuestionTypeHandlers: (dialog) =>
+  # _setQuestionsHandlers :: BootstrapDialog -> undefined
+  _setQuestionsHandlers: (dialog) =>
     saveHandler = @_newEntryRequest("/question/", @_questionsChanged)
-    simpleQuestionDialog = new root.SimpleQuestionDialog()
+    simpleQuestionDialog = new root.SimpleQuestionDialog(
+      root.structures.dialog.question.simple)
       .on('save', saveHandler)
-    sortQuestionDialog = new root.SortQuestionDialog()
+    sortQuestionDialog = new root.SortQuestionDialog(
+      root.structures.dialog.question.sort)
       .on('save', saveHandler)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog(
+      root.structures.dialog.question.multipleChoice)
       .on('save', saveHandler)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())

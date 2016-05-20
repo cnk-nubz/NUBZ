@@ -7,21 +7,15 @@
 # ================
 
 INTERNAL_ERROR = "Wystąpił nieoczekiwany błąd. Spróbuj ponownie za chwilę."
-NO_SUCH_REPORT_ERROR = "Nie istnieje raport o danym numerze"
-NO_SUCH_EXPERIMENT_ERROR = "Nie istnieje badanie o danym numerze"
 NO_SUCH_FLOOR_ERROR = "Nie istnieje piętro o danym numerze"
-QUESTION_IN_USE_ERROR = "Pytanie jest przypisane do przynajmniej jednego badania."
-ACTION_IN_USE_ERROR = "Akcja jest przypisana do przynajmniej jednego badania."
+ELEMENT_IN_USE_ERROR = "Usuwany element jest przypisany przynajmniej do jednego badania."
 DUPLICATE_NAME_ERROR = "Taka nazwa już istnieje."
 INVALID_DATA_ERROR = "Krytyczny błąd twórców strony. Prosimy o kontakt."
 NEW_FLOOR_IMAGE_SUCCESS = {
     "message": "Pomyślnie zmieniono mapę piętra nr",
      "title": "Sukces",
      "type": "success"}
-NEW_FLOOR_IMAGE_WRONG_FORMAT =   {
-    "message": "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp",
-    "title": "Zły format",
-    "type": "info"}
+NEW_FLOOR_IMAGE_WRONG_FORMAT = "Niepoprawny format. Obsługiwane rozszerzenia: .png .jpg .gif .bmp"
 
 DEFAULT_CONSTANTS = {
     "utils": {
@@ -148,7 +142,7 @@ SORT_QUESTION_DIALOG = {
     }
 }
 
-NEW_ACTION_DIALOG = {
+ACTION_DIALOG = {
     "data": [
         [
             "dialog/input.html", {
@@ -165,6 +159,13 @@ NEW_ACTION_DIALOG = {
         }
     }
 }
+
+
+POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
+'#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
+'#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',
+'#175879', '#578826', '#C79403', '#D27F15', '#AE1A15', '#3C0B49']
+
 
 EXHIBIT_DIALOG = {
     "data": [
@@ -187,7 +188,7 @@ EXHIBIT_DIALOG = {
                 "labelText": "Kolor",
                 "popoverTitle": "Wybierz kolor",
                 "popoverPlacement": "right",
-                "popoverText": "",
+                "colorsList": POPOVER_COLORS
             }
         ]
     ],
@@ -197,6 +198,9 @@ EXHIBIT_DIALOG = {
             "editTitle": "Edycja eksponatu",
             "confirmationMessage": "Czy chcesz usunąć dany eksponat? Tej operacji nie da się cofnąć."
         },
+        "css": {
+            "defaultColor": "#9DE35A"
+        }
     }
 }
 
@@ -242,16 +246,12 @@ REMOVE_EXPERIMENT_CONFIRMATION = {
     }
 }
 
-POPOVER_COLORS = ['#64B3E0', '#9DE35A', '#FEE161', '#FEC172', '#FD605E', '#9E45B9',
-'#499CCA', '#6FC238', '#F2D130', '#FEAA3A', '#FE2D21', '#6C2185',
-'#357DA3', '#7BAF3E', '#E3B902', '#EEA02E', '#CF232C', '#55146C',
-'#175879', '#578826', '#C79403', '#D27F15', '#AE1A15', '#3C0B49']
 
 to_merge_with_defaults = [
     SIMPLE_QUESTION_DIALOG,
     MULTIPLE_CHOICE_QUESTION_DIALOG,
     SORT_QUESTION_DIALOG,
-    NEW_ACTION_DIALOG,
+    ACTION_DIALOG,
     EXHIBIT_DIALOG,
     CLONE_EXPERIMENT_DIALOG,
     START_EXPERIMENT_CONFIRMATION,

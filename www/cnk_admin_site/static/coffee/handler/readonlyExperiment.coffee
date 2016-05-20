@@ -1,5 +1,4 @@
 root = exports ? this
-root.cachedData = {}
 class Handlers
   ###
   # type ExperimentData = {
@@ -99,7 +98,7 @@ class Handlers
   # _setRemoveExperimentHandler :: () -> undefined
   _setRemoveExperimentHandler: =>
     jQuery(@_DOM.removeExperiment).click( =>
-      (new root.ConfirmationDialog(root.removeExperimentConfirmation))
+      (new root.ConfirmationDialog(root.structures.dialog.removeExperimentConfirmation))
         .on('confirm', =>
           experimentId = @_experimentData.experimentId
           jQuery.ajaxSetup(

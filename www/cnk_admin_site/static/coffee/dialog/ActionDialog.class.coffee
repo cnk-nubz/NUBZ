@@ -1,7 +1,7 @@
 root = exports ? this
 root.ActionDialog = class ActionDialog extends root.QuestionDialog
-  constructor: (url = 'getHTML?name=actionDialog', options = {}) ->
-    super(url, options)
+  constructor: (dialogData, options = {}) ->
+    super(dialogData, options)
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super

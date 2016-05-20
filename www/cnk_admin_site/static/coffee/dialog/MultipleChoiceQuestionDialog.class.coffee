@@ -1,7 +1,7 @@
 root = exports ? this
 root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends root.QuestionDialog
-  constructor: (url = 'getHTML?name=multipleChoiceQuestionDialog', options = {}) ->
-    super(url, options)
+  constructor: (dialogData, options = {}) ->
+    super(dialogData, options)
     @_questionType = 1
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
@@ -44,9 +44,9 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
     activeLabel = if @_dialogInfo.singleAnswer then 0 else 1
     jQuery(".form-group:eq(2) .btn-group label:eq(#{activeLabel})", dialogBody).addClass("active")
-    for answer, index in @_dialogInfo.options
-      obj = jQuery(".form-group:last-child > div input:last", dialogBody)
-      obj.val(answer).keyup()
+    for option in @_dialogInfo.options
+      jQuery(".form-group:last-child > div input:last", dialogBody)
+        .val(option.text).keyup()
 
     if @options.readonly
       jQuery("input", dialogBody).prop("readonly", true)

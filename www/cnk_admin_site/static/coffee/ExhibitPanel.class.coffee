@@ -5,26 +5,23 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   # flyToExhibitWithId  :: Int -> _
   # modifyExhibitWithId :: Int -> _
   # =====================================
-  # constructor :: (String, MapData) -> Context
-  constructor: (@_containerId, @_mapData) ->
+  # constructor :: MapData -> Context
+  constructor: (@_mapData) ->
     super()
     @_NO_FLOOR = @_mapData.numberOfFloors
     @_ENTER_KEY = 13
     @_lastSearchedText = ''
     @_exhibits = []
 
-    jQuery.getJSON('getHTML?name=exhibitPanel', null, (data) =>
-      jQuery(data.html).appendTo(@_containerId)
-      @_setExhibitPanelHandlers()
-      @_getExhibitElementHTML()
-      @filterForOneFloor(0)
-    )
+    @_setExhibitPanelHandlers()
+    @replaceExhibits((e.exhibitId for e in @_mapData.exhibitsList))
+    @filterForOneFloor(0)
 
 
   # _setExhibitPanelHandlers :: () -> undefined
   _setExhibitPanelHandlers: =>
     instance = this
-    jQuery("#exhibitPanel #addExhibit").click( =>
+    jQuery("#addExhibit").click( =>
       @refreshDialogInstance()
       @_exhibitDialog.show()
     )
@@ -48,15 +45,6 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
     return
 
 
-  # _getExhibitElementHTML :: () -> undefined
-  _getExhibitElementHTML: =>
-    jQuery.getJSON('getHTML?name=exhibitListElement', null, (data) =>
-      @_exhibitElementHTML = data.html
-      @replaceExhibits((e.id for e in @_mapData.exhibitsList))
-    )
-    return
-
-
   # filterForOneFloor :: Int -> Context
   filterForOneFloor: (floor) =>
     jQuery("#filterButtons button").not(":last").removeClass("active")
@@ -67,7 +55,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
 
   # addExhibits :: [Int] -> Context
   addExhibits: (exhibitIdList) =>
-    baseElement = jQuery(@_exhibitElementHTML)[0]
+    baseElement = jQuery(root.structures.HTML.exhibitListElement)[0]
     for id in exhibitIdList
       e = @_mapData.exhibits[id]
       exhibitListElement = baseElement.cloneNode(true)
@@ -100,7 +88,7 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
 
   # refreshDialogInstance :: () -> Context
   refreshDialogInstance: =>
-    @_exhibitDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog',
+    @_exhibitDialog = new root.ExhibitDialog(root.structures.dialog.exhibit,
       readonly: true
       deletable: false
     , @_mapData.activeFloor)
@@ -149,8 +137,8 @@ root.ExhibitPanel = class ExhibitPanel extends root.View
   # _getExhibitFloor :: Int -> Int
   _getExhibitFloor: (exhibitId) =>
     exhibit = @_mapData.exhibits[exhibitId]
-    if exhibit.frame?.mapLevel?
-      exhibit.frame.mapLevel
+    if exhibit.mapFrame?.floor?
+      exhibit.mapFrame.floor
     else
       @_NO_FLOOR
 

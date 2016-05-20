@@ -1,48 +1,49 @@
 root = exports ? this
 root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
-  constructor: (url, options = {}, @_canvasActiveFloor) ->
-    super(url, options)
+  constructor: (dialogData, options = {}, @_canvasActiveFloor) ->
+    super(dialogData, options)
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
     super
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(1) .btn-group .floorNum:eq(#{@_canvasActiveFloor})", dialogBody)
       .addClass("active")
-    jQuery(".popoverButton", dialogBody).css("background-color": "#9DE35A")
+    jQuery(".popoverButton", dialogBody)
+      .css("background-color", @_data.utils.css.defaultColor)
     instance = this
+
     jQuery("input[type=text]", dialogBody)
       .each( ->
         obj = jQuery(this)
         jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
       )
+
     jQuery(".popoverButton", dialogBody)
       .each( ->
         obj = jQuery(this)
         error = obj.parent().next()
       )
-    jQuery.getJSON('getHTML?name=colorPickerPopover', (data) ->
-      jQuery(dialogBody).parents(".modal").click( ->
+
+    jQuery(dialogBody).parents(".modal").click( ->
+      jQuery('.popoverButton', dialogBody).popover('hide')
+    )
+
+    jQuery('.popoverButton', dialogBody).click((event) ->
+      if jQuery('.popover').is(':visible')
+        jQuery(this).popover('hide')
+      else
+        jQuery(this).popover('show')
+      event.stopPropagation()
+    )
+
+    jQuery('.popoverButton', dialogBody).popover().on('shown.bs.popover', ( ->
+      jQuery("div.popover button").mousedown( ->
+        rgbvals = jQuery(this).css("background-color")
+        hexval = instance._rgb2hex(rgbvals)
+        jQuery('.popoverButton').css("background-color", hexval)
         jQuery('.popoverButton', dialogBody).popover('hide')
       )
-      jQuery('.popoverButton', dialogBody).attr(
-        'data-content': data.html
-      )
-      jQuery('.popoverButton', dialogBody).click((event) ->
-        if jQuery('.popover').is(':visible')
-          jQuery(this).popover('hide')
-        else
-          jQuery(this).popover('show')
-        event.stopPropagation()
-      )
-      jQuery('.popoverButton', dialogBody).popover().on('shown.bs.popover', ( ->
-        jQuery("div.popover button").mousedown( ->
-          rgbvals = jQuery(this).css("background-color")
-          hexval = instance._rgb2hex(rgbvals)
-          jQuery('.popoverButton').css("background-color", hexval)
-          jQuery('.popoverButton', dialogBody).popover('hide')
-        )
-      ))
-    )
+    ))
     return
 
 
@@ -77,7 +78,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       action: (dialog) =>
         (new root.ConfirmationDialog(@_data))
           .on('confirm', =>
-            @fireEvents('delete', @_dialogInfo.id)
+            @fireEvents('delete', @_dialogInfo.exhibitId)
             dialog.close()
           )
     )
@@ -85,10 +86,10 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
 
   ###
   # type ExhibitData = {
-  #   id     :: Int,
-  #   name   :: String,
-  #   rgbHex :: Int,
-  #   floor  :: Int
+  #   exhibitId :: Int,
+  #   name      :: String,
+  #   rgbHex    :: Int,
+  #   floor     :: Int
   # }
   ###
   # extractData :: () -> ExhibitData
@@ -101,7 +102,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       floor = +floorText
     exhibitColor = parseInt(@_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..], 16)
     changedData =
-      id: parseInt(@_dialogInfo?.id)
+      exhibitId: parseInt(@_dialogInfo?.exhibitId)
       name: editedName
       rgbHex: exhibitColor
       floor: floor

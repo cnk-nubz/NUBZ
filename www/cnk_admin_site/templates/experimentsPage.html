@@ -59,13 +59,7 @@
       root.readyExperiments = {{readyExperiments | jsvar}}
       root.finishedExperiments = {{finishedExperiments | jsvar}}
       root.activeExperiment = {{activeExperiment | jsvar}}
-      root.startExperimentConfirmation = {{startExperimentConfirmation | jsvar}}
-      root.finishExperimentConfirmation = {{finishExperimentConfirmation | jsvar}}
-      root.HTML =
-        finishedExperimentRow: '{{finishedExperimentRow}}'
-        readyExperimentRow: '{{readyExperimentRow}}'
-        tableList: '{{tableList}}'
-      new root.CloneExperimentDialog() # cache data from url
+      root.structures = {{structures | jsvar}}
     </script>
   {% endcompress %}
 {% endblock %}

@@ -19,24 +19,13 @@ root.QuestionDialog = class QuestionDialog extends root.View
   # , Deletable :: Boolean
   # }
   # constructor :: (String, JsObject) -> Context
-  constructor: (@_url, @options = {}) ->
+  constructor: (@_dialogData, @options = {}) ->
     super()
     @_setDefaultOptions()
-    if root.cachedData.hasOwnProperty(@_url)
-      @_init(root.cachedData[@_url])
-    else
-      jQuery.getJSON(@_url, null, (data) =>
-        root.cachedData[@_url] = data
-        @_init(data)
-      )
-
-
-  _init: (data) =>
-    @_data = data.data
-    @_dialogHTML = data.html
+    @_data = @_dialogData.data
     @_dialog = new BootstrapDialog(
-      message: data.html
-      title: data.data.utils.text.titleNew
+      message: @_dialogData.html
+      title: @_data.utils.text.titleNew
       closable: false
       buttons:
         [ @_deleteButton()
@@ -57,7 +46,7 @@ root.QuestionDialog = class QuestionDialog extends root.View
 
   # bindData :: listElement -> Context
   bindData: (@_dialogInfo) =>
-    @_dialog.setMessage(@_dialogHTML)
+    @_dialog.setMessage(@_dialogData.html)
     @_dialog.realize()
     dialogBody = @_dialog.getModalBody()
     @_prepareDialog(dialogBody)
