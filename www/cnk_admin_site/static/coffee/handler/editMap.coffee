@@ -167,7 +167,7 @@ class Handlers
       data: formData
       processData: false
       contentType: false
-      error: @_displayError
+      error: @_displayErrorWithReload
       success: @afterMapUploadMessage
     )
     return
@@ -311,6 +311,19 @@ class Handlers
       message: obj.responseText
       title: obj.statusText
       type: BootstrapDialog.TYPE_DANGER
+    )
+    return
+
+  # _displayErrorWithReload :: jqXHR -> undefined
+  _displayErrorWithReload: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+      buttons: [
+        label: 'OK'
+        action: -> location.reload()
+      ]
     )
     return
 

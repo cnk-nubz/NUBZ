@@ -74,7 +74,7 @@ root.ChangeMapDialog = class ChangeMapDialog extends root.View
   _changeMapSaveButton: =>
     label: 'Wyślij'
     action: (dialog) =>
-      jQuery("#dialogForm input[name=floor]").attr('value', @_canvasInfo.floor)
+      jQuery("#dialogForm input[name=floor]").attr('value', @_canvasInfo.activeFloor)
       @_processMap(dialog)
       return
 
