@@ -91,7 +91,7 @@ def createMultipleChoiceQuestionRequest(d):
     encodedOptions = [o.encode('utf-8') for o in d['options']]
     return CreateMultipleChoiceQuestionRequest(
         d['name'].encode('utf-8'),
-        d['question'],
+        d['question'].encode('utf-8'),
         d['singleAnswer'],
         encodedOptions)
 
@@ -105,7 +105,8 @@ def createSortQuestionRequest(d):
     encodedOptions = [o.encode('utf-8') for o in d['options']]
     return CreateSortQuestionRequest(
         d['name'].encode('utf-8'),
-        d['question'], encodedOptions)
+        d['question'].encode('utf-8'),
+        encodedOptions)
 
 
 #################################################
