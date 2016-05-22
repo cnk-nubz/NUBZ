@@ -3,9 +3,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from django.conf            import settings
 from django.template.loader import render_to_string
 from django.http            import HttpResponse, HttpResponseForbidden, HttpResponseServerError
-from ..thrift_communication import ThriftCommunicator, fromThrift
+from ..thrift_communication import ThriftCommunicator
 from structs.ttypes         import *
-from enums                  import QuestionType
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
 
 
@@ -54,19 +53,12 @@ def startingPage(f):
     return dec
 
 def mergeQuestions(questionsList):
-    questions = list()
-    for qType in QuestionType:
-        if qType == QuestionType.SIMPLE:
-            toAdd = questionsList['simpleQuestions']
-        elif qType == QuestionType.MULTIPLE:
-            toAdd = questionsList['multipleChoiceQuestions']
-        elif qType == QuestionType.SORT:
-            toAdd = questionsList['sortQuestions']
-        for q in toAdd:
-            q['type'] = qType.value
-        questions.append(toAdd)
-    its = [iter(qList) for qList in questions]
-    return [next(its[i]) for i in questionsList['questionsOrder']]
+    mapQuestions = {
+        QuestionType.SIMPLE: iter(questionsList['simpleQuestions']),
+        QuestionType.MULTIPLE_CHOICE: iter(questionsList['multipleChoiceQuestions']),
+        QuestionType.SORT: iter(questionsList['sortQuestions'])
+    }
+    return [next(mapQuestions[i]) for i in questionsList['questionsOrder']]
 
 
 def markQuestionAsNew(questions, newId, newType):

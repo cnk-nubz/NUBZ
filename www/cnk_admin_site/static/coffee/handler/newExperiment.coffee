@@ -26,8 +26,8 @@ class Handlers
       removeExperiment: ".manageExperiment button:last-child"
 
     @_questions = new root.Questions(initQuestionsList)
-    @_questionsBefore = new root.Questions(@_experimentData?.questionsBefore)
-    @_questionsAfter = new root.Questions(@_experimentData?.questionsAfter)
+    @_questionsBefore = new root.Questions(@_experimentData?.surveyBefore)
+    @_questionsAfter = new root.Questions(@_experimentData?.surveyAfter)
     @_exhibitActions = new root.Actions(@_experimentData?.exhibitActions)
     @_breakActions = new root.Actions(@_experimentData?.breakActions)
     @_actions = new root.Actions(initActionsList)

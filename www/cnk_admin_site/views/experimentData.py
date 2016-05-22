@@ -2,7 +2,7 @@ import json, os
 from utils                  import standardAjaxCall, mergeQuestions, markQuestionAsNew, markActionAsNew
 from django.http            import JsonResponse, QueryDict
 from ..thrift_communication import ThriftCommunicator, toThrift, fromThrift
-from enums                  import QuestionType
+from structs.ttypes         import QuestionType
 thriftCommunicator = ThriftCommunicator.ThriftCommunicator()
 
 
@@ -17,15 +17,15 @@ def question(request):
 def createQuestion(request):
     data = json.loads(request.POST.get("jsonData"))
     questionType = data.get('type')
-    if questionType == QuestionType.SIMPLE.value:
+    if questionType == QuestionType.SIMPLE:
         tData = toThrift.createSimpleQuestionRequest(data)
         question = fromThrift.simpleQuestion(
             thriftCommunicator.createSimpleQuestion(tData))
-    elif questionType == QuestionType.SORT.value:
+    elif questionType == QuestionType.SORT:
         tData = toThrift.createSortQuestionRequest(data)
         question = fromThrift.sortQuestion(
             thriftCommunicator.createSortQuestion(tData))
-    elif questionType == QuestionType.MULTIPLE.value:
+    elif questionType == QuestionType.MULTIPLE_CHOICE:
         tData = toThrift.createMultipleChoiceQuestionRequest(data)
         question = fromThrift.multipleChoiceQuestion(
             thriftCommunicator.createMultipleChoiceQuestion(tData))
@@ -43,11 +43,11 @@ def removeQuestion(request):
     data = json.loads(DELETE.get("jsonData"))
     questionType = data['type']
     questionId = data['questionId']
-    if questionType == QuestionType.SIMPLE.value:
+    if questionType == QuestionType.SIMPLE:
         thriftCommunicator.removeSimpleQuestion(questionId)
-    elif questionType == QuestionType.SORT.value:
+    elif questionType == QuestionType.SORT:
         thriftCommunicator.removeSortQuestion(questionId)
-    elif questionType == QuestionType.MULTIPLE.value:
+    elif questionType == QuestionType.MULTIPLE_CHOICE:
         thriftCommunicator.removeMultipleChoiceQuestion(questionId)
     return JsonResponse({
         'questionsList': mergeQuestions(

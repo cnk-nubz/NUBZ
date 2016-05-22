@@ -16,12 +16,9 @@ def uploadImage(request):
     m.save()
     filename = m.image.name
     floor = form.cleaned_data['floor']
-    import sys
-    print >>sys.stderr, "PRZED"
     thriftCommunicator.setMapImage(toThrift.setMapImageRequest({
         'floor': floor,
         'filename': os.path.basename(filename)}))
-    print >>sys.stderr, "PO"
     dialog = copy.copy(get_const("NEW_FLOOR_IMAGE_SUCCESS"))
     dialog['message'] = "{} {}".format(dialog['message'], floor)
     return JsonResponse(dialog)

@@ -1,4 +1,5 @@
-from structs.ttypes import *
+from structs.ttypes import QuestionType
+from ..views.utils  import mergeQuestions
 
 
 def maybe(f, t):
@@ -84,6 +85,7 @@ def simpleQuestion(t):
         'questionId': t.questionId,
         'name': t.name,
         'question': t.question,
+        'type': QuestionType.SIMPLE,
         'answerType': t.answerType}
 
 
@@ -104,6 +106,7 @@ def multipleChoiceQuestion(t):
         'name': t.name,
         'question': t.question,
         'singleAnswer': t.singleAnswer,
+        'type': QuestionType.MULTIPLE_CHOICE,
         'options': [multipleChoiceQuestionOption(o) for o in t.options]}
 
 
@@ -123,6 +126,7 @@ def sortQuestion(t):
         'questionId': t.questionId,
         'name': t.name,
         'question': t.question,
+        'type': QuestionType.SORT,
         'options': [sortQuestionOption(o) for o in t.options]}
 
 
@@ -155,10 +159,10 @@ def experiment(t):
     return {
         'experimentId': t.experimentId,
         'name': t.name,
-        'surveyBefore': questionsList(t.surveyBefore),
+        'surveyBefore': mergeQuestions(questionsList(t.surveyBefore)),
         'exhibitActions': [action(a) for a in t.exhibitActions],
         'breakActions': [action(a) for a in t.breakActions],
-        'surveyAfter': questionsList(t.surveyAfter)}
+        'surveyAfter': mergeQuestions(questionsList(t.surveyAfter))}
 
 
 def experimentInfo(t):
