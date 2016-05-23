@@ -12,7 +12,7 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     inputs = jQuery("input[type=text]", dialogBody)
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
-    lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
+    lastInput.dynamicInputs(inputOffset, instance)
     return
 
 
@@ -44,15 +44,6 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     return
 
 
-  # _inputKeyUp :: (jQueryObject, Event) -> undefined
-  _inputKeyUp: (obj, e) =>
-    text = obj.val()
-    error = obj.parent().next()
-    if text.length is 0
-      @_showInputError(error, @_data.utils.text.emptyInputError)
-    return
-
-
   # _validateForm :: () -> Boolean
   _validateForm: =>
     isValid = true
@@ -77,11 +68,13 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       option = {}
       inputs.each( ->
         inputVal = jQuery(this).val()
+        error = jQuery(this).parent().next()
         if option.hasOwnProperty(inputVal)
           isValid = false
-          error = jQuery(this).parent().next()
           instance._showInputError(error, instance._data.utils.text.optionDuplicatedError)
           return
+        else
+          error.html('')
         option[inputVal] = true
       )
     isValid

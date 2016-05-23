@@ -1,4 +1,4 @@
-jQuery.fn.dynamicInputs = (offset, keyUpFun, instance) ->
+jQuery.fn.dynamicInputs = (offset, instance) ->
   renumerateInput = (group, index) ->
     jQuery("span", group).text("#{index}.")
     return
@@ -13,7 +13,6 @@ jQuery.fn.dynamicInputs = (offset, keyUpFun, instance) ->
     el.addClass("col-sm-offset-#{addOffset}") if addOffset?
 
     jQuery("input", el).keyup( (e) ->
-      keyUpFun(jQuery(this), e)
       error = jQuery(this).parent().next()
       if jQuery(this).val().length and error.is(':last-child')
         createInput(node, index, offset)
