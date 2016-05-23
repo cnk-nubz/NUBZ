@@ -64,7 +64,7 @@ service Server {
     void updateExperiment(1: i32 experimentId, 2: structs.CreateExperimentRequest request)
         throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
-    void cloneExperiment(1: structs.CloneRequest request)
+    void cloneExperiment(1: structs.CloneExperimentRequest request)
         throws (1: structs.InternalError intErr, 2: structs.InvalidData dataErr, 3: structs.DuplicateName nameErr),
 
     list<structs.ExperimentInfo> getReadyExperiments()

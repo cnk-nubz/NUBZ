@@ -197,12 +197,12 @@ void CommandHandler::updateExperiment(const int32_t experimentId,
     LOG(INFO) << __func__ << " end";
 }
 
-void CommandHandler::cloneExperiment(const communication::CloneRequest &request) {
+void CommandHandler::cloneExperiment(const communication::CloneExperimentRequest &request) {
     LOG(INFO) << __func__ << " start";
     LOG(INFO) << "input: " << request;
 
     withExceptionTranslation([&]() {
-        auto input = io::input::CloneRequest{request};
+        auto input = io::input::CloneExperimentRequest{request};
         command::ExperimentCommands{db}.clone(input);
     });
 

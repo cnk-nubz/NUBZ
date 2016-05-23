@@ -10,8 +10,8 @@ namespace server {
 namespace io {
 namespace input {
 
-struct CloneRequest {
-    CloneRequest(const communication::CloneRequest &thrift);
+struct CloneExperimentRequest {
+    CloneExperimentRequest(const communication::CloneExperimentRequest &thrift);
 
     const std::int32_t ID;
     const std::string name;

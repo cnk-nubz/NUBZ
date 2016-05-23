@@ -10,7 +10,7 @@
 
 #include <repository/Experiments.h>
 
-#include <server/io/input/CloneRequest.h>
+#include <server/io/input/CloneExperimentRequest.h>
 #include <server/io/input/CreateExperimentRequest.h>
 #include <server/io/input/QuestionsIdsList.h>
 #include <server/io/output/CurrentExperimentResponse.h>
@@ -30,7 +30,7 @@ public:
 
     void create(const CreateExperimentRequest &input);
     void update(std::int32_t ID, const CreateExperimentRequest &input);
-    void clone(const CloneRequest &input);
+    void clone(const CloneExperimentRequest &input);
 
     void finish();
     void start(std::int32_t ID);

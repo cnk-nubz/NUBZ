@@ -268,7 +268,7 @@ struct CreateExperimentRequest {
 }
 
 struct ExperimentInfo {
-    1: required i32 id,
+    1: required i32 experimentId,
     2: required string name,
     3: optional Date startDate,
     4: optional Date finishDate,
@@ -278,8 +278,8 @@ struct SingleExperimentInfo {
     1: optional ExperimentInfo info,
 }
 
-struct CloneRequest {
-    1: required i32 id,
+struct CloneExperimentRequest {
+    1: required i32 experimentId,
     2: required string name,
 }
 

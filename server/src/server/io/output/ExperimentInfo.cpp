@@ -10,7 +10,7 @@ ExperimentInfo::ExperimentInfo(const repository::Experiments::LazyExperiment &re
 
 communication::ExperimentInfo ExperimentInfo::toThrift() const {
     auto res = communication::ExperimentInfo{};
-    res.id = ID;
+    res.experimentId = ID;
     res.name = name;
     if (startDate) {
         res.__set_startDate(startDate.value().toThrift());
