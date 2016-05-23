@@ -2,23 +2,6 @@ root = exports ? this
 root.ActionDialog = class ActionDialog extends root.QuestionDialog
   constructor: (dialogData, options = {}) ->
     super(dialogData, options)
-  # _prepareDialog :: DOMNode -> undefined
-  _prepareDialog: (dialogBody) =>
-    super
-    instance = this
-    jQuery("input[type=text]", dialogBody)
-      .each( ->
-        jQuery(this).keyup( (e) ->
-          obj = jQuery(this)
-          text = obj.val()
-          error = obj.parent().next()
-          if text.length is 0
-            instance._showInputError(error, instance._data.utils.text.emptyInputError)
-          else
-            error.html("")
-        )
-      )
-    return
 
 
   # _deleteButton :: () -> BootstrapDialogButton

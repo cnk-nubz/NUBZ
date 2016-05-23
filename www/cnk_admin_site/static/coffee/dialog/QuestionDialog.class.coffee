@@ -70,6 +70,15 @@ root.QuestionDialog = class QuestionDialog extends root.View
       if not obj.val().length
         instance._showInputError(error, instance._getEmptyInputError())
       )
+    jQuery("input.form-control", dialogBody).keypress((e) =>
+      if e.which is 13
+        e.preventDefault()
+        jQuery(this).one('blur', (blurEvent) =>
+          @_dialog.getButton('saveButtonDialog').click()
+          blurEvent.stopImmediatePropagation()
+        )
+        jQuery(this).blur()
+    )
     if not @options.deletable
       @_dialog.getButton('deleteButtonDialog').hide()
     return

@@ -10,19 +10,6 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
     instance = this
     if not @_dialogInfo?.type?
       jQuery("label.#{radioGroup}", dialogBody).filter(":first").addClass("active")
-
-    jQuery("input[type=text]", dialogBody)
-      .each( ->
-        jQuery(this).keyup( (e) ->
-          obj = jQuery(this)
-          text = obj.val()
-          error = obj.parent().next()
-          if text.length is 0
-            instance._showInputError(error, instance._data.utils.text.emptyInputError)
-          else
-            error.html("")
-        )
-      )
     return
 
 

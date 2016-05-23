@@ -15,10 +15,6 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
 
     # prepare inputs with regexes etc
     inputs = jQuery("input[type=text]", dialogBody)
-    inputs.each( (idx) ->
-      obj = jQuery(this)
-      jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-    )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
@@ -63,8 +59,6 @@ root.MultipleChoiceQuestionDialog = class MultipleChoiceQuestionDialog extends r
     error = obj.parent().next()
     if text.length is 0
       @_showInputError(error, @_getEmptyInputError())
-    else
-      error.html("")
     return
 
 

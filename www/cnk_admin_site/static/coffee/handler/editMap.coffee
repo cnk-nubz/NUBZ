@@ -219,7 +219,9 @@ class Handlers
       data: toSend
       dataType: 'json'
       url: '/exhibit/'
-      error: @_displayError
+      statusCode:
+        403: -> dialog.showNameDuplicatedError()
+        500: @_displayError
       success: (recvData) =>
         @_newExhibitSuccess(recvData, dialog)
         dialog.close()
@@ -236,7 +238,6 @@ class Handlers
       method: "GET"
       dataType: 'json'
       url: '/exhibit/'
-      error: @_displayError
       success: (data) =>
         @panel.replaceExhibits((e.exhibitId for e in data.exhibits))
     )

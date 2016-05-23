@@ -12,12 +12,6 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
       .css("background-color", @_data.utils.css.defaultColor)
     instance = this
 
-    jQuery("input[type=text]", dialogBody)
-      .each( ->
-        obj = jQuery(this)
-        jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-      )
-
     jQuery(".popoverButton", dialogBody)
       .each( ->
         obj = jQuery(this)
@@ -68,7 +62,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     if text.length is 0
       @_showInputError(error, @_getEmptyInputError())
     else
-      error.html("")
+      error.html('')
     return
 
 

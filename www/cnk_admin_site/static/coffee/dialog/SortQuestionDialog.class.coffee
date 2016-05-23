@@ -10,10 +10,6 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     instance = this
 
     inputs = jQuery("input[type=text]", dialogBody)
-    inputs.each( (idx) ->
-      obj = jQuery(this)
-      jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-    )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
     lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
@@ -54,8 +50,6 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     error = obj.parent().next()
     if text.length is 0
       @_showInputError(error, @_data.utils.text.emptyInputError)
-    else
-      error.html("")
     return
 
 
