@@ -17,8 +17,8 @@ class Handlers
       getAllReports: ".reportsList .myFooter button"
       removeExperiment: ".manageExperiment button"
       manageExperiment: ".manageExperiment"
-    @_questionsBefore = new root.Questions(@_experimentData?.questionsBefore)
-    @_questionsAfter = new root.Questions(@_experimentData?.questionsAfter)
+    @_questionsBefore = new root.Questions(@_experimentData?.surveyBefore)
+    @_questionsAfter = new root.Questions(@_experimentData?.surveyAfter)
     @_exhibitActions = new root.Actions(@_experimentData?.exhibitActions)
     @_breakActions = new root.Actions(@_experimentData?.breakActions)
     @_reports = new root.Reports(@_reportsData)
