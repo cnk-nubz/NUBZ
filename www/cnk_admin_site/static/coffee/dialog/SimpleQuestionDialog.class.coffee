@@ -1,7 +1,7 @@
 root = exports ? this
 root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDialog
-  constructor: (url = 'getHTML?name=simpleQuestionDialog', options = {}) ->
-    super(url, options)
+  constructor: (dialogData, options = {}) ->
+    super(dialogData, options)
     @_questionType = 0
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
@@ -10,19 +10,6 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
     instance = this
     if not @_dialogInfo?.type?
       jQuery("label.#{radioGroup}", dialogBody).filter(":first").addClass("active")
-
-    jQuery("input[type=text]", dialogBody)
-      .each( ->
-        jQuery(this).keyup( (e) ->
-          obj = jQuery(this)
-          text = obj.val()
-          error = obj.parent().next()
-          if text.length is 0
-            instance._showInputError(error, instance._data.utils.text.emptyInputError)
-          else
-            error.html("")
-        )
-      )
     return
 
 
@@ -54,7 +41,7 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
   # type SimpleQuestionData = {
   #   name           :: String,
   #   question       :: String,
-  #   answerAsNumber :: Boolean,
+  #   answerType     :: String,
   #   type           :: Int
   # }
   ###
@@ -64,10 +51,13 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
     answerAsNumberLabel = answerAsNumberInput.parent()
     name = jQuery("#dialog .form-group:eq(0) input").val()
     question = jQuery("#dialog .form-group:eq(1) input").val()
-    answerAsNumber = not answerAsNumberLabel.hasClass("active")
+    if answerAsNumberLabel.hasClass("active")
+      answerType = 'TEXT'
+    else
+      answerType = 'NUMBER'
     data =
       name: name
       question: question
-      answerAsNumber: answerAsNumber
+      answerType: answerType
       type: @_questionType
     data

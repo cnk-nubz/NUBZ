@@ -1,7 +1,7 @@
 root = exports ? this
 root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
-  constructor: (url = 'getHTML?name=sortQuestionDialog', options = {}) ->
-    super(url, options)
+  constructor: (dialogData, options = {}) ->
+    super(dialogData, options)
     @_questionType = 2
   # _prepareDialog :: DOMNode -> undefined
   _prepareDialog: (dialogBody) =>
@@ -10,13 +10,9 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     instance = this
 
     inputs = jQuery("input[type=text]", dialogBody)
-    inputs.each( (idx) ->
-      obj = jQuery(this)
-      jQuery(this).keyup((e) -> instance._inputKeyUp(obj, e))
-    )
     lastInput = inputs.filter(":last")
     lastInput.parent().addClass("input-group")
-    lastInput.dynamicInputs(inputOffset, @_inputKeyUp, instance)
+    lastInput.dynamicInputs(inputOffset, instance)
     return
 
 
@@ -37,24 +33,14 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
     @_dialog.setTitle(@_data.utils.text.title)
     jQuery(".form-group:eq(0) input", dialogBody).val(@_dialogInfo.name)
     jQuery(".form-group:eq(1) input", dialogBody).val(@_dialogInfo.question)
-    for answer, index in @_dialogInfo.options
-      jQuery(".form-group:last-child > div input:last", dialogBody).val(answer).keyup()
+    for option in @_dialogInfo.options
+      jQuery(".form-group:last-child > div input:last", dialogBody)
+        .val(option.text).keyup()
     if @options.readonly
       jQuery("input", dialogBody).prop("readonly", true)
       # remove last "add answer" entry
       jQuery("input", dialogBody).last().parents('.input-group').remove()
       @_dialog.getButton('saveButtonDialog').hide()
-    return
-
-
-  # _inputKeyUp :: (jQueryObject, Event) -> undefined
-  _inputKeyUp: (obj, e) =>
-    text = obj.val()
-    error = obj.parent().next()
-    if text.length is 0
-      @_showInputError(error, @_data.utils.text.emptyInputError)
-    else
-      error.html("")
     return
 
 
@@ -82,11 +68,13 @@ root.SortQuestionDialog = class SortQuestionDialog extends root.QuestionDialog
       option = {}
       inputs.each( ->
         inputVal = jQuery(this).val()
+        error = jQuery(this).parent().next()
         if option.hasOwnProperty(inputVal)
           isValid = false
-          error = jQuery(this).parent().next()
           instance._showInputError(error, instance._data.utils.text.optionDuplicatedError)
           return
+        else
+          error.html('')
         option[inputVal] = true
       )
     isValid

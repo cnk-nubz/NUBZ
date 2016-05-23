@@ -47,25 +47,10 @@
   {% compress js %}
     <script type="text/coffeescript">
       root = exports ? this
-      success = {{success | jsvar}}
-      if not success
-        fun = ->
-          BootstrapDialog.show(
-            message: '{{message}}'
-            title: 'Wystąpił nieoczekiwany błąd'
-            type: BootstrapDialog.TYPE_DANGER
-          )
-        setTimeout(fun, 1000)
       root.readyExperiments = {{readyExperiments | jsvar}}
       root.finishedExperiments = {{finishedExperiments | jsvar}}
       root.activeExperiment = {{activeExperiment | jsvar}}
-      root.startExperimentConfirmation = {{startExperimentConfirmation | jsvar}}
-      root.finishExperimentConfirmation = {{finishExperimentConfirmation | jsvar}}
-      root.HTML =
-        finishedExperimentRow: '{{finishedExperimentRow}}'
-        readyExperimentRow: '{{readyExperimentRow}}'
-        tableList: '{{tableList}}'
-      new root.CloneExperimentDialog() # cache data from url
+      root.structures = {{structures | jsvar}}
     </script>
   {% endcompress %}
 {% endblock %}

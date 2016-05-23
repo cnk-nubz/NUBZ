@@ -1,5 +1,4 @@
 root = exports ? this
-root.cachedData = {}
 class Handlers
   # type MapData = {
   #   activeFloor     :: Int,
@@ -13,7 +12,7 @@ class Handlers
   constructor: (@_mapData) ->
     @_mapData.minZoom = @_mapData.floorTilesInfo.map( -> 1)
     @_mapData.maxZoom = @_mapData.floorTilesInfo.map((x) -> Math.max(Object.keys(x).length, 1))
-    @_exhibitEditDialog = new root.ExhibitDialog('getHTML?name=exhibitDialog',
+    @_exhibitEditDialog = new root.ExhibitDialog(root.structures.dialog.exhibit,
       readonly: false
       deletable: true
     , @_mapData.activeFloor)
@@ -28,7 +27,7 @@ class Handlers
       changeMap: "#changeMap button"
 
     @canvas = new root.MutableCanvas('#map', @_mapData)
-    @panel = new root.ExhibitPanel('#exhibit-panel', @_mapData)
+    @panel = new root.ExhibitPanel(@_mapData)
     @_setButtonHandlers()
     @_setEvents()
     jQuery("#{@_DOM.labels}, #{@_getNthFloor(@_mapData.activeFloor)}").addClass "active"
@@ -59,22 +58,22 @@ class Handlers
   # _setEvents :: () -> undefined
   _setEvents: =>
     @panel.on("addExhibit", @newExhibitRequest)
-    @panel.on("flyToExhibitWithId", (id) =>
-      exhibit = @_mapData.exhibits[id]
-      exhibitFloor = exhibit.frame.mapLevel
+    @panel.on("flyToExhibitWithId", (exhibitId) =>
+      exhibit = @_mapData.exhibits[exhibitId]
+      exhibitFloor = exhibit.mapFrame.floor
       jQuery(@_getNthFloor(@_mapData.activeFloor)).removeClass "active"
       jQuery(@_getNthFloor(exhibitFloor)).addClass "active"
-      @canvas.flyToExhibit(id, @_mapData.activeFloor)
+      @canvas.flyToExhibit(exhibitId, @_mapData.activeFloor)
       @_mapData.activeFloor = exhibitFloor
       @panel.filterForOneFloor(@_mapData.activeFloor)
     )
-    @panel.on("modifyExhibitWithId", (id, dialog) =>
-      exhibit = @_mapData.exhibits[id]
+    @panel.on("modifyExhibitWithId", (exhibitId, dialog) =>
+      exhibit = @_mapData.exhibits[exhibitId]
       data =
-        id: id
+        exhibitId: exhibitId
         name: exhibit.name
-        floor: exhibit.frame?.mapLevel ? @_mapData.numberOfFloors
-        color: exhibit.colorHex
+        floor: exhibit.mapFrame?.floor ? @_mapData.numberOfFloors
+        color: exhibit.rgbHex
       @_exhibitEditDialog.bindData(data).show()
     )
     @canvas.on("zoomChange", (activeZoom) =>
@@ -147,14 +146,12 @@ class Handlers
   changeMapHandler: (e) ->
     activeFloor = e.data.instance._mapData.activeFloor
     numberOfFloors = e.data.instance._mapData.numberOfFloors
-    jQuery.getJSON('getHTML?name=changeMapDialog', floor: activeFloor, (data) ->
-      new root.ChangeMapDialog(data,
-        activeFloor: activeFloor
-        numberOfFloors: numberOfFloors
-      ) .on("removeFloor", -> location.reload())
-        .on("addFloor", e.data.instance.changeMapSubmitHandler)
-        .on("changeFloorMap", e.data.instance.changeMapSubmitHandler)
-    )
+    new root.ChangeMapDialog(root.structures.dialog.changeMap,
+      activeFloor: activeFloor
+      numberOfFloors: numberOfFloors
+    ) .on("removeFloor", -> location.reload())
+      .on("addFloor", e.data.instance.changeMapSubmitHandler)
+      .on("changeFloorMap", e.data.instance.changeMapSubmitHandler)
     return
 
   # changeMapSubmitHandler :: (Event, FormData) -> undefined
@@ -170,26 +167,21 @@ class Handlers
       data: formData
       processData: false
       contentType: false
-      success: (data) ->
-        @afterMapUploadMessage(data)
+      error: @_displayErrorWithReload
+      success: @afterMapUploadMessage
     )
     return
 
 
   # afterMapUploadMessage :: (DialogData) -> undefined
   afterMapUploadMessage: (data) ->
-    dialogType =
-      success: BootstrapDialog.TYPE_SUCCESS
-      danger: BootstrapDialog.TYPE_DANGER
-      info: BootstrapDialog.TYPE_INFO
-
     jQuery.each(BootstrapDialog.dialogs, (id, dialog) ->
       dialog.close()
     )
     BootstrapDialog.show(
-      message: data.dialog.message
-      title: data.dialog.title ? 'Błąd'
-      type: dialogType[data.dialog.type] ? dialogType.danger
+      message: data.message
+      title: data.title
+      type: BootstrapDialog.TYPE_SUCCESS
       closable: false
       buttons: [
         label: 'OK'
@@ -203,19 +195,21 @@ class Handlers
   newExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame(@_mapData.activeFloor)
-      frame =
-        x: topLeft.x
-        y: topLeft.y
-        width: viewportWidth
-        height: viewportHeight
-        mapLevel: @_mapData.activeFloor
+      mapFrame =
+        frame:
+          size:
+            width: viewportWidth
+            height: viewportHeight
+          x: topLeft.x
+          y: topLeft.y
+        floor: @_mapData.activeFloor
     toSend =
       jsonData:
         JSON.stringify(
           name: data.name
           rgbHex: data.rgbHex
-          floor: data.floor if data.floor?
-          visibleMapFrame: frame
+          floor: data.floor
+          visibleFrame: mapFrame
         )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -225,7 +219,9 @@ class Handlers
       data: toSend
       dataType: 'json'
       url: '/exhibit/'
-      error: @_displayError
+      statusCode:
+        403: -> dialog.showNameDuplicatedError()
+        500: @_displayError
       success: (recvData) =>
         @_newExhibitSuccess(recvData, dialog)
         dialog.close()
@@ -235,26 +231,15 @@ class Handlers
 
   # _newExhibitSuccess :: Exhibit -> undefined
   _newExhibitSuccess: (data) =>
-    id = data.id
-    @_mapData.exhibits[id] = {name: null, colorHex: null, frame: {}}
-    @_mapData.exhibits[id].name = data.name
-    @_mapData.exhibits[id].colorHex = data.rgbHex
-    @_mapData.exhibits[id].id = id
-    if data.frame?
-      @_mapData.exhibits[id].frame.x = data.frame.x
-      @_mapData.exhibits[id].frame.y = data.frame.y
-      @_mapData.exhibits[id].frame.width = data.frame.width
-      @_mapData.exhibits[id].frame.height = data.frame.height
-      @_mapData.exhibits[id].frame.mapLevel = data.frame.mapLevel
-      @canvas.addExhibits([@_mapData.exhibits[id]])
-
+    @_mapData.exhibits[data.exhibitId] = data
+    if data.mapFrame?.floor is @_mapData.activeFloor
+      @canvas.addExhibits([@_mapData.exhibits[data.exhibitId]])
     jQuery.ajax(
       method: "GET"
       dataType: 'json'
       url: '/exhibit/'
-      error: @_displayError
       success: (data) =>
-        @panel.replaceExhibits((e.id for e in data.exhibits))
+        @panel.replaceExhibits((e.exhibitId for e in data.exhibits))
     )
     return
 
@@ -263,19 +248,21 @@ class Handlers
   updateExhibitRequest: (data, dialog) =>
     if data.floor?
       [topLeft, viewportWidth, viewportHeight] = @canvas.getVisibleFrame(@_mapData.activeFloor)
-      frame =
-        x: topLeft.x
-        y: topLeft.y
-        width: viewportWidth
-        height: viewportHeight
-        mapLevel: @_mapData.activeFloor
+      mapFrame =
+        frame:
+          size:
+            width: viewportWidth
+            height: viewportHeight
+          x: topLeft.x
+          y: topLeft.y
+        floor: @_mapData.activeFloor
     toSend =
       jsonData:
         JSON.stringify(
-          id: data.id
+          exhibitId: data.exhibitId
           rgbHex: data.rgbHex
           floor: data.floor if data.floor?
-          visibleMapFrame: frame
+          visibleFrame: mapFrame
         )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -294,33 +281,23 @@ class Handlers
 
   # _updateExhibitSuccess :: Exhibit -> undefined
   _updateExhibitSuccess: (data) =>
-    @canvas.removeExhibit(data.id)
-    @_mapData.exhibits[data.id] = {
-      id: data.id
-      frame: data.frame
-      name: data.name
-      colorHex: data.rgbHex
-    }
-    if data.frame?
-      @canvas.addExhibits([@_mapData.exhibits[data.id]])
+    @canvas.removeExhibit(data.exhibitId)
+    @_mapData.exhibits[data.exhibitId] = data
+    if data.mapFrame?.floor is @_mapData.activeFloor
+      @canvas.addExhibits([@_mapData.exhibits[data.exhibitId]])
     @panel.refreshExhibitsList()
     return
 
 
   # removeExhibitRequest :: Int -> Context
   removeExhibitRequest: (exhibitId) =>
-    toSend =
-      jsonData:
-        JSON.stringify(
-          exhibitId: exhibitId
-        )
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
     jQuery.ajax(
       type: 'DELETE'
       url: '/exhibit/'
-      data: toSend
+      data: (jsonData: JSON.stringify(exhibitId : exhibitId))
       error: @_displayError
       success: =>
         @canvas.removeExhibit(exhibitId)
@@ -335,6 +312,19 @@ class Handlers
       message: obj.responseText
       title: obj.statusText
       type: BootstrapDialog.TYPE_DANGER
+    )
+    return
+
+  # _displayErrorWithReload :: jqXHR -> undefined
+  _displayErrorWithReload: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+      buttons: [
+        label: 'OK'
+        action: -> location.reload()
+      ]
     )
     return
 

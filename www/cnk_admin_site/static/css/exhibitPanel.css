@@ -1,10 +1,7 @@
-#exhibit-panel {
-  border-left: 1px solid #aaa;
-}
-
 #exhibitPanel {
   height: 100%;
   width: 100%;
+  border-left: 1px solid #aaa;
 }
 
 #exhibitPanel button {

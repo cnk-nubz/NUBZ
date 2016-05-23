@@ -1,7 +1,7 @@
 root = exports ? this
 root.ReportRow = class ReportRow
   constructor: ->
-    @_baseElement = jQuery(root.HTML.reportRow)[0]
+    @_baseElement = jQuery(root.structures.HTML.reportRow)[0]
 
   generateRow: (element) =>
     listElement = @_baseElement.cloneNode(true)

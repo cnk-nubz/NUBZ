@@ -1,5 +1,4 @@
 root = exports ? this
-root.cachedData = {}
 class Handlers
   # constructor :: ([Question], [Action]) -> Context
   constructor: (initQuestionsList, initActionsList) ->
@@ -51,7 +50,7 @@ class Handlers
             readonly: true
             deletable: true
           ).off('delete')
-          .on('delete', @_deleteAction)
+          .on('delete', @_removeAction)
           .show()
         )
     )
@@ -61,9 +60,8 @@ class Handlers
   # _setHandler :: () -> undefined
   _setHandlers: =>
     jQuery("#questionList .addElement").on('click', @_addNewQuestion)
-    new root.ActionDialog() #to load to cache TODO
     jQuery("#actionList .addElement").click( =>
-      new root.ActionDialog()
+      new root.ActionDialog(root.structures.dialog.action)
         .on('save', @_newEntryRequest("/action/", @_actionsChanged))
         .show()
     )
@@ -72,19 +70,10 @@ class Handlers
 
   # _addNewQuestion :: () -> undefined
   _addNewQuestion: =>
-    jQuery.getJSON('getHTML?name=chooseQuestionTypeDialog', null, (data) =>
-      @_showChooseQuestionType(data.html)
-    )
-    return
-
-
-  # _showChooseQuestionType :: String -> undefined
-  _showChooseQuestionType: (html) =>
     BootstrapDialog.show(
-      message: html
+      message: root.structures.HTML.chooseQuestionType
       title: 'Wybierz typ pytania'
-      onshown: (dialog) =>
-        @_setQuestionsHandlers(dialog)
+      onshown: @_setQuestionsHandlers
     )
     return
 
@@ -92,11 +81,14 @@ class Handlers
   # _setQuestionsHandlers :: BootstrapDialog -> undefined
   _setQuestionsHandlers: (dialog) =>
     saveHandler = @_newEntryRequest("/question/", @_questionsChanged)
-    simpleQuestionDialog = new root.SimpleQuestionDialog()
+    simpleQuestionDialog = new root.SimpleQuestionDialog(
+      root.structures.dialog.question.simple)
       .on('save', saveHandler)
-    sortQuestionDialog = new root.SortQuestionDialog()
+    sortQuestionDialog = new root.SortQuestionDialog(
+      root.structures.dialog.question.sort)
       .on('save', saveHandler)
-    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
+    multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog(
+      root.structures.dialog.question.multipleChoice)
       .on('save', saveHandler)
     jQuery("#dialog button").click( -> dialog.close())
     jQuery("#simpleQuestion").click( -> simpleQuestionDialog.show())
@@ -141,15 +133,15 @@ class Handlers
       return
 
 
-  # _deleteAction :: Int -> undefined
-  _deleteAction: (actionId) =>
+  # _removeAction :: Int -> undefined
+  _removeAction: (actionId) =>
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
     jQuery.ajax(
       method: 'DELETE'
       dataType: 'json'
-      data: (jsonData: JSON.stringify(id: actionId))
+      data: (jsonData: JSON.stringify(actionId: actionId))
       url: '/action/'
       error: @_displayError
       success: @_actionsChanged
