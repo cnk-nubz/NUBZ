@@ -97,7 +97,7 @@ root.ExhibitDialog = class ExhibitDialog extends root.QuestionDialog
     exhibitColor = parseInt(@_rgb2hex(jQuery(".popoverButton").css("background-color"))[1..], 16)
     changedData =
       exhibitId: parseInt(@_dialogInfo?.exhibitId)
-      name: editedName
+      name: jQuery("<div>").text(editedName).html() # escape name
       rgbHex: exhibitColor
       floor: floor
     changedData
