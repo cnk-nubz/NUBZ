@@ -190,5 +190,5 @@ def singleExperimentInfo(t):
 def reportInfo(t):
     return {
         'reportId': t.reportId,
-        'receiveDate': _dateToString(t.receiveDate)
+        'receiveDate': _dateToString(date(t.receiveDate))
     }
