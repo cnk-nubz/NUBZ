@@ -1,4 +1,4 @@
-import os
+import sys, os, logging
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cnk.settings'
 from django.conf            import settings
 from django.template.loader import render_to_string
@@ -40,7 +40,10 @@ def standardAjaxCall(f):
         except ElementInUse:
             return HttpResponseForbidden(get_const("ELEMENT_IN_USE_ERROR"))
         except Exception as ex:
-            return HttpResponseServerError(str(ex))
+            msg = str(ex)
+            logging.getLogger('django.logger').error(msg)
+            printError(msg)
+            return HttpResponseServerError(msg)
     return dec
 
 
@@ -48,7 +51,10 @@ def startingPage(f):
     def dec(*args):
         try:
             return f(*args)
-        except:
+        except Exception as ex:
+            msg = str(ex)
+            logging.getLogger('django.logger').error(msg)
+            printError(msg)
             return HttpResponseServerError(get_const("STARTING_PAGE_ERROR"))
     return dec
 
@@ -75,3 +81,7 @@ def markActionAsNew(actions, newId):
 
 def render_to_stringNNL(name, d = {}):
     return render_to_string(name, d).replace('\n', '')
+
+
+def printError(msg):
+    print >>sys.stderr, "ERROR: %s" % msg
