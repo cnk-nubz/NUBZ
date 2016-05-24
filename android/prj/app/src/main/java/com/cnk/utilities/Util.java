@@ -15,11 +15,15 @@ public class Util {
     }
 
     public static String downloadErrorMessage(ServerTask.FailureReason reason) {
-        return Cnk.getAppContext().getString(R.string.dataDownloadFailure) + " - " +
-               Cnk.getAppContext()
-                  .getString(reason == ServerTask.FailureReason.NOWIFI ? R.string.reasonWifi :
-                                     reason == ServerTask.FailureReason.NO_EXPERIMENT ?
-                                             R.string.reasonNoExperiment :
-                                             R.string.reasonConnection);
+        if (reason == ServerTask.FailureReason.NOWIFI) {
+            return Cnk.getAppContext().getString(R.string.dataDownloadFailure) + " - " +
+                   Cnk.getAppContext().getString(R.string.reasonWifi);
+        } else if (reason == ServerTask.FailureReason.NO_EXPERIMENT) {
+            return Cnk.getAppContext().getString(R.string.dataDownloadFailure) + " - " +
+                   Cnk.getAppContext().getString(R.string.reasonNoExperiment);
+        } else {
+            return Cnk.getAppContext().getString(R.string.dataDownloadFailure) + " - " +
+                   Cnk.getAppContext().getString(R.string.reasonConnection);
+        }
     }
 }
