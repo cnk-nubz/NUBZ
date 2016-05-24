@@ -9,6 +9,7 @@ import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.raports.Raport;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
+import com.cnk.data.raports.Timestamp;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.realm.RaportFileRealm;
 import com.cnk.utilities.Consts;
@@ -23,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ExperimentData {
     private class BgRaportSaver implements Runnable {
+        private final long SAVE_INTERVAL = 5;
         private volatile Raport raport;
 
         public BgRaportSaver(Raport raport) {
@@ -35,7 +37,7 @@ public class ExperimentData {
                 raportLock.lock();
                 if (!saveRaport()) {
                     raportLock.unlock();
-                    Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
+                    Util.waitDelay(SAVE_INTERVAL);
                     continue;
                 }
                 if (raport.getState() == Raport.State.READY_TO_SEND) {
@@ -43,7 +45,7 @@ public class ExperimentData {
                     break;
                 }
                 raportLock.unlock();
-                Util.waitDelay(15 * Consts.MILLIS_IN_SEC);
+                Util.waitDelay(SAVE_INTERVAL);
             }
             Log.i(LOG_TAG, "Saving raport stopped");
         }
@@ -115,7 +117,7 @@ public class ExperimentData {
     public void startNewRaport() {
         Integer newId = dbHelper.getNextRaportId();
         currentRaport = new Raport(newId,
-                                   new Date(),
+                                   new Timestamp(new Date()),
                                    experiment.getId(),
                                    experiment.getSurvey(Survey.SurveyType.BEFORE)
                                              .getSurveyAnswers(),
@@ -144,7 +146,7 @@ public class ExperimentData {
 
     private void markRaportAsReady() {
         raportLock.lock();
-        currentRaport.setEndDate(new Date());
+        currentRaport.setEndDate(new Timestamp(new Date()));
         currentRaport.markAsReady();
         ReadyRaports.getInstance().addNewReadyRaport(currentRaport);
         dbHelper.changeRaportState(currentRaport.getId(), RaportFileRealm.READY_TO_SEND);

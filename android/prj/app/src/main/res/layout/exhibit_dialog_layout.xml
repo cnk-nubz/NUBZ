@@ -30,7 +30,7 @@
                 android:layout_alignParentRight="true"
                 android:text="Zapisz"/>
 
-            <com.cnk.ui.AutoResizeTextView
+            <com.cnk.external.AutoResizeTextView
                 android:id="@+id/tvExhibitDialogName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

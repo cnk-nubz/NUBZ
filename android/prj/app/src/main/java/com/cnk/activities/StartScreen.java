@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.cnk.R;
+import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.task.ServerTask;
 import com.cnk.communication.task.Task;
 import com.cnk.data.exhibits.ExhibitsData;
@@ -46,6 +47,9 @@ public class StartScreen extends AppCompatActivity implements Observer {
                 ExhibitsData.getInstance().loadDbData();
                 ReadyRaports.getInstance().loadDbData();
                 dataLoaded = true;
+
+                NetworkHandler nh = NetworkHandler.getInstance();
+                nh.startBgDataSync();
             }
         } catch (DatabaseLoadException e) {
             e.printStackTrace();
@@ -98,17 +102,18 @@ public class StartScreen extends AppCompatActivity implements Observer {
     }
 
     private void mapDownloaded(Task t) {
-        if (!dataLoaded) {
-            try {
-                MapData.getInstance().loadDbData();
-                ExhibitsData.getInstance().loadDbData();
-                ReadyRaports.getInstance().loadDbData();
-                dataLoaded = true;
-            } catch (DatabaseLoadException e) {
-                progressBar.dismiss();
-                e.printStackTrace();
-                runOnUiThread(this::showAlert);
-            }
+        try {
+            MapData.getInstance().loadDbData();
+            ExhibitsData.getInstance().loadDbData();
+            ReadyRaports.getInstance().loadDbData();
+            dataLoaded = true;
+
+            NetworkHandler nh = NetworkHandler.getInstance();
+            nh.startBgDataSync();
+        } catch (DatabaseLoadException e) {
+            progressBar.dismiss();
+            e.printStackTrace();
+            runOnUiThread(this::showAlert);
         }
         progressBar.dismiss();
     }

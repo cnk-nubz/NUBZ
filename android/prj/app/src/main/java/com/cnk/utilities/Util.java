@@ -18,8 +18,8 @@ public class Util {
         return Cnk.getAppContext().getString(R.string.dataDownloadFailure) + " - " +
                Cnk.getAppContext()
                   .getString(reason == ServerTask.FailureReason.NOWIFI ? R.string.reasonWifi :
-                                     R.string.reasonConnection);
+                                     reason == ServerTask.FailureReason.NO_EXPERIMENT ?
+                                             R.string.reasonNoExperiment :
+                                             R.string.reasonConnection);
     }
-
-
 }

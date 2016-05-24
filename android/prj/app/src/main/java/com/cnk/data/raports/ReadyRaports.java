@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
     public interface RaportsUpdateAction {
@@ -23,11 +25,11 @@ public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
 
     private static final String LOG_TAG = "ReadyRaports";
     private static ReadyRaports instance;
-    private Map<Raport, Integer> readyRaports;
+    private ConcurrentHashMap<Raport, RaportId> readyRaports;
     private DatabaseHelper dbHelper;
 
     public ReadyRaports() {
-        readyRaports = Collections.synchronizedMap(new HashMap<>());
+        readyRaports = new ConcurrentHashMap<>();
     }
 
     public static ReadyRaports getInstance() {
@@ -63,19 +65,24 @@ public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
             }
             if (loaded != null) {
                 Log.i(LOG_TAG, loaded.toString());
-                readyRaports.put(loaded, file.getServerId());
+                readyRaports.put(loaded, new RaportId(file.getServerId()));
             }
         }
     }
 
     // only uses files ready to send which are used by one thread - uploading raports
     public Map<Raport, Integer> getAllReadyRaports() {
-        return readyRaports;
+        Set<Raport> keys = readyRaports.keySet();
+        Map<Raport, Integer> result = new HashMap<>();
+        for (Raport k : keys) {
+            result.put(k, readyRaports.get(k).getId());
+        }
+        return result;
     }
 
     // doesn't modify files, only modifies database entries which are used by one thread - uploading raports
     public void setServerId(Raport raport, Integer serverId) {
-        readyRaports.put(raport, serverId);
+        readyRaports.put(raport, new RaportId(serverId));
         dbHelper.changeRaportServerId(raport.getId(), serverId);
     }
 
@@ -88,7 +95,7 @@ public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
     }
 
     public void addNewReadyRaport(Raport newRaport) {
-        readyRaports.put(newRaport, null);
+        readyRaports.put(newRaport, new RaportId(null));
         notifyObservers(readyRaports.size());
     }
 
@@ -100,6 +107,21 @@ public class ReadyRaports extends Observable<ReadyRaports.RaportsUpdateAction> {
 
         for (RaportsUpdateAction action : actions) {
             action.doOnUpdate(newRaportsQueueSize);
+        }
+    }
+
+    private class RaportId {
+        private Integer id;
+        public RaportId(Integer id) {
+            this.id = id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public Integer getId() {
+            return id;
         }
     }
 }

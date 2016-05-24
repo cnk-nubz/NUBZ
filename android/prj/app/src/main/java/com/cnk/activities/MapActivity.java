@@ -22,6 +22,7 @@ import com.cnk.data.experiment.ExperimentData;
 import com.cnk.data.experiment.survey.Survey;
 import com.cnk.data.map.MapData;
 import com.cnk.data.raports.RaportEvent;
+import com.cnk.data.raports.Timestamp;
 import com.cnk.database.models.Exhibit;
 import com.cnk.notificators.Observer;
 import com.cnk.ui.Utils;
@@ -140,7 +141,7 @@ public class MapActivity extends AppCompatActivity implements Observer {
         List<Integer> actions = dialog.getSelectedActions();
         Log.i(LOG_TAG, "Selected actions: " + actions);
         RaportEvent event =
-                new RaportEvent(exhibitId, dialog.getElapsedTime(), actions, dialog.getBeginDate());
+                new RaportEvent(exhibitId, dialog.getElapsedTime(), actions, new Timestamp(dialog.getBeginDate()));
         ExperimentData.getInstance().addEventToCurrentRaportInBg(event);
 
         dialogOpened = false;
