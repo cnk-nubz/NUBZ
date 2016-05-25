@@ -51,7 +51,7 @@ SIMPLE_QUESTION_DIALOG = {
                 "radioGroup": "ansType",
                 "labelText": "Typ odpowiedzi",
                 "radioSize": "3",
-                "textList": ["Liczba", "Zdanie"]
+                "textList": ["Zdanie", "Liczba"]
             }
         ]
     ],
