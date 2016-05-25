@@ -14,8 +14,9 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 import os
 import sys
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(BASE_DIR, 'cnk_admin_site/thrift_structures'))
-
+sys.path.append(os.path.join(BASE_DIR, 'cnk_admin_site/thrift_communication/thrift_structures'))
+sys.path.append(os.path.join(BASE_DIR, 'cnk_admin_site/thrift_communication'))
+sys.path.append(os.path.join(BASE_DIR, 'cnk_admin_site/views'))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -108,7 +109,7 @@ LOGGING = {
         }
     },
     'loggers': {
-        'django.request': {
+        'django.logger': {
             'handlers': ['file'],
             'level': 'INFO',
             'propagate': True,

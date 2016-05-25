@@ -16,7 +16,6 @@ window.onerror = do ->
     timeoutId = setTimeout ( ->
       jQuery.ajax(
         type: 'POST'
-        dataType: 'json'
         url: '/errorReporting/'
         data: toSend
         error: -> window.onerror(errorMsg, url, lineNumber)

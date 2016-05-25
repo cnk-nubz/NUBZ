@@ -1,5 +1,4 @@
 root = exports ? this
-root.cachedData = {}
 class Handlers
   ###
   # type ExperimentData = {
@@ -18,8 +17,8 @@ class Handlers
       getAllReports: ".reportsList .myFooter button"
       removeExperiment: ".manageExperiment button"
       manageExperiment: ".manageExperiment"
-    @_questionsBefore = new root.Questions(@_experimentData?.questionsBefore)
-    @_questionsAfter = new root.Questions(@_experimentData?.questionsAfter)
+    @_questionsBefore = new root.Questions(@_experimentData?.surveyBefore)
+    @_questionsAfter = new root.Questions(@_experimentData?.surveyAfter)
     @_exhibitActions = new root.Actions(@_experimentData?.exhibitActions)
     @_breakActions = new root.Actions(@_experimentData?.breakActions)
     @_reports = new root.Reports(@_reportsData)
@@ -99,7 +98,7 @@ class Handlers
   # _setRemoveExperimentHandler :: () -> undefined
   _setRemoveExperimentHandler: =>
     jQuery(@_DOM.removeExperiment).click( =>
-      (new root.ConfirmationDialog(root.removeExperimentConfirmation))
+      (new root.ConfirmationDialog(root.structures.dialog.removeExperimentConfirmation))
         .on('confirm', =>
           experimentId = @_experimentData.experimentId
           jQuery.ajaxSetup(

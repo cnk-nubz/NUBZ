@@ -69,18 +69,18 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
   # _updateExhibitPosition :: L.Rectangle -> undefined
   _updateExhibitPosition: (exhibit) =>
     geoPoints = @_fixExhibitPosition(exhibit)
-    exhibitId = exhibit.options.id
-    exhibitFloor = @_mapData.exhibits[exhibitId].frame.mapLevel
+    exhibitId = exhibit.options.exhibitId
+    exhibitFloor = @_mapData.exhibits[exhibitId].mapFrame.floor
     scaledPoints = (@_map.project(p, @_mapData.maxZoom[exhibitFloor]) for p in geoPoints)
     [topLeft, bottomRight] = [@_getTopLeft(scaledPoints), @_getBottomRight(scaledPoints)]
-    @_changeExhibitPositionRequest(exhibit.options.id, topLeft, bottomRight)
+    @_changeExhibitPositionRequest(exhibit.options.exhibitId, topLeft, bottomRight)
     return
 
 
   # _fixExhibitPosition :: L.Rectangle -> [L.LatLng]
   _fixExhibitPosition: (exhibit) =>
-    exhibitId = exhibit.options.id
-    exhibitFloor = @_mapData.exhibits[exhibitId].frame.mapLevel
+    exhibitId = exhibit.options.exhibitId
+    exhibitFloor = @_mapData.exhibits[exhibitId].mapFrame.floor
     maxX = @_map.project(@_mapBounds[exhibitFloor].getNorthEast()).x
     maxY = @_map.project(@_mapBounds[exhibitFloor].getSouthWest()).y
 
@@ -109,44 +109,33 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
 
 
   # _changeExhibitPositionRequest :: (Int, L.Point, L.Point) -> undefined
-  _changeExhibitPositionRequest: (id, topLeft, bottomRight) =>
-    toSend = {
-      jsonData:
-        JSON.stringify(
-          id: id
-          x: topLeft.x
-          y: topLeft.y
+  _changeExhibitPositionRequest: (exhibitId, topLeft, bottomRight) =>
+    exhibitFrame =
+      exhibitId: exhibitId
+      frame:
+        size:
           width: bottomRight.x - topLeft.x
           height: bottomRight.y - topLeft.y
-        )
-    }
+        x: topLeft.x
+        y: topLeft.y
     jQuery.ajaxSetup(
       headers: { "X-CSRFToken": getCookie("csrftoken") }
     )
     jQuery.ajax(
       type: 'POST'
-      dataType: 'json'
       url: '/updateExhibitPosition/'
-      data: toSend
+      data: (jsonData: JSON.stringify(exhibitFrame))
       context: this
-      success: @_changeExhibitPositionSuccess
+      success: => @_changeExhibitPositionSuccess(exhibitFrame)
+      error: @_displayError
     )
     return
 
 
-  # _changeExhibitPositionSuccess :: ExhibitData -> undefined
+  # _changeExhibitPositionSuccess :: ExhibitFrame -> undefined
   _changeExhibitPositionSuccess: (data) =>
-    if data.success is true
-      @_mapData.exhibits[data.id].frame.x = data.x
-      @_mapData.exhibits[data.id].frame.y = data.y
-      @_mapData.exhibits[data.id].frame.width = data.width
-      @_mapData.exhibits[data.id].frame.height = data.height
-    else
-      BootstrapDialog.alert(
-        message: "<p align=\"center\">#{data.message}</p>"
-        type: BootstrapDialog.TYPE_DANGER
-        title: 'Błąd serwera'
-      )
+    exhibitId = data.exhibitId
+    @_mapData.exhibits[data.exhibitId].mapFrame.frame = data.frame
     return
 
 
@@ -179,3 +168,12 @@ root.MutableCanvas = class MutableCanvas extends root.Canvas
         layer.editing.disable()
     )
     @
+
+  # _displayError :: jqXHR -> undefined
+  _displayError: (obj) ->
+    BootstrapDialog.show(
+      message: obj.responseText
+      title: obj.statusText
+      type: BootstrapDialog.TYPE_DANGER
+    )
+    return

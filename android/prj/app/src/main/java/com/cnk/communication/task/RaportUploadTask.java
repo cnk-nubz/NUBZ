@@ -14,6 +14,7 @@ import com.cnk.communication.thrift.Time;
 import com.cnk.data.raports.Raport;
 import com.cnk.data.raports.RaportEvent;
 import com.cnk.data.raports.ReadyRaports;
+import com.cnk.data.raports.Timestamp;
 
 import org.apache.thrift.TException;
 
@@ -79,13 +80,12 @@ public class RaportUploadTask extends ServerTask {
         return thriftEvents;
     }
 
-    private Time translateDate(Date date) {
+    private Time translateDate(Timestamp timestamp) {
+        Log.i(LOG_TAG, timestamp.toString());
         Time startTime = new Time();
-        Calendar calendar = GregorianCalendar.getInstance();
-        calendar.setTime(date);
-        startTime.setHour(calendar.get(Calendar.HOUR_OF_DAY));
-        startTime.setMin(calendar.get(Calendar.MINUTE));
-        startTime.setSec(calendar.get(Calendar.SECOND));
+        startTime.setHour(timestamp.getHour());
+        startTime.setMin(timestamp.getMinute());
+        startTime.setSec(timestamp.getSecond());
         return startTime;
     }
 

@@ -4,6 +4,8 @@ import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.Server;
+import com.cnk.exceptions.NoExperimentException;
+import com.cnk.utilities.Consts;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -18,7 +20,8 @@ public abstract class ServerTask extends Task {
     public enum FailureReason {
         NOWIFI("no wifi"),
         SOCKET_OPEN_FAILED("socket opening failed"),
-        ACTION_FAILED("action on opened socket failed");
+        ACTION_FAILED("action on opened socket failed"),
+        NO_EXPERIMENT("no active experiment");
 
         private String description;
 
@@ -62,6 +65,9 @@ public abstract class ServerTask extends Task {
 
         try {
             performInSession(client);
+        } catch (NoExperimentException noe) {
+            noe.printStackTrace();
+            notifyFailure(FailureReason.NO_EXPERIMENT);
         } catch (Exception e) {
             e.printStackTrace();
             notifyFailure(FailureReason.ACTION_FAILED);
@@ -73,10 +79,12 @@ public abstract class ServerTask extends Task {
         notifySuccess();
     }
 
-    protected abstract void performInSession(Server.Client client) throws TException, IOException;
+    protected abstract void performInSession(Server.Client client) throws TException, IOException, NoExperimentException;
 
     private TFramedTransport openSocket() {
-        TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS, SEND_PORT));
+        TFramedTransport socket = new TFramedTransport(new TSocket(SEND_ADDRESS,
+                                                                   SEND_PORT,
+                                                                   5 * (int) Consts.MILLIS_IN_SEC));
         Log.i(LOG_TAG, "Opening socket for address " + SEND_ADDRESS);
         try {
             socket.open();

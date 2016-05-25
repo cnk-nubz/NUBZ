@@ -2,7 +2,7 @@ root = exports ? this
 root.ExperimentQuestionRow = class ExperimentQuestionRow extends root.View
   constructor: ->
     super()
-    @_baseElement = jQuery(root.HTML.experimentQuestionRow)[0]
+    @_baseElement = jQuery(root.structures.HTML.experimentQuestionRow)[0]
 
   generateRow: (element) =>
     listElement = @_baseElement.cloneNode(true)

@@ -1,7 +1,7 @@
 root = exports ? this
 root.FinishedExperimentRow = class FinishedExperimentRow
   constructor: ->
-    @_baseElement = jQuery(root.HTML.finishedExperimentRow)[0]
+    @_baseElement = jQuery(root.structures.HTML.finishedExperimentRow)[0]
 
   generateRow: (element) =>
     listElement = @_baseElement.cloneNode(true)

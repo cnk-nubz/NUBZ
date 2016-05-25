@@ -30,6 +30,9 @@
       return cookieValue;
   }
   </script>
+  {% compress js %}
+  <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
   {% endblock %}
   {% block css %}
   <!-- CSS -->
@@ -45,9 +48,6 @@
   {% endblock %}
   {% block includes %}{% endblock %}
   {% block init %}
-    {% compress js %}
-    <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
-    {% endcompress %}
     {% compress js %}
     <script type="text/coffeescript">
       root = exports ? this
@@ -75,7 +75,7 @@
       #
       #
       # type Exhibit = {
-      #   colorHex :: String,
+      #   rgbHex :: String,
       #   frame    :: Maybe ExhibitFrame,
       #   name     :: String
       # }
@@ -86,11 +86,11 @@
       root.exhibits = {}
       if root.exhibitsList.length > 0
         for e in root.exhibitsList
-          root.exhibits[e.id] =
-            id: e.id
-            frame: e.frame
+          root.exhibits[e.exhibitId] =
+            exhibitId: e.exhibitId
+            mapFrame: e.mapFrame
             name: e.name
-            colorHex: e.colorHex
+            rgbHex: e.rgbHex
       ###
       # type TilesInfo = {
       #   scaledHeight :: Int,
@@ -109,6 +109,8 @@
           root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])
       else
         root.floorTilesInfo[0] = []
+
+      root.structures = {{structures | jsvar}}
     </script>
     {% endcompress %}
   {% endblock %}

@@ -9,8 +9,9 @@
       tabindex="0" data-trigger="manual"
       data-original-title="{{popoverTitle}}" data-container="body"
       data-toggle="popover" data-placement="{{popoverPlacement}}"
-      data-html="true" style="width: 30px; height: 30px">
-      {{popoverText}}
+      data-html="true" style="width: 30px; height: 30px"
+      data-content="{% include 'dialog/popoverColorsPicker.html' with colorsList=colorsList %}">
+      &nbsp;
     </span>
   </div>
 </div>

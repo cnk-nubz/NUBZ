@@ -1,5 +1,7 @@
 package com.cnk.data.exhibits;
 
+import android.util.Log;
+
 import com.cnk.data.map.MapData;
 import com.cnk.database.DatabaseHelper;
 import com.cnk.database.models.Exhibit;
@@ -34,7 +36,6 @@ public class ExhibitsData extends Observable<ExhibitsData.ExhibitsUpdateAction> 
         }
         return instance;
     }
-
 
     public void notifyObservers(List<Exhibit> changedExhibits, boolean fullRefresh) {
         List<ExhibitsUpdateAction> actions = new ArrayList<>();
