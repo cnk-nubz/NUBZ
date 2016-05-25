@@ -85,11 +85,9 @@ DATABASES = {
     }
 }
 
-LOG_PATH = os.path.join(BASE_DIR, 'logs/')
-try:
-    os.makedirs(LOG_PATH)
-except OSError:
-    pass
+DJANGO_LOG_PATH = '/home/minib00m/logs/django.log'
+WWW_LOG_PATH = '/home/minib00m/logs/js.log'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -103,13 +101,13 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/server.log'),
+            'filename': DJANGO_LOG_PATH,
             'formatter': 'verbose',
         },
         'jsError': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs/client.log'),
+            'filename': WWW_LOG_PATH,
             'formatter': 'verbose',
         }
     },
