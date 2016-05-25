@@ -155,7 +155,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR + '/cnk_admin_site/', 'static'),
 )
 MEDIA_URL = os.path.join(BASE_DIR, 'media/')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'download_tmp/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'download/tmp/')
 COMPRESS_ROOT = os.path.join(BASE_DIR, 'TMPCOFFEE/')
 
 COMPRESS_PRECOMPILERS = (
