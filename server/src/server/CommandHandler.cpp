@@ -51,7 +51,8 @@ void CommandHandler::getMapImages(
         }
     });
 
-    LOG(INFO) << "output: " << response;
+    // LOG(INFO) << "output: " << response;
+    LOG(INFO) << "output: omitted";
     LOG(INFO) << __func__ << " end";
 }
 
