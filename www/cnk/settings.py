@@ -85,6 +85,9 @@ DATABASES = {
     }
 }
 
+DJANGO_LOG_PATH = '/home/minib00m/logs/django.log'
+WWW_LOG_PATH = '/home/minib00m/logs/js.log'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -98,13 +101,13 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'dumplog.log'),
+            'filename': DJANGO_LOG_PATH,
             'formatter': 'verbose',
         },
         'jsError': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'jsLog.log'),
+            'filename': WWW_LOG_PATH,
             'formatter': 'verbose',
         }
     },
@@ -152,7 +155,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR + '/cnk_admin_site/', 'static'),
 )
 MEDIA_URL = os.path.join(BASE_DIR, 'media/')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'download_tmp/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'download/tmp/')
 COMPRESS_ROOT = os.path.join(BASE_DIR, 'TMPCOFFEE/')
 
 COMPRESS_PRECOMPILERS = (

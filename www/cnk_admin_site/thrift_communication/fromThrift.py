@@ -167,7 +167,7 @@ def experiment(t):
 
 def experimentInfo(t):
     return {
-        'experimentId': t.id,
+        'experimentId': t.experimentId,
         'name': t.name,
         'startDate': maybe(_dateToString, maybe(date, t.startDate)),
         'finishDate': maybe(_dateToString, maybe(date, t.finishDate))}

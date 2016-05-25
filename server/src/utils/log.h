@@ -35,6 +35,8 @@ std::ostream &operator<<(std::ostream &stream, const std::map<K, V, C> &map) {
 }
 }
 
+#define ELPP_THREAD_SAFE 1
+
 #include <easylogging++.h>
 
 #endif

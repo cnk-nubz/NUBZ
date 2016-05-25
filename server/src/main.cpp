@@ -19,12 +19,14 @@
 
 INITIALIZE_EASYLOGGINGPP
 
+void configureLogger(const std::string &logOutPath);
 boost::optional<utils::Config> parseArguments(int argc, char *argv[]);
 void runServer(std::uint16_t port, db::Database &db);
 
 int main(int argc, char *argv[]) {
     if (auto cfg = parseArguments(argc, argv)) {
         auto config = cfg.value();
+        configureLogger(config.logOutPath);
 
         server::utils::PathHelper::mapsImgUrl.setPrefix(config.urlPrefixForMapImage);
         server::utils::PathHelper::tilesUrl.setPrefix(config.urlPrefixForMapImageTiles);
@@ -37,6 +39,13 @@ int main(int argc, char *argv[]) {
             config.databaseUser, config.databaseName, config.databaseHost, config.databasePort);
         runServer(config.serverPort, db);
     }
+}
+
+void configureLogger(const std::string &logOutPath) {
+    auto conf = el::Configurations{};
+    conf.setToDefault();
+    conf.setGlobally(el::ConfigurationType::Filename, logOutPath);
+    el::Loggers::reconfigureAllLoggers(conf);
 }
 
 boost::optional<utils::Config> parseArguments(int argc, char *argv[]) {

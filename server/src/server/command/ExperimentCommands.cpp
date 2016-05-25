@@ -30,7 +30,7 @@ void ExperimentCommands::update(std::int32_t ID, const CreateExperimentRequest &
     });
 }
 
-void ExperimentCommands::clone(const CloneRequest &input) {
+void ExperimentCommands::clone(const CloneExperimentRequest &input) {
     db.execute([&](db::DatabaseSession &session) {
         auto repo = repository::Experiments{session};
         repo.clone(input.ID, input.name);
