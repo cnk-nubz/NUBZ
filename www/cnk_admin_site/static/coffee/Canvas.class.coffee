@@ -31,9 +31,10 @@ root.Canvas = class Canvas extends root.View
     if tileInfo.length is 0
       @_dataLoaded[floor] = true
       return
-    @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledHeight], [tileInfo[-1..][0].scaledWidth, 0])
+    @_addMapBounds(floor, [0, tileInfo[-1..][0].scaledSize.height],
+                          [tileInfo[-1..][0].scaledSize.width, 0])
     @_addFloorLayer(floor)
-    @addExhibits((e for id, e of @_mapData.exhibits when e.frame?.mapLevel is floor))
+    @addExhibits((e for id, e of @_mapData.exhibits when e.mapFrame?.floor is floor))
     @_dataLoaded[floor] = true
     return
 
@@ -53,7 +54,7 @@ root.Canvas = class Canvas extends root.View
       zoomLayer = L.tileLayer(url.replace('{z}', "#{j + @_mapData.minZoom[floor]}"), {
         minZoom: j + @_mapData.minZoom[floor]
         maxZoom: j + @_mapData.minZoom[floor]
-        tileSize: tileInfo[j].tileWidth
+        tileSize: tileInfo[j].tileSize.width
         continuousWorld: true
         crs: L.CRS.Simple
         bounds: @_mapBounds[floor]
@@ -70,23 +71,24 @@ root.Canvas = class Canvas extends root.View
   # addExhibits :: [Exhibit] -> Context
   addExhibits: (exhibits) =>
     for e in exhibits
-      floor = e.frame.mapLevel
-      x = e.frame.x
-      y = e.frame.y
+      floor = e.mapFrame.floor
+      x = e.mapFrame.frame.x
+      y = e.mapFrame.frame.y
       polygonBounds = new L.LatLngBounds(
         @_map.unproject([x, y], @_mapData.maxZoom[floor]),
-        @_map.unproject([x + e.frame.width, y + e.frame.height], @_mapData.maxZoom[floor]),
+        @_map.unproject([x + e.mapFrame.frame.size.width,
+                         y + e.mapFrame.frame.size.height], @_mapData.maxZoom[floor]),
       )
       options =
-          fillColor: e.colorHex
+          fillColor: e.rgbHex
           fillOpacity: 0.7
           weight: 1
           strokeColor: '#B4AFD1'
           strokeOpacity: 1
-      r = L.rectangle(polygonBounds, @_exhibitOptions(options, { id: e.id }))
+      r = L.rectangle(polygonBounds, @_exhibitOptions(options, exhibitId: e.exhibitId))
       r.bindLabel(e.name, direction: 'auto')
       @_exhibits[floor].addLayer(@_prepareExhibit(r))
-    @_updateState(exhibits[0].frame.mapLevel) if exhibits.length > 0
+    @_updateState(exhibits[0].mapFrame.floor) if exhibits.length > 0
     @
 
 
@@ -98,12 +100,12 @@ root.Canvas = class Canvas extends root.View
 
   # removeExhibit :: Int -> Context
   removeExhibit: (exhibitId) =>
-    exhibitFrame = @_mapData.exhibits[exhibitId].frame
+    exhibitFrame = @_mapData.exhibits[exhibitId].mapFrame
     if not exhibitFrame?
       return
-    @_exhibits[exhibitFrame.mapLevel]?.eachLayer((layer) =>
-      if parseInt(layer.options.id) is exhibitId
-        @_exhibits[exhibitFrame.mapLevel].removeLayer(layer)
+    @_exhibits[exhibitFrame.floor]?.eachLayer((layer) =>
+      if parseInt(layer.options.exhibitId) is exhibitId
+        @_exhibits[exhibitFrame.floor].removeLayer(layer)
     )
     @
 
@@ -138,8 +140,8 @@ root.Canvas = class Canvas extends root.View
   getVisibleFrame: (activeFloor) =>
     bounds = @_map.getBounds()
     maxZoomTileInfo = @_mapData.floorTilesInfo[activeFloor][-1..][0]
-    maxX = maxZoomTileInfo?.scaledWidth ? 0
-    maxY = maxZoomTileInfo?.scaledHeight ? 0
+    maxX = maxZoomTileInfo?.scaledSize.width ? 0
+    maxY = maxZoomTileInfo?.scaledSize.height ? 0
     maxZoom = @_mapData.maxZoom[activeFloor]
     castedPixelBounds = [
         @_map.project(bounds.getNorthWest(), maxZoom)
@@ -155,13 +157,16 @@ root.Canvas = class Canvas extends root.View
   # flyToExhibit :: (Int, Int) -> Context
   flyToExhibit: (exhibitsId, oldFloor) =>
     exhibit = @_mapData.exhibits[exhibitsId]
-    frame = exhibit.frame
+    frame = exhibit.mapFrame.frame
     bounds = new L.LatLngBounds(
-      @_map.unproject([frame.x, frame.y], @_mapData.maxZoom[oldFloor]),
-      @_map.unproject([frame.x + frame.width, frame.y + frame.height], @_mapData.maxZoom[oldFloor]),
+      @_map.unproject([frame.x, frame.y],
+                       @_mapData.maxZoom[oldFloor]),
+      @_map.unproject([frame.x + frame.size.width,
+                       frame.y + frame.size.height],
+                       @_mapData.maxZoom[oldFloor])
     )
-    if oldFloor isnt frame.mapLevel
-      @setFloorLayer(frame.mapLevel, oldFloor)
+    if oldFloor isnt exhibit.mapFrame.floor
+      @setFloorLayer(exhibit.mapFrame.floor, oldFloor)
     @_map.flyToBounds(bounds, animate: false)
     @_map.fireEvent('zoomend')
     @

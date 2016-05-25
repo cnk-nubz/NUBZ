@@ -49,7 +49,7 @@ class Handler
       element.querySelector("td:first-child + td + td > div")
         .addEventListener("click", =>
           experimentId = JSON.parse(viewId).id
-          (new CloneExperimentDialog())
+          (new CloneExperimentDialog(root.structures.dialog.cloneExperiment))
             .on('save', @_tryCloningExperiment(experimentId))
             .show()
         )
@@ -60,7 +60,7 @@ class Handler
       else
         element.querySelector("td:last-child > div")
           .addEventListener("click", =>
-            (new ConfirmationDialog(root.startExperimentConfirmation))
+            (new ConfirmationDialog(root.structures.dialog.startExperimentConfirmation))
               .on('confirm', @_startExperiment(JSON.parse(viewId).id))
           )
     )
@@ -95,7 +95,7 @@ class Handler
       element.querySelector('td:first-child + td + td + td > div')
         .addEventListener('click', =>
           experimentId = JSON.parse(viewId).id
-          (new CloneExperimentDialog())
+          (new CloneExperimentDialog(root.structures.dialog.cloneExperiment))
             .on('save', @_tryCloningExperiment(experimentId))
             .show()
         )
@@ -110,7 +110,7 @@ class Handler
       toSend =
         jsonData: JSON.stringify(
           experimentId: experimentId
-          newName: data.name
+          name: data.name
         )
       jQuery.ajaxSetup(
         headers: { "X-CSRFToken": getCookie("csrftoken") }
@@ -158,7 +158,7 @@ class Handler
       )
     activeExperimentRow.querySelector("td:last-child > div")
       .addEventListener("click", =>
-        (new root.ConfirmationDialog(root.finishExperimentConfirmation))
+        (new root.ConfirmationDialog(root.structures.dialog.finishExperimentConfirmation))
           .on('confirm', @_finishExperiment)
       )
     return
@@ -174,7 +174,7 @@ class Handler
   # _confirmationConfirmButton :: (() -> undefined) -> BootstrapDialogButton
   _confirmationConfirmButton: (handler) ->
     label: root.confirmationMessages.confirmationButton
-    action: -> handler()
+    action: handler
 
 
   # _finishExperiment :: () -> undefined

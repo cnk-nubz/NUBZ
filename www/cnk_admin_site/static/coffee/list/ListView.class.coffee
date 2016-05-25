@@ -32,7 +32,7 @@ root.ListView = class ListView extends root.View
     [].forEach.call(DOMElements.querySelectorAll("tr"), (element) =>
       @_elementsOnList.push(element.data)
     )
-    container = jQuery(root.HTML.tableList).addClass(@_listType)
+    container = jQuery(root.structures.HTML.tableList).addClass(@_listType)
     container = container[0]
     container.querySelector("tbody").appendChild(DOMElements)
     container

@@ -1,39 +1,38 @@
 from django.conf.urls import url
 
 from . import views
+from views import mainPage, mapControl, experimentData, manageExperiment, manageReports, manageErrors
 
 urlpatterns = [
     # main pages
-    url(r'^$', views.index, name='index'),
-    url(r'edycja-mapy/$', views.editMapPage, name='editMapPage'),
-    url(r'badanie/$', views.newExperimentPage, name='newExperimentPage'),
-    url(r'pytania-i-akcje/$', views.questionsAndActionsPage, name='questionsAndActionsPage'),
-    url(r'badania/$', views.experimentsPage, name='experimentsPage'),
-    url(r'android/$', views.androidApp, name='androidApp'),
+    url(r'^$', mainPage.index, name='index'),
+    url(r'edycja-mapy/$', mainPage.editMapPage, name='editMapPage'),
+    url(r'badanie/$', mainPage.newExperimentPage, name='newExperimentPage'),
+    url(r'badania/$', mainPage.experimentsPage, name='experimentsPage'),
+    url(r'pytania-i-akcje/$', mainPage.questionsAndActionsPage, name='questionsAndActionsPage'),
+    url(r'android/$', mainPage.androidApp, name='androidApp'),
 
-    # map control
-    url(r'uploadImage/$', views.uploadImage, name='uploadImage'),
-    url(r'removeFloor/$', views.removeFloor, name='removeFloor'),
-
-    url(r'updateExhibitPosition/$', views.updateExhibitPosition, name='updateExhibitPosition'),
-    url(r'exhibit/$', views.exhibit, name='exhibit'),
-
-    # get all the html you need
-    url(r'getHTML/$', views.getHTML, name='getHTML'),
-    # dialogs
-    url(r'question/$', views.question, name='question'),
-    url(r'action/$', views.action, name='action'),
-
-    #errors_reporting
-    url(r'errorReporting/$', views.reportError, name='reportError'),
-
+    # # map control
+    url(r'uploadImage/$', mapControl.uploadImage, name='uploadImage'),
+    url(r'removeFloor/$', mapControl.removeFloor, name='removeFloor'),
+    url(r'updateExhibitPosition/$', mapControl.updateExhibitPosition, name='updateExhibitPosition'),
+    url(r'exhibit/$', mapControl.exhibit, name='exhibit'),
+    #
+    # # experiment data
+    url(r'question/$', experimentData.question, name='question'),
+    url(r'action/$', experimentData.action, name='action'),
+    #
+    #
     #experiment
-    url(r'experiment/$', views.experiment, name='experiment'),
-    url(r'activeExperiment/$', views.activeExperiment, name='activeExperiment'),
-    url(r'cloneExperiment/$', views.cloneExperiment, name='cloneExperiment'),
-    url(r'removeExperiment/$', views.removeExperiment, name='removeExperiment'),
+    url(r'experiment/$', manageExperiment.experiment, name='experiment'),
+    url(r'activeExperiment/$', manageExperiment.activeExperiment, name='activeExperiment'),
+    url(r'cloneExperiment/$', manageExperiment.cloneExperiment, name='cloneExperiment'),
+    url(r'removeExperiment/$', manageExperiment.removeExperiment, name='removeExperiment'),
 
     #reports
-    url(r'getReport/$', views.getReport, name='getReport'),
-    url(r'getAllReports/$', views.getAllReports, name='getAllReports')
+    url(r'getReport/$', manageReports.getReport, name='getReport'),
+    url(r'getAllReports/$', manageReports.getAllReports, name='getAllReports'),
+
+    #errors_reporting
+    url(r'errorReporting/$', manageErrors.reportError, name='reportError'),
 ]

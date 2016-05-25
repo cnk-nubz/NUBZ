@@ -48,7 +48,10 @@ template <bool isBreak>
 wrapper_ptr ActionsSection<isBreak>::getEntry(const repository::Report::Event &event) const {
     auto wrappers = std::vector<wrapper_ptr>{};
     for (auto action : actions) {
-        bool occured = utils::count(event.actions, action.ID) == 1;
+        bool occured = false;
+        if (!event.exhibitID == isBreak) {
+            occured = utils::count(event.actions, action.ID) == 1;
+        }
         wrappers.push_back(DataWrapperFactory::actionWrapper(occured));
     }
     return ContainerWrapperFactory::rowWrapper(std::move(wrappers));

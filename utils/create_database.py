@@ -110,7 +110,7 @@ cur.execute('''
 	CREATE TABLE reports (
 		id INT NOT NULL,
 		receive_date VARCHAR NULL,
-		experiment_id INT NOT NULL REFERENCES experiments(id),
+		experiment_id INT NOT NULL REFERENCES experiments(id) ON DELETE CASCADE,
 		content JSONB NOT NULL
 	)
 ''')

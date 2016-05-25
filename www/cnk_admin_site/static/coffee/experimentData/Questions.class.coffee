@@ -40,9 +40,12 @@ root.Questions = class Questions extends root.ExperimentData
   # constructor :: [Question] -> Context
   constructor: (_list = []) ->
     super _list
-    @_simpleQuestionDialog = new root.SimpleQuestionDialog()
-    @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog()
-    @_sortQuestionDialog = new root.SortQuestionDialog()
+    @_simpleQuestionDialog = new root.SimpleQuestionDialog(
+      root.structures.dialog.question.simple)
+    @_multipleChoiceQuestionDialog = new root.MultipleChoiceQuestionDialog(
+      root.structures.dialog.question.multipleChoice)
+    @_sortQuestionDialog = new root.SortQuestionDialog(
+      root.structures.dialog.question.sort)
     ###
     # _questionType :: (JsObject :: (Int, {name :: String, dialog :: BootstrapDialog}))
     ###
