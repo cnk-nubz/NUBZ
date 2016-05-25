@@ -55,7 +55,7 @@ def finishExperiment(request):
 @standardAjaxCall
 def cloneExperiment(request):
     data = json.loads(request.POST.get("jsonData"))
-    tData = toThrift.cloneRequest(data)
+    tData = toThrift.cloneExperimentRequest(data)
     thriftCommunicator.cloneExperiment(tData)
     return HttpResponse()
 

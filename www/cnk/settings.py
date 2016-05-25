@@ -85,6 +85,11 @@ DATABASES = {
     }
 }
 
+LOG_PATH = os.path.join(BASE_DIR, 'logs/')
+try:
+    os.makedirs(LOG_PATH)
+except OSError:
+    pass
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -98,13 +103,13 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'dumplog.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/server.log'),
             'formatter': 'verbose',
         },
         'jsError': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'jsLog.log'),
+            'filename': os.path.join(BASE_DIR, 'logs/client.log'),
             'formatter': 'verbose',
         }
     },

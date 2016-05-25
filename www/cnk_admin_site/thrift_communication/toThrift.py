@@ -138,5 +138,5 @@ def createExperimentRequest(d):
         tSurveyAfter)
 
 
-def cloneRequest(d):
-    return CloneRequest(d['experimentId'], d['name'].encode('utf-8'))
+def cloneExperimentRequest(d):
+    return CloneExperimentRequest(d['experimentId'], d['name'].encode('utf-8'))

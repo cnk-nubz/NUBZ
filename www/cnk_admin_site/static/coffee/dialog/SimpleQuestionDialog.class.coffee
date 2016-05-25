@@ -47,11 +47,11 @@ root.SimpleQuestionDialog = class SimpleQuestionDialog extends root.QuestionDial
   ###
   # extractData :: () -> SimpleQuestionData
   extractData: ->
-    answerAsNumberInput = jQuery("#dialog input[type=radio]").first()
-    answerAsNumberLabel = answerAsNumberInput.parent()
+    answerAsTextInput = jQuery("#dialog input[type=radio]").first()
+    answerAsTextLabel = answerAsTextInput.parent()
     name = jQuery("#dialog .form-group:eq(0) input").val()
     question = jQuery("#dialog .form-group:eq(1) input").val()
-    if answerAsNumberLabel.hasClass("active")
+    if answerAsTextLabel.hasClass("active")
       answerType = 'TEXT'
     else
       answerType = 'NUMBER'

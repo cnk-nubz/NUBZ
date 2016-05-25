@@ -67,8 +67,8 @@ $(EXTERNAL_WWW):
 	unzip -o $(EXTERNAL_TMP) -d $(EXTERNAL_WWW)/tmp/js
 	wget -O $(EXTERNAL_TMP) https://github.com/ThatKorean/Leaflet.draw/releases/download/v0.2.4-in-one/Leaflet.Draw.min.js.zip
 	unzip -o $(EXTERNAL_TMP) -d $(EXTERNAL_WWW)/tmp/js
-	cat $(EXTERNAL_WWW)/tmp/js/* >> $(EXTERNAL_WWW)/js/leaflet-all.min.js
-	cat $(EXTERNAL_WWW)/tmp/css/* >> $(EXTERNAL_WWW)/css/leaflet-all.min.css
+	cat $(EXTERNAL_WWW)/tmp/js/leaflet.min.js $(EXTERNAL_WWW)/tmp/js/Leaflet.Label.min.js $(EXTERNAL_WWW)/tmp/js/Leaflet.Draw.min.js $(EXTERNAL_WWW)/tmp/js/Leaflet.Path.Drag.min.js >> $(EXTERNAL_WWW)/js/leaflet-all.min.js
+	cat $(EXTERNAL_WWW)/tmp/css/leaflet.css $(EXTERNAL_WWW)/tmp/css/leaflet.label.css >> $(EXTERNAL_WWW)/css/leaflet-all.min.css
 	rm -Rf $(EXTERNAL_WWW)/tmp
 	rm -rf $(EXTERNAL_TMP)
 
