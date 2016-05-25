@@ -7,13 +7,13 @@ import java.util.List;
 public class RaportEvent implements Serializable {
     private Integer exhibitId;
     private int durationSeconds;
-    private Date startDate;
+    private Timestamp startDate;
     private List<Integer> actions;
 
     public RaportEvent(Integer exhibitId,
                        int durationSeconds,
                        List<Integer> actions,
-                       Date startDate) {
+                       Timestamp startDate) {
         this.exhibitId = exhibitId;
         this.durationSeconds = durationSeconds;
         this.actions = actions;
@@ -32,7 +32,7 @@ public class RaportEvent implements Serializable {
         return actions;
     }
 
-    public Date getStartDate() {
+    public Timestamp getStartDate() {
         return startDate;
     }
 

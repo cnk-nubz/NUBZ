@@ -4,8 +4,6 @@ import android.util.Log;
 
 import com.cnk.communication.NetworkHandler;
 import com.cnk.communication.thrift.MapImage;
-import com.cnk.communication.thrift.NewMapImagesRequest;
-import com.cnk.communication.thrift.NewMapImagesResponse;
 import com.cnk.communication.thrift.Server;
 import com.cnk.communication.thrift.Size;
 import com.cnk.data.map.FloorMap;

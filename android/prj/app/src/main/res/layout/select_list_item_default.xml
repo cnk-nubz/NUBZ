@@ -4,7 +4,7 @@
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-    <com.cnk.ui.AutoResizeTextView
+    <com.cnk.external.AutoResizeTextView
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="80dp"

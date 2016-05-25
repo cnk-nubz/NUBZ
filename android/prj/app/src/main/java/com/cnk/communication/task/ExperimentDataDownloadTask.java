@@ -16,6 +16,7 @@ import com.cnk.data.experiment.survey.questions.MultipleChoiceQuestionOption;
 import com.cnk.data.experiment.survey.questions.SimpleQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestion;
 import com.cnk.data.experiment.survey.questions.SortQuestionOption;
+import com.cnk.exceptions.NoExperimentException;
 
 import org.apache.thrift.TException;
 
@@ -35,11 +36,12 @@ public class ExperimentDataDownloadTask extends ServerTask {
     }
 
     @Override
-    protected void performInSession(Server.Client client) throws TException, IOException {
+    protected void performInSession(Server.Client client) throws TException, IOException, NoExperimentException {
         Log.i(LOG_TAG, "Downloading experiment");
         CurrentExperimentResponse thriftData = client.getCurrentExperiment();
-        if (thriftData == null) {
-            Log.i(LOG_TAG, "No active experiment, NullPointerException is coming");
+        if (thriftData.getExperiment() == null) {
+            Log.i(LOG_TAG, "No active experiment");
+            throw new NoExperimentException();
         }
         Log.i(LOG_TAG, "Downloaded experiment");
         updateDataHandler(thriftData);
