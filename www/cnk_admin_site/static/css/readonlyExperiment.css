@@ -1,0 +1,170 @@
+#container {
+  padding-top: 50px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+#experiment {
+  position: relative;
+  float: left;
+  width: 65%;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.reportsList {
+  float: right;
+  width: 35%;
+  height: 100%;
+  padding: 10px 15px;
+}
+
+.reportsList > div {
+  position: relative;
+  height: 100%;
+}
+
+.reportsList .myHeader {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+.reportsList .middle {
+  position: absolute;
+  top: 46px;
+  left: 0px;
+  right: 0px;
+  bottom: 51px;
+  overflow-y: scroll;
+}
+
+.reportsList .myFooter {
+  position: absolute;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+.reportsList .myFooter > button {
+  width: 100%;
+  height: 45px;
+}
+
+.myHeader {
+  height: 46px;
+  line-height: 46px;
+  border: 1px solid #ddd;
+  font-size: 22px;
+  font-weight: 600;
+  background: #eee;
+}
+
+.middle {
+  min-height: 212px;
+  border: 1px solid #ddd;
+  border-top: none;
+}
+
+.myFooter {
+  height: 46px;
+  line-height: 46px;
+  font-size: 22px;
+}
+
+.questionsBefore {
+  padding: 10px 5%;
+  margin-bottom: 50px;
+}
+
+.experimentActions {
+  padding: 10px 0px 10px 5%;
+  margin-bottom: 50px;
+}
+
+.breakActions {
+  padding: 10px 5% 10px 0px;
+  margin-bottom: 50px;
+}
+
+.questionsAfter {
+  clear: both;
+  padding: 10px 5%;
+}
+
+.experimentTitle {
+  padding: 10px 5%;
+}
+
+.experimentTitle .form-control,
+.experimentTitle .input-group-addon {
+  font-family: 'Open Sans';
+  font-weight: 600;
+  border-radius: 0px;
+}
+
+.manageExperiment {
+  padding: 15px 5%;
+}
+
+.manageExperiment button {
+  width: 100%;
+  height: 46px;
+  font-size: 18px;
+}
+
+.experimentActions .myHeader > div {
+  display: table-cell;
+  width: 50%;
+  height: 45px;
+}
+
+.actions .experimentActions {
+  width: 49%;
+  float: left;
+}
+
+.actions .breakActions {
+  width: 49%;
+  float: right;
+  margin-left: 2%;
+}
+
+#experiment .middle > table {
+  width: 100%;
+  height: 100%;
+  table-layout: fixed;
+}
+
+#experiment .middle tr {
+  height: 42px;
+  background: #fff;
+  border-bottom: 1px solid #ddd;
+}
+
+#experiment .middle td {
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+#experiment .middle td:first-child:hover {
+  background: #ddd;
+  cursor: pointer;
+}
+
+#experiment .middle td:first-child {
+  text-align: left;
+}
+
+#experiment .questionsBefore .middle td:last-child,
+#experiment .questionsAfter .middle td:last-child {
+  width: 120px;
+  cursor: default;
+}

@@ -1,0 +1,41 @@
+<resources>
+    <string name="app_name">CNK</string>
+
+    <string name="start_screen_title">Narzędzie ułatwiające badanie zwiedzających CNK</string>
+    <string name="download_map">Pobierz mapę</string>
+    <string name="begin_experiment">Rozpocznij badanie</string>
+    <string name="raports_queue_size">Liczba raportów oczekujących na wysłanie:</string>
+    <string name="loading_map">Trwa ładowanie mapy</string>
+    <string name="map_wait">Oczekiwanie na pobranie mapy</string>
+    <string name="map_missing">Brak mapy dla piętra.</string>
+    <string name="drawer_open">Wysunięto</string>
+    <string name="drawer_close">Zamknięto</string>
+    <string name="break_action">Przerwa</string>
+    <string name="change_floor">Zmień piętro</string>
+    <string name="floor">Piętro</string>
+    <string name="end_action">Koniec badania</string>
+    <string name="confirm">Ok</string>
+    <string name="cancel">Anuluj</string>
+    <string name="finish">Zakończ</string>
+    <string name="error">Błąd</string>
+    <string name="confirm_map_close">Czy na pewno chcesz zakończyć? Później nie będzie można już wrócić do mapy.</string>
+    <string name="mapIncompleteMessage">Dane o mapie są niekompletne, pobierz mapę ponownie</string>
+    <string name="dataError">Pobrane dane są uszkodzone, spróbuj ponownie lub skontaktuj się z administratorem</string>
+    <string name="tryAgain">Spróbuj ponownie</string>
+    <string name="exit">Wyjdź</string>
+    <string name="confirmation">Czy na pewno chcesz przejśc dalej? Danych nie będzie się dało zmienić</string>
+    <string name="next">Następne</string>
+    <string name="prev">Poprzednie</string>
+    <string name="notFilled">Proszę odpowiedzieć na pytanie</string>
+    <string name="chooseOne">Zaznacz jedną odpowiedź</string>
+    <string name="chooseMultiple">Zaznacz dowolną liczbę odpowiedzi</string>
+    <string name="sort">Posortuj poniższe opcje</string>
+    <string name="dataDownloadFailure">Nie udało się pobrać danych</string>
+    <string name="reasonWifi">brak połączenia z siecią Wi-Fi: połącz się z siecią Wi-Fi a następnie spróbuj ponownie.</string>
+    <string name="reasonConnection">wystapił błąd podczas łączenia z serwerem.</string>
+    <string name="reasonNoExperiment">brak aktywnego eksperymentu.</string>
+    <string name="synchronizing">Synchronizacja</string>
+    <string name="synchronizingInProgress">Trwa synchronizacja danych z serwerem</string>
+    <string name="loading">Ładowanie</string>
+    <string name="waitingForExperimentData">Oczekiwanie na pobranie danych</string>
+</resources>

@@ -1,0 +1,64 @@
+#mapSite {
+  padding-top: 50px;
+  display: table;
+  table-layout: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+#mapSite > div {
+  display: table-cell;
+}
+
+#mapSite > div:first-child {
+  width: 46px;
+  background: rgba(221, 221, 221, 1);
+  border-right: 1px solid #aaa;
+  position: relative;
+}
+
+#zoomControls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#mapSite > div:last-child {
+  position: relative;
+	width: 300px;
+	background: rgba(221, 221, 221, 1);
+}
+
+.popover {
+  z-index: 5000
+}
+
+.control-button-container {
+  position: relative;
+}
+
+.control-button-group:last-child {
+  position: absolute;
+  bottom: 0px;
+  left: 8px;
+  right: 8px;
+}
+
+#changeMapDialog {
+  width: 100%;
+  table-layout: fixed;
+}
+#changeMapDialog td {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+#changeMapDialog button {
+  width: 100%;
+  height: 50px;
+}
+#changeMapDialog p {
+  text-align: center;
+}
+
+.delete-button {
+  float: left;
+}

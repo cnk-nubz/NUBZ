@@ -1,0 +1,104 @@
+{% extends "mainPage.html" %}
+{% load staticfiles %}
+{% load compress %}
+{% block css %}
+  {{ block.super }}
+  <link href="{% static "include/css/leaflet-all.min.css" %}" rel="stylesheet" />
+  <link href="{% static "css/exhibitPanel.css" %}" rel="stylesheet" />
+  <link href="{% static "css/control-buttons.css" %}" rel="stylesheet" />
+  <link href="{% static "css/editMap.css" %}" rel="stylesheet" />
+{% endblock %}
+{% block script %}
+  {{ block.super }}
+  {% compress js %}
+  <script src="{% static "coffee/plugin/shortenText.ext.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  <!-- LEAFLET -->
+  <script src="{% static "include/js/leaflet-all.min.js" %}"></script>
+{% endblock %}
+{% block init %}
+ {{ block.super }}
+  {% compress js %}
+    <script src="{% static "coffee/handler/editMap.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+
+{% block includes %}
+  {% compress js %}
+  <script src="{% static "coffee/View.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/QuestionDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/ExhibitDialog.class.coffee" %}" type="text/coffeescript"></script>
+  <script src="{% static "coffee/dialog/ConfirmationDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/Canvas.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/MutableCanvas.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/ExhibitPanel.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% compress js %}
+  <script src="{% static "coffee/dialog/ChangeMapDialog.class.coffee" %}" type="text/coffeescript"></script>
+  {% endcompress %}
+{% endblock %}
+
+{% block content %}
+<div id="mapSite">
+  <div class="control-button-container">
+    <div class="control-button-group" id="zoomControls">
+      <button class="control-button"><div><span><strong>+</strong></span></div></button>
+      <button class="control-button"><div><span><strong>-</strong></span></div></button>
+    </div>
+    <div class="control-button-group" id="changeFloor">
+      {% for floor in availableFloors %}
+      <button class="control-button"><div><span><strong>{{floor}}</strong></span></div></button>
+      {% endfor %}
+    </div>
+    <div class="control-button-group" id="showLabels">
+      <button class="control-button"><div><i class="fa fa-comment-o"></i></div></button>
+    </div>
+    <div class="control-button-group" id="changeResizing">
+      <button class="control-button"><div><i class="fa fa-arrows-alt"></i></div></button>
+    </div>
+    <div class="control-button-group" id="changeMap">
+      <button class="control-button"><div><i class="fa fa-map-o"></i></div></button>
+    </div>
+  </div>
+  <div id="map"></div>
+  <div id="exhibitPanel">
+    <button class="btn btn-default" id="addExhibit">Dodaj eksponat</button>
+    <div class="input-group">
+      <input class="form-control" id="exhibitSearchBar" placeholder="Wyszukaj eksponat">
+      <span class="input-group-addon">&#x1f50d;</span>
+    </div>
+    <div id="exhibitListContainer">
+      <div id="exhibitList"></div>
+    </div>
+    <div id="filterButtons">
+      <table>
+        <tbody>
+          <tr>
+          {% for floor in availableFloors %}
+          <td>
+            <button class="btn btn-default">{{floor}}</button>
+          </td>
+          {% endfor %}
+          <td>
+            <button class="btn btn-default">
+            {% if availableFloors|length > 4 %}
+            b
+            {% else %}
+            brak
+            {% endif %}
+            </button>
+          </td>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+{% load compress %}
+{% load jsvar %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NUBZ</title>
+  {% block script %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+          integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+          crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/js/bootstrap-dialog.min.js"></script>
+  <script async>
+  function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+  </script>
+  {% compress js %}
+  <script src="{% static "coffee/handler/logging.coffee"%}" type="text/coffeescript"></script>
+  {% endcompress %}
+  {% endblock %}
+  {% block css %}
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+        crossorigin="anonymous">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.2/css/font-awesome.min.css"
+        rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.34.7/css/bootstrap-dialog.min.css"
+        rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+  <link href="{% static "css/base.css" %}" rel="stylesheet" />
+  {% endblock %}
+  {% block includes %}{% endblock %}
+  {% block init %}
+    {% compress js %}
+    <script type="text/coffeescript">
+      root = exports ? this
+      # floorUrl :: String
+      root.floorUrl = "{{urlFloor|escape|safe}}"
+      if floorUrl is ''
+        f = ->
+          BootstrapDialog.show(
+            message: "W pliku konfiguracyjnym brakuje sciezki do folderu z mapami"
+            title: 'Zły plik konfiguracyjny'
+            type: BootstrapDialog.TYPE_DANGER
+          )
+        setTimeout(f, 1000)
+        throw new Error("Zły plik konfiguracyjny")
+      # activeFloor :: Int
+      root.activeFloor = +"{{acitveFloor}}"
+      #
+      # type ExhibitFrame = {
+      #   height   :: Int,
+      #   width    :: Int,
+      #   x        :: Int,
+      #   y        :: Int,
+      #   mapLevel :: Int
+      # }
+      #
+      #
+      # type Exhibit = {
+      #   rgbHex :: String,
+      #   frame    :: Maybe ExhibitFrame,
+      #   name     :: String
+      # }
+      #
+      # exhibitsList :: [Exhibit]
+      root.exhibitsList = jQuery.map({{exhibits | jsvar}}, (val) -> [val])
+      # exhibits :: (JsObject :: (Int, Exhibit))
+      root.exhibits = {}
+      if root.exhibitsList.length > 0
+        for e in root.exhibitsList
+          root.exhibits[e.exhibitId] =
+            exhibitId: e.exhibitId
+            mapFrame: e.mapFrame
+            name: e.name
+            rgbHex: e.rgbHex
+      ###
+      # type TilesInfo = {
+      #   scaledHeight :: Int,
+      #   scaledWidth  :: Int,
+      #   tileHeight   :: Int,
+      #   tileWidth    :: Int
+      # }
+      ###
+      # type SingleFloorTilesInfo = [TileInfo]
+      # floorTilesInfo :: [SingleFloorTilesInfo]
+      root.floorTilesInfo = jQuery.map({{floorTilesInfo | jsvar}}, (val) -> [val])
+      # availableFloors :: [Int]
+      root.availableFloors = {{availableFloors | jsvar}}
+      if Object.keys(floorTilesInfo).length > 0
+        for i in root.availableFloors
+          root.floorTilesInfo[i] = jQuery.map(root.floorTilesInfo[i], (val) -> [val])
+      else
+        root.floorTilesInfo[0] = []
+
+      root.structures = {{structures | jsvar}}
+    </script>
+    {% endcompress %}
+  {% endblock %}
+  <link rel="icon" type="image/icon" href="{% static "favicon.ico" %}">
+</head>
+	<body>
+		{% block body %}{% endblock %}
+	</body>
+</html>

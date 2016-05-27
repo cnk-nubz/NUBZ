@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:gravity="center"
+              android:orientation="vertical"
+              tools:context=".StartScreen">
+
+    <Button
+        android:id="@+id/mapButton"
+        style="@style/HugeGradientMenuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="mapClick"
+        android:text="@string/download_map"/>
+
+    <Button
+        android:id="@+id/surveyButton"
+        style="@style/HugeGradientMenuButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="surveyClick"
+        android:text="@string/begin_experiment"/>
+
+    <TextView
+        android:id="@+id/raportsStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
+
+    <Button
+        android:id="@+id/bMapActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="resetClick"
+        android:text="Reset exhibits"/>
+
+</LinearLayout>
