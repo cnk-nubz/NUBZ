@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 THRIFT_SRCS = communication/*.thrift
 THRIFT_ANDROID = android/prj/app/src/main/java/com/cnk/communication/thrift/Server.java
 THRIFT_SERVER = server/src/communication/Server.cpp
